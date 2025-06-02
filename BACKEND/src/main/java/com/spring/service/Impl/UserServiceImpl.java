@@ -56,7 +56,7 @@ public class UserServiceImpl implements UserService {
         user.setFullName(fullName);
         user.setEmail(email);
         user.setPassword(password);
-        user.setRole("Customer");
+        user.setRoleID(1);
         user.setPhone(phone);
         user.setAddress(address);
         user.setCreatedAt(new java.sql.Timestamp(new Date().getTime()));
@@ -71,7 +71,7 @@ public class UserServiceImpl implements UserService {
                 user.getFullName(),
                 user.getEmail(),
                 user.getPassword(),
-                user.getRole(),
+                user.getRoleID(),
                 user.getPhone(),
                 user.getAddress(),
                 user.getStatus(),

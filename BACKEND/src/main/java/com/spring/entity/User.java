@@ -20,8 +20,8 @@ public class User {
     @Column(name = "Password", nullable = false, length = 255)
     private String password;
 
-    @Column(name = "Role", nullable = false, length = 50)
-    private String role; // 'Customer', 'Admin', 'Seller'
+    @Column(name = "RoleID", nullable = false, length = 50)
+    private int roleID; // 'Customer', 'Admin', 'Seller'
 
     @Column(name = "Phone", length = 20)
     private String phone;
@@ -71,12 +71,12 @@ public class User {
         this.password = password;
     }
 
-    public String getRole() {
-        return role;
+    public int getRoleID() {
+        return roleID;
     }
 
-    public void setRole(String role) {
-        this.role = role;
+    public void setRoleID(int roleID) {
+        this.roleID = roleID;
     }
 
     public String getPhone() {
