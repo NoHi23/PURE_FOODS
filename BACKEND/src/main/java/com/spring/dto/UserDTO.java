@@ -5,7 +5,7 @@ public class UserDTO {
     private String fullName;
     private String email;
     private String password;
-    private String role;
+    private int roleID;
     private String phone;
     private String address;
     private int status;
@@ -13,12 +13,12 @@ public class UserDTO {
 
     public UserDTO() {}
 
-    public UserDTO(int userId, String fullName, String email, String password, String role, String phone, String address,int status, java.sql.Timestamp createdAt) {
+    public UserDTO(int userId, String fullName, String email, String password, int roleID, String phone, String address,int status, java.sql.Timestamp createdAt) {
         this.userId = userId;
         this.fullName = fullName;
         this.email = email;
         this.password = password;
-        this.role = role;
+        this.roleID = roleID;
         this.phone = phone;
         this.address = address;
         this.status = status;
@@ -49,11 +49,11 @@ public class UserDTO {
     public void setPassword(String password) {
         this.password = password;
     }
-    public String getRole() {
-        return role;
+    public int getRoleID() {
+        return roleID;
     }
-    public void setRole(String role) {
-        this.role = role;
+    public void setRoleID(int roleID) {
+        this.roleID = roleID;
     }
     public String getPhone() {
         return phone;
