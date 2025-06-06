@@ -8,6 +8,7 @@ public interface UserService {
 
     UserDTO register(String name, String email, String phone, String password, String address);
 
+    UserDTO autoRegisterIfNotExists(String name, String email);
 
 
 }

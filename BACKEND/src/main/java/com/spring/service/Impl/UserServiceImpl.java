@@ -80,6 +80,22 @@ public class UserServiceImpl implements UserService {
     }
 
 
+    public UserDTO autoRegisterIfNotExists(String name, String email) {
+        User user = userDAO.findUserByEmail(email);
+        if (user == null) {
+            user = new User();
+            user.setFullName(name);
+            user.setEmail(email);
+            user.setPassword("123456");
+            user.setRoleID(1);
+            user.setCreatedAt(new java.sql.Timestamp(new Date().getTime()));
+            user.setStatus(1);
+            userDAO.addUser(user);
+            user = userDAO.findUserByEmail(email);
+
+        }
+        return convertToDTO(user);
+    }
 
 
 
