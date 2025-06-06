@@ -1,13 +1,32 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import { useNavigate } from 'react-router-dom';
-
+const GOOGLE_CLIENT_ID = '602510909514-3anvf6bogbdlpectj2r72qicjp7fa21a.apps.googleusercontent.com';
+import { GoogleLogin } from '@react-oauth/google';
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [remember, setRemember] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (window.google) {
+      window.google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback: (res) => {
+          console.log("Google login response", res);
+          console.log("Token:", res.credential);
+          handleGoogleResponse(res);
+        },
+      });
+      window.google.accounts.id.renderButton(
+        document.getElementById('googleSignInDiv'),
+        { theme: 'outline', size: 'large', width: '100%' }
+      );
+    }
+  }, []);
+
   const handleLogin = async (e) => {
     e.preventDefault();
 
@@ -30,9 +49,9 @@ const LoginPage = () => {
 
         // window.location.href = '/';
         if (user.roleID === 0) {
-          navigate("/admin");
+          navigate("/admin-dashboard");
         } else if (user.roleID === 1) {
-          navigate("/customer");
+          navigate("/");
         } else if (user.roleID === 2) {
           navigate("/wholesaler");
         } else if (user.roleID === 3) {
@@ -48,6 +67,44 @@ const LoginPage = () => {
       }
     } catch (err) {
       alert("Đăng nhập thất bại!");
+    }
+  };
+
+
+  const handleGoogleResponse = async (response) => {
+    try {
+      const res = await axios.post('http://localhost:8082/PureFoods/api/users/google', {
+        token: response.credential
+      }, { withCredentials: true });
+
+      const user = res.data;
+      alert('Google login successful! Welcome ' + user.fullName);
+      console.log("Google Response:", response);
+
+      if (remember) {
+        Cookies.set('user', JSON.stringify(user), { expires: 1 / 144 });
+      } else {
+        Cookies.remove('user');
+      }
+
+      // Chuyển hướng theo role
+      if (user.roleID === 0) {
+        navigate("/admin-dashboard");
+      } else if (user.roleID === 1) {
+        navigate("/");
+      } else if (user.roleID === 2) {
+        navigate("/wholesaler");
+      } else if (user.roleID === 3) {
+        navigate("/importer");
+      } else if (user.roleID === 4) {
+        navigate("/exporter");
+      } else {
+        alert("Unknown role!");
+      }
+
+    } catch (error) {
+      alert("Google login failed!");
+      console.error(error);
     }
   };
 
@@ -97,12 +154,16 @@ const LoginPage = () => {
                   </form>
                 </div>
                 <div className="other-log-in"><h6>or</h6></div>
+
                 <div className="log-in-button">
                   <ul>
                     <li>
-                      <a href="https://www.google.com/" className="btn google-button w-100">
-                        <img src="../assets/images/inner-page/google.png" alt="" /> Log In with Google
-                      </a>
+                      <div id="googleSignInDiv">
+                        <a className="btn google-button w-100">
+                          <img src="../assets/images/inner-page/google.png" alt="" /> Log In with Google
+                        </a>
+                      </div>
+
                     </li>
                     <li>
                       <a href="https://www.facebook.com/" className="btn google-button w-100">
