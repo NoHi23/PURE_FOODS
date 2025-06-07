@@ -1,12 +1,13 @@
+import { Link } from "react-router-dom";
 const Sidebar = () => {
     return (
         <>
-      <div className="sidebar-wrapper">
-                <div id="sidebarEffect"></div>
+            <div className="sidebar-wrapper">
+                {/* <div id="sidebarEffect"></div> */}
                 <div>
                     <div className="logo-wrapper logo-wrapper-center">
                         <a href="index.html" data-bs-original-title="" title="">
-                            <img className="img-fluid for-white" src="assets/images/logo/full-white.png" alt="logo"/>
+                            <img className="img-fluid for-white" src="assets/images/logo/full-white.png" alt="logo" />
                         </a>
                         <div className="back-btn">
                             <i className="fa fa-angle-left"></i>
@@ -17,9 +18,9 @@ const Sidebar = () => {
                     </div>
                     <div className="logo-icon-wrapper">
                         <a href="index.html">
-                            <img className="img-fluid main-logo main-white" src="assets/images/logo/logo.png" alt="logo"/>
+                            <img className="img-fluid main-logo main-white" src="assets/images/logo/logo.png" alt="logo" />
                             <img className="img-fluid main-logo main-dark" src="assets/images/logo/logo-white.png"
-                                alt="logo"/>
+                                alt="logo" />
                         </a>
                     </div>
                     <nav className="sidebar-main">
@@ -29,195 +30,77 @@ const Sidebar = () => {
 
                         <div id="sidebar-menu">
                             <ul className="sidebar-links" id="simple-bar">
-                                <li className="back-btn"></li>
-
                                 <li className="sidebar-list">
-                                    <a className="sidebar-link sidebar-title link-nav" href="index.html">
+                                    <Link className="sidebar-link sidebar-title link-nav" to="/dashboard">
                                         <i className="ri-home-line"></i>
                                         <span>Dashboard</span>
-                                    </a>
+                                    </Link>
                                 </li>
-
                                 <li className="sidebar-list">
-                                    <a className="linear-icon-link sidebar-link sidebar-title" href="javascript:void(0)">
+                                    <Link className="sidebar-link sidebar-title link-nav" to="/create-request">
                                         <i className="ri-store-3-line"></i>
-                                        <span>Product</span>
-                                    </a>
-                                    <ul className="sidebar-submenu">
-                                        <li>
-                                            <a href="products.html">Prodcts</a>
-                                        </li>
-
-                                        <li>
-                                            <a href="add-new-product.html">Add New Products</a>
-                                        </li>
-                                    </ul>
+                                        <span>Tạo yêu cầu xuất</span>
+                                    </Link>
                                 </li>
-
                                 <li className="sidebar-list">
-                                    <a className="linear-icon-link sidebar-link sidebar-title" href="javascript:void(0)">
+                                    <Link className="sidebar-link sidebar-title link-nav" to="/request-list">
                                         <i className="ri-list-check-2"></i>
-                                        <span>Category</span>
-                                    </a>
-                                    <ul className="sidebar-submenu">
-                                        <li>
-                                            <a href="category.html">Category List</a>
-                                        </li>
-
-                                        <li>
-                                            <a href="add-new-category.html">Add New Category</a>
-                                        </li>
-                                    </ul>
+                                        <span>Danh sách yêu cầu</span>
+                                    </Link>
                                 </li>
-
                                 <li className="sidebar-list">
-                                    <a className="linear-icon-link sidebar-link sidebar-title" href="javascript:void(0)">
+                                    <Link className="sidebar-link sidebar-title link-nav" to="/inventory-check">
                                         <i className="ri-list-settings-line"></i>
-                                        <span>Attributes</span>
-                                    </a>
-                                    <ul className="sidebar-submenu">
-                                        <li>
-                                            <a href="attributes.html">Attributes</a>
-                                        </li>
-
-                                        <li>
-                                            <a href="add-new-attributes.html">Add Attributes</a>
-                                        </li>
-                                    </ul>
+                                        <span>Kiểm tra tồn kho</span>
+                                    </Link>
                                 </li>
-
                                 <li className="sidebar-list">
-                                    <a className="sidebar-link sidebar-title" href="javascript:void(0)">
+                                    <Link className="sidebar-link sidebar-title link-nav" to="/confirm-order">
                                         <i className="ri-user-3-line"></i>
-                                        <span>Users</span>
-                                    </a>
-                                    <ul className="sidebar-submenu">
-                                        <li>
-                                            <a href="all-users.html">All users</a>
-                                        </li>
-                                        <li>
-                                            <a href="add-new-user.html">Add new user</a>
-                                        </li>
-                                    </ul>
+                                        <span>Xác nhận đơn hàng</span>
+                                    </Link>
                                 </li>
-
                                 <li className="sidebar-list">
-                                    <a className="sidebar-link sidebar-title" href="javascript:void(0)">
+                                    <Link className="sidebar-link sidebar-title link-nav" to="/reject-order">
                                         <i className="ri-user-3-line"></i>
-                                        <span>Roles</span>
-                                    </a>
-                                    <ul className="sidebar-submenu">
-                                        <li>
-                                            <a href="role.html">All roles</a>
-                                        </li>
-                                        <li>
-                                            <a href="create-role.html">Create Role</a>
-                                        </li>
-                                    </ul>
+                                        <span>Từ chối đơn hàng</span>
+                                    </Link>
                                 </li>
-
                                 <li className="sidebar-list">
-                                    <a className="sidebar-link sidebar-title link-nav" href="media.html">
+                                    <Link className="sidebar-link sidebar-title link-nav" to="/payment-check">
                                         <i className="ri-price-tag-3-line"></i>
-                                        <span>Media</span>
-                                    </a>
+                                        <span>Kiểm tra thanh toán</span>
+                                    </Link>
                                 </li>
-
                                 <li className="sidebar-list">
-                                    <a className="sidebar-link sidebar-title" href="javascript:void(0)">
+                                    <Link className="sidebar-link sidebar-title link-nav" to="/request-payment">
+                                        <i className="ri-price-tag-3-line"></i>
+                                        <span>Yêu cầu thanh toán</span>
+                                    </Link>
+                                </li>
+                                <li className="sidebar-list">
+                                    <Link className="sidebar-link sidebar-title link-nav" to="/prepare-delivery">
                                         <i className="ri-archive-line"></i>
-                                        <span>Orders</span>
-                                    </a>
-                                    <ul className="sidebar-submenu">
-                                        <li>
-                                            <a href="order-list.html">Order List</a>
-                                        </li>
-                                        <li>
-                                            <a href="order-detail.html">Order Detail</a>
-                                        </li>
-                                        <li>
-                                            <a href="order-tracking.html">Order Tracking</a>
-                                        </li>
-                                    </ul>
+                                        <span>Chuẩn bị giao hàng</span>
+                                    </Link>
                                 </li>
-
                                 <li className="sidebar-list">
-                                    <a className="linear-icon-link sidebar-link sidebar-title" href="javascript:void(0)">
+                                    <Link className="sidebar-link sidebar-title link-nav" to="/update-delivery">
                                         <i className="ri-focus-3-line"></i>
-                                        <span>Localization</span>
-                                    </a>
-                                    <ul className="sidebar-submenu">
-                                        <li>
-                                            <a href="translation.html">Translation</a>
-                                        </li>
-
-                                        <li>
-                                            <a href="currency-rates.html">Currency Rates</a>
-                                        </li>
-                                    </ul>
+                                        <span>Cập nhật giao hàng</span>
+                                    </Link>
                                 </li>
-
                                 <li className="sidebar-list">
-                                    <a className="linear-icon-link sidebar-link sidebar-title" href="javascript:void(0)">
-                                        <i className="ri-price-tag-3-line"></i>
-                                        <span>Coupons</span>
-                                    </a>
-                                    <ul className="sidebar-submenu">
-                                        <li>
-                                            <a href="coupon-list.html">Coupon List</a>
-                                        </li>
-
-                                        <li>
-                                            <a href="create-coupon.html">Create Coupon</a>
-                                        </li>
-                                    </ul>
+                                    <Link className="sidebar-link sidebar-title link-nav" to="/confirm-delivery">
+                                        <i className="ri-focus-3-line"></i>
+                                        <span>Xác nhận giao hàng</span>
+                                    </Link>
                                 </li>
-
                                 <li className="sidebar-list">
-                                    <a className="sidebar-link sidebar-title link-nav" href="taxes.html">
-                                        <i className="ri-price-tag-3-line"></i>
-                                        <span>Tax</span>
-                                    </a>
-                                </li>
-
-                                <li className="sidebar-list">
-                                    <a className="sidebar-link sidebar-title link-nav" href="product-review.html">
-                                        <i className="ri-star-line"></i>
-                                        <span>Product Review</span>
-                                    </a>
-                                </li>
-
-                                <li className="sidebar-list">
-                                    <a className="sidebar-link sidebar-title link-nav" href="support-ticket.html">
-                                        <i className="ri-phone-line"></i>
-                                        <span>Support Ticket</span>
-                                    </a>
-                                </li>
-
-                                <li className="sidebar-list">
-                                    <a className="linear-icon-link sidebar-link sidebar-title" href="javascript:void(0)">
-                                        <i className="ri-settings-line"></i>
-                                        <span>Settings</span>
-                                    </a>
-                                    <ul className="sidebar-submenu">
-                                        <li>
-                                            <a href="profile-setting.html">Profile Setting</a>
-                                        </li>
-                                    </ul>
-                                </li>
-
-                                <li className="sidebar-list">
-                                    <a className="sidebar-link sidebar-title link-nav" href="reports.html">
+                                    <Link className="sidebar-link sidebar-title link-nav" to="/notification">
                                         <i className="ri-file-chart-line"></i>
-                                        <span>Reports</span>
-                                    </a>
-                                </li>
-
-                                <li className="sidebar-list">
-                                    <a className="sidebar-link sidebar-title link-nav" href="list-page.html">
-                                        <i className="ri-list-check"></i>
-                                        <span>List Page</span>
-                                    </a>
+                                        <span>Thông báo</span>
+                                    </Link>
                                 </li>
                             </ul>
                         </div>
@@ -230,6 +113,6 @@ const Sidebar = () => {
             </div>
         </>
     );
-    }
+}
 
 export default Sidebar;
