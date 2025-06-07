@@ -17,6 +17,8 @@ import ConfirmDelivery from './pages/dashboard/ConfirmDelivery';
 import Notification from './pages/dashboard/Notification';
 import ExportRequestList from './pages/dashboard/ExportRequestList';
 import { Link } from 'react-router-dom';
+import AdminDashboard from './component/AdminDashboard/AdminDashboard';
+
 function App() {
 
   return (
@@ -53,6 +55,7 @@ function App() {
         <Route path="/update-delivery" element={<UpdateDeliveryStatus />} />
         <Route path="/confirm-delivery" element={<ConfirmDelivery />} />
         <Route path="/notification" element={<Notification />} />
+        <Route path='/admin-dashboard' element={<AdminDashboard/>} />
       </Routes>
     </div>
     </BrowserRouter>
