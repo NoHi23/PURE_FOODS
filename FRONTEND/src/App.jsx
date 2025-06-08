@@ -18,31 +18,17 @@ import Notification from './pages/dashboard/Notification';
 import ExportRequestList from './pages/dashboard/ExportRequestList';
 import { Link } from 'react-router-dom';
 import AdminDashboard from './component/AdminDashboard/AdminDashboard';
-
+import ExportShipmentDashboard from './pages/dashboard/ExportShipmentDashboard';
+import DashboardLayout from './components/dashboard/Layout';
 function App() {
 
   return (
     <BrowserRouter>
-    <div className="p-4">
-        <nav className="bg-gray-800 text-white p-4 mb-4 rounded-md">
-          <ul className="flex space-x-4">
-            <li><Link to="/create-request">Tạo Yêu Cầu</Link></li>
-            <li><Link to="/request-list">Danh Sách Yêu Cầu</Link></li>
-            <li><Link to="/inventory-check">Kiểm Tra Kho</Link></li>
-            <li><Link to="/confirm-order">Xác Nhận Đơn</Link></li>
-            <li><Link to="/reject-order">Từ Chối Đơn</Link></li>
-            <li><Link to="/payment-check">Kiểm Tra Thanh Toán</Link></li>
-            <li><Link to="/request-payment">Yêu Cầu Thanh Toán</Link></li>
-            <li><Link to="/prepare-delivery">Chuẩn Bị Giao Hàng</Link></li>
-            <li><Link to="/update-delivery">Cập Nhật Giao Hàng</Link></li>
-            <li><Link to="/confirm-delivery">Xác Nhận Giao Hàng</Link></li>
-            <li><Link to="/notification">Gửi Thông Báo</Link></li>
-          </ul>
-        </nav>
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path='/signup' element={<SignUp />} />
+         <Route element={<DashboardLayout />}>
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/create-request" element={<ExportRequestForm />} />
         <Route path="/request-list" element={<ExportRequestList />} />
@@ -56,8 +42,9 @@ function App() {
         <Route path="/confirm-delivery" element={<ConfirmDelivery />} />
         <Route path="/notification" element={<Notification />} />
         <Route path='/admin-dashboard' element={<AdminDashboard/>} />
+         <Route path='/exportShipment' element={<ExportShipmentDashboard/>} />
+        </Route>
       </Routes>
-    </div>
     </BrowserRouter>
   );
 }
