@@ -32,4 +32,19 @@ public class InventoryLogs {
     @Column(name = "Status")
     private Integer status;
 
-   }
+    // Getters and Setters
+    public Integer getLogId() { return logId; }
+    public void setLogId(Integer logId) { this.logId = logId; }
+    public Products getProduct() { return product; }
+    public void setProduct(Products product) { this.product = product; }
+    public User getUser() { return user; }
+    public void setUser(User user) { this.user = user; }
+    public Integer getQuantityChange() { return quantityChange; }
+    public void setQuantityChange(Integer quantityChange) { this.quantityChange = quantityChange; }
+    public String getReason() { return reason; }
+    public void setReason(String reason) { this.reason = reason; }
+    public Timestamp getCreatedAt() { return createdAt; }
+    public void setCreatedAt(Timestamp createdAt) { this.createdAt = createdAt; }
+    public Integer getStatus() { return status; }
+    public void setStatus(Integer status) { this.status = status; }
+}
