@@ -62,6 +62,9 @@ public class Orders {
     private Drivers driver;
 
     // Default constructor
+    public Orders() {
+        // Default constructor
+    }
     public Orders(Integer orderId) {
         this.orderId = orderId;
     }

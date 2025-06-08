@@ -29,23 +29,67 @@ public class Drivers {
     private Integer status;
 
     // Default constructor
+    public Drivers() {
+    }
+
     public Drivers(Integer driverId) {
-    this.driverId = driverId;
-}
+        this.driverId = driverId;
+    }
 
     // Getters and Setters
-    public Integer getDriverId() { return driverId; }
-    public void setDriverId(Integer driverId) { this.driverId = driverId; }
-    public String getDriverName() { return driverName; }
-    public void setDriverName(String driverName) { this.driverName = driverName; }
-    public String getPhone() { return phone; }
-    public void setPhone(String phone) { this.phone = phone; }
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
-    public String getVehicleInfo() { return vehicleInfo; }
-    public void setVehicleInfo(String vehicleInfo) { this.vehicleInfo = vehicleInfo; }
-    public java.sql.Timestamp getCreatedAt() { return createdAt; }
-    public void setCreatedAt(java.sql.Timestamp createdAt) { this.createdAt = createdAt; }
-    public Integer getStatus() { return status; }
-    public void setStatus(Integer status) { this.status = status; }
+    public Integer getDriverId() {
+        return driverId;
+    }
+
+    public void setDriverId(Integer driverId) {
+        this.driverId = driverId;
+    }
+
+    public String getDriverName() {
+        return driverName;
+    }
+
+    public void setDriverName(String driverName) {
+        this.driverName = driverName;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getVehicleInfo() {
+        return vehicleInfo;
+    }
+
+    public void setVehicleInfo(String vehicleInfo) {
+        this.vehicleInfo = vehicleInfo;
+    }
+
+    public java.sql.Timestamp getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(java.sql.Timestamp createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public Integer getStatus() {
+        return status;
+    }
+
+    public void setStatus(Integer status) {
+        this.status = status;
+    }
 }
