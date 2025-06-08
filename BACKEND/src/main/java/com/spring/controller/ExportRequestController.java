@@ -35,7 +35,7 @@ public class ExportRequestController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Orders> getExportRequestById(@PathVariable Integer id) {
+    public ResponseEntity<Orders> getExportRequestById(@PathVariable("id") Integer id) {
         Orders request = exportRequestService.getExportRequestById(id);
         if (request != null) {
             return ResponseEntity.ok(request);

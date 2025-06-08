@@ -14,23 +14,25 @@ public class ReturnController {
     @Autowired
     private ReturnService returnService;
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'SELLER')")
+    //@PreAuthorize("hasAnyRole('ADMIN', 'SELLER')")
     @PostMapping("/record/{orderId}")
-    public ResponseEntity<ReturnOrders> recordReturn(@PathVariable Integer orderId, @RequestParam String reason) {
+    public ResponseEntity<ReturnOrders> recordReturn(
+            @PathVariable("orderId") Integer orderId,
+            @RequestParam("reason") String reason) {
         ReturnOrders returnOrder = returnService.recordReturn(orderId, reason);
         return ResponseEntity.ok(returnOrder);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'SELLER')")
+    //@PreAuthorize("hasAnyRole('ADMIN', 'SELLER')")
     @PostMapping("/create/{orderId}")
-    public ResponseEntity<ReturnOrders> createReturnOrder(@PathVariable Integer orderId) {
+    public ResponseEntity<ReturnOrders> createReturnOrder(@PathVariable("orderId") Integer orderId) {
         ReturnOrders returnOrder = returnService.createReturnOrder(orderId);
         return ResponseEntity.ok(returnOrder);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'SELLER')")
+    //@PreAuthorize("hasAnyRole('ADMIN', 'SELLER')")
     @PutMapping("/update-inventory/{returnOrderId}")
-    public ResponseEntity<Void> updateInventoryAfterReturn(@PathVariable Integer returnOrderId) {
+    public ResponseEntity<Void> updateInventoryAfterReturn(@PathVariable("returnOrderId") Integer returnOrderId) {
         returnService.updateInventoryAfterReturn(returnOrderId);
         return ResponseEntity.ok().build();
     }

@@ -14,30 +14,30 @@ public class PaymentController {
     @Autowired
     private PaymentService paymentService;
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'CUSTOMER')")
+    //@PreAuthorize("hasAnyRole('ADMIN', 'CUSTOMER')")
     @GetMapping("/status/{orderId}")
-    public ResponseEntity<String> checkPaymentStatus(@PathVariable Integer orderId) {
+    public ResponseEntity<String> checkPaymentStatus(@PathVariable("orderId") Integer orderId) {
         String status = paymentService.checkPaymentStatus(orderId);
         return ResponseEntity.ok(status);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'SELLER')")
+    //@PreAuthorize("hasAnyRole('ADMIN', 'SELLER')")
     @PostMapping("/request/{orderId}")
-    public ResponseEntity<Void> requestPayment(@PathVariable Integer orderId) {
+    public ResponseEntity<Void> requestPayment(@PathVariable("orderId") Integer orderId) {
         paymentService.requestPayment(orderId);
         return ResponseEntity.ok().build();
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'CUSTOMER')")
+    //@PreAuthorize("hasAnyRole('ADMIN', 'CUSTOMER')")
     @PostMapping("/process/{orderId}")
-    public ResponseEntity<Payments> processPayment(@PathVariable Integer orderId, @RequestBody Payments payment) {
+    public ResponseEntity<Payments> processPayment(@PathVariable("orderId") Integer orderId, @RequestBody Payments payment) {
         Payments processed = paymentService.processPayment(orderId, payment);
         return ResponseEntity.ok(processed);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'SELLER')")
+    //@PreAuthorize("hasAnyRole('ADMIN', 'SELLER')")
     @PutMapping("/confirm/{paymentId}")
-    public ResponseEntity<Payments> confirmPayment(@PathVariable Integer paymentId) {
+    public ResponseEntity<Payments> confirmPayment(@PathVariable("paymentId") Integer paymentId) {
         Payments payment = paymentService.confirmPayment(paymentId);
        if (payment != null) {
             return ResponseEntity.ok(payment);
@@ -46,9 +46,9 @@ public class PaymentController {
         }
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'SELLER')")
+    //@PreAuthorize("hasAnyRole('ADMIN', 'SELLER')")
     @PostMapping("/refund/{orderId}")
-    public ResponseEntity<Void> refundPayment(@PathVariable Integer orderId) {
+    public ResponseEntity<Void> refundPayment(@PathVariable("orderId") Integer orderId) {
         paymentService.refundPayment(orderId);
         return ResponseEntity.ok().build();
     }

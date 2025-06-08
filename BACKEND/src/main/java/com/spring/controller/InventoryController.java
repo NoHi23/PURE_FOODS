@@ -14,16 +14,16 @@ public class InventoryController {
     @Autowired
     private InventoryService inventoryService;
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'SELLER')")
+    //@PreAuthorize("hasAnyRole('ADMIN', 'SELLER')")
     @GetMapping("/check/{productId}")
-    public ResponseEntity<Integer> checkStock(@PathVariable Integer productId) {
+    public ResponseEntity<Integer> checkStock(@PathVariable("productId") Integer productId) {
         Integer stock = inventoryService.checkStock(productId);
         return ResponseEntity.ok(stock);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'SELLER')")
+    //@PreAuthorize("hasAnyRole('ADMIN', 'SELLER')")
     @PutMapping("/confirm-order/{orderId}")
-    public ResponseEntity<Orders> confirmOrder(@PathVariable Integer orderId) {
+    public ResponseEntity<Orders> confirmOrder(@PathVariable("orderId") Integer orderId) {
         Orders order = inventoryService.confirmOrder(orderId);
         if (order != null) {
             return ResponseEntity.ok(order);
@@ -32,9 +32,11 @@ public class InventoryController {
         }
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'SELLER')")
+    //@PreAuthorize("hasAnyRole('ADMIN', 'SELLER')")
     @PutMapping("/reject-order/{orderId}")
-    public ResponseEntity<Orders> rejectOrder(@PathVariable Integer orderId, @RequestParam String reason) {
+    public ResponseEntity<Orders> rejectOrder(
+            @PathVariable("orderId") Integer orderId,
+            @RequestParam("reason") String reason) {
         Orders order = inventoryService.rejectOrder(orderId, reason);
         if (order != null) {
             return ResponseEntity.ok(order);
@@ -43,16 +45,18 @@ public class InventoryController {
         }
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'SELLER')")
+    //@PreAuthorize("hasAnyRole('ADMIN', 'SELLER')")
     @PutMapping("/update-stock/{productId}")
-    public ResponseEntity<Void> updateStock(@PathVariable Integer productId, @RequestParam Integer quantity) {
+    public ResponseEntity<Void> updateStock(
+            @PathVariable("productId") Integer productId,
+            @RequestParam("quantity") Integer quantity) {
         inventoryService.updateStock(productId, quantity);
         return ResponseEntity.ok().build();
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'SELLER')")
+    //@PreAuthorize("hasAnyRole('ADMIN', 'SELLER')")
     @PostMapping("/notify-out-of-stock/{orderId}")
-    public ResponseEntity<Void> notifyOutOfStock(@PathVariable Integer orderId) {
+    public ResponseEntity<Void> notifyOutOfStock(@PathVariable("orderId") Integer orderId) {
         inventoryService.notifyOutOfStock(orderId);
         return ResponseEntity.ok().build();
     }

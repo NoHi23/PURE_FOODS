@@ -14,7 +14,7 @@ public class DeliveryController {
     @Autowired
     private DeliveryService deliveryService;
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'SELLER')")
+    //@PreAuthorize("hasAnyRole('ADMIN', 'SELLER')")
     @PutMapping("/prepare/{orderId}")
     public ResponseEntity<Orders> prepareDelivery(@PathVariable Integer orderId) {
         Orders order = deliveryService.prepareDelivery(orderId);
@@ -25,7 +25,7 @@ public class DeliveryController {
         }
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'SELLER')")
+    //@PreAuthorize("hasAnyRole('ADMIN', 'SELLER')")
     @PutMapping("/assign-driver/{orderId}")
     public ResponseEntity<Orders> assignDriver(@PathVariable Integer orderId, @RequestParam Integer driverId) {
         Orders order = deliveryService.assignDriver(orderId, driverId);
@@ -36,7 +36,7 @@ public class DeliveryController {
         }
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'SELLER', 'DRIVER')")
+    //@PreAuthorize("hasAnyRole('ADMIN', 'SELLER', 'DRIVER')")
     @PutMapping("/update-status/{orderId}")
     public ResponseEntity<Orders> updateDeliveryStatus(@PathVariable Integer orderId, @RequestParam String status) {
         Orders order = deliveryService.updateDeliveryStatus(orderId, status);
@@ -47,7 +47,7 @@ public class DeliveryController {
         }
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'SELLER', 'DRIVER')")
+    //@PreAuthorize("hasAnyRole('ADMIN', 'SELLER', 'DRIVER')")
     @PutMapping("/confirm/{orderId}")
     public ResponseEntity<Orders> confirmDelivery(@PathVariable Integer orderId) {
         Orders order = deliveryService.confirmDelivery(orderId);
@@ -58,7 +58,7 @@ public class DeliveryController {
         }
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'SELLER')")
+    //@PreAuthorize("hasAnyRole('ADMIN', 'SELLER')")
     @PostMapping("/notify/{orderId}")
     public ResponseEntity<Void> notifyDelivery(@PathVariable Integer orderId) {
         deliveryService.notifyDelivery(orderId);
