@@ -46,4 +46,27 @@ public class Products {
     @Column(name = "Status")
     private Integer status;
 
-   }
+    // Getters and Setters
+    public Integer getProductId() { return productId; }
+    public void setProductId(Integer productId) { this.productId = productId; }
+    public String getProductName() { return productName; }
+    public void setProductName(String productName) { this.productName = productName; }
+    public Categories getCategory() { return category; }
+    public void setCategory(Categories category) { this.category = category; }
+    public Suppliers getSupplier() { return supplier; }
+    public void setSupplier(Suppliers supplier) { this.supplier = supplier; }
+    public Double getPrice() { return price; }
+    public void setPrice(Double price) { this.price = price; }
+    public Integer getStockQuantity() { return stockQuantity; }
+    public void setStockQuantity(Integer stockQuantity) { this.stockQuantity = stockQuantity; }
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+    public String getImageURL() { return imageURL; }
+    public void setImageURL(String imageURL) { this.imageURL = imageURL; }
+    public User getLastUpdatedBy() { return lastUpdatedBy; }
+    public void setLastUpdatedBy(User lastUpdatedBy) { this.lastUpdatedBy = lastUpdatedBy; }
+    public java.sql.Timestamp getCreatedAt() { return createdAt; }
+    public void setCreatedAt(java.sql.Timestamp createdAt) { this.createdAt = createdAt; }
+    public Integer getStatus() { return status; }
+    public void setStatus(Integer status) { this.status = status; }
+}
