@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { FiSearch, FiX, FiCheck, FiEye, FiTruck, FiPackage } from "react-icons/fi";
+import { useNavigate } from "react-router-dom"; 
 import axios from 'axios';
+
 const ExportShipmentDashboard = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -9,7 +11,7 @@ const ExportShipmentDashboard = () => {
   const [showModal, setShowModal] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
-
+  const navigate = useNavigate();
   const mockOrders = [
     {
       id: "ORD001",
@@ -145,6 +147,7 @@ const ExportShipmentDashboard = () => {
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-2xl font-bold text-gray-900">Export Shipment Management</h1>
+           <div className="flex items-center space-x-4">
           <div className="relative">
             <input
               type="text"
@@ -152,6 +155,13 @@ const ExportShipmentDashboard = () => {
               className="pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
             <FiSearch className="absolute left-3 top-3 text-gray-400" />
+          </div>
+            <button
+              onClick={() => navigate("/create-request")}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            >
+              Tạo mới
+            </button>
           </div>
         </div>
 

@@ -20,6 +20,7 @@ import { Link } from 'react-router-dom';
 import AdminDashboard from './component/AdminDashboard/AdminDashboard';
 import ExportShipmentDashboard from './pages/dashboard/ExportShipmentDashboard';
 import DashboardLayout from './components/dashboard/Layout';
+import CreateExportRequest from './pages/dashboard/CreateExportRequest';
 function App() {
 
   return (
@@ -30,7 +31,7 @@ function App() {
         <Route path='/signup' element={<SignUp />} />
          <Route element={<DashboardLayout />}>
         <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/create-request" element={<ExportRequestForm />} />
+        <Route path="/create-request" element={<CreateExportRequest />} />
         <Route path="/request-list" element={<ExportRequestList />} />
         <Route path="/inventory-check" element={<InventoryCheck />} />
         <Route path="/confirm-order" element={<ConfirmOrder />} />
