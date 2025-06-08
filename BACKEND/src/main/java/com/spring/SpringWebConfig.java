@@ -20,7 +20,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  */
 @Configuration
 @EnableWebMvc
-@ComponentScan
+@ComponentScan(basePackages = "com.spring")
 @EnableTransactionManagement
 public class SpringWebConfig implements WebMvcConfigurer, ApplicationContextAware {
     private ApplicationContext applicationContext;

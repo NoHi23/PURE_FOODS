@@ -17,14 +17,14 @@ public class ExportRequestController {
     @Autowired
     private ExportRequestService exportRequestService;
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'SELLER')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'SELLER')")
     @PostMapping
     public ResponseEntity<Orders> createExportRequest(@RequestBody Orders order, @RequestBody List<OrderDetails> orderDetails) {
         Orders savedOrder = exportRequestService.createExportRequest(order, orderDetails);
         return ResponseEntity.ok(savedOrder);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'SELLER')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'SELLER')")
     @GetMapping
     public ResponseEntity<List<Orders>> getAllExportRequests(
             @RequestParam(required = false) String status) {
@@ -32,7 +32,7 @@ public class ExportRequestController {
         return ResponseEntity.ok(requests);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'SELLER')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'SELLER')")
     @GetMapping("/{id}")
     public ResponseEntity<Orders> getExportRequestById(@PathVariable Integer id) {
         Orders request = exportRequestService.getExportRequestById(id);
@@ -43,7 +43,7 @@ public class ExportRequestController {
         }
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'SELLER')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'SELLER')")
     @PutMapping("/{id}/cancel")
     public ResponseEntity<Orders> cancelExportRequest(@PathVariable Integer id, @RequestParam String cancelReason) {
         Orders updatedOrder = exportRequestService.cancelExportRequest(id, cancelReason);
@@ -54,7 +54,7 @@ public class ExportRequestController {
         }
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'SELLER')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'SELLER')")
     @PostMapping("/receive")
     public ResponseEntity<Orders> receiveExportRequest(@RequestBody Orders order) {
         Orders receivedOrder = exportRequestService.receiveExportRequest(order);
