@@ -64,4 +64,5 @@ public class DatabaseConfig implements Constants.DatabaseConfig {
         // properties.put("hibernate.hbm2ddl.auto", "update");
         return properties;
     }
+    
 }
