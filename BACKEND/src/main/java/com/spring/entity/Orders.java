@@ -69,4 +69,35 @@ public class Orders {
         this.orderId = orderId;
     }
 
-  }
+    // Getters and Setters
+    public Integer getOrderId() { return orderId; }
+    public void setOrderId(Integer orderId) { this.orderId = orderId; }
+    public User getCustomer() { return customer; }
+    public void setCustomer(User customer) { this.customer = customer; }
+    public Timestamp getOrderDate() { return orderDate; }
+    public void setOrderDate(Timestamp orderDate) { this.orderDate = orderDate; }
+    public Double getTotalAmount() { return totalAmount; }
+    public void setTotalAmount(Double totalAmount) { this.totalAmount = totalAmount; }
+    public OrderStatuses getStatus() { return status; }
+    public void setStatus(OrderStatuses status) { this.status = status; }
+    public String getShippingAddress() { return shippingAddress; }
+    public void setShippingAddress(String shippingAddress) { this.shippingAddress = shippingAddress; }
+    public ShippingMethods getShippingMethod() { return shippingMethod; }
+    public void setShippingMethod(ShippingMethods shippingMethod) { this.shippingMethod = shippingMethod; }
+    public Double getShippingCost() { return shippingCost; }
+    public void setShippingCost(Double shippingCost) { this.shippingCost = shippingCost; }
+    public Double getDistance() { return distance; }
+    public void setDistance(Double distance) { this.distance = distance; }
+    public Double getDiscountAmount() { return discountAmount; }
+    public void setDiscountAmount(Double discountAmount) { this.discountAmount = discountAmount; }
+    public String getCancelReason() { return cancelReason; }
+    public void setCancelReason(String cancelReason) { this.cancelReason = cancelReason; }
+    public Timestamp getEstimatedDeliveryDate() { return estimatedDeliveryDate; }
+    public void setEstimatedDeliveryDate(Timestamp estimatedDeliveryDate) { this.estimatedDeliveryDate = estimatedDeliveryDate; }
+    public String getDelayReason() { return delayReason; }
+    public void setDelayReason(String delayReason) { this.delayReason = delayReason; }
+    public String getReturnReason() { return returnReason; }
+    public void setReturnReason(String returnReason) { this.returnReason = returnReason; }
+    public Drivers getDriver() { return driver; }
+    public void setDriver(Drivers driver) { this.driver = driver; }
+}
