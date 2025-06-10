@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 const Sidebar = () => {
     return (
         <>
@@ -29,78 +29,91 @@ const Sidebar = () => {
                         </div>
 
                         <div id="sidebar-menu">
-                            <ul className="sidebar-links" id="simple-bar">
+                            <ul className="sidebar-links space-y-2" id="simple-bar">
                                 <li className="sidebar-list">
-                                    <Link className="sidebar-link sidebar-title link-nav" to="/dashboard">
-                                        <i className="ri-home-line"></i>
+                                    <NavLink
+                                        to="/dashboard"
+                                        className={({ isActive }) =>
+                                            `flex items-center px-4 py-2 rounded transition-all duration-150 hover:bg-green-800 ${isActive ? "border-l-4 border-white bg-green-800 font-bold" : ""
+                                            }`
+                                        }
+                                    >
+                                        <i className="ri-home-line mr-3"></i>
                                         <span>Dashboard</span>
-                                    </Link>
+                                    </NavLink>
+                                </li>
+                   
+                                <li className="sidebar-list">
+                                    <NavLink
+                                        to="/exportShipment"
+                                        className={({ isActive }) =>
+                                            `flex items-center px-4 py-2 rounded transition-all duration-150 hover:bg-green-800 ${isActive ? "border-l-4 border-white bg-green-800 font-bold" : ""
+                                            }`
+                                        }
+                                    >
+                                        <i className="ri-user-line mr-3"></i>
+                                        <span>Export</span>
+                                    </NavLink>
                                 </li>
                                 <li className="sidebar-list">
-                                    <Link className="sidebar-link sidebar-title link-nav" to="/create-request">
-                                        <i className="ri-store-3-line"></i>
-                                        <span>Tạo yêu cầu xuất</span>
-                                    </Link>
+                                    <NavLink
+                                        to="/inventory-management"
+                                        className={({ isActive }) =>
+                                            `flex items-center px-4 py-2 rounded transition-all duration-150 hover:bg-green-800 ${isActive ? "border-l-4 border-white bg-green-800 font-bold" : ""
+                                            }`
+                                        }
+                                    >
+                                        <i className="ri-bar-chart-line mr-3"></i>
+                                        <span>Inventory</span>
+                                    </NavLink>
+                                </li>
+                                             <li className="sidebar-list">
+                                    <NavLink
+                                        to="/delivery-management"
+                                        className={({ isActive }) =>
+                                            `flex items-center px-4 py-2 rounded transition-all duration-150 hover:bg-green-800 ${isActive ? "border-l-4 border-white bg-green-800 font-bold" : ""
+                                            }`
+                                        }
+                                    >
+                                        <i className="ri-shopping-cart-line mr-3"></i>
+                                        <span>Delivery</span>
+                                    </NavLink>
                                 </li>
                                 <li className="sidebar-list">
-                                    <Link className="sidebar-link sidebar-title link-nav" to="/request-list">
-                                        <i className="ri-list-check-2"></i>
-                                        <span>Danh sách yêu cầu</span>
-                                    </Link>
+                                    <NavLink
+                                        to="/dashboard/settings"
+                                        className={({ isActive }) =>
+                                            `flex items-center px-4 py-2 rounded transition-all duration-150 hover:bg-green-800 ${isActive ? "border-l-4 border-white bg-green-800 font-bold" : ""
+                                            }`
+                                        }
+                                    >
+                                        <i className="ri-settings-line mr-3"></i>
+                                        <span>Settings</span>
+                                    </NavLink>
                                 </li>
                                 <li className="sidebar-list">
-                                    <Link className="sidebar-link sidebar-title link-nav" to="/inventory-check">
-                                        <i className="ri-list-settings-line"></i>
-                                        <span>Kiểm tra tồn kho</span>
-                                    </Link>
+                                    <NavLink
+                                        to="/dashboard/help"
+                                        className={({ isActive }) =>
+                                            `flex items-center px-4 py-2 rounded transition-all duration-150 hover:bg-green-800 ${isActive ? "border-l-4 border-white bg-green-800 font-bold" : ""
+                                            }`
+                                        }
+                                    >
+                                        <i className="ri-question-line mr-3"></i>
+                                        <span>Help</span>
+                                    </NavLink>
                                 </li>
                                 <li className="sidebar-list">
-                                    <Link className="sidebar-link sidebar-title link-nav" to="/confirm-order">
-                                        <i className="ri-user-3-line"></i>
-                                        <span>Xác nhận đơn hàng</span>
-                                    </Link>
-                                </li>
-                                <li className="sidebar-list">
-                                    <Link className="sidebar-link sidebar-title link-nav" to="/reject-order">
-                                        <i className="ri-user-3-line"></i>
-                                        <span>Từ chối đơn hàng</span>
-                                    </Link>
-                                </li>
-                                <li className="sidebar-list">
-                                    <Link className="sidebar-link sidebar-title link-nav" to="/payment-check">
-                                        <i className="ri-price-tag-3-line"></i>
-                                        <span>Kiểm tra thanh toán</span>
-                                    </Link>
-                                </li>
-                                <li className="sidebar-list">
-                                    <Link className="sidebar-link sidebar-title link-nav" to="/request-payment">
-                                        <i className="ri-price-tag-3-line"></i>
-                                        <span>Yêu cầu thanh toán</span>
-                                    </Link>
-                                </li>
-                                <li className="sidebar-list">
-                                    <Link className="sidebar-link sidebar-title link-nav" to="/prepare-delivery">
-                                        <i className="ri-archive-line"></i>
-                                        <span>Chuẩn bị giao hàng</span>
-                                    </Link>
-                                </li>
-                                <li className="sidebar-list">
-                                    <Link className="sidebar-link sidebar-title link-nav" to="/update-delivery">
-                                        <i className="ri-focus-3-line"></i>
-                                        <span>Cập nhật giao hàng</span>
-                                    </Link>
-                                </li>
-                                <li className="sidebar-list">
-                                    <Link className="sidebar-link sidebar-title link-nav" to="/confirm-delivery">
-                                        <i className="ri-focus-3-line"></i>
-                                        <span>Xác nhận giao hàng</span>
-                                    </Link>
-                                </li>
-                                <li className="sidebar-list">
-                                    <Link className="sidebar-link sidebar-title link-nav" to="/notification">
-                                        <i className="ri-file-chart-line"></i>
-                                        <span>Thông báo</span>
-                                    </Link>
+                                    <NavLink
+                                        to="/dashboard/logout"
+                                        className={({ isActive }) =>
+                                            `flex items-center px-4 py-2 rounded transition-all duration-150 hover:bg-green-800 ${isActive ? "border-l-4 border-white bg-green-800 font-bold" : ""
+                                            }`
+                                        }
+                                    >
+                                        <i className="ri-logout-box-line mr-3"></i>
+                                        <span>Logout</span>
+                                    </NavLink>
                                 </li>
                             </ul>
                         </div>

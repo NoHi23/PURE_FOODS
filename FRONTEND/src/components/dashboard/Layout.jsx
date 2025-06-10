@@ -2,7 +2,8 @@ import Header from "./header";
 import Sidebar from "./sidebar";
 import Footer from "./footer";
 import { Outlet } from "react-router-dom";
-
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 const DashboardLayout = () => (
   <>
     <div className="tap-top">
@@ -20,6 +21,7 @@ const DashboardLayout = () => (
         <Footer />
       </div>
     </div>
+     <ToastContainer position="bottom-right" />
   </>
 );
 

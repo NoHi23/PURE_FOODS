@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { FiSearch, FiX, FiCheck, FiEye, FiTruck, FiPackage } from "react-icons/fi";
-import { useNavigate } from "react-router-dom"; 
+import { useNavigate } from "react-router-dom";
 import axios from 'axios';
 
 const ExportShipmentDashboard = () => {
@@ -11,6 +11,7 @@ const ExportShipmentDashboard = () => {
   const [showModal, setShowModal] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
+  const [orderStatuses, setOrderStatuses] = useState([]);
   const navigate = useNavigate();
   const mockOrders = [
     {
@@ -61,34 +62,11 @@ const ExportShipmentDashboard = () => {
     }
   ];
 
-   useEffect(() => {
+  useEffect(() => {
     const fetchOrders = async () => {
       try {
         const res = await axios.get('http://localhost:9999/PureFoods_war/api/export-requests');
-        const apiOrders = res.data.map((item) => ({
-          id: `ORD${item.orderId.toString().padStart(3, '0')}`,
-          customerName: item.customer.fullName,
-          amount: item.totalAmount,
-          date: new Date(item.orderDate).toISOString().slice(0, 10),
-          status: item.status.statusName.toLowerCase(),
-          customerDetails: {
-            email: item.customer.email,
-            phone: item.customer.phone,
-            address: item.customer.address,
-          },
-          shipping: {
-            method: item.shippingMethod.methodName,
-            estimatedDelivery: new Date(item.estimatedDeliveryDate).toISOString().slice(0, 10),
-            cost: item.shippingCost,
-            distance: `${item.distance} km`,
-          },
-          driver: {
-            name: item.driver.driverName,
-            contact: item.driver.phone,
-            vehicle: item.driver.vehicleInfo,
-          }
-        }));
-        setOrders(apiOrders);
+        setOrders(res.data); // Không cần map lại nữa
         setLoading(false);
       } catch (error) {
         console.error("Error fetching orders:", error);
@@ -97,7 +75,40 @@ const ExportShipmentDashboard = () => {
     };
     fetchOrders();
   }, []);
-
+  useEffect(() => {
+    const fetchStatuses = async () => {
+      try {
+        const res = await axios.get('http://localhost:9999/PureFoods_war/api/order-statuses');
+        setOrderStatuses(res.data);
+      } catch (error) {
+        console.error("Error fetching statuses:", error);
+      }
+    };
+    fetchStatuses();
+  }, []);
+  const getStatusName = (status) => {
+    if (!orderStatuses.length) return status;
+    // Chuyển status về dạng viết hoa chữ cái đầu để so sánh
+    const normalized = status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
+    const found = orderStatuses.find(s => s.statusName.toLowerCase() === normalized.toLowerCase());
+    return found ? found.statusName : status;
+  };
+  const getStatusColor = (status) => {
+    switch (status.toLowerCase()) {
+      case "pending":
+        return "bg-yellow-100 text-yellow-800";
+      case "processing":
+        return "bg-blue-100 text-blue-800";
+      case "shipped":
+        return "bg-purple-100 text-purple-800";
+      case "delivered":
+        return "bg-green-100 text-green-800";
+      case "cancelled":
+        return "bg-red-100 text-red-800";
+      default:
+        return "bg-gray-100 text-gray-800";
+    }
+  };
   const filteredOrders = orders.filter(
     (order) => activeFilter === "all" || order.status === activeFilter
   );
@@ -106,25 +117,49 @@ const ExportShipmentDashboard = () => {
     setSelectedOrder(order);
     setShowModal(true);
   };
-
-  const handleCancelOrder = (orderId) => {
-    setOrders(
-      orders.map((order) =>
-        order.id === orderId ? { ...order, status: "cancelled" } : order
-      )
-    );
-    setShowCancelModal(false);
-    setCancelReason("");
+  const extractOrderId = (id) => {
+    if (typeof id === "string" && id.startsWith("ORD")) {
+      return parseInt(id.replace("ORD", ""), 10);
+    }
+    return id;
+  };
+  const handleCancelOrder = async (orderId) => {
+    const realId = extractOrderId(orderId);
+    try {
+      await axios.put(
+        `http://localhost:9999/PureFoods_war/api/export-requests/${realId}/cancel`,
+        {},
+        { params: { cancelReason } }
+      );
+      setOrders(
+        orders.map((order) =>
+          order.id === orderId ? { ...order, status: "cancelled" } : order
+        )
+      );
+      setShowCancelModal(false);
+      setCancelReason("");
+    } catch (error) {
+      alert("Hủy yêu cầu thất bại!");
+    }
   };
 
-  const handleMarkReceived = (orderId) => {
-    setOrders(
-      orders.map((order) =>
-        order.id === orderId ? { ...order, status: "completed" } : order
-      )
-    );
-  };
 
+  const handleMarkReceived = async (orderId) => {
+    const realId = extractOrderId(orderId);
+    try {
+      await axios.post(
+        "http://localhost:9999/PureFoods_war/api/export-requests/receive",
+        { orderId: realId }
+      );
+      setOrders(
+        orders.map((order) =>
+          order.id === orderId ? { ...order, status: "processing" } : order
+        )
+      );
+    } catch (error) {
+      alert("Nhận yêu cầu thất bại!");
+    }
+  };
   const StatusBadge = ({ status }) => {
     const statusColors = {
       pending: "bg-yellow-100 text-yellow-800",
@@ -147,15 +182,15 @@ const ExportShipmentDashboard = () => {
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-2xl font-bold text-gray-900">Export Shipment Management</h1>
-           <div className="flex items-center space-x-4">
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="Search orders..."
-              className="pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
-            <FiSearch className="absolute left-3 top-3 text-gray-400" />
-          </div>
+          <div className="flex items-center space-x-4">
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Search orders..."
+                className="pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+              <FiSearch className="absolute left-3 top-3 text-gray-400" />
+            </div>
             <button
               onClick={() => navigate("/create-request")}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
@@ -171,11 +206,10 @@ const ExportShipmentDashboard = () => {
               <button
                 key={filter}
                 onClick={() => setActiveFilter(filter)}
-                className={`px-4 py-2 rounded-lg ${
-                  activeFilter === filter
+                className={`px-4 py-2 rounded-lg ${activeFilter === filter
                     ? "bg-blue-500 text-white"
                     : "bg-white text-gray-600 hover:bg-gray-50"
-                }`}
+                  }`}
               >
                 {filter.charAt(0).toUpperCase() + filter.slice(1)}
               </button>
@@ -224,7 +258,9 @@ const ExportShipmentDashboard = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">{order.date}</td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <StatusBadge status={order.status} />
+                      <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(order.status)}`}>
+                        {getStatusName(order.status)}
+                      </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex space-x-2">
@@ -234,15 +270,18 @@ const ExportShipmentDashboard = () => {
                         >
                           <FiEye className="w-5 h-5" />
                         </button>
-                        {order.status !== "cancelled" && (
+                        {order.status === "pending" && (
                           <button
-                            onClick={() => setShowCancelModal(true)}
+                            onClick={() => {
+                              setSelectedOrder(order);
+                              setShowCancelModal(true);
+                            }}
                             className="text-red-600 hover:text-red-800"
                           >
                             <FiX className="w-5 h-5" />
                           </button>
                         )}
-                        {order.status === "processing" && (
+                        {order.status === "pending" && (
                           <button
                             onClick={() => handleMarkReceived(order.id)}
                             className="text-green-600 hover:text-green-800"
@@ -306,9 +345,15 @@ const ExportShipmentDashboard = () => {
 
                   <div>
                     <h3 className="font-semibold mb-2">Driver Information</h3>
-                    <p>Name: {selectedOrder.driver.name}</p>
-                    <p>Contact: {selectedOrder.driver.contact}</p>
-                    <p>Vehicle: {selectedOrder.driver.vehicle}</p>
+                    <p>Name: {
+                    selectedOrder.driver.name ? selectedOrder.driver.name : "N/A"
+                      }</p>
+                    <p>Contact: {selectedOrder.driver.contact
+                      ? selectedOrder.driver.contact : "N/A"
+                      }</p>
+                    <p>Vehicle: {selectedOrder.driver.vehicle
+                      ? selectedOrder.driver.vehicle : "N/A"
+                      }</p>
                   </div>
                 </div>
               </div>

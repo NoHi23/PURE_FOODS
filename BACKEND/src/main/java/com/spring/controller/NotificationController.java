@@ -19,7 +19,7 @@ public class NotificationController {
     public ResponseEntity<Notifications> sendNotification(
             @PathVariable("orderId") Integer orderId,
             @RequestParam("message") String message) {
-        Notifications notification = notificationService.sendNotification(orderId, message);
+        Notifications notification = notificationService.sendNotification(orderId, message, "Sent");
         return ResponseEntity.ok(notification);
     }
 
@@ -40,4 +40,13 @@ public class NotificationController {
             return ResponseEntity.notFound().build();
         }
     }
+      // Gửi thông báo yêu cầu nhập hàng cho tất cả user có roleID = 3 (importer)
+ @PostMapping("/import-request")
+public ResponseEntity<Void> notifyImportRequest(
+        @RequestParam("message") String message,
+        @RequestParam("orderId") Integer orderId,
+        @RequestParam("status") String status) {
+    notificationService.notifyImportRequestToImporters(message, orderId, status);
+    return ResponseEntity.ok().build();
+}
 }

@@ -45,7 +45,8 @@ public class Products {
 
     @Column(name = "Status")
     private Integer status;
-
+     @Column(name = "WarningThreshold")
+    private Integer warningThreshold;
     // Getters and Setters
     public Integer getProductId() { return productId; }
     public void setProductId(Integer productId) { this.productId = productId; }
@@ -69,4 +70,7 @@ public class Products {
     public void setCreatedAt(java.sql.Timestamp createdAt) { this.createdAt = createdAt; }
     public Integer getStatus() { return status; }
     public void setStatus(Integer status) { this.status = status; }
+     public Integer getWarningThreshold() { return warningThreshold; }
+    public void setWarningThreshold(Integer warningThreshold) { this.warningThreshold = warningThreshold; }
+
 }

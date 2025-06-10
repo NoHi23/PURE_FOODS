@@ -2,6 +2,7 @@ package com.spring.entity;
 
 import jakarta.persistence.*;
 import java.sql.Timestamp;
+import java.util.List;
 
 @Entity
 @Table(name = "Orders", indexes = {
@@ -61,6 +62,16 @@ public class Orders {
     @JoinColumn(name = "DriverID", referencedColumnName = "DriverID")
     private Drivers driver;
 
+       @OneToMany(mappedBy = "order", fetch = FetchType.LAZY)
+    private List<OrderDetails> orderDetails;
+
+     public List<OrderDetails> getOrderDetails() {
+        return orderDetails;
+    }
+
+    public void setOrderDetails(List<OrderDetails> orderDetails) {
+        this.orderDetails = orderDetails;
+    }
     // Default constructor
     public Orders() {
         // Default constructor

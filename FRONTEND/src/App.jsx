@@ -5,7 +5,6 @@ import HomePage from './component/HomePage/HomePage';
 import LoginPage from './component/Login/LoginPage';
 import Dashboard from './pages/dashboard';
 import SignUp from './component/SignUp/SignUp';
-import ExportRequestForm from './pages/dashboard/ExportRequestForm';
 import InventoryCheck from './pages/dashboard/InventoryCheck';
 import ConfirmOrder from './pages/dashboard/ConfirmOrder';
 import RejectOrder from './pages/dashboard/RejectOrder';
@@ -16,11 +15,12 @@ import UpdateDeliveryStatus from './pages/dashboard/UpdateDeliveryStatus';
 import ConfirmDelivery from './pages/dashboard/ConfirmDelivery';
 import Notification from './pages/dashboard/Notification';
 import ExportRequestList from './pages/dashboard/ExportRequestList';
-import { Link } from 'react-router-dom';
 import AdminDashboard from './component/AdminDashboard/AdminDashboard';
 import ExportShipmentDashboard from './pages/dashboard/ExportShipmentDashboard';
 import DashboardLayout from './components/dashboard/Layout';
 import CreateExportRequest from './pages/dashboard/CreateExportRequest';
+import InventoryManagement from './pages/dashboard/InventoryManagement';
+import DeliveryManagement from './pages/dashboard/DeliveryManagement';
 function App() {
 
   return (
@@ -29,6 +29,7 @@ function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path='/signup' element={<SignUp />} />
+
          <Route element={<DashboardLayout />}>
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/create-request" element={<CreateExportRequest />} />
@@ -44,6 +45,8 @@ function App() {
         <Route path="/notification" element={<Notification />} />
         <Route path='/admin-dashboard' element={<AdminDashboard/>} />
          <Route path='/exportShipment' element={<ExportShipmentDashboard/>} />
+         <Route path='/inventory-management' element={<InventoryManagement/>} />
+        <Route path="/delivery-management" element={<DeliveryManagement />} />
         </Route>
       </Routes>
     </BrowserRouter>

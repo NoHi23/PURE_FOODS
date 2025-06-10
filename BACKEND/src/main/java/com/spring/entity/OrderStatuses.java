@@ -19,6 +19,10 @@ public class OrderStatuses {
     @Column(name = "Status")
     private Integer status;
 
+    // Default constructor
+    public OrderStatuses() {
+    }
+
     // Getters and Setters
     public Integer getStatusId() { return statusId; }
     public void setStatusId(Integer statusId) { this.statusId = statusId; }

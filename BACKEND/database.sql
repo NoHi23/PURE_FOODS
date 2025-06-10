@@ -266,6 +266,19 @@ FOREIGN KEY (UserID) REFERENCES Users(UserID),
 INDEX idx_product_id NONCLUSTERED (ProductID)
 );
 GO
+CREATE TABLE Notifications (
+    NotificationID INT PRIMARY KEY IDENTITY(1,1),
+    OrderID INT,
+    UserID INT,
+    Message NVARCHAR(255) NOT NULL,
+    SentAt DATETIME DEFAULT GETDATE(),
+    Status NVARCHAR(50) CHECK (Status IN ('Sent', 'Failed')),
+    FOREIGN KEY (OrderID) REFERENCES Orders(OrderID),
+    FOREIGN KEY (UserID) REFERENCES Users(UserID),
+    INDEX idx_order_id NONCLUSTERED (OrderID)
+);
+
+GO
 -- Chèn dữ liệu mẫu vào bảng OrderStatuses
 INSERT INTO OrderStatuses (StatusName, Description, Status)
 VALUES
