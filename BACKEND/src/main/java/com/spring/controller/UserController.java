@@ -1,16 +1,25 @@
 package com.spring.controller;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.spring.dto.UserDTO;
-import com.spring.entity.User;
 import com.spring.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URI;
+import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -98,7 +107,88 @@ public class UserController {
         }
     }
 
+    @PostMapping("/facebook")
+    public ResponseEntity<?> facebookLogin(@RequestBody Map<String, String> request) {
+        Map<String, Object> response = new HashMap<>();
 
+        try {
+            // Kiểm tra accessToken
+            String accessToken = request.get("accessToken");
+            if (accessToken == null || accessToken.isEmpty()) {
+                response.put("message", "Access token is missing");
+                return ResponseEntity.badRequest().body(response);
+            }
+
+            // Gọi Facebook Graph API
+            URL url = new URL("https://graph.facebook.com/me?fields=id,name,email&access_token=" + accessToken);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("GET");
+
+            int responseCode = connection.getResponseCode();
+            System.out.println("responseCode : " + responseCode);
+            BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(responseCode == 200 ? connection.getInputStream() : connection.getErrorStream())
+            );
+
+            StringBuilder jsonBuilder = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                jsonBuilder.append(line);
+            }
+            System.out.println("line : " + jsonBuilder.toString());
+            reader.close();
+
+            if (responseCode != 200) {
+                response.put("message", "Invalid Facebook token");
+                response.put("facebookError", jsonBuilder.toString());
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+            }
+
+            // Parse JSON response
+            ObjectMapper mapper = new ObjectMapper();
+            System.out.println("Before parsing JSON...");
+//            JsonNode jsonNode = mapper.readTree(jsonBuilder.toString());
+            Map<String, String> fbData = mapper.readValue(jsonBuilder.toString(), new TypeReference<Map<String, String>>() {});
+            System.out.println("Parsed name: " + fbData.get("name"));
+            System.out.println("Parsed email: " + fbData.get("email"));
+
+
+//            String name = jsonNode.has("name") ? jsonNode.get("name").asText() : null;
+//            String email = jsonNode.has("email") ? jsonNode.get("email").asText() : null;
+            String name = (String) fbData.get("name");
+            String email = (String) fbData.get("email");
+            System.out.println("email: " + email);
+            System.out.println("name: " + name);
+            if (email == null || email.isEmpty()) {
+                response.put("message", "Email permission is required in Facebook login.");
+                return ResponseEntity.badRequest().body(response);
+            }
+
+            // Đăng ký hoặc lấy user
+            UserDTO userDTO = userService.autoRegisterIfNotExists(name, email);
+            if (userDTO == null) {
+                response.put("message", "User registration failed.");
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+            }
+
+            // Trả kết quả thành công
+            response.put("message", "Login successful");
+            response.put("user", userDTO);
+            return ResponseEntity.ok(response);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            response.put("message", "Facebook API connection failed");
+            response.put("error", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.put("message", "Unexpected error during Facebook login");
+            response.put("error", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
 
 
 
