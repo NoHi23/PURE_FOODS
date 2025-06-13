@@ -1,13 +1,35 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import axios from 'axios';
 import Cookies from 'js-cookie';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
+const GOOGLE_CLIENT_ID = '602510909514-3anvf6bogbdlpectj2r72qicjp7fa21a.apps.googleusercontent.com';
+
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [remember, setRemember] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (window.google) {
+      window.google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback: (res) => {
+          console.log("Google login response", res);
+          console.log("Token:", res.credential);
+          handleGoogleResponse(res);
+        },
+      });
+      window.google.accounts.id.renderButton(
+        document.getElementById('googleSignInDiv'),
+        { theme: 'outline', size: 'large', width: '100%' }
+      );
+      
+    }
+  }, []);
+
   const handleLogin = async (e) => {
     e.preventDefault();
 
@@ -20,7 +42,7 @@ const LoginPage = () => {
       const { message, user, status } = response.data;
 
       if (status === 200) {
-        alert(message);
+        toast.success(message)
 
         if (remember) {
           Cookies.set('user', JSON.stringify(user), { expires: 1 / 144 }); // expires sau 10 phút
@@ -28,33 +50,134 @@ const LoginPage = () => {
           Cookies.remove('user');
         }
 
-        // window.location.href = '/';
-        if (user.roleID === 0) {
-          navigate("/admin");
-        } else if (user.roleID === 1) {
-          navigate("/customer");
+        if (user.roleID === 1) {
+          navigate("/admin-dashboard");
         } else if (user.roleID === 2) {
-          navigate("/wholesaler");
+          navigate("/");
         } else if (user.roleID === 3) {
-          navigate("/importer");
+          navigate("/wholesaler");
         } else if (user.roleID === 4) {
+          navigate("/importer");
+        } else if (user.roleID === 5) {
           navigate("/exporter");
         } else {
-          alert("Unknown role!");
+          toast.warn("Unknown role!");
         }
 
       } else {
-        alert(message);
+        toast.error(message);
       }
     } catch (err) {
-      alert("Đăng nhập thất bại!");
+      toast.error("Sai tài khoản hoặc mật khẩu!");
     }
+  };
+
+
+  const handleGoogleResponse = async (response) => {
+    try {
+      const res = await axios.post('http://localhost:8082/PureFoods/api/users/google', {
+        token: response.credential
+      }, { withCredentials: true });
+
+      const user = res.data;
+      toast.success('Welcome ' + user.fullName);
+
+      console.log("Google Response:", response);
+
+      if (remember) {
+        Cookies.set('user', JSON.stringify(user), { expires: 1 / 144 });
+      } else {
+        Cookies.remove('user');
+      }
+
+      // Chuyển hướng theo role
+      if (user.roleID === 1) {
+        navigate("/admin-dashboard");
+      } else if (user.roleID === 2) {
+        navigate("/");
+      } else if (user.roleID === 3) {
+        navigate("/wholesaler");
+      } else if (user.roleID === 4) {
+        navigate("/importer");
+      } else if (user.roleID === 5) {
+        navigate("/exporter");
+      } else {
+        toast.warn("Unknown role!");
+      }
+
+    } catch (error) {
+      toast.error("Google login failed!");
+      console.error(error);
+    }
+  };
+  useEffect(() => {
+    if (!window.FB) {
+      const script = document.createElement('script');
+      script.src = "https://connect.facebook.net/en_US/sdk.js";
+      script.async = true;
+      script.defer = true;
+      script.crossOrigin = "anonymous";
+      script.onload = () => {
+        window.FB.init({
+          appId: '1056124739222943',
+          cookie: true,
+          xfbml: true,
+          version: 'v20.0'
+        });
+      };
+      document.body.appendChild(script);
+    } else {
+      window.FB.init({
+        appId: '1056124739222943',
+        cookie: true,
+        xfbml: true,
+        version: 'v20.0'
+      });
+    }
+
+    return () => {
+      const script = document.querySelector('script[src="https://connect.facebook.net/en_US/sdk.js"]');
+      if (script) {
+        document.body.removeChild(script);
+      }
+    };
+  }, []);
+
+  const handleFacebookLogin = () => {
+    window.FB.login(function (response) {
+      if (response.authResponse) {
+        const accessToken = response.authResponse.accessToken;
+
+        window.FB.api('/me', { fields: 'name,email' }, function (userInfo) {
+          console.log('User info:', userInfo);
+
+          axios.post('http://localhost:8082/PureFoods/api/users/facebook', {
+            accessToken: accessToken
+          }).then(res => {
+            const user = res.data.user;
+            toast.success("Welcome " + user.fullName);
+
+            if (user.roleID === 1) navigate("/admin-dashboard");
+            else if (user.roleID === 2) navigate("/");
+            else if (user.roleID === 3) navigate("/wholesaler");
+            else if (user.roleID === 4) navigate("/importer");
+            else if (user.roleID === 5) navigate("/exporter");
+
+          }).catch(err => {
+            console.error("Facebook login failed", err);
+            toast.error("Facebook login failed");
+          });
+        });
+      } else {
+        toast.error("User cancelled login or did not fully authorize.");
+      }
+    }, { scope: 'public_profile,email' });
   };
 
   return (
     <>
       <section className="log-in-section section-b-space">
-        <a href="" className="logo-login"><img src="assets/images/logo/1.png" className="img-fluid" alt="Logo" /></a>
+        <a href="" className="logo-login"><img src="/assets/images/logo/1.png" className="img-fluid" alt="Logo" /></a>
         <div className="container w-100">
           <div className="row">
             <div className="col-xl-5 col-lg-6 me-auto">
@@ -87,7 +210,7 @@ const LoginPage = () => {
                             onChange={(e) => setRemember(e.target.checked)} />
                           <label className="form-check-label" htmlFor="flexCheckDefault">Remember me</label>
                         </div>
-                        <a href="forgot.html" className="forgot-password">Forgot Password?</a>
+                        <Link to={'/forgot'} className="forgot-password">Forgot Password?</Link>
                       </div>
                     </div>
                     <div className="col-12">
@@ -97,17 +220,23 @@ const LoginPage = () => {
                   </form>
                 </div>
                 <div className="other-log-in"><h6>or</h6></div>
+
                 <div className="log-in-button">
                   <ul>
                     <li>
-                      <a href="https://www.google.com/" className="btn google-button w-100">
-                        <img src="../assets/images/inner-page/google.png" alt="" /> Log In with Google
-                      </a>
+                      <div id="googleSignInDiv" >
+                        <a className="btn google-button w-100">
+                          <img src="../assets/images/inner-page/google.png" alt="" /> Log In with Google
+                        </a>
+                      </div>
+
                     </li>
                     <li>
-                      <a href="https://www.facebook.com/" className="btn google-button w-100">
-                        <img src="../assets/images/inner-page/facebook.png" alt="" /> Log In with Facebook
-                      </a>
+                      <div onClick={handleFacebookLogin}>
+                        <a className="btn google-button w-100">
+                          <img src="../assets/images/inner-page/facebook.png" alt="" /> Log In with Facebook
+                        </a>
+                      </div>
                     </li>
                   </ul>
                 </div>

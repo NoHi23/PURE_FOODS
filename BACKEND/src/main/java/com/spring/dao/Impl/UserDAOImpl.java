@@ -22,6 +22,7 @@ public class UserDAOImpl implements UserDAO {
     public User addUser(User user) {
         Session session = sessionFactory.getCurrentSession();
         session.persist(user);
+        session.flush();
         return user;
     }
 

@@ -56,7 +56,7 @@ public class UserServiceImpl implements UserService {
         user.setFullName(fullName);
         user.setEmail(email);
         user.setPassword(password);
-        user.setRoleID(1);
+        user.setRoleID(2);
         user.setPhone(phone);
         user.setAddress(address);
         user.setCreatedAt(new java.sql.Timestamp(new Date().getTime()));
@@ -80,8 +80,45 @@ public class UserServiceImpl implements UserService {
     }
 
 
+    public UserDTO autoRegisterIfNotExists(String name, String email) {
+
+        System.out.println(">> autoRegisterIfNotExists bắt đầu với name=" + name + ", email=" + email);
+
+        User user = userDAO.findUserByEmail(email);
+        if (user == null) {
+            user = new User();
+            user.setFullName(name);
+            user.setEmail(email);
+            user.setPassword("123456");
+            user.setRoleID(2);
+            user.setCreatedAt(new java.sql.Timestamp(new Date().getTime()));
+            user.setStatus(1);
+            userDAO.addUser(user);
+            user = userDAO.findUserByEmail(email);
+
+        }
+        return convertToDTO(user);
+    }
 
 
+
+    public UserDTO autoRegisterFacebookAccountIfNotExists(String name, String email) {
+
+        User user = userDAO.findUserByEmail(email);
+        if (user == null) {
+            user = new User();
+            user.setFullName(name);
+            user.setEmail(email);
+            user.setPassword("facebook");
+            user.setRoleID(2);
+            user.setCreatedAt(new java.sql.Timestamp(new Date().getTime()));
+            user.setStatus(1);
+            userDAO.addUser(user);
+            user = userDAO.findUserByEmail(email);
+
+        }
+        return convertToDTO(user);
+    }
 
 
 }
