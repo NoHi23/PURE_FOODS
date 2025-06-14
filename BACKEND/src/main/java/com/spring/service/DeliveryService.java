@@ -38,7 +38,38 @@ public Orders assignDriver(Integer orderId, Integer driverId) {
     return order;
 }
 
-    
+    public Orders updateDeliveryStatus(Integer orderId, String status) {
+    Orders order = orderRepository.findByOrderId(orderId); 
+    if (order != null) {
+        OrderStatuses newStatus = new OrderStatuses();
+        switch (status.toLowerCase()) {
+            case "pending": newStatus.setStatusId(1); break;
+            case "processing": newStatus.setStatusId(2); break;
+            case "shipped": newStatus.setStatusId(3); break;
+            case "delivered": newStatus.setStatusId(4); break;
+            case "cancelled": newStatus.setStatusId(5); break;
+            case "confirm": newStatus.setStatusId(6); break;
+            case "readytoship": newStatus.setStatusId(7); break;
+            default: newStatus.setStatusId(1);
+        }
+        order.setStatus(newStatus);
+        orderRepository.save(order);
+    }
+    return order;
+}
+
+
+public Orders confirmDelivery(Integer orderId, String delayReason) {
+    Orders order = orderRepository.findByOrderId(orderId); 
+    if (order != null) {
+        OrderStatuses deliveredStatus = new OrderStatuses();
+        deliveredStatus.setStatusId(4); // 4 = Delivered
+        order.setStatus(deliveredStatus);
+        order.setDelayReason(delayReason); 
+        orderRepository.save(order);
+    }
+    return order;
+}
 
     public void notifyDelivery(Integer orderId) {
         // Logic gửi thông báo
