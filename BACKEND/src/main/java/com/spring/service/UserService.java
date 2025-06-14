@@ -10,5 +10,7 @@ public interface UserService {
 
     UserDTO autoRegisterIfNotExists(String name, String email);
 
+    UserDTO autoRegisterFacebookAccountIfNotExists(String name, String email);
+
 
 }
