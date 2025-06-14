@@ -33,5 +33,22 @@ public class DriverController {
         return ResponseEntity.ok(saved);
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<Drivers> updateDriver(@PathVariable("id") Integer id, @RequestBody Drivers driver) {
+        if (!driverRepository.existsById(id)) {
+            return ResponseEntity.notFound().build();
+        }
+        driver.setDriverId(id);
+        Drivers updated = driverRepository.save(driver);
+        return ResponseEntity.ok(updated);
+    }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteDriver(@PathVariable("id") Integer id) {
+        if (!driverRepository.existsById(id)) {
+            return ResponseEntity.notFound().build();
+        }
+        driverRepository.deleteById(id);
+        return ResponseEntity.ok().build();
+    }
 }
