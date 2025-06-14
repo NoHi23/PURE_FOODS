@@ -26,7 +26,19 @@ public class DeliveryService {
     }
     return order;
 }
+public Orders assignDriver(Integer orderId, Integer driverId) {
+    Orders order = orderRepository.findByOrderId(orderId); 
+    if (order != null) {
+        order.setDriver(new Drivers(driverId));
+        OrderStatuses shippedStatus = new OrderStatuses();
+        shippedStatus.setStatusId(3); // 3 = Shipped
+        order.setStatus(shippedStatus);
+        orderRepository.save(order);
+    }
+    return order;
+}
 
+    
 
     public void notifyDelivery(Integer orderId) {
         // Logic gửi thông báo
