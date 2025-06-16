@@ -142,6 +142,217 @@ const ExportShipmentDashboard = () => {
     );
   };
 
- };
+  return (
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-2xl font-bold text-gray-900">Export Shipment Management</h1>
+           <div className="flex items-center space-x-4">
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Search orders..."
+              className="pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            />
+            <FiSearch className="absolute left-3 top-3 text-gray-400" />
+          </div>
+            <button
+              onClick={() => navigate("/create-request")}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            >
+              Tạo mới
+            </button>
+          </div>
+        </div>
+
+        <div className="flex space-x-4 mb-6">
+          {["all", "pending", "processing", "completed", "cancelled"].map(
+            (filter) => (
+              <button
+                key={filter}
+                onClick={() => setActiveFilter(filter)}
+                className={`px-4 py-2 rounded-lg ${
+                  activeFilter === filter
+                    ? "bg-blue-500 text-white"
+                    : "bg-white text-gray-600 hover:bg-gray-50"
+                }`}
+              >
+                {filter.charAt(0).toUpperCase() + filter.slice(1)}
+              </button>
+            )
+          )}
+        </div>
+
+        {loading ? (
+          <div className="flex justify-center items-center h-64">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500" />
+          </div>
+        ) : (
+          <div className="bg-white rounded-lg shadow overflow-hidden">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Order ID
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Customer
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Amount
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Date
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredOrders.map((order) => (
+                  <tr key={order.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap">{order.id}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {order.customerName}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      ${order.amount.toFixed(2)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">{order.date}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <StatusBadge status={order.status} />
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={() => handleOrderClick(order)}
+                          className="text-blue-600 hover:text-blue-800"
+                        >
+                          <FiEye className="w-5 h-5" />
+                        </button>
+                        {order.status !== "cancelled" && (
+                          <button
+                            onClick={() => setShowCancelModal(true)}
+                            className="text-red-600 hover:text-red-800"
+                          >
+                            <FiX className="w-5 h-5" />
+                          </button>
+                        )}
+                        {order.status === "processing" && (
+                          <button
+                            onClick={() => handleMarkReceived(order.id)}
+                            className="text-green-600 hover:text-green-800"
+                          >
+                            <FiCheck className="w-5 h-5" />
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* Order Details Modal */}
+        {showModal && selectedOrder && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="p-6">
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-xl font-bold">Order Details</h2>
+                  <button
+                    onClick={() => setShowModal(false)}
+                    className="text-gray-400 hover:text-gray-600"
+                  >
+                    <FiX className="w-6 h-6" />
+                  </button>
+                </div>
+
+                <div className="space-y-6">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <h3 className="font-semibold mb-2">Customer Details</h3>
+                      <p>{selectedOrder.customerDetails.email}</p>
+                      <p>{selectedOrder.customerDetails.phone}</p>
+                      <p>{selectedOrder.customerDetails.address}</p>
+                    </div>
+                    <div>
+                      <h3 className="font-semibold mb-2">Order Information</h3>
+                      <p>Order ID: {selectedOrder.id}</p>
+                      <p>Amount: ${selectedOrder.amount.toFixed(2)}</p>
+                      <p>Date: {selectedOrder.date}</p>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className="font-semibold mb-2">Shipping Details</h3>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <p>Method: {selectedOrder.shipping.method}</p>
+                        <p>Cost: ${selectedOrder.shipping.cost}</p>
+                      </div>
+                      <div>
+                        <p>Estimated Delivery: {selectedOrder.shipping.estimatedDelivery}</p>
+                        <p>Distance: {selectedOrder.shipping.distance}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className="font-semibold mb-2">Driver Information</h3>
+                    <p>Name: {selectedOrder.driver.name}</p>
+                    <p>Contact: {selectedOrder.driver.contact}</p>
+                    <p>Vehicle: {selectedOrder.driver.vehicle}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Cancel Order Modal */}
+        {showCancelModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-lg max-w-md w-full p-6">
+              <h3 className="text-lg font-semibold mb-4">Cancel Order</h3>
+              <select
+                value={cancelReason}
+                onChange={(e) => setCancelReason(e.target.value)}
+                className="w-full p-2 border rounded mb-4"
+              >
+                <option value="">Select a reason</option>
+                <option value="customer_request">Customer Request</option>
+                <option value="delivery_issues">Delivery Issues</option>
+                <option value="stock_unavailable">Stock Unavailable</option>
+                <option value="other">Other</option>
+              </select>
+              <div className="flex justify-end space-x-2">
+                <button
+                  onClick={() => setShowCancelModal(false)}
+                  className="px-4 py-2 text-gray-600 hover:text-gray-800"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => handleCancelOrder(selectedOrder.id)}
+                  disabled={!cancelReason}
+                  className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50"
+                >
+                  Confirm Cancellation
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
 
 export default ExportShipmentDashboard;
