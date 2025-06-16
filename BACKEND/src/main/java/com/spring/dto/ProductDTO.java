@@ -1,5 +1,7 @@
 package com.spring.dto;
 
+import jakarta.persistence.Column;
+
 import java.util.Date;
 
 public class ProductDTO {
@@ -11,12 +13,9 @@ public class ProductDTO {
     private int stockQuantity;
     private String description;
     private String imageURL;
-    private Date harvestDate;
-    private Date expirationDate;
-    private String nutritionalInfo;
-    private String organicStatus;
-    private int lastUpdateBy;
+    private int lastUpdatedBy;
     private java.sql.Timestamp createdAt;
+    private int status;
 
     public ProductDTO() {}
 
@@ -25,7 +24,7 @@ public class ProductDTO {
         this.productName = productName;
     }
 
-    public ProductDTO(int productId, String productName, int categoryId, int supplierId, float price, int stockQuantity, String description, String ImageURL, Date harvestDate, Date expirationDate, String nutritionalInfo, String organicStatus, int lastUpdateBy,java.sql.Timestamp createdAt) {
+    public ProductDTO(int productId, String productName, int categoryId, int supplierId, float price, int stockQuantity, String description, String imageURL, int lastUpdatedBy, java.sql.Timestamp createdAt, int status) {
         this.productId = productId;
         this.productName = productName;
         this.categoryId = categoryId;
@@ -33,15 +32,11 @@ public class ProductDTO {
         this.price = price;
         this.stockQuantity = stockQuantity;
         this.description = description;
-        this.imageURL = ImageURL;
-        this.harvestDate = harvestDate;
-        this.expirationDate = expirationDate;
-        this.nutritionalInfo = nutritionalInfo;
-        this.organicStatus = organicStatus;
-        this.lastUpdateBy = lastUpdateBy;
+        this.imageURL = imageURL;
+        this.lastUpdatedBy = lastUpdatedBy;
         this.createdAt = createdAt;
+        this.status = status;
     }
-
     public int getProductId() {
         return productId;
     }
@@ -90,41 +85,23 @@ public class ProductDTO {
     public void setImageURL(String imageURL) {
         this.imageURL = imageURL;
     }
-    public Date getHarvestDate() {
-        return harvestDate;
+    public int getLastUpdatedBy() {
+        return lastUpdatedBy;
     }
-    public void setHarvestDate(Date harvestDate) {
-        this.harvestDate = harvestDate;
-    }
-    public Date getExpirationDate() {
-        return expirationDate;
-    }
-    public void setExpirationDate(Date expirationDate) {
-        this.expirationDate = expirationDate;
-    }
-    public String getNutritionalInfo() {
-        return nutritionalInfo;
-    }
-    public void setNutritionalInfo(String nutritionalInfo) {
-        this.nutritionalInfo = nutritionalInfo;
-    }
-    public String getOrganicStatus() {
-        return organicStatus;
-    }
-    public void setOrganicStatus(String organicStatus) {
-        this.organicStatus = organicStatus;
-    }
-    public int getLastUpdateBy() {
-        return lastUpdateBy;
-    }
-    public void setLastUpdateBy(int lastUpdateBy) {
-        this.lastUpdateBy = lastUpdateBy;
+    public void setLastUpdatedBy(int lastUpdatedBy) {
+        this.lastUpdatedBy = lastUpdatedBy;
     }
     public java.sql.Timestamp getCreatedAt() {
         return createdAt;
     }
     public void setCreatedAt(java.sql.Timestamp createdAt) {
         this.createdAt = createdAt;
+    }
+    public int getStatus() {
+        return status;
+    }
+    public void setStatus(int status) {
+        this.status = status;
     }
 
 }

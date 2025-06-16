@@ -2,7 +2,7 @@ package com.spring.service.Impl;
 
 import com.spring.dao.ProductDAO;
 import com.spring.dto.ProductDTO;
-import com.spring.entity.Product;
+import com.spring.entity.Products;
 import com.spring.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -21,11 +21,11 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public List<ProductDTO> getAllProduct() {
         List<ProductDTO> list = new ArrayList<ProductDTO>();
-        List<Product> productList = productDAO.getAllProduct();
+        List<Products> productList = productDAO.getAllProduct();
         if(productList == null || productList.size() == 0){
             throw new RuntimeException("Product List is empty");
         }
-        for(Product product : productList){
+        for(Products product : productList){
             list.add(convertToDTO(product));
         }
         return list;
@@ -33,7 +33,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductDTO getProductById(int id) {
-        Product product = productDAO.getProductById(id);
+        Products product = productDAO.getProductById(id);
         if(product == null){
             throw new RuntimeException("Product not found");
         }
@@ -42,7 +42,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductDTO addProduct(ProductDTO product) {
-        Product q = new Product();
+        Products q = new Products();
         q.setProductName(product.getProductName());
         productDAO.addProduct(q);
         return convertToDTO(q);
@@ -50,7 +50,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductDTO updateProduct(ProductDTO product) {
-        Product q = productDAO.getProductById(product.getProductId());
+        Products q = productDAO.getProductById(product.getProductId());
         if(q == null){
             throw new RuntimeException("Product not found");
         }
@@ -61,7 +61,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public boolean deleteProduct(int id) {
-        Product product = productDAO.getProductById(id);
+        Products product = productDAO.getProductById(id);
         if(product == null){
             throw new RuntimeException("Product not found");
         }
@@ -74,10 +74,19 @@ public class ProductServiceImpl implements ProductService {
         return productDAO.countProduct();
     }
 
-    private ProductDTO convertToDTO(Product product) {
+    private ProductDTO convertToDTO(Products product) {
         return new ProductDTO(
                 product.getProductId(),
-                product.getProductName()
+                product.getProductName(),
+                product.getCategoryId(),
+                product.getSupplierId(),
+                product.getPrice(),
+                product.getStockQuantity(),
+                product.getDescription(),
+                product.getImageURL(),
+                product.getLastUpdatedBy(),
+                product.getCreatedAt(),
+                product.getStatus()
         );
     }
 

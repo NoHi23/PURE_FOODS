@@ -164,14 +164,12 @@ public class UserController {
                 return ResponseEntity.badRequest().body(response);
             }
 
-            // Đăng ký hoặc lấy user
             UserDTO userDTO = userService.autoRegisterIfNotExists(name, email);
             if (userDTO == null) {
                 response.put("message", "User registration failed.");
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
             }
 
-            // Trả kết quả thành công
             response.put("message", "Login successful");
             response.put("user", userDTO);
             return ResponseEntity.ok(response);
@@ -191,6 +189,71 @@ public class UserController {
     }
 
 
+    @PutMapping("/update")
+    public ResponseEntity<?> updateUser(@RequestBody UserDTO userDTO) {
+        try {
+            UserDTO updatedUser = userService.updateInfo(userDTO);
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "User updated successfully!");
+            response.put("status", 200);
+            response.put("user", updatedUser);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("message", e.getMessage());
+            errorResponse.put("status", 201);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        }
+    }
+
+    @PutMapping("/delete")
+    public ResponseEntity<?> deleteUser(@RequestBody UserDTO userDTO) {
+        try {
+            UserDTO updatedUser = userService.deleteUser(userDTO.getUserId());
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "User deleted successfully!");
+            response.put("status", 200);
+            response.put("user", updatedUser);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("message", e.getMessage());
+            errorResponse.put("status", 201);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        }
+    }
+
+    @GetMapping("/count")
+    public ResponseEntity<?> getTotalUser() {
+        try{
+            int totalUser = userService.getTotalUsers();
+            Map<String, Object> response = new HashMap<>();
+            response.put("totalUser", totalUser);
+            response.put("status", 200);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("message", e.getMessage());
+            errorResponse.put("status", 201);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        }
+    }
+
+    @GetMapping("/getAll")
+    public ResponseEntity<?> getAllUser() {
+        try{
+            List<UserDTO> userDTOList = userService.getAllUsers();
+            Map<String, Object> response = new HashMap<>();
+            response.put("userList", userDTOList);
+            response.put("status", 200);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("message", e.getMessage());
+            errorResponse.put("status", 201);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        }
+    }
 
 
 }

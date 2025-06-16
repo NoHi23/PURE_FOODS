@@ -36,6 +36,7 @@ const SignUp = () => {
     try {
       const res = await axios.post('http://localhost:8082/PureFoods/api/users/register', formData);
       toast.success(res.data.message || "Đăng ký thành công!");
+      navigate('/login')
     } catch (error) {
       toast.error(error.response?.data?.message || "Đăng ký thất bại!");
     }

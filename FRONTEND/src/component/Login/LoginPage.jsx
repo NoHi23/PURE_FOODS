@@ -26,7 +26,7 @@ const LoginPage = () => {
         document.getElementById('googleSignInDiv'),
         { theme: 'outline', size: 'large', width: '100%' }
       );
-      
+
     }
   }, []);
 
@@ -43,8 +43,9 @@ const LoginPage = () => {
 
       if (status === 200) {
         toast.success(message)
-
+        localStorage.setItem('user', JSON.stringify(user));
         if (remember) {
+
           Cookies.set('user', JSON.stringify(user), { expires: 1 / 144 }); // expires sau 10 phút
         } else {
           Cookies.remove('user');
@@ -83,6 +84,7 @@ const LoginPage = () => {
       toast.success('Welcome ' + user.fullName);
 
       console.log("Google Response:", response);
+      localStorage.setItem('user', JSON.stringify(user));
 
       if (remember) {
         Cookies.set('user', JSON.stringify(user), { expires: 1 / 144 });
@@ -156,6 +158,8 @@ const LoginPage = () => {
           }).then(res => {
             const user = res.data.user;
             toast.success("Welcome " + user.fullName);
+            
+            localStorage.setItem('user', JSON.stringify(user));
 
             if (user.roleID === 1) navigate("/admin-dashboard");
             else if (user.roleID === 2) navigate("/");
