@@ -44,4 +44,21 @@ public class ExportRequestController {
         }
     }
 
- }
+    @PutMapping("/{id}/cancel")
+    public ResponseEntity<Orders> cancelExportRequest(
+            @PathVariable("id") Integer id,
+            @RequestParam("cancelReason") String cancelReason) {
+        Orders updatedOrder = exportRequestService.cancelExportRequest(id, cancelReason);
+        if (updatedOrder != null) {
+            return ResponseEntity.ok(updatedOrder);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PostMapping("/receive")
+    public ResponseEntity<Orders> receiveExportRequest(@RequestBody Orders order) {
+        Orders receivedOrder = exportRequestService.receiveExportRequest(order);
+        return ResponseEntity.ok(receivedOrder);
+    }
+}
