@@ -33,4 +33,18 @@ public class ExportRequestService {
         return order.orElse(null);
     }
 
+    public Orders cancelExportRequest(Integer id, String cancelReason) {
+        Optional<Orders> order = orderRepository.findById(id);
+        if (order.isPresent() && !"Processing".equals(order.get().getStatus().getStatusName())) {
+            order.get().setCancelReason(cancelReason);
+            order.get().setStatus(null); // Set status Cancelled
+            return orderRepository.save(order.get());
+        }
+        return null;
     }
+
+    public Orders receiveExportRequest(Orders order) {
+        // Logic nhận yêu cầu (giống create nhưng có thể thêm validation)
+        return orderRepository.save(order);
+    }
+}
