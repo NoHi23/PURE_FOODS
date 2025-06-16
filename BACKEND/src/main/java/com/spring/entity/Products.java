@@ -1,12 +1,11 @@
 package com.spring.entity;
 
-
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.util.Date;
 
 @Entity
 @Table(name = "Products")
-public class Product {
+public class Products {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ProductID")
@@ -33,27 +32,17 @@ public class Product {
     @Column(name = "ImageURL", nullable = true, length = 255)
     private String imageURL;
 
-    @Column(name = "HarvestDate", nullable = true)
-    private Date harvestDate;
-
-    @Column(name = "ExpirationDate", nullable = true)
-    private Date expirationDate;
-
-    @Column(name = "NutritionalInfo", nullable = true, length = 50000)
-    private String nutritionalInfo;
-
-    @Column(name = "OrganicStatus", nullable = true, length = 50)
-    private String organicStatus;
-
-    @Column(name = "LastUpdateBy")
-    private int lastUpdateBy;
+    @Column(name = "LastUpdatedBy")
+    private int lastUpdatedBy;
 
     @jakarta.persistence.Temporal(jakarta.persistence.TemporalType.TIMESTAMP)
     @jakarta.persistence.Column(name = "CreatedAt")
     private java.sql.Timestamp createdAt;
 
+    @Column(name = "Status")
+    private int status;
 
-    public Product() {}
+    public Products() {}
 
     public int getProductId() {
         return productId;
@@ -103,35 +92,11 @@ public class Product {
     public void setImageURL(String imageURL) {
         this.imageURL = imageURL;
     }
-    public Date getHarvestDate() {
-        return harvestDate;
+    public int getLastUpdatedBy() {
+        return lastUpdatedBy;
     }
-    public void setHarvestDate(Date harvestDate) {
-        this.harvestDate = harvestDate;
-    }
-    public Date getExpirationDate() {
-        return expirationDate;
-    }
-    public void setExpirationDate(Date expirationDate) {
-        this.expirationDate = expirationDate;
-    }
-    public String getNutritionalInfo() {
-        return nutritionalInfo;
-    }
-    public void setNutritionalInfo(String nutritionalInfo) {
-        this.nutritionalInfo = nutritionalInfo;
-    }
-    public String getOrganicStatus() {
-        return organicStatus;
-    }
-    public void setOrganicStatus(String organicStatus) {
-        this.organicStatus = organicStatus;
-    }
-    public int getLastUpdateBy() {
-        return lastUpdateBy;
-    }
-    public void setLastUpdateBy(int lastUpdateBy) {
-        this.lastUpdateBy = lastUpdateBy;
+    public void setLastUpdateBy(int lastUpdatedBy) {
+        this.lastUpdatedBy = lastUpdatedBy;
     }
     public java.sql.Timestamp getCreatedAt() {
         return createdAt;
@@ -139,7 +104,12 @@ public class Product {
     public void setCreatedAt(java.sql.Timestamp createdAt) {
         this.createdAt = createdAt;
     }
-
+    public int getStatus() {
+        return status;
+    }
+    public void setStatus(int status) {
+        this.status = status;
+    }
 
 
 
