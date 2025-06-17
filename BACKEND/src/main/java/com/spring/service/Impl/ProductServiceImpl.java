@@ -44,6 +44,14 @@ public class ProductServiceImpl implements ProductService {
     public ProductDTO addProduct(ProductDTO product) {
         Products q = new Products();
         q.setProductName(product.getProductName());
+        q.setCategoryId(product.getCategoryId());
+        q.setSupplierId(product.getSupplierId());
+        q.setPrice(product.getPrice());
+        q.setStockQuantity(product.getStockQuantity());
+        q.setDescription(product.getDescription());
+        q.setImageURL(product.getImageURL());
+        q.setLastUpdateBy(1);
+        q.setStatus(product.getStatus());
         productDAO.addProduct(q);
         return convertToDTO(q);
     }
