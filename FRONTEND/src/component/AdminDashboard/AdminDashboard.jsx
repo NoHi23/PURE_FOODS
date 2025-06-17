@@ -8,25 +8,29 @@ import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 import $ from 'jquery';
 import 'slick-carousel';
-import SidebarEffect from '../SidebarEffect/SidebarEffect.jsx'
 import './sidebar-menu.js'
 import './simplebar.js'
 import { toast } from 'react-toastify';
+import SideBar from './SideBar.jsx';
+import TopBar from './TopBar.jsx';
 const AdminDashboard = () => {
     const user = JSON.parse(localStorage.getItem('user'));
     const [totalProduct, setTotalProduct] = useState(0);
+    const [totalUser, setTotalUser] = useState(0);
     const navigate = useNavigate();
     useEffect(() => {
         axios.get('http://localhost:8082/PureFoods/api/product/count')
             .then(res => { setTotalProduct(res.data.countProduct) })
     }, [])
 
+    useEffect(() => {
+        axios.get('http://localhost:8082/PureFoods/api/users/count')
+            .then(res => { setTotalUser(res.data.totalUser) })
+    }, [])
 
-    const handleLogout = () => {
-        localStorage.removeItem('user');
-        toast.success("Logout successfully!");
-        navigate("/login");
-    };
+
+
+   
 
     useEffect(() => {
         const sidebarLinks = document.querySelectorAll('.sidebar-link');
@@ -59,355 +63,10 @@ const AdminDashboard = () => {
                 <span className="lnr lnr-chevron-up"></span>
             </div>
             <div className="page-wrapper compact-wrapper" id="pageWrapper">
-                <div className="page-header">
-                    <div className="header-wrapper m-0">
-
-                        <form className="form-inline search-full" action="javascript:void(0)" method="get">
-                            <div className="form-group w-100">
-                                <div className="Typeahead Typeahead--twitterUsers">
-                                    <div className="u-posRelative">
-                                        <input className="demo-input Typeahead-input form-control-plaintext w-100" type="text"
-                                            placeholder="Search Fastkart .." name="q" title="" autofocus />
-                                        <i className="close-search" data-feather="x"></i>
-                                        <div className="spinner-border Typeahead-spinner" role="status">
-                                            <span className="sr-only">Loading...</span>
-                                        </div>
-                                    </div>
-                                    <div className="Typeahead-menu"></div>
-                                </div>
-                            </div>
-                        </form>
-                        <div className="nav-right col-6 pull-right right-header p-0">
-                            <ul className="nav-menus">
-                                <li>
-                                    <span className="header-search">
-                                        <i className="ri-search-line"></i>
-                                    </span>
-                                </li>
-                                <li className="onhover-dropdown">
-                                    <div className="notification-box">
-                                        <i className="ri-notification-line"></i>
-                                        <span className="badge rounded-pill badge-theme">4</span>
-                                    </div>
-                                    <ul className="notification-dropdown onhover-show-div">
-                                        <li>
-                                            <i className="ri-notification-line"></i>
-                                            <h6 className="f-18 mb-0">Notitications</h6>
-                                        </li>
-                                        <li>
-                                            <p>
-                                                <i className="fa fa-circle me-2 font-primary"></i>Delivery processing <span
-                                                    className="pull-right">10 min.</span>
-                                            </p>
-                                        </li>
-                                        <li>
-                                            <p>
-                                                <i className="fa fa-circle me-2 font-success"></i>Order Complete<span
-                                                    className="pull-right">1 hr</span>
-                                            </p>
-                                        </li>
-                                        <li>
-                                            <p>
-                                                <i className="fa fa-circle me-2 font-info"></i>Tickets Generated<span
-                                                    className="pull-right">3 hr</span>
-                                            </p>
-                                        </li>
-                                        <li>
-                                            <p>
-                                                <i className="fa fa-circle me-2 font-danger"></i>Delivery Complete<span
-                                                    className="pull-right">6 hr</span>
-                                            </p>
-                                        </li>
-                                        <li>
-                                            <a className="btn btn-primary" href="javascript:void(0)">Check all notification</a>
-                                        </li>
-                                    </ul>
-                                </li>
-
-                                <li>
-                                    <div className="mode">
-                                        <i className="ri-moon-line"></i>
-                                    </div>
-                                </li>
-                                <li className="profile-nav onhover-dropdown pe-0 me-0">
-                                    <div className="media profile-media">
-                                        <img className="user-profile rounded-circle" src="iconAVT.png" alt="" />
-                                        <div className="user-name-hide media-body">
-                                            <span>{user.fullName}</span>
-                                            <p className="mb-0 font-roboto">Admin<i className="middle ri-arrow-down-s-line"></i></p>
-                                        </div>
-                                    </div>
-                                    <ul className="profile-dropdown onhover-show-div">
-                                        <li>
-                                            <a href="all-users.html">
-                                                <i data-feather="users"></i>
-                                                <span>Users</span>
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a href="order-list.html">
-                                                <i data-feather="archive"></i>
-                                                <span>Orders</span>
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a href="support-ticket.html">
-                                                <i data-feather="phone"></i>
-                                                <span>Spports Tickets</span>
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a href="profile-setting.html">
-                                                <i data-feather="settings"></i>
-                                                <span>Settings</span>
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a  onClick={handleLogout}>
-                                                <i data-feather="log-out"></i>
-                                                <span>Log out</span>
-                                            </a>
-
-                                        </li>
-                                    </ul>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
+                <TopBar/>
 
                 <div className="page-body-wrapper">
-                    <div className="sidebar-wrapper">
-                        <div id="sidebarEffect"></div>
-                        <SidebarEffect />
-
-                        <div>
-                            <div className="logo-wrapper logo-wrapper-center">
-                                <Link to={'/admin-dashboard'}>
-                                    <img className="img-fluid for-white" src="../back-end/assets/images/logo/full-white.png" alt="logo" />
-                                </Link>
-                                <div className="back-btn">
-                                    <i className="fa fa-angle-left"></i>
-                                </div>
-                                <div className="toggle-sidebar">
-                                    <i className="ri-apps-line status_toggle middle sidebar-toggle"></i>
-                                </div>
-                            </div>
-                            <div className="logo-icon-wrapper">
-                                <Link to={'/admin-dashboard'}>
-                                    <img className="img-fluid main-logo main-white" src="../back-end/assets/images/logo/logo.png" alt="logo" />
-                                    <img className="img-fluid main-logo main-dark" src="../back-end/assets/images/logo/logo-white.png"
-                                        alt="logo" />
-                                </Link>
-                            </div>
-                            <nav className="sidebar-main">
-                                <div className="left-arrow" id="left-arrow">
-                                    <i data-feather="arrow-left"></i>
-                                </div>
-
-                                <div id="sidebar-menu">
-                                    <ul className="sidebar-links" id="simple-bar">
-                                        <li className="back-btn"></li>
-
-                                        <li className="sidebar-list">
-                                            <Link to={'/admin-dashboard'} className="sidebar-link sidebar-title link-nav">
-                                                <i className="ri-home-line"></i>
-                                                <span>Dashboard</span>
-                                            </Link>
-                                        </li>
-
-                                        <li className="sidebar-list">
-                                            <a className="linear-icon-link sidebar-link sidebar-title" href="javascript:void(0)">
-                                                <i className="ri-store-3-line"></i>
-                                                <span>Product</span>
-                                            </a>
-                                            <ul className="sidebar-submenu">
-                                                <li>
-                                                    <Link to={'/admin-product'}>Prodcts</Link>
-                                                </li>
-
-                                                <li>
-                                                    <a href="add-new-product.html">Add New Products</a>
-                                                </li>
-                                            </ul>
-                                        </li>
-
-                                        <li className="sidebar-list">
-                                            <a className="linear-icon-link sidebar-link sidebar-title" href="javascript:void(0)">
-                                                <i className="ri-list-check-2"></i>
-                                                <span>Category</span>
-                                            </a>
-                                            <ul className="sidebar-submenu">
-                                                <li>
-                                                    <a href="category.html">Category List</a>
-                                                </li>
-
-                                                <li>
-                                                    <a href="add-new-category.html">Add New Category</a>
-                                                </li>
-                                            </ul>
-                                        </li>
-
-                                        <li className="sidebar-list">
-                                            <a className="linear-icon-link sidebar-link sidebar-title" href="javascript:void(0)">
-                                                <i className="ri-list-settings-line"></i>
-                                                <span>Attributes</span>
-                                            </a>
-                                            <ul className="sidebar-submenu">
-                                                <li>
-                                                    <a href="attributes.html">Attributes</a>
-                                                </li>
-
-                                                <li>
-                                                    <a href="add-new-attributes.html">Add Attributes</a>
-                                                </li>
-                                            </ul>
-                                        </li>
-
-                                        <li className="sidebar-list">
-                                            <a className="sidebar-link sidebar-title" href="javascript:void(0)">
-                                                <i className="ri-user-3-line"></i>
-                                                <span>Users</span>
-                                            </a>
-                                            <ul className="sidebar-submenu">
-                                                <li>
-                                                    <a href="all-users.html">All users</a>
-                                                </li>
-                                                <li>
-                                                    <a href="add-new-user.html">Add new user</a>
-                                                </li>
-                                            </ul>
-                                        </li>
-
-                                        <li className="sidebar-list">
-                                            <a className="sidebar-link sidebar-title" href="javascript:void(0)">
-                                                <i className="ri-user-3-line"></i>
-                                                <span>Roles</span>
-                                            </a>
-                                            <ul className="sidebar-submenu">
-                                                <li>
-                                                    <a href="role.html">All roles</a>
-                                                </li>
-                                                <li>
-                                                    <a href="create-role.html">Create Role</a>
-                                                </li>
-                                            </ul>
-                                        </li>
-
-                                        <li className="sidebar-list">
-                                            <a className="sidebar-link sidebar-title link-nav" href="media.html">
-                                                <i className="ri-price-tag-3-line"></i>
-                                                <span>Media</span>
-                                            </a>
-                                        </li>
-
-                                        <li className="sidebar-list">
-                                            <a className="sidebar-link sidebar-title" href="javascript:void(0)">
-                                                <i className="ri-archive-line"></i>
-                                                <span>Orders</span>
-                                            </a>
-                                            <ul className="sidebar-submenu">
-                                                <li>
-                                                    <a href="order-list.html">Order List</a>
-                                                </li>
-                                                <li>
-                                                    <a href="order-detail.html">Order Detail</a>
-                                                </li>
-                                                <li>
-                                                    <a href="order-tracking.html">Order Tracking</a>
-                                                </li>
-                                            </ul>
-                                        </li>
-
-                                        <li className="sidebar-list">
-                                            <a className="linear-icon-link sidebar-link sidebar-title" href="javascript:void(0)">
-                                                <i className="ri-focus-3-line"></i>
-                                                <span>Localization</span>
-                                            </a>
-                                            <ul className="sidebar-submenu">
-                                                <li>
-                                                    <a href="translation.html">Translation</a>
-                                                </li>
-
-                                                <li>
-                                                    <a href="currency-rates.html">Currency Rates</a>
-                                                </li>
-                                            </ul>
-                                        </li>
-
-                                        <li className="sidebar-list">
-                                            <a className="linear-icon-link sidebar-link sidebar-title" href="javascript:void(0)">
-                                                <i className="ri-price-tag-3-line"></i>
-                                                <span>Coupons</span>
-                                            </a>
-                                            <ul className="sidebar-submenu">
-                                                <li>
-                                                    <a href="coupon-list.html">Coupon List</a>
-                                                </li>
-
-                                                <li>
-                                                    <a href="create-coupon.html">Create Coupon</a>
-                                                </li>
-                                            </ul>
-                                        </li>
-
-                                        <li className="sidebar-list">
-                                            <a className="sidebar-link sidebar-title link-nav" href="taxes.html">
-                                                <i className="ri-price-tag-3-line"></i>
-                                                <span>Tax</span>
-                                            </a>
-                                        </li>
-
-                                        <li className="sidebar-list">
-                                            <a className="sidebar-link sidebar-title link-nav" href="product-review.html">
-                                                <i className="ri-star-line"></i>
-                                                <span>Product Review</span>
-                                            </a>
-                                        </li>
-
-                                        <li className="sidebar-list">
-                                            <a className="sidebar-link sidebar-title link-nav" href="support-ticket.html">
-                                                <i className="ri-phone-line"></i>
-                                                <span>Support Ticket</span>
-                                            </a>
-                                        </li>
-
-                                        <li className="sidebar-list">
-                                            <a className="linear-icon-link sidebar-link sidebar-title" href="javascript:void(0)">
-                                                <i className="ri-settings-line"></i>
-                                                <span>Settings</span>
-                                            </a>
-                                            <ul className="sidebar-submenu">
-                                                <li>
-                                                    <a href="profile-setting.html">Profile Setting</a>
-                                                </li>
-                                            </ul>
-                                        </li>
-
-                                        <li className="sidebar-list">
-                                            <a className="sidebar-link sidebar-title link-nav" href="reports.html">
-                                                <i className="ri-file-chart-line"></i>
-                                                <span>Reports</span>
-                                            </a>
-                                        </li>
-
-                                        <li className="sidebar-list">
-                                            <a className="sidebar-link sidebar-title link-nav" href="list-page.html">
-                                                <i className="ri-list-check"></i>
-                                                <span>List Page</span>
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </div>
-
-                                <div className="right-arrow" id="right-arrow">
-                                    <i data-feather="arrow-right"></i>
-                                </div>
-                            </nav>
-                        </div>
-                    </div>
-
-
+                    <SideBar />
                     <div className="page-body">
                         <div className="container-fluid">
                             <div className="row">
@@ -475,7 +134,7 @@ const AdminDashboard = () => {
                                             <div className="media static-top-widget">
                                                 <div className="media-body p-0">
                                                     <span className="m-0">Total Customers</span>
-                                                    <h4 className="mb-0 counter">4.6k
+                                                    <h4 className="mb-0 counter">{totalUser}
                                                         <span className="badge badge-light-success grow">
                                                             <i data-feather="trending-down"></i>8.5%</span>
                                                     </h4>
@@ -497,164 +156,44 @@ const AdminDashboard = () => {
                                             </div>
                                         </div>
                                         <div className="card-body p-0">
-                                            <div className="category-slider no-arrow">
-                                                <div >
-                                                    <div className="dashboard-category">
-                                                        <a href="javascript:void(0)" className="category-image">
-                                                            <img src="../back-end/assets/svg/vegetable.svg" className="img-fluid" alt="" />
-                                                        </a>
-                                                        <a href="javascript:void(0)" className="category-name">
-                                                            <h6>Vegetables & Fruit</h6>
-                                                        </a>
+                                            <div className="category-slider-scroll">
+                                                {/* Danh sách category - giữ nguyên cấu trúc bên trong */}
+                                                {[
+                                                    { src: "vegetable.svg", name: "Vegetables & Fruit" },
+                                                    { src: "cup.svg", name: "Beverages" },
+                                                    { src: "meats.svg", name: "Meats & Seafood" },
+                                                    { src: "breakfast.svg", name: "Breakfast" },
+                                                    { src: "frozen.svg", name: "Frozen Foods" },
+                                                    { src: "milk.svg", name: "Milk & Dairies" },
+                                                    { src: "pet.svg", name: "Pet Food" },
+                                                    { src: "vegetable.svg", name: "Vegetables & Fruit" },
+                                                    { src: "cup.svg", name: "Beverages" },
+                                                    { src: "meats.svg", name: "Meats & Seafood" },
+                                                    { src: "breakfast.svg", name: "Breakfast" },
+                                                    { src: "frozen.svg", name: "Frozen Foods" },
+                                                    { src: "milk.svg", name: "Milk & Dairies" },
+                                                    { src: "pet.svg", name: "Pet Food" },
+                                                ].map((item, index) => (
+                                                    <div className="dashboard-category-wrapper" key={index}>
+                                                        <div className="dashboard-category">
+                                                            <a href="javascript:void(0)" className="category-image">
+                                                                <img
+                                                                    src={`../back-end/assets/svg/${item.src}`}
+                                                                    className="img-fluid"
+                                                                    alt=""
+                                                                />
+                                                            </a>
+                                                            <a href="javascript:void(0)" className="category-name">
+                                                                <h6>{item.name}</h6>
+                                                            </a>
+                                                        </div>
                                                     </div>
-                                                </div>
-
-                                                <div >
-                                                    <div className="dashboard-category">
-                                                        <a href="javascript:void(0)" className="category-image">
-                                                            <img src="../back-end/assets/svg/cup.svg" className="img-fluid" alt="" />
-                                                        </a>
-                                                        <a href="javascript:void(0)" className="category-name">
-                                                            <h6>Beverages</h6>
-                                                        </a>
-                                                    </div>
-                                                </div>
-
-                                                <div >
-                                                    <div className="dashboard-category">
-                                                        <a href="javascript:void(0)" className="category-image">
-                                                            <img src="../back-end/assets/svg/meats.svg" className="img-fluid" alt="" />
-                                                        </a>
-                                                        <a href="javascript:void(0)" className="category-name">
-                                                            <h6>Meats & Seafood</h6>
-                                                        </a>
-                                                    </div>
-                                                </div>
-
-                                                <div >
-                                                    <div className="dashboard-category">
-                                                        <a href="javascript:void(0)" className="category-image">
-                                                            <img src="../back-end/assets/svg/breakfast.svg" className="img-fluid" alt="" />
-                                                        </a>
-                                                        <a href="javascript:void(0)" className="category-name">
-                                                            <h6>Breakfast</h6>
-                                                        </a>
-                                                    </div>
-                                                </div>
-
-                                                <div >
-                                                    <div className="dashboard-category">
-                                                        <a href="javascript:void(0)" className="category-image">
-                                                            <img src="../back-end/assets/svg/frozen.svg" className="img-fluid" alt="" />
-                                                        </a>
-                                                        <a href="javascript:void(0)" className="category-name">
-                                                            <h6>Frozen Foods</h6>
-                                                        </a>
-                                                    </div>
-                                                </div>
-
-                                                <div >
-                                                    <div className="dashboard-category">
-                                                        <a href="javascript:void(0)" className="category-image">
-                                                            <img src="../back-end/assets/svg/milk.svg" className="img-fluid" alt="" />
-                                                        </a>
-                                                        <a href="javascript:void(0)" className="category-name">
-                                                            <h6>Milk & Dairies</h6>
-                                                        </a>
-                                                    </div>
-                                                </div>
-
-                                                <div >
-                                                    <div className="dashboard-category">
-                                                        <a href="javascript:void(0)" className="category-image">
-                                                            <img src="../back-end/assets/svg/pet.svg" className="img-fluid" alt="" />
-                                                        </a>
-                                                        <a href="javascript:void(0)" className="category-name">
-                                                            <h6>Pet Food</h6>
-                                                        </a>
-                                                    </div>
-                                                </div>
-
-                                                <div >
-                                                    <div className="dashboard-category">
-                                                        <a href="javascript:void(0)" className="category-image">
-                                                            <img src="../back-end/assets/svg/vegetable.svg" className="img-fluid" alt="" />
-                                                        </a>
-                                                        <a href="javascript:void(0)" className="category-name">
-                                                            <h6>Vegetables & Fruit</h6>
-                                                        </a>
-                                                    </div>
-                                                </div>
-
-                                                <div >
-                                                    <div className="dashboard-category">
-                                                        <a href="javascript:void(0)" className="category-image">
-                                                            <img src="../back-end/assets/svg/cup.svg" className="img-fluid" alt="" />
-                                                        </a>
-                                                        <a href="javascript:void(0)" className="category-name">
-                                                            <h6>Beverages</h6>
-                                                        </a>
-                                                    </div>
-                                                </div>
-
-                                                <div >
-                                                    <div className="dashboard-category">
-                                                        <a href="javascript:void(0)" className="category-image">
-                                                            <img src="../back-end/assets/svg/meats.svg" className="img-fluid" alt="" />
-                                                        </a>
-                                                        <a href="javascript:void(0)" className="category-name">
-                                                            <h6>Meats & Seafood</h6>
-                                                        </a>
-                                                    </div>
-                                                </div>
-
-                                                <div >
-                                                    <div className="dashboard-category">
-                                                        <a href="javascript:void(0)" className="category-image">
-                                                            <img src="../back-end/assets/svg/breakfast.svg" className="img-fluid" alt="" />
-                                                        </a>
-                                                        <a href="javascript:void(0)" className="category-name">
-                                                            <h6>Breakfast</h6>
-                                                        </a>
-                                                    </div>
-                                                </div>
-
-                                                <div >
-                                                    <div className="dashboard-category">
-                                                        <a href="javascript:void(0)" className="category-image">
-                                                            <img src="../back-end/assets/svg/frozen.svg" className="img-fluid" alt="" />
-                                                        </a>
-                                                        <a href="javascript:void(0)" className="category-name">
-                                                            <h6>Frozen Foods</h6>
-                                                        </a>
-                                                    </div>
-                                                </div>
-
-                                                <div >
-                                                    <div className="dashboard-category">
-                                                        <a href="javascript:void(0)" className="category-image">
-                                                            <img src="../back-end/assets/svg/milk.svg" className="img-fluid" alt="" />
-                                                        </a>
-                                                        <a href="javascript:void(0)" className="category-name">
-                                                            <h6>Milk & Dairies</h6>
-                                                        </a>
-                                                    </div>
-                                                </div>
-
-                                                <div >
-                                                    <div className="dashboard-category">
-                                                        <a href="javascript:void(0)" className="category-image">
-                                                            <img src="../back-end/assets/svg/pet.svg" className="img-fluid" alt="" />
-                                                        </a>
-                                                        <a href="javascript:void(0)" className="category-name">
-                                                            <h6>Pet Food</h6>
-                                                        </a>
-                                                    </div>
-                                                </div>
+                                                ))}
                                             </div>
                                         </div>
                                     </div>
                                 </div>
+
                                 <div className="col-xl-6">
                                     <div className="card o-hidden card-hover">
                                         <div className="card-header border-0 pb-1">
