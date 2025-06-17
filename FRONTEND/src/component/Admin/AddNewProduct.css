@@ -1,0 +1,16 @@
+.sidebar-main {
+  width: 280px;
+  background-color: #009688;
+  height: 100vh;
+  padding-top: 20px;
+  position: fixed;
+  overflow-y: auto;
+  color: white;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.sidebar-main .sidebar-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
