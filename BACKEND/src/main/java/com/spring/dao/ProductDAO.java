@@ -1,15 +1,15 @@
 package com.spring.dao;
 
-import com.spring.entity.Product;
+import com.spring.entity.Products;
 
 import java.util.List;
 
 public interface ProductDAO {
 
-    List<Product> getAllProduct();
-    Product getProductById(int id);
-    Product addProduct(Product product);
-    Product updateProduct(Product product);
+    List<Products> getAllProduct();
+    Products getProductById(int id);
+    Products addProduct(Products product);
+    Products updateProduct(Products product);
     void deleteProduct(int id);
     int countProduct();
 }

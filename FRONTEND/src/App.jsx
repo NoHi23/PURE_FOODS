@@ -11,6 +11,8 @@ import { Bounce } from 'react-toastify';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
+import PrivateRoute from './PrivateRoute';
+
 function App() {
   return (
     <>
@@ -19,9 +21,20 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignUp />} />
-          <Route path="/admin-dashboard" element={<AdminDashboard />} />
-          <Route path="/admin-product" element={<Product />} />
           <Route path="/forgot" element={<Forgot />} />
+
+          {/* Các route cần đăng nhập */}
+          <Route path="/admin-dashboard" element={
+            <PrivateRoute allowedRoles={1}>
+              <AdminDashboard />
+            </PrivateRoute>
+          } />
+          <Route path="/admin-product" element={
+            <PrivateRoute allowedRoles={1}>
+              <Product />
+            </PrivateRoute>
+          } />
+
         </Routes>
       </BrowserRouter>
       <ToastContainer

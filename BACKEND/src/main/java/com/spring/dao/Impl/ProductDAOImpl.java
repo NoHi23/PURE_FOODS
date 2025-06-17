@@ -1,7 +1,7 @@
 package com.spring.dao.Impl;
 
 import com.spring.dao.ProductDAO;
-import com.spring.entity.Product;
+import com.spring.entity.Products;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import jakarta.persistence.Query;
@@ -17,24 +17,24 @@ public class ProductDAOImpl implements ProductDAO {
     @Override
     public List getAllProduct() {
         Session session = sessionFactory.getCurrentSession();
-        return session.createQuery("from Product").list();
+        return session.createQuery("from Products").list();
     }
 
     @Override
-    public Product getProductById(int id) {
+    public Products getProductById(int id) {
         Session session = sessionFactory.getCurrentSession();
-        return session.get(Product.class, id);
+        return session.get(Products.class, id);
     }
 
     @Override
-    public Product addProduct(Product product) {
+    public Products addProduct(Products product) {
         Session session = sessionFactory.getCurrentSession();
         session.persist(product);
         return product;
     }
 
     @Override
-    public Product updateProduct(Product product) {
+    public Products updateProduct(Products product) {
         Session session = sessionFactory.getCurrentSession();
         session.update(product);
         return product;
@@ -43,14 +43,14 @@ public class ProductDAOImpl implements ProductDAO {
     @Override
     public void deleteProduct(int id) {
         Session session = sessionFactory.getCurrentSession();
-        Product product = session.get(Product.class, id);
+        Products product = session.get(Products.class, id);
         session.delete(product);
     }
 
     @Override
     public int countProduct() {
         Session session = sessionFactory.getCurrentSession();
-        Query query = session.createQuery("select count(*) from Product");
+        Query query = session.createQuery("select count(*) from Products");
         return ((Long) ((org.hibernate.query.Query<?>) query).uniqueResult()).intValue();
     }
 

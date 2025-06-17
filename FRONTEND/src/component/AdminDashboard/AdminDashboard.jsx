@@ -1,7 +1,58 @@
-import React from 'react'
-import { Link } from 'react-router-dom'
-
+import React, { useEffect, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import './AdminDashboard.css'
+import axios from 'axios';
+import './script.js'
+import './ratio.js'
+import 'slick-carousel/slick/slick.css';
+import 'slick-carousel/slick/slick-theme.css';
+import $ from 'jquery';
+import 'slick-carousel';
+import SidebarEffect from '../SidebarEffect/SidebarEffect.jsx'
+import './sidebar-menu.js'
+import './simplebar.js'
+import { toast } from 'react-toastify';
 const AdminDashboard = () => {
+    const user = JSON.parse(localStorage.getItem('user'));
+    const [totalProduct, setTotalProduct] = useState(0);
+    const navigate = useNavigate();
+    useEffect(() => {
+        axios.get('http://localhost:8082/PureFoods/api/product/count')
+            .then(res => { setTotalProduct(res.data.countProduct) })
+    }, [])
+
+
+    const handleLogout = () => {
+        localStorage.removeItem('user');
+        toast.success("Logout successfully!");
+        navigate("/login");
+    };
+
+    useEffect(() => {
+        const sidebarLinks = document.querySelectorAll('.sidebar-link');
+
+        const handleClick = (e) => {
+            const nextEl = e.currentTarget.nextElementSibling;
+            if (nextEl && nextEl.classList.contains('sidebar-submenu')) {
+                e.preventDefault();
+                nextEl.classList.toggle('show');
+            }
+        };
+
+        sidebarLinks.forEach(link => {
+            link.addEventListener('click', handleClick);
+        });
+
+        return () => {
+            sidebarLinks.forEach(link => {
+                link.removeEventListener('click', handleClick);
+            });
+        };
+    }, []);
+
+
+
+
     return (
         <div>
             <div className="tap-top">
@@ -10,7 +61,6 @@ const AdminDashboard = () => {
             <div className="page-wrapper compact-wrapper" id="pageWrapper">
                 <div className="page-header">
                     <div className="header-wrapper m-0">
-                        
 
                         <form className="form-inline search-full" action="javascript:void(0)" method="get">
                             <div className="form-group w-100">
@@ -81,9 +131,9 @@ const AdminDashboard = () => {
                                 </li>
                                 <li className="profile-nav onhover-dropdown pe-0 me-0">
                                     <div className="media profile-media">
-                                        <img className="user-profile rounded-circle" src="../back-end/assets/images/users/4.jpg" alt="" />
+                                        <img className="user-profile rounded-circle" src="iconAVT.png" alt="" />
                                         <div className="user-name-hide media-body">
-                                            <span>Emay Walter</span>
+                                            <span>{user.fullName}</span>
                                             <p className="mb-0 font-roboto">Admin<i className="middle ri-arrow-down-s-line"></i></p>
                                         </div>
                                     </div>
@@ -113,10 +163,11 @@ const AdminDashboard = () => {
                                             </a>
                                         </li>
                                         <li>
-                                            <Link to={'/login'} data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+                                            <a  onClick={handleLogout}>
                                                 <i data-feather="log-out"></i>
                                                 <span>Log out</span>
-                                            </Link>
+                                            </a>
+
                                         </li>
                                     </ul>
                                 </li>
@@ -124,14 +175,17 @@ const AdminDashboard = () => {
                         </div>
                     </div>
                 </div>
+
                 <div className="page-body-wrapper">
                     <div className="sidebar-wrapper">
                         <div id="sidebarEffect"></div>
+                        <SidebarEffect />
+
                         <div>
                             <div className="logo-wrapper logo-wrapper-center">
-                                <a href="index.html" data-bs-original-title="" title="">
+                                <Link to={'/admin-dashboard'}>
                                     <img className="img-fluid for-white" src="../back-end/assets/images/logo/full-white.png" alt="logo" />
-                                </a>
+                                </Link>
                                 <div className="back-btn">
                                     <i className="fa fa-angle-left"></i>
                                 </div>
@@ -140,11 +194,11 @@ const AdminDashboard = () => {
                                 </div>
                             </div>
                             <div className="logo-icon-wrapper">
-                                <a href="index.html">
+                                <Link to={'/admin-dashboard'}>
                                     <img className="img-fluid main-logo main-white" src="../back-end/assets/images/logo/logo.png" alt="logo" />
                                     <img className="img-fluid main-logo main-dark" src="../back-end/assets/images/logo/logo-white.png"
                                         alt="logo" />
-                                </a>
+                                </Link>
                             </div>
                             <nav className="sidebar-main">
                                 <div className="left-arrow" id="left-arrow">
@@ -156,10 +210,10 @@ const AdminDashboard = () => {
                                         <li className="back-btn"></li>
 
                                         <li className="sidebar-list">
-                                            <a className="sidebar-link sidebar-title link-nav" href="index.html">
+                                            <Link to={'/admin-dashboard'} className="sidebar-link sidebar-title link-nav">
                                                 <i className="ri-home-line"></i>
                                                 <span>Dashboard</span>
-                                            </a>
+                                            </Link>
                                         </li>
 
                                         <li className="sidebar-list">
@@ -352,6 +406,8 @@ const AdminDashboard = () => {
                             </nav>
                         </div>
                     </div>
+
+
                     <div className="page-body">
                         <div className="container-fluid">
                             <div className="row">
@@ -363,7 +419,7 @@ const AdminDashboard = () => {
                                                     <span className="m-0">Total Revenue</span>
                                                     <h4 className="mb-0 counter">$6659
                                                         <span className="badge badge-light-primary grow">
-                                                            <i data-feather="trending-up"></i>8.5%</span>
+                                                            <i data-feather="trending-up" className='text-dark'></i>8.5%</span>
                                                     </h4>
                                                 </div>
                                                 <div className="align-self-center text-center">
@@ -399,7 +455,7 @@ const AdminDashboard = () => {
                                             <div className="media static-top-widget">
                                                 <div className="media-body p-0">
                                                     <span className="m-0">Total Products</span>
-                                                    <h4 className="mb-0 counter">893
+                                                    <h4 className="mb-0 counter">{totalProduct}
                                                         <a href="add-new-product.html" className="badge badge-light-secondary grow">
                                                             ADD NEW</a>
                                                     </h4>
@@ -442,7 +498,7 @@ const AdminDashboard = () => {
                                         </div>
                                         <div className="card-body p-0">
                                             <div className="category-slider no-arrow">
-                                                <div>
+                                                <div >
                                                     <div className="dashboard-category">
                                                         <a href="javascript:void(0)" className="category-image">
                                                             <img src="../back-end/assets/svg/vegetable.svg" className="img-fluid" alt="" />
@@ -453,7 +509,7 @@ const AdminDashboard = () => {
                                                     </div>
                                                 </div>
 
-                                                <div>
+                                                <div >
                                                     <div className="dashboard-category">
                                                         <a href="javascript:void(0)" className="category-image">
                                                             <img src="../back-end/assets/svg/cup.svg" className="img-fluid" alt="" />
@@ -464,7 +520,7 @@ const AdminDashboard = () => {
                                                     </div>
                                                 </div>
 
-                                                <div>
+                                                <div >
                                                     <div className="dashboard-category">
                                                         <a href="javascript:void(0)" className="category-image">
                                                             <img src="../back-end/assets/svg/meats.svg" className="img-fluid" alt="" />
@@ -475,7 +531,7 @@ const AdminDashboard = () => {
                                                     </div>
                                                 </div>
 
-                                                <div>
+                                                <div >
                                                     <div className="dashboard-category">
                                                         <a href="javascript:void(0)" className="category-image">
                                                             <img src="../back-end/assets/svg/breakfast.svg" className="img-fluid" alt="" />
@@ -486,7 +542,7 @@ const AdminDashboard = () => {
                                                     </div>
                                                 </div>
 
-                                                <div>
+                                                <div >
                                                     <div className="dashboard-category">
                                                         <a href="javascript:void(0)" className="category-image">
                                                             <img src="../back-end/assets/svg/frozen.svg" className="img-fluid" alt="" />
@@ -497,7 +553,7 @@ const AdminDashboard = () => {
                                                     </div>
                                                 </div>
 
-                                                <div>
+                                                <div >
                                                     <div className="dashboard-category">
                                                         <a href="javascript:void(0)" className="category-image">
                                                             <img src="../back-end/assets/svg/milk.svg" className="img-fluid" alt="" />
@@ -508,7 +564,7 @@ const AdminDashboard = () => {
                                                     </div>
                                                 </div>
 
-                                                <div>
+                                                <div >
                                                     <div className="dashboard-category">
                                                         <a href="javascript:void(0)" className="category-image">
                                                             <img src="../back-end/assets/svg/pet.svg" className="img-fluid" alt="" />
@@ -519,7 +575,7 @@ const AdminDashboard = () => {
                                                     </div>
                                                 </div>
 
-                                                <div>
+                                                <div >
                                                     <div className="dashboard-category">
                                                         <a href="javascript:void(0)" className="category-image">
                                                             <img src="../back-end/assets/svg/vegetable.svg" className="img-fluid" alt="" />
@@ -530,7 +586,7 @@ const AdminDashboard = () => {
                                                     </div>
                                                 </div>
 
-                                                <div>
+                                                <div >
                                                     <div className="dashboard-category">
                                                         <a href="javascript:void(0)" className="category-image">
                                                             <img src="../back-end/assets/svg/cup.svg" className="img-fluid" alt="" />
@@ -541,7 +597,7 @@ const AdminDashboard = () => {
                                                     </div>
                                                 </div>
 
-                                                <div>
+                                                <div >
                                                     <div className="dashboard-category">
                                                         <a href="javascript:void(0)" className="category-image">
                                                             <img src="../back-end/assets/svg/meats.svg" className="img-fluid" alt="" />
@@ -552,7 +608,7 @@ const AdminDashboard = () => {
                                                     </div>
                                                 </div>
 
-                                                <div>
+                                                <div >
                                                     <div className="dashboard-category">
                                                         <a href="javascript:void(0)" className="category-image">
                                                             <img src="../back-end/assets/svg/breakfast.svg" className="img-fluid" alt="" />
@@ -563,7 +619,7 @@ const AdminDashboard = () => {
                                                     </div>
                                                 </div>
 
-                                                <div>
+                                                <div >
                                                     <div className="dashboard-category">
                                                         <a href="javascript:void(0)" className="category-image">
                                                             <img src="../back-end/assets/svg/frozen.svg" className="img-fluid" alt="" />
@@ -574,7 +630,7 @@ const AdminDashboard = () => {
                                                     </div>
                                                 </div>
 
-                                                <div>
+                                                <div >
                                                     <div className="dashboard-category">
                                                         <a href="javascript:void(0)" className="category-image">
                                                             <img src="../back-end/assets/svg/milk.svg" className="img-fluid" alt="" />
@@ -585,7 +641,7 @@ const AdminDashboard = () => {
                                                     </div>
                                                 </div>
 
-                                                <div>
+                                                <div >
                                                     <div className="dashboard-category">
                                                         <a href="javascript:void(0)" className="category-image">
                                                             <img src="../back-end/assets/svg/pet.svg" className="img-fluid" alt="" />
@@ -1173,7 +1229,7 @@ const AdminDashboard = () => {
                             <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             <div className="button-box">
                                 <button type="button" className="btn btn--no" data-bs-dismiss="modal">No</button>
-                                <Link to={'/login'} type="button" 
+                                <Link to={'/login'} type="button"
                                     className="btn  btn--yes btn-primary">Yes</Link>
                             </div>
                         </div>
