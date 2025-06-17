@@ -1,0 +1,108 @@
+
+.sidebar-main {
+  width: 280px;
+  background-color: #009688; 
+  height: 100vh;
+  padding-top: 20px;
+  position: fixed;
+  overflow-y: auto;
+  color: white;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.sidebar-main .sidebar-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar-main .sidebar-list {
+  margin-bottom: 10px;
+}
+
+.sidebar-main .sidebar-link {
+  display: flex;
+  align-items: center;
+  padding: 12px 20px;
+  color: white;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 15px;
+  transition: background-color 0.2s ease;
+}
+
+.sidebar-main .sidebar-link:hover,
+.sidebar-main .sidebar-link.active {
+  background-color: rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+}
+
+.sidebar-main .sidebar-link i {
+  font-size: 18px;
+  margin-right: 12px;
+}
+
+.sidebar-main .sidebar-submenu {
+  list-style: none;
+  padding-left: 40px;
+  display: none;
+}
+
+.sidebar-main .sidebar-submenu li a {
+  display: block;
+  padding: 6px 0;
+  font-size: 14px;
+  color: #e0f2f1;
+  text-decoration: none;
+}
+
+.sidebar-main .sidebar-submenu li a:hover {
+  color: #ffffff;
+  text-decoration: underline;
+}
+
+.left-arrow, .right-arrow {
+  display: inline-block; 
+}
+
+/* Responsive */
+@media (max-height: 600px) {
+  .sidebar-main {
+    overflow-y: scroll;
+  }
+}
+.sidebar-submenu {
+  display: none;
+  transition: all 0.6s ease;
+}
+
+.sidebar-submenu.show {
+  display: block;
+}
+
+.category-slider-scroll {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  padding: 10px 0;
+  scroll-behavior: smooth;
+  scrollbar-width: thin; /* Firefox */
+}
+
+.category-slider-scroll::-webkit-scrollbar {
+  height: 6px;
+}
+
+.category-slider-scroll::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 3px;
+}
+
+.dashboard-category-wrapper {
+  flex: 0 0 auto;
+  width: 140px;
+}
+
+.dashboard-category {
+  text-align: center;
+}
