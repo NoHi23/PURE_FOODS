@@ -1,6 +1,8 @@
 package com.spring.service;
 import com.spring.dto.UserDTO;
 
+import java.util.List;
+
 public interface UserService {
     public boolean login(UserDTO userDTO);
 
@@ -9,6 +11,16 @@ public interface UserService {
     UserDTO register(String name, String email, String phone, String password, String address);
 
     UserDTO autoRegisterIfNotExists(String name, String email);
+
+    UserDTO autoRegisterFacebookAccountIfNotExists(String name, String email);
+
+    UserDTO updateInfo(UserDTO userDTO);
+
+    UserDTO deleteUser(int userID);
+
+    List<UserDTO> getAllUsers();
+
+    int getTotalUsers();
 
 
 }
