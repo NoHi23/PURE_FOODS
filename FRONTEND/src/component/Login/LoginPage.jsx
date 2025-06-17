@@ -162,10 +162,10 @@ const LoginPage = () => {
             localStorage.setItem('user', JSON.stringify(user));
 
             if (user.roleID === 1) navigate("/admin-dashboard");
-            else if (user.roleID === 2) navigate("/");
-            else if (user.roleID === 3) navigate("/wholesaler");
-            else if (user.roleID === 4) navigate("/importer");
-            else if (user.roleID === 5) navigate("/exporter");
+            else if (user.roleID === 2) navigate("/"); //người mua (customer)
+            else if (user.roleID === 3) navigate("/wholesaler"); //người bán buôn (là trader)
+            else if (user.roleID === 4) navigate("/importer"); //người nhập hàng
+            else if (user.roleID === 5) navigate("/exporter"); //người xuất hàng
 
           }).catch(err => {
             console.error("Facebook login failed", err);
