@@ -13,6 +13,7 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 import PrivateRoute from './PrivateRoute';
+import AddNewProduct from './component/Admin/AddNewProduct';
 
 function App() {
   return (
@@ -33,6 +34,11 @@ function App() {
           <Route path="/admin-product" element={
             <PrivateRoute allowedRoles={1}>
               <Product />
+            </PrivateRoute>
+          } />
+           <Route path="/admin-add-new-product" element={
+            <PrivateRoute allowedRoles={1}>
+              <AddNewProduct />
             </PrivateRoute>
           } />
 

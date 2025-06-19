@@ -54,7 +54,7 @@ const SideBar = () => {
                     </li>
 
                     <li>
-                      <a href="add-new-product.html">Add New Products</a>
+                      <Link to={'/admin-add-new-product'}>Add New Products</Link>
                     </li>
                   </ul>
                 </li>

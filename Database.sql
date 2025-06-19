@@ -297,8 +297,8 @@ VALUES
 (1, N'Admin'),
 (2, N'Customer'),
 (3, N'Seller'),
-(4, N'Exporter'),
-(5,N'Importer'),
+(4, N'Importer'),
+(5, N'Exporter'),
 (6,N'Shipper');
 GO
 INSERT INTO Users (FullName, Email, Password, RoleID, Phone, Address, Status) VALUES
