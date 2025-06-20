@@ -21,6 +21,7 @@ import DashboardLayout from './components/dashboard/Layout';
 import CreateExportRequest from './pages/dashboard/CreateExportRequest';
 import InventoryManagement from './pages/dashboard/InventoryManagement';
 import DeliveryManagement from './pages/dashboard/DeliveryManagement';
+import ReturnedManagement from './pages/dashboard/ReturnedManagement';
 function App() {
 
   return (
@@ -47,6 +48,7 @@ function App() {
          <Route path='/exportShipment' element={<ExportShipmentDashboard/>} />
          <Route path='/inventory-management' element={<InventoryManagement/>} />
         <Route path="/delivery-management" element={<DeliveryManagement />} />
+        <Route path="/returned-management" element={<ReturnedManagement />} />
         </Route>
       </Routes>
     </BrowserRouter>

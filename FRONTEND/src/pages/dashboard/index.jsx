@@ -1,6 +1,6 @@
-import Header from "../../components/dashboard/header";
-import Sidebar from "../../components/dashboard/sidebar";
-import Footer from "../../components/dashboard/footer";
+// import Header from "../../components/dashboard/header";
+// import Sidebar from "../../components/dashboard/sidebar";
+// import Footer from "../../components/dashboard/footer";
 
 const Dashboard = () => {
   return (
@@ -12,11 +12,11 @@ const Dashboard = () => {
       {/* Wrapper tổng */}
       <div className="page-wrapper compact-wrapper" id="pageWrapper">
         {/* Header */}
-        <Header />
+ 
         {/* Body wrapper */}
         <div className="page-body-wrapper">
           {/* Sidebar bên trái */}
-          <Sidebar />
+   
           {/* Nội dung chính */}
           <div className="page-body">
             <div className="container-fluid">
@@ -43,7 +43,7 @@ const Dashboard = () => {
             </div>
           </div>
           {/* Footer */}
-          <Footer />
+          {/* <Footer /> */}
         </div>
       </div>
     </>

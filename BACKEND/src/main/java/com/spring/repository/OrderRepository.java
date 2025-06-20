@@ -18,6 +18,7 @@ public interface OrderRepository extends JpaRepository<Orders, Integer> {
 
     @EntityGraph(attributePaths = {
         "orderDetails",
+         "orderDetails.product", 
         "customer",
         "status",
         "shippingMethod",
