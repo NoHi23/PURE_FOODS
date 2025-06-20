@@ -255,5 +255,62 @@ public class UserController {
         }
     }
 
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> payload) {
+        String email = payload.get("email");
+        Map<String, Object> response = new HashMap<>();
 
+        try {
+            boolean result = userService.sendResetPasswordEmail(email);
+            if (result) {
+                response.put("message", "Reset password email sent successfully.");
+                response.put("status", 200);
+                return ResponseEntity.ok(response);
+            } else {
+                response.put("message", "Email not found.");
+                response.put("status", 404);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            }
+        } catch (Exception e) {
+            response.put("message", "Error: " + e.getMessage());
+            response.put("status", 500);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> payload) {
+        String token = payload.get("token");
+        String newPassword = payload.get("newPassword");
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            boolean result = userService.resetPassword(token, newPassword);
+            if (result) {
+                response.put("message", "Password reset successfully.");
+                response.put("status", 200);
+                return ResponseEntity.ok(response);
+            } else {
+                response.put("message", "Invalid or expired token.");
+                response.put("status", 400);
+                return ResponseEntity.badRequest().body(response);
+            }
+        } catch (Exception e) {
+            response.put("message", "Error: " + e.getMessage());
+            response.put("status", 500);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    @PostMapping("/verify-otp")
+    public ResponseEntity<?> verifyResetToken(@RequestBody Map<String, String> payload) {
+        String token = payload.get("token");
+        boolean valid = userService.verifyResetToken(token);
+
+        if (valid) {
+            return ResponseEntity.ok(Map.of("message", "OTP hợp lệ", "status", 200));
+        } else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "OTP không hợp lệ hoặc đã hết hạn", "status", 400));
+        }
+    }
 }

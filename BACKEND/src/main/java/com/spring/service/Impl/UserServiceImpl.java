@@ -1,5 +1,6 @@
 package com.spring.service.Impl;
 
+import com.spring.common.EmailUtil;
 import com.spring.dao.UserDAO;
 import com.spring.dto.UserDTO;
 import com.spring.entity.User;
@@ -9,9 +10,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @Transactional(propagation = Propagation.REQUIRED)
@@ -61,6 +64,8 @@ public class UserServiceImpl implements UserService {
         user.setAddress(address);
         user.setCreatedAt(new java.sql.Timestamp(new Date().getTime()));
         user.setStatus(1);
+        user.setTokenExpiry(null);
+        user.setResetToken(null);
         userDAO.addUser(user);
         return convertToDTO(user);
     }
@@ -75,7 +80,9 @@ public class UserServiceImpl implements UserService {
                 user.getPhone(),
                 user.getAddress(),
                 user.getStatus(),
-                user.getCreatedAt()
+                user.getCreatedAt(),
+                user.getResetToken(),
+                user.getTokenExpiry()
         );
     }
 
@@ -93,6 +100,8 @@ public class UserServiceImpl implements UserService {
             user.setRoleID(2);
             user.setCreatedAt(new java.sql.Timestamp(new Date().getTime()));
             user.setStatus(1);
+            user.setTokenExpiry(null);
+            user.setResetToken(null);
             userDAO.addUser(user);
             user = userDAO.findUserByEmail(email);
 
@@ -113,6 +122,8 @@ public class UserServiceImpl implements UserService {
             user.setRoleID(2);
             user.setCreatedAt(new java.sql.Timestamp(new Date().getTime()));
             user.setStatus(1);
+            user.setTokenExpiry(null);
+            user.setResetToken(null);
             userDAO.addUser(user);
             user = userDAO.findUserByEmail(email);
 
@@ -179,7 +190,48 @@ public class UserServiceImpl implements UserService {
     }
 
 
+    @Override
+    public boolean sendResetPasswordEmail(String email) {
+        User user = userDAO.findUserByEmail(email); // kiểm tra trong DB
+        if (user == null) return false;
 
+        String code = String.format("%06d", (int)(Math.random() * 1000000));
+        Timestamp expiry = new Timestamp(System.currentTimeMillis() + (15 * 60 * 1000)); // 15 phút
 
+        user.setResetToken(code);
+        user.setTokenExpiry(expiry);
+        userDAO.updateUser(user); // lưu lại token vào DB
+
+        // Gửi email
+        String subject = "Mã xác nhận đặt lại mật khẩu";
+        String body = "Mã xác nhận của bạn là: " + code + "\nMã này sẽ hết hạn sau 15 phút.";
+
+        EmailUtil.sendEmail(email, subject, body); // bạn sẽ tạo lớp EmailUtil riêng
+
+        return true;
+    }
+
+    @Override
+    public boolean resetPassword(String token, String newPassword) {
+        User user = userDAO.findByResetToken(token);
+        if (user == null || user.getTokenExpiry().before(new Timestamp(System.currentTimeMillis()))) {
+            return false; // Token không hợp lệ hoặc hết hạn
+        }
+
+        user.setPassword(newPassword); // nhớ hash password nếu có
+        user.setResetToken(null);      // clear token
+        user.setTokenExpiry(null);
+        userDAO.updateUser(user);
+        return true;
+    }
+
+    @Override
+    public boolean verifyResetToken(String token) {
+        User user = userDAO.findByResetToken(token);
+        if (user == null || user.getTokenExpiry().before(new Timestamp(System.currentTimeMillis()))) {
+            return false;
+        }
+        return true;
+    }
 
 }

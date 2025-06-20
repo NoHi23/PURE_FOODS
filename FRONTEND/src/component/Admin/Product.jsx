@@ -8,11 +8,12 @@ import 'datatables.net';
 import TopBar from '../AdminDashboard/TopBar.jsx';
 import SideBar from '../AdminDashboard/SideBar.jsx';
 import { Link } from 'react-router-dom';
+import ProductActions from '../../ProductActions.jsx';
 
 const Product = () => {
   const [products, setProducts] = useState([]);
   const [categoryNames, setCategoryNames] = useState({});
-
+  const [suppliersName, setSuppliersName] = useState({});
   useEffect(() => {
     axios.get("http://localhost:8082/PureFoods/api/product/getAll")
       .then(res => { setProducts(res.data.listProduct) })
@@ -57,12 +58,12 @@ const Product = () => {
     };
   }, []);
 
- useEffect(() => {
+  useEffect(() => {
     const fetchCategories = async () => {
       const newCategoryNames = {};
 
       const uniqueCategoryIds = [...new Set(products.map(p => p.categoryId))];
-      
+
       await Promise.all(uniqueCategoryIds.map(async (id) => {
         try {
           const res = await axios.get(`http://localhost:8082/PureFoods/api/category/${id}`);
@@ -77,6 +78,30 @@ const Product = () => {
 
     if (products.length > 0) {
       fetchCategories();
+    }
+  }, [products]);
+
+
+  useEffect(() => {
+    const fetchSuppliers = async () => {
+      const newSuppliersNames = {};
+
+      const uniqueSuppliersIds = [...new Set(products.map(p => p.supplierId))];
+
+      await Promise.all(uniqueSuppliersIds.map(async (id) => {
+        try {
+          const res = await axios.get(`http://localhost:8082/PureFoods/api/supplier/${id}`);
+          newSuppliersNames[id] = res.data.supplierName;
+        } catch (err) {
+          newSuppliersNames[id] = 'Không tìm thấy';
+        }
+      }));
+
+      setSuppliersName(newSuppliersNames);
+    };
+
+    if (products.length > 0) {
+      fetchSuppliers();
     }
   }, [products]);
 
@@ -103,14 +128,11 @@ const Product = () => {
                         <h5>Products List</h5>
                         <div class="right-options">
                           <ul>
-                            <li>
-                              <a href="javascript:void(0)">import</a>
+                            <li className="mt-5" >
+                              <ProductActions setProducts={setProducts} products={products} />
                             </li>
                             <li>
-                              <a href="javascript:void(0)">Export</a>
-                            </li>
-                            <li>
-                              <Link to={'/admin-add-new-product'} class="btn btn-solid">Add Product</Link>
+                              <Link to={'/admin-add-new-product'} className="btn btn-solid">Add Product</Link>
                             </li>
                           </ul>
                         </div>
@@ -144,7 +166,7 @@ const Product = () => {
 
                                   <td>{categoryNames[p.categoryId] || 'Đang tải...'}</td>
 
-                                  <td>{p.supplierId}</td>
+                                  <td>{suppliersName[p.supplierId] || 'Đang tải...'}</td>
                                   <td>{p.stockQuantity}</td>
                                   <td className="td-price">${p.price}</td>
 

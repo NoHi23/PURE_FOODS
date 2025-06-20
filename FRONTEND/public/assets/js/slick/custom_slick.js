@@ -1,6 +1,8 @@
 /**=====================
     Custom Slick js
 ==========================**/
+$(document).ready(function () {
+
 $('.category-slider').slick({
     arrows: true,
     infinite: true,
@@ -1522,7 +1524,7 @@ $('.featured-slider').slick({
     },
     ]
 });
-
+});
 // $('.main-theme-slider').slick({
 //     slidesToShow: 1,
 //     slidesToScroll: 1,
