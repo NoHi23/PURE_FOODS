@@ -63,7 +63,10 @@ const LoginPage = () => {
           navigate("/importer"); // người nhập hàng
         } else if (user.roleID === 5) {
           navigate("/exporter");
-        } else {
+        } else if (user.roleID === 6) {
+          navigate("/shipper");
+        }
+        else {
           toast.warn("Unknown role!");
         }
       } else {
@@ -106,7 +109,9 @@ const LoginPage = () => {
       } else if (user.roleID === 4) {
         navigate("/importer"); // người nhập hàng
       } else if (user.roleID === 5) {
-        navigate("/exporter"); // người xuất hàng
+        navigate("/exporter");
+      } else if (user.roleID === 6) {
+        navigate("/shipper");
       } else {
         toast.warn("Unknown role!");
       }
@@ -157,33 +162,30 @@ const LoginPage = () => {
           window.FB.api("/me", { fields: "name,email" }, function (userInfo) {
             console.log("User info:", userInfo);
 
-            axios
-              .post("http://localhost:8082/PureFoods/api/users/facebook", {
-                accessToken: accessToken,
-              })
-              .then((res) => {
-                const user = res.data.user;
-                toast.success("Welcome " + user.fullName);
+          axios.post('http://localhost:8082/PureFoods/api/users/facebook', {
+            accessToken: accessToken
+          }).then(res => {
+            const user = res.data.user;
+            toast.success("Welcome " + user.fullName);
 
-                localStorage.setItem("user", JSON.stringify(user));
+            localStorage.setItem('user', JSON.stringify(user));
 
-                if (user.roleID === 1) navigate("/admin-dashboard");
-                else if (user.roleID === 2) navigate("/"); //người mua (customer)
-                else if (user.roleID === 3) navigate("/wholesaler"); //người bán buôn (là trader)
-                else if (user.roleID === 4) navigate("/importer"); //người nhập hàng
-                else if (user.roleID === 5) navigate("/exporter"); //người xuất hàng
-              })
-              .catch((err) => {
-                console.error("Facebook login failed", err);
-                toast.error("Facebook login failed");
-              });
+            if (user.roleID === 1) navigate("/admin-dashboard");
+            else if (user.roleID === 2) navigate("/");
+            else if (user.roleID === 3) navigate("/wholesaler");
+            else if (user.roleID === 4) navigate("/importer");
+            else if (user.roleID === 5) navigate("/exporter");
+            else if (user.roleID === 6) navigate("/shipper");
+
+          }).catch(err => {
+            console.error("Facebook login failed", err);
+            toast.error("Facebook login failed");
           });
-        } else {
-          toast.error("User cancelled login or did not fully authorize.");
-        }
-      },
-      { scope: "public_profile,email" }
-    );
+        });
+      } else {
+        toast.error("User cancelled login or did not fully authorize.");
+      }
+    }, { scope: 'public_profile,email' });
   };
 
   return (

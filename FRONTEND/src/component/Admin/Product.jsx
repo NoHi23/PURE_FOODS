@@ -4,19 +4,21 @@ import './Product.css'
 import './jquery.dataTables.js'
 import './custom-data-table.js'
 import $ from 'jquery';
-import 'datatables.net'; 
+import 'datatables.net';
 import TopBar from '../AdminDashboard/TopBar.jsx';
 import SideBar from '../AdminDashboard/SideBar.jsx';
+import { Link } from 'react-router-dom';
 
 const Product = () => {
   const [products, setProducts] = useState([]);
+  const [categoryNames, setCategoryNames] = useState({});
 
   useEffect(() => {
     axios.get("http://localhost:8082/PureFoods/api/product/getAll")
       .then(res => { setProducts(res.data.listProduct) })
   }, []);
 
- useEffect(() => {
+  useEffect(() => {
     // Chờ DOM hiển thị xong
     if (products.length > 0) {
       const table = $('#table_id').DataTable({
@@ -54,6 +56,30 @@ const Product = () => {
       });
     };
   }, []);
+
+ useEffect(() => {
+    const fetchCategories = async () => {
+      const newCategoryNames = {};
+
+      const uniqueCategoryIds = [...new Set(products.map(p => p.categoryId))];
+      
+      await Promise.all(uniqueCategoryIds.map(async (id) => {
+        try {
+          const res = await axios.get(`http://localhost:8082/PureFoods/api/category/${id}`);
+          newCategoryNames[id] = res.data.categoryName;
+        } catch (err) {
+          newCategoryNames[id] = 'Không tìm thấy';
+        }
+      }));
+
+      setCategoryNames(newCategoryNames);
+    };
+
+    if (products.length > 0) {
+      fetchCategories();
+    }
+  }, [products]);
+
   return (
     <div>
       <div className="tap-top">
@@ -61,10 +87,10 @@ const Product = () => {
       </div>
 
       <div className="page-wrapper compact-wrapper" id="pageWrapper">
-        <TopBar/>
+        <TopBar />
 
         <div className="page-body-wrapper">
-          <SideBar/>
+          <SideBar />
 
           {/* Container-fluid starts*/}
           <div className="page-body">
@@ -84,7 +110,7 @@ const Product = () => {
                               <a href="javascript:void(0)">Export</a>
                             </li>
                             <li>
-                              <a class="btn btn-solid" href="add-new-product.html">Add Product</a>
+                              <Link to={'/admin-add-new-product'} class="btn btn-solid">Add Product</Link>
                             </li>
                           </ul>
                         </div>
@@ -116,7 +142,7 @@ const Product = () => {
 
                                   <td>{p.productName}</td>
 
-                                  <td>{p.categoryId}</td>
+                                  <td>{categoryNames[p.categoryId] || 'Đang tải...'}</td>
 
                                   <td>{p.supplierId}</td>
                                   <td>{p.stockQuantity}</td>
