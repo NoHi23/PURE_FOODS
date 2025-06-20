@@ -1,0 +1,85 @@
+/* Table adjustments */
+.table.theme-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.table.theme-table th,
+.table.theme-table td {
+  text-align: center;
+  vertical-align: middle;
+  padding: 12px 8px;
+}
+
+.table.theme-table thead {
+  background-color: #f8f9fa;
+  font-weight: 600;
+  color: #333;
+}
+
+/* Status indicators */
+.status-success span {
+  background-color: #d4edda;
+  color: #155724;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-weight: 500;
+  font-size: 13px;
+}
+
+.status-danger span {
+  background-color: #f8d7da;
+  color: #721c24;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-weight: 500;
+  font-size: 13px;
+}
+
+/* Option icons */
+.table .ri-pencil-line,
+.table .ri-delete-bin-line {
+  font-size: 18px;
+  color: #555;
+  transition: color 0.2s ease;
+  cursor: pointer;
+}
+
+.table .ri-pencil-line:hover {
+  color: #007bff;
+}
+
+.table .ri-delete-bin-line:hover {
+  color: #dc3545;
+}
+
+/* Add button */
+.btn.btn-solid {
+  background-color: #0da487;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 500;
+  transition: background-color 0.3s ease;
+}
+
+.btn.btn-solid:hover {
+  background-color: #0a866e;
+  color: white;
+}
+
+/* Title header */
+.title-header {
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.option-title ul {
+  display: flex;
+  gap: 10px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
