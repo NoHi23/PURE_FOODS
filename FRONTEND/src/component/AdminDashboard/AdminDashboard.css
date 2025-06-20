@@ -79,3 +79,30 @@
 .sidebar-submenu.show {
   display: block;
 }
+
+.category-slider-scroll {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  padding: 10px 0;
+  scroll-behavior: smooth;
+  scrollbar-width: thin; /* Firefox */
+}
+
+.category-slider-scroll::-webkit-scrollbar {
+  height: 6px;
+}
+
+.category-slider-scroll::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 3px;
+}
+
+.dashboard-category-wrapper {
+  flex: 0 0 auto;
+  width: 140px;
+}
+
+.dashboard-category {
+  text-align: center;
+}

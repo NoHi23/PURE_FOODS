@@ -83,6 +83,8 @@ const SignUp = () => {
         navigate("/importer");
       } else if (user.roleID === 5) {
         navigate("/exporter");
+      } else if (user.roleID === 6) {
+        navigate("/shipper");
       } else {
         toast.warn("Unknown role!");
       }
@@ -144,6 +146,7 @@ const SignUp = () => {
             else if (user.roleID === 3) navigate("/wholesaler");
             else if (user.roleID === 4) navigate("/importer");
             else if (user.roleID === 5) navigate("/exporter");
+            else if (user.roleID === 6) navigate("/shipper");
 
           }).catch(err => {
             console.error("Facebook login failed", err);

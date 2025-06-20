@@ -108,7 +108,7 @@ const SidebarEffect = () => {
     };
   }, []);
 
-  return null;
+  return (null);
 };
 
 export default SidebarEffect;
