@@ -1384,30 +1384,6 @@ const ImporterDashboard = () => {
         </div>
         {/* <!-- mobile fix menu end -->
 
-    <!-- Breadcrumb Section Start --> */}
-        <section className="breadcrumb-section pt-0">
-          <div className="container-fluid-lg">
-            <div className="row">
-              <div className="col-12">
-                <div className="breadcrumb-contain">
-                  <h2>User Dashboard</h2>
-                  <nav>
-                    <ol className="breadcrumb mb-0">
-                      <li className="breadcrumb-item">
-                        <a href="/">
-                          <i className="fa-solid fa-house"></i>
-                        </a>
-                      </li>
-                      <li className="breadcrumb-item active">User Dashboard</li>
-                    </ol>
-                  </nav>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-        {/* <!-- Breadcrumb Section End -->
-
     <!-- User Dashboard Section Start --> */}
         <section className="user-dashboard-section section-b-space">
           <div className="container-fluid-lg">
@@ -1440,8 +1416,8 @@ const ImporterDashboard = () => {
                       </div>
 
                       <div className="profile-name">
-                        <h3>Joshua D. Bass</h3>
-                        <h6 className="text-content">joshuadbass@rhyta.com</h6>
+                        <h3>{user.fullName}</h3>
+                        <h6 className="text-content">{user.email}</h6>
                       </div>
                     </div>
                   </div>
@@ -1457,7 +1433,7 @@ const ImporterDashboard = () => {
                         role="tab"
                       >
                         <i data-feather="home"></i>
-                        DashBoard
+                        Quản lý cá nhân
                       </a>
                     </li>
 
@@ -1470,7 +1446,7 @@ const ImporterDashboard = () => {
                         type="button"
                         role="tab"
                       >
-                        <i data-feather="shopping-bag"></i>Products
+                        <i data-feather="shopping-bag"></i>Các sản phẩm
                       </button>
                     </li>
 
@@ -1483,7 +1459,7 @@ const ImporterDashboard = () => {
                         type="button"
                         role="tab"
                       >
-                        <i data-feather="shopping-bag"></i>Order
+                        <i data-feather="shopping-bag"></i>Các đơn hàng
                       </button>
                     </li>
 
@@ -1497,7 +1473,7 @@ const ImporterDashboard = () => {
                         role="tab"
                       >
                         <i data-feather="user"></i>
-                        Profile
+                        Thông tin cá nhân
                       </button>
                     </li>
 
@@ -1511,7 +1487,7 @@ const ImporterDashboard = () => {
                         role="tab"
                       >
                         <i data-feather="settings"></i>
-                        Setting
+                        Cài đặt
                       </button>
                     </li>
                   </ul>
@@ -1527,7 +1503,7 @@ const ImporterDashboard = () => {
                     <div className="tab-pane fade show active" id="pills-dashboard" role="tabpanel">
                       <div className="dashboard-home">
                         <div className="title">
-                          <h2>My Dashboard</h2>
+                          <h2>Trang quản lý Nhập Hàng</h2>
                           <span className="title-leaf">
                             <svg className="icon-width bg-gray">
                               <use href="../assets/svg/leaf.svg#leaf"></use>
@@ -1536,13 +1512,9 @@ const ImporterDashboard = () => {
                         </div>
 
                         <div className="dashboard-user-name">
-                          <h6 className="text-content">
-                            Hello, <b className="text-title">Vicki E. Pope</b>
-                          </h6>
                           <p className="text-content">
-                            From your My Account Dashboard you have the ability to view a snapshot of your recent
-                            account activity and update your account information. Select a link below to view or edit
-                            information.
+                            Tại đây, bạn có thể xem nhanh hoạt động nhập hàng gần đây và cập nhật thông tin tài khoản.
+                            Chọn liên kết bên dưới để xem hoặc chỉnh sửa thông tin.
                           </p>
                         </div>
 
@@ -1553,7 +1525,7 @@ const ImporterDashboard = () => {
                                 <img src="../assets/images/svg/order.svg" className="img-1 blur-up lazyload" alt="" />
                                 <img src="../assets/images/svg/order.svg" className="blur-up lazyload" alt="" />
                                 <div className="total-detail">
-                                  <h5>Total Products</h5>
+                                  <h5>Tổng sản phẩm</h5>
                                   <h3>25</h3>
                                 </div>
                               </div>
@@ -1564,7 +1536,7 @@ const ImporterDashboard = () => {
                                 <img src="../assets/images/svg/pending.svg" className="img-1 blur-up lazyload" alt="" />
                                 <img src="../assets/images/svg/pending.svg" className="blur-up lazyload" alt="" />
                                 <div className="total-detail">
-                                  <h5>Total Sales</h5>
+                                  <h5>Tổng bán ra</h5>
                                   <h3>12550</h3>
                                 </div>
                               </div>
@@ -1579,7 +1551,7 @@ const ImporterDashboard = () => {
                                 />
                                 <img src="../assets/images/svg/wishlist.svg" className="blur-up lazyload" alt="" />
                                 <div className="total-detail">
-                                  <h5>Order Pending</h5>
+                                  <h5>Đơn chờ xử lý</h5>
                                   <h3>36</h3>
                                 </div>
                               </div>
@@ -1589,21 +1561,9 @@ const ImporterDashboard = () => {
 
                         <div className="row g-4">
                           <div className="col-xxl-6">
-                            <div className="dashboard-bg-box">
-                              <div id="chart"></div>
-                            </div>
-                          </div>
-
-                          <div className="col-xxl-6">
-                            <div className="dashboard-bg-box">
-                              <div id="sale"></div>
-                            </div>
-                          </div>
-
-                          <div className="col-xxl-6">
                             <div className="table-responsive dashboard-bg-box">
                               <div className="dashboard-title mb-4">
-                                <h3>Trending Products</h3>
+                                <h3>Sản phẩm thịnh hành</h3>
                               </div>
 
                               <table className="table product-table">
@@ -1699,7 +1659,7 @@ const ImporterDashboard = () => {
                           <div className="col-xxl-6">
                             <div className="order-tab dashboard-bg-box">
                               <div className="dashboard-title mb-4">
-                                <h3>Recent Order</h3>
+                                <h3>Đơn hàng gần đây</h3>
                               </div>
 
                               <div className="table-responsive">
@@ -1789,11 +1749,11 @@ const ImporterDashboard = () => {
                         </div>
                       </div>
                     </div>
-
+                    {/* Thanh sidebar các sản phẩm bên trái */}
                     <div className="tab-pane fade" id="pills-product" role="tabpanel">
                       <div className="product-tab">
                         <div className="title">
-                          <h2>All Product</h2>
+                          <h2>Tất cả sản phẩm</h2>
                           <span className="title-leaf">
                             <svg className="icon-width bg-gray">
                               <use href="../assets/svg/leaf.svg#leaf"></use>
@@ -1805,12 +1765,12 @@ const ImporterDashboard = () => {
                           <table className="table product-table">
                             <thead>
                               <tr>
-                                <th scope="col">Images</th>
-                                <th scope="col">Product Name</th>
-                                <th scope="col">Price</th>
-                                <th scope="col">Stock</th>
-                                <th scope="col">Sales</th>
-                                <th scope="col">Edit / Delete</th>
+                                <th scope="col">Ảnh</th>
+                                <th scope="col">Tên sản phẩm</th>
+                                <th scope="col">Giá</th>
+                                <th scope="col">Số lượng</th>
+                                <th scope="col">Đã bán</th>
+                                <th scope="col">Hành động</th>
                               </tr>
                             </thead>
                             <tbody>
@@ -1965,7 +1925,7 @@ const ImporterDashboard = () => {
                               </tr>
                             </tbody>
                           </table>
-
+                          {/* Thanh phân trang */}
                           <nav className="custom-pagination">
                             <ul className="pagination justify-content-center">
                               <li className="page-item disabled">
@@ -2002,7 +1962,7 @@ const ImporterDashboard = () => {
                     <div className="tab-pane fade" id="pills-order" role="tabpanel">
                       <div className="dashboard-order">
                         <div className="title">
-                          <h2>All Order</h2>
+                          <h2>Tất cả đơn hàng</h2>
                           <span className="title-leaf title-leaf-gray">
                             <svg className="icon-width bg-gray">
                               <use href="../assets/svg/leaf.svg#leaf"></use>
@@ -2015,10 +1975,10 @@ const ImporterDashboard = () => {
                             <table className="table order-table">
                               <thead>
                                 <tr>
-                                  <th scope="col">Order ID</th>
-                                  <th scope="col">Product Name</th>
-                                  <th scope="col">Status</th>
-                                  <th scope="col">Price</th>
+                                  <th scope="col">Mã đơn hàng</th>
+                                  <th scope="col">Tên sản phẩm</th>
+                                  <th scope="col">Trạng thái</th>
+                                  <th scope="col">Giá</th>
                                 </tr>
                               </thead>
                               <tbody>
@@ -2147,11 +2107,11 @@ const ImporterDashboard = () => {
                         </div>
                       </div>
                     </div>
-
+                    {/* Thanh sidebar bên trái, thông tin cá nhân */}
                     <div className="tab-pane fade" id="pills-profile" role="tabpanel">
                       <div className="dashboard-profile">
                         <div className="title">
-                          <h2>My Profile</h2>
+                          <h2>Thông tin cá nhân</h2>
                           <span className="title-leaf">
                             <svg className="icon-width bg-gray">
                               <use href="../assets/svg/leaf.svg#leaf"></use>
@@ -2161,56 +2121,56 @@ const ImporterDashboard = () => {
 
                         <div className="profile-tab dashboard-bg-box">
                           <div className="dashboard-title dashboard-flex">
-                            <h3>Profile Name</h3>
+                            <h3>Tên hồ sơ</h3>
                             <button
                               className="btn btn-sm theme-bg-color text-white"
                               data-bs-toggle="modal"
                               data-bs-target="#edit-profile"
                             >
-                              Edit Profile
+                              Chỉnh sửa
                             </button>
                           </div>
 
                           <ul>
                             <li>
-                              <h5>Company Name :</h5>
-                              <h5>Grocery Store</h5>
+                              <h5>Tên công ty :</h5>
+                              <h5>PURE_FOODS</h5>
                             </li>
                             <li>
-                              <h5>Email Address :</h5>
-                              <h5>joshuadbass@rhyta.com</h5>
+                              <h5>Địa chỉ Email :</h5>
+                              <h5>{user.email}</h5>
                             </li>
                             <li>
-                              <h5>Country / Region :</h5>
+                              <h5>Quốc gia / vùng :</h5>
                               <h5>107 Veltri Drive</h5>
                             </li>
 
                             <li>
-                              <h5>Year Established :</h5>
+                              <h5>Năm thành lập :</h5>
                               <h5>2022</h5>
                             </li>
 
                             <li>
-                              <h5>Total Employees :</h5>
-                              <h5>154 - 360 People</h5>
+                              <h5>Tổng số nhân viên :</h5>
+                              <h5>154 - 360 người</h5>
                             </li>
                             <li>
-                              <h5>Category :</h5>
+                              <h5>Thể loại cửa hàng :</h5>
                               <h5>Grocery</h5>
                             </li>
 
                             <li>
-                              <h5>Street Address :</h5>
+                              <h5>Địa chỉ cửa hàng :</h5>
                               <h5>234 High St</h5>
                             </li>
 
                             <li>
-                              <h5>City / State :</h5>
+                              <h5>Thành phố :</h5>
                               <h5>107 Veltri Drive</h5>
                             </li>
 
                             <li>
-                              <h5>Zip :</h5>
+                              <h5>Mã bưu điện :</h5>
                               <h5>B23 6SN</h5>
                             </li>
                           </ul>
@@ -2221,7 +2181,7 @@ const ImporterDashboard = () => {
                     <div className="tab-pane fade" id="pills-security" role="tabpanel">
                       <div className="dashboard-privacy">
                         <div className="title">
-                          <h2>My Setting</h2>
+                          <h2>Cài đặt</h2>
                           <span className="title-leaf">
                             <svg className="icon-width bg-gray">
                               <use href="../assets/svg/leaf.svg#leaf"></use>
@@ -2231,7 +2191,7 @@ const ImporterDashboard = () => {
 
                         <div className="dashboard-bg-box">
                           <div className="dashboard-title mb-4">
-                            <h3>Notifications</h3>
+                            <h3>Thông báo</h3>
                           </div>
 
                           <div className="privacy-box">
@@ -2244,7 +2204,7 @@ const ImporterDashboard = () => {
                                 defaultChecked
                               />
                               <label className="form-check-label ms-2" htmlFor="desktop">
-                                Show Desktop Notifications
+                                Hiện thông báo lên màn hình chính
                               </label>
                             </div>
                           </div>
@@ -2253,7 +2213,7 @@ const ImporterDashboard = () => {
                             <div className="form-check custom-form-check custom-form-check-2 d-flex align-items-center">
                               <input className="form-check-input" type="radio" id="enable" name="desktop" />
                               <label className="form-check-label ms-2" htmlFor="enable">
-                                Enable Notifications
+                                Bật thông báo
                               </label>
                             </div>
                           </div>
@@ -2262,7 +2222,7 @@ const ImporterDashboard = () => {
                             <div className="form-check custom-form-check custom-form-check-2 d-flex align-items-center">
                               <input className="form-check-input" type="radio" id="activity" name="desktop" />
                               <label className="form-check-label ms-2" htmlFor="activity">
-                                Get notification for my own activity
+                                Nhận thông báo cho các hoạt động của tôi
                               </label>
                             </div>
                           </div>
@@ -2271,23 +2231,23 @@ const ImporterDashboard = () => {
                             <div className="form-check custom-form-check custom-form-check-2 d-flex align-items-center">
                               <input className="form-check-input" type="radio" id="dnd" name="desktop" />
                               <label className="form-check-label ms-2" htmlFor="dnd">
-                                DND
+                                Không làm phiền (DND)
                               </label>
                             </div>
                           </div>
 
-                          <button className="btn theme-bg-color btn-md fw-bold mt-4 text-white">Save Changes</button>
+                          <button className="btn theme-bg-color btn-md fw-bold mt-4 text-white">Lưu thay đổi</button>
                         </div>
 
                         <div className="dashboard-bg-box">
                           <div className="dashboard-title mb-4">
-                            <h3>Deactivate Account</h3>
+                            <h3>Vô hiệu hoá tài khoản</h3>
                           </div>
                           <div className="privacy-box">
                             <div className="form-check custom-form-check custom-form-check-2 d-flex align-items-center">
                               <input className="form-check-input" type="radio" id="concern" name="concern" />
                               <label className="form-check-label ms-2" htmlFor="concern">
-                                I have a privacy concern
+                                Tôi có mối lo ngại về quyền riêng tư
                               </label>
                             </div>
                           </div>
@@ -2295,7 +2255,7 @@ const ImporterDashboard = () => {
                             <div className="form-check custom-form-check custom-form-check-2 d-flex align-items-center">
                               <input className="form-check-input" type="radio" id="temporary" name="concern" />
                               <label className="form-check-label ms-2" htmlFor="temporary">
-                                This is temporary
+                                Đây chỉ là tạm thời
                               </label>
                             </div>
                           </div>
@@ -2303,25 +2263,25 @@ const ImporterDashboard = () => {
                             <div className="form-check custom-form-check custom-form-check-2 d-flex align-items-center">
                               <input className="form-check-input" type="radio" id="other" name="concern" />
                               <label className="form-check-label ms-2" htmlFor="other">
-                                other
+                                Lý do khác
                               </label>
                             </div>
                           </div>
 
-                          <button className="btn theme-bg-color btn-md fw-bold mt-4 text-white">
-                            Deactivate Account
+                          <button style={{ backgroundColor: '#FFE57F' }} className="btn btn-md fw-bold mt-4 text-black">
+                            Vô hiệu hoá tài khoản
                           </button>
                         </div>
 
                         <div className="dashboard-bg-box">
                           <div className="dashboard-title mb-4">
-                            <h3>Delete Account</h3>
+                            <h3>Xoá tài khoản</h3>
                           </div>
                           <div className="privacy-box">
                             <div className="form-check custom-form-check custom-form-check-2 d-flex align-items-center">
                               <input className="form-check-input" type="radio" id="usable" name="usable" />
                               <label className="form-check-label ms-2" htmlFor="usable">
-                                No longer usable
+                                Không còn sử dụng nữa
                               </label>
                             </div>
                           </div>
@@ -2329,7 +2289,7 @@ const ImporterDashboard = () => {
                             <div className="form-check custom-form-check custom-form-check-2 d-flex align-items-center">
                               <input className="form-check-input" type="radio" id="account" name="usable" />
                               <label className="form-check-label ms-2" htmlFor="account">
-                                Want to switch on other account
+                                Muốn chuyển sang tài khoản khác
                               </label>
                             </div>
                           </div>
@@ -2337,13 +2297,13 @@ const ImporterDashboard = () => {
                             <div className="form-check custom-form-check custom-form-check-2 d-flex align-items-center">
                               <input className="form-check-input" type="radio" id="other-2" name="usable" />
                               <label className="form-check-label ms-2" htmlFor="other-2">
-                                Other
+                                Lý do khác
                               </label>
                             </div>
                           </div>
 
-                          <button className="btn theme-bg-color btn-md fw-bold mt-4 text-white">
-                            Delete My Account
+                          <button style={{ backgroundColor: 'red' }} className="btn btn-md fw-bold mt-4 text-white">
+                            Xoá tài khoản của tôi
                           </button>
                         </div>
                       </div>
@@ -2369,7 +2329,7 @@ const ImporterDashboard = () => {
                       </div>
 
                       <div className="service-detail">
-                        <h5>Every Fresh Products</h5>
+                        <h5>Mỗi sản phẩm rất tươi</h5>
                       </div>
                     </div>
 
@@ -2379,7 +2339,7 @@ const ImporterDashboard = () => {
                       </div>
 
                       <div className="service-detail">
-                        <h5>Free Delivery For Order Over $50</h5>
+                        <h5>Miễn phí vẫn chuyển với đơn trên $50</h5>
                       </div>
                     </div>
 
@@ -2389,7 +2349,7 @@ const ImporterDashboard = () => {
                       </div>
 
                       <div className="service-detail">
-                        <h5>Daily Mega Discounts</h5>
+                        <h5>Mã giảm giá lớn mỗi ngày</h5>
                       </div>
                     </div>
 
@@ -2399,7 +2359,7 @@ const ImporterDashboard = () => {
                       </div>
 
                       <div className="service-detail">
-                        <h5>Best Price On The Market</h5>
+                        <h5>Giá tốt nhất trên thị trường</h5>
                       </div>
                     </div>
                   </div>
@@ -2419,8 +2379,7 @@ const ImporterDashboard = () => {
 
                     <div className="footer-logo-contain">
                       <p>
-                        We are a friendly bar serving a variety of cocktails, wines and beers. Our bar is a perfect
-                        place for a couple.
+                        Chúng tôi là cửa hàng thực phẩm sạch, cung cấp đa dạng các loại rau củ, trái cây, thịt cá tươi ngon mỗi ngày. Đảm bảo chất lượng và an toàn cho mọi gia đình.
                       </p>
 
                       <ul className="address">
@@ -2430,7 +2389,7 @@ const ImporterDashboard = () => {
                         </li>
                         <li>
                           <i data-feather="mail"></i>
-                          <a href="javascript:void(0)">support@fastkart.com</a>
+                          <a href="javascript:void(0)">{user.email}</a>
                         </li>
                       </ul>
                     </div>
@@ -2439,39 +2398,34 @@ const ImporterDashboard = () => {
 
                 <div className="col-xl-2 col-lg-3 col-md-4 col-sm-6">
                   <div className="footer-title">
-                    <h4>Categories</h4>
+                    <h4>Thể loại</h4>
                   </div>
 
                   <div className="footer-contain">
                     <ul>
                       <li>
                         <a href="shop-left-sidebar.html" className="text-content">
-                          Vegetables & Fruit
+                          Rau củ & trái cây
                         </a>
                       </li>
                       <li>
                         <a href="shop-left-sidebar.html" className="text-content">
-                          Beverages
+                          Đồ uống
                         </a>
                       </li>
                       <li>
                         <a href="shop-left-sidebar.html" className="text-content">
-                          Meats & Seafood
+                          Thịt và hải sản
                         </a>
                       </li>
                       <li>
                         <a href="shop-left-sidebar.html" className="text-content">
-                          Frozen Foods
+                          Đồ đông lạnh
                         </a>
                       </li>
                       <li>
                         <a href="shop-left-sidebar.html" className="text-content">
-                          Biscuits & Snacks
-                        </a>
-                      </li>
-                      <li>
-                        <a href="shop-left-sidebar.html" className="text-content">
-                          Grocery & Staples
+                          Bánh và đồ ăn nhẹ
                         </a>
                       </li>
                     </ul>
@@ -2480,34 +2434,25 @@ const ImporterDashboard = () => {
 
                 <div className="col-xl col-lg-2 col-sm-3">
                   <div className="footer-title">
-                    <h4>Useful Links</h4>
+                    <h4>Liên kết hữu ích</h4>
                   </div>
 
                   <div className="footer-contain">
                     <ul>
                       <li>
                         <a href="/" className="text-content">
-                          Home
-                        </a>
-                      </li>
-                      <li>
-                        <a href="shop-left-sidebar.html" className="text-content">
-                          Shop
+                          Trang chủ
                         </a>
                       </li>
                       <li>
                         <a href="about-us.html" className="text-content">
-                          About Us
+                         Về chúng tôi
                         </a>
                       </li>
-                      <li>
-                        <a href="blog-list.html" className="text-content">
-                          Blog
-                        </a>
-                      </li>
+              
                       <li>
                         <a href="contact-us.html" className="text-content">
-                          Contact Us
+                          Liên hệ
                         </a>
                       </li>
                     </ul>
@@ -2516,39 +2461,34 @@ const ImporterDashboard = () => {
 
                 <div className="col-xl-2 col-sm-3">
                   <div className="footer-title">
-                    <h4>Help Center</h4>
+                    <h4>Trung tâm trợ giúp</h4>
                   </div>
 
                   <div className="footer-contain">
                     <ul>
                       <li>
                         <a href="order-success.html" className="text-content">
-                          Your Order
+                          Đơn hàng của bạn
                         </a>
                       </li>
                       <li>
                         <a href="user-dashboard.html" className="text-content">
-                          Your Account
+                          Tài khoản của bạn
                         </a>
                       </li>
                       <li>
                         <a href="order-tracking.html" className="text-content">
-                          Track Order
+                          Theo dõi đơn hàng
                         </a>
                       </li>
                       <li>
                         <a href="wishlist.html" className="text-content">
-                          Your Wishlist
-                        </a>
-                      </li>
-                      <li>
-                        <a href="search.html" className="text-content">
-                          Search
+                          Danh sách mong muốn
                         </a>
                       </li>
                       <li>
                         <a href="faq.html" className="text-content">
-                          FAQ
+                          Các câu hỏi thường gặp
                         </a>
                       </li>
                     </ul>
@@ -2557,7 +2497,7 @@ const ImporterDashboard = () => {
 
                 <div className="col-xl-3 col-lg-4 col-sm-6">
                   <div className="footer-title">
-                    <h4>Contact Us</h4>
+                    <h4>Liên hệ</h4>
                   </div>
 
                   <div className="footer-contact">
@@ -2567,7 +2507,7 @@ const ImporterDashboard = () => {
                           <i data-feather="phone"></i>
                           <div className="contact-number">
                             <h6 className="text-content">Hotline 24/7 :</h6>
-                            <h5>+91 888 104 2340</h5>
+                            <h5>{user.phone}</h5>
                           </div>
                         </div>
                       </li>
@@ -2576,14 +2516,14 @@ const ImporterDashboard = () => {
                         <div className="footer-number">
                           <i data-feather="mail"></i>
                           <div className="contact-number">
-                            <h6 className="text-content">Email Address :</h6>
-                            <h5>fastkart@hotmail.com</h5>
+                            <h6 className="text-content">Địa chỉ Email :</h6>
+                            <h5>{user.email}</h5>
                           </div>
                         </div>
                       </li>
 
                       <li className="social-app">
-                        <h5 className="mb-2 text-content">Download App :</h5>
+                        <h5 className="mb-2 text-content">Tải ứng dụng tại đây :</h5>
                         <ul>
                           <li className="mb-0">
                             <a href="https://play.google.com/store/apps" target="_blank">
@@ -2605,7 +2545,7 @@ const ImporterDashboard = () => {
 
             <div className="sub-footer section-small-space">
               <div className="reserve">
-                <h6 className="text-content">©2022 Fastkart All rights reserved</h6>
+                <h6 className="text-content">©2022 PURE_FOODS All rights reserved</h6>
               </div>
 
               <div className="payment">
@@ -2613,7 +2553,7 @@ const ImporterDashboard = () => {
               </div>
 
               <div className="social-link">
-                <h6 className="text-content">Stay connected :</h6>
+                <h6 className="text-content">Giữ kết nối với chúng tôi :</h6>
                 <ul>
                   <li>
                     <a href="https://www.facebook.com/" target="_blank">

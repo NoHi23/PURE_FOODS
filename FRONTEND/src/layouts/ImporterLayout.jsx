@@ -17,7 +17,7 @@ const ImporterLayout = ({ children }) => {
 
     // Danh sách file JS
     const scriptPaths = [
-      "/assets/js/jquery-3.6.0.min.js",
+      // "/assets/js/jquery-3.6.0.min.js",
       "/assets/js/jquery-ui.min.js",
       "/assets/js/bootstrap/bootstrap.bundle.min.js",
       "/assets/js/bootstrap/bootstrap-notify.min.js",
@@ -26,10 +26,11 @@ const ImporterLayout = ({ children }) => {
       "/assets/js/feather/feather-icon.js",
       "/assets/js/lazysizes.min.js",
       "/assets/js/slick/slick.js",
+      "/assets/js/slick/slick-animation.min.js",
       "/assets/js/slick/custom_slick.js",
-      "/assets/js/apexchart.js",
-      "/assets/js/custom-chart.js",
-      "/assets/js/nav-tab.js",
+      "/assets/js/ion.rangeSlider.min.js",
+      "/assets/js/quantity-2.js",
+      "/assets/js/filter-sidebar.js",
       "/assets/js/script.js",
       "/assets/js/theme-setting.js",
     ];
