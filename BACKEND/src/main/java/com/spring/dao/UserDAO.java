@@ -14,5 +14,5 @@ public interface UserDAO {
     User deleteUser(int id);
     int countUsers();
 
-
+    User findByResetToken(String token);
 }

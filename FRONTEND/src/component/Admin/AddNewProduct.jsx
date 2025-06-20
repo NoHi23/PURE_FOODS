@@ -2,9 +2,20 @@ import React, { useEffect, useState } from 'react'
 import TopBar from '../AdminDashboard/TopBar'
 import SideBar from '../AdminDashboard/SideBar'
 import './AddNewProduct.css'
+import axios from 'axios'
+import { toast } from 'react-toastify'
 const AddNewProduct = () => {
   const [product, setProduct] = useState([]);
-
+  const [form, setForm] = useState({
+    productName: "",
+    categoryID: 0,
+    supplierID: 0,
+    price: 0,
+    stockQuantity: 0,
+    description: "",
+    imageURL: "",
+    status: ""
+  });
   useEffect(() => {
     const sidebarLinks = document.querySelectorAll('.sidebar-link');
 
@@ -26,6 +37,37 @@ const AddNewProduct = () => {
       });
     };
   }, []);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm({ ...form, [name]: value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await axios.post(`http://localhost:8082/PureFoods/api/product/add`, form);
+      if (res.data.status === 200) {
+        toast.success("Thêm sản phẩm thành công!");
+        setForm({
+          productName: "",
+          categoryID: 0,
+          supplierID: 0,
+          price: 0,
+          stockQuantity: 0,
+          description: "",
+          imageURL: "",
+          status: ""
+        });
+      } else {
+        toast.error(res.data.message || "Có lỗi xảy ra");
+      }
+    } catch (error) {
+      toast.error("Lỗi khi gọi API");
+      console.error(error);
+    }
+  };
+
   return (
     <div>
       <div className="tap-top">
@@ -54,13 +96,16 @@ const AddNewProduct = () => {
                                 Name</label>
                               <div className="col-sm-9">
                                 <input className="form-control" type="text"
-                                  placeholder="Product Name" />
+                                  placeholder="Product Name"
+                                  name="productName"
+                                  value={form.productName}
+                                  onChange={handleChange} />
                               </div>
                             </div>
 
                             <div className="mb-4 row align-items-center">
-                              <label className="col-sm-3 col-form-label form-label-title">Product
-                                Type</label>
+                              <label className="col-sm-3 col-form-label form-label-title">Category
+                                Name</label>
                               <div className="col-sm-9">
                                 <select className="js-example-basic-single w-100" name="state">
                                   <option disabled>Static Menu</option>
