@@ -22,5 +22,7 @@ public interface UserService {
 
     int getTotalUsers();
 
-
+    boolean sendResetPasswordEmail(String email);
+    boolean resetPassword(String token, String newPassword);
+    boolean verifyResetToken(String token);
 }

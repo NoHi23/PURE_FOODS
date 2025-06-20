@@ -15,6 +15,8 @@ import 'react-toastify/dist/ReactToastify.css';
 
 import PrivateRoute from './PrivateRoute';
 import AddNewProduct from './component/Admin/AddNewProduct';
+import ResetPassword from './component/Login/ResetPassword';
+import VerifyOtp from './component/Login/VerifyOtp';
 
 function App() {
   return (
@@ -25,6 +27,8 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignUp />} />
           <Route path="/forgot" element={<Forgot />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/verify-otp" element={<VerifyOtp />} />
 
           {/* Các route cần đăng nhập */}
           <Route path="/admin-dashboard" element={
