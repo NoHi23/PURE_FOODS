@@ -155,7 +155,7 @@ const ImporterDashboard = () => {
                         <i className="fa-solid fa-bars"></i>
                       </span>
                     </button>
-                    <a href="index.html" className="web-logo nav-logo">
+                    <a href="/" className="web-logo nav-logo">
                       <img src="../assets/images/logo/1.png" className="img-fluid blur-up lazyload" alt="" />
                     </a>
 
@@ -779,7 +779,7 @@ const ImporterDashboard = () => {
 
                               <ul className="dropdown-menu">
                                 <li>
-                                  <a className="dropdown-item" href="index.html">
+                                  <a className="dropdown-item" href="/">
                                     Kartshop
                                   </a>
                                 </li>
@@ -1347,7 +1347,7 @@ const ImporterDashboard = () => {
         <div className="mobile-menu d-md-none d-block mobile-cart">
           <ul>
             <li>
-              <a href="index.html">
+              <a href="/">
                 <i className="iconly-Home icli"></i>
                 <span>Home</span>
               </a>
@@ -1394,7 +1394,7 @@ const ImporterDashboard = () => {
                   <nav>
                     <ol className="breadcrumb mb-0">
                       <li className="breadcrumb-item">
-                        <a href="index.html">
+                        <a href="/">
                           <i className="fa-solid fa-house"></i>
                         </a>
                       </li>
@@ -2412,7 +2412,7 @@ const ImporterDashboard = () => {
                 <div className="col-xl-3 col-lg-4 col-sm-6">
                   <div className="footer-logo">
                     <div className="theme-logo">
-                      <a href="index.html">
+                      <a href="/">
                         <img src="../assets/images/logo/1.png" className="blur-up lazyload" alt="" />
                       </a>
                     </div>
@@ -2486,7 +2486,7 @@ const ImporterDashboard = () => {
                   <div className="footer-contain">
                     <ul>
                       <li>
-                        <a href="index.html" className="text-content">
+                        <a href="/" className="text-content">
                           Home
                         </a>
                       </li>
