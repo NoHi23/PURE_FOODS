@@ -74,6 +74,16 @@ public class UserDAOImpl implements UserDAO {
         return ((Long) query.uniqueResult()).intValue();
     }
 
-
+    @Override
+    public User findByResetToken(String token) {
+        Session session = sessionFactory.getCurrentSession();
+        try {
+            Query<User> query = session.createQuery("FROM User WHERE resetToken = :token", User.class);
+            query.setParameter("token", token);
+            return query.getSingleResult();
+        } catch (NoResultException e) {
+            return null;
+        }
+    }
 
 }
