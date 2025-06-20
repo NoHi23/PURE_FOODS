@@ -28941,9 +28941,9 @@ footer {
 
 .log-in-section .logo-login img {
   position: absolute;
-  width: calc(140px + (180 - 140) * ((100vw - 320px) / (1920 - 320)));
-  top: 30px;
-  left: 30px
+  width: 20%;
+  top: 0px;
+  left: 75%
 }
 
 .mega-inline {

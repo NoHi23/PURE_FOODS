@@ -170,7 +170,7 @@ const SignUp = () => {
             <div className="col-xl-5 col-lg-6 me-auto">
               <div className="log-in-box">
                 <div className="log-in-title">
-                  <h3>Welcome To Fastkart</h3>
+                  <h3>Welcome To Pure Food</h3>
                   <h4>Sign Up Your Account</h4>
                 </div>
 

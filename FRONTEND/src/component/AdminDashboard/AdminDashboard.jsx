@@ -29,9 +29,6 @@ const AdminDashboard = () => {
     }, [])
 
 
-
-   
-
     useEffect(() => {
         const sidebarLinks = document.querySelectorAll('.sidebar-link');
 
@@ -157,7 +154,6 @@ const AdminDashboard = () => {
                                         </div>
                                         <div className="card-body p-0">
                                             <div className="category-slider-scroll">
-                                                {/* Danh sách category - giữ nguyên cấu trúc bên trong */}
                                                 {[
                                                     { src: "vegetable.svg", name: "Vegetables & Fruit" },
                                                     { src: "cup.svg", name: "Beverages" },
