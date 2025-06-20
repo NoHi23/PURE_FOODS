@@ -1,10 +1,11 @@
-import logo from './logo.svg';
 import './App.css';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import HomePage from './component/HomePage/HomePage';
 import LoginPage from './component/Login/LoginPage';
 import SignUp from './component/SignUp/SignUp';
 import AdminDashboard from './component/AdminDashboard/AdminDashboard';
+import ImporterDashboard from './component/Importer/ImporterDashboard';
+import TraderDashboard from './component/WholeSaler/TraderDashboard';
 import Product from './component/Admin/Product';
 import Forgot from './component/Login/Forgot';
 import { Bounce } from 'react-toastify';
@@ -39,6 +40,18 @@ function App() {
            <Route path="/admin-add-new-product" element={
             <PrivateRoute allowedRoles={1}>
               <AddNewProduct />
+            </PrivateRoute>
+          } />
+          {/* Các route dành cho Người nhập hàng - Importer */}
+          <Route path="/importer" element={
+            <PrivateRoute allowedRoles={4}>
+              <ImporterDashboard />
+            </PrivateRoute>
+          } />
+          {/* Các route dành cho người buôn hàng (Trader; seller; wholesaler) */}
+          <Route path="/wholesaler" element={
+            <PrivateRoute allowedRoles={3}>
+              <TraderDashboard />
             </PrivateRoute>
           } />
 
