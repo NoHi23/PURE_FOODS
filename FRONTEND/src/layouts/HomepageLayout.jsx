@@ -34,15 +34,10 @@ const HomepageLayout = ({ children }) => {
       "/assets/js/feather/feather.min.js",
       "/assets/js/feather/feather-icon.js",
       "/assets/js/lazysizes.min.js",
-      "/assets/js/slick/slick.js",
-      "/assets/js/slick/slick-animation.min.js",
-      "/assets/js/slick/custom_slick.js",
       "/assets/js/auto-height.js",
       "/assets/js/timer1.js",
       "/assets/js/fly-cart.js",
       "/assets/js/quantity-2.js",
-      // "/assets/js/wow.min.js",
-      "/assets/js/custom-wow.js",
       "/assets/js/script.js",
       "/assets/js/theme-setting.js"
     ];
@@ -54,7 +49,7 @@ const HomepageLayout = ({ children }) => {
       document.body.appendChild(script);
       return script;
     });
-
+    
     return () => {
       links.forEach((link) => document.head.removeChild(link));
     };
