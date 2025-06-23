@@ -54,4 +54,20 @@ public class ProductDAOImpl implements ProductDAO {
         return ((Long) ((org.hibernate.query.Query<?>) query).uniqueResult()).intValue();
     }
 
+    @Override
+    public Products findById(int id) {
+        return getProductById(id);
+    }
+    @Override
+    public Products save(Products product) {
+        Session session = sessionFactory.getCurrentSession();
+        if (product.getProductId() == 0) {
+            session.persist(product); // Thêm mới
+        } else {
+            session.merge(product); // Cập nhật
+        }
+        return product;
+    }
+
+
 }
