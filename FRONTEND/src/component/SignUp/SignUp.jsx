@@ -1,5 +1,9 @@
 import axios from 'axios';
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
+
+const GOOGLE_CLIENT_ID = '602510909514-3anvf6bogbdlpectj2r72qicjp7fa21a.apps.googleusercontent.com';
 
 const SignUp = () => {
   const [formData, setFormData] = useState({
@@ -9,6 +13,8 @@ const SignUp = () => {
     phone: '',
     address: ''
   });
+  const navigate = useNavigate();
+
   const [agree, setAgree] = useState(false);
 
   const [message, setMessage] = useState('');
@@ -22,18 +28,137 @@ const SignUp = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-     if (!agree) {
-      alert("Bạn phải chấp nhận điều khoản và chính sách bảo mật.");
+    if (!agree) {
+      toast.warn("Bạn phải chấp nhận điều khoản và chính sách bảo mật.");
       return;
     }
 
     try {
       const res = await axios.post('http://localhost:8082/PureFoods/api/users/register', formData);
-      setMessage(res.data.message || "Đăng ký thành công!");
+      toast.success(res.data.message || "Đăng ký thành công!");
+      navigate('/login')
     } catch (error) {
-      setMessage(error.response?.data?.message || "Đăng ký thất bại!");
+      toast.error(error.response?.data?.message || "Đăng ký thất bại!");
     }
   };
+
+
+
+  useEffect(() => {
+    if (window.google) {
+      window.google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback: (res) => {
+          console.log("Google login response", res);
+          console.log("Token:", res.credential);
+          handleGoogleResponse(res);
+        },
+      });
+      window.google.accounts.id.renderButton(
+        document.getElementById('googleSignInDiv'),
+        { theme: 'outline', size: 'large', width: '100%' }
+      );
+    }
+  }, []);
+
+  const handleGoogleResponse = async (response) => {
+    try {
+      const res = await axios.post('http://localhost:8082/PureFoods/api/users/google', {
+        token: response.credential
+      }, { withCredentials: true });
+
+      const user = res.data;
+      toast.success('Welcome ' + user.fullName);
+
+      console.log("Google Response:", response);
+
+      // Chuyển hướng theo role
+      if (user.roleID === 1) {
+        navigate("/admin-dashboard");
+      } else if (user.roleID === 2) {
+        navigate("/");
+      } else if (user.roleID === 3) {
+        navigate("/wholesaler");
+      } else if (user.roleID === 4) {
+        navigate("/importer");
+      } else if (user.roleID === 5) {
+        navigate("/exporter");
+      } else if (user.roleID === 6) {
+        navigate("/shipper");
+      } else {
+        toast.warn("Unknown role!");
+      }
+
+    } catch (error) {
+      toast.error("Google login failed!");
+      console.error(error);
+    }
+  };
+  useEffect(() => {
+    if (!window.FB) {
+      const script = document.createElement('script');
+      script.src = "https://connect.facebook.net/en_US/sdk.js";
+      script.async = true;
+      script.defer = true;
+      script.crossOrigin = "anonymous";
+      script.onload = () => {
+        window.FB.init({
+          appId: '1056124739222943',
+          cookie: true,
+          xfbml: true,
+          version: 'v20.0'
+        });
+      };
+      document.body.appendChild(script);
+    } else {
+      window.FB.init({
+        appId: '1056124739222943',
+        cookie: true,
+        xfbml: true,
+        version: 'v20.0'
+      });
+    }
+
+    return () => {
+      const script = document.querySelector('script[src="https://connect.facebook.net/en_US/sdk.js"]');
+      if (script) {
+        document.body.removeChild(script);
+      }
+    };
+  }, []);
+
+  const handleFacebookLogin = () => {
+    window.FB.login(function (response) {
+      if (response.authResponse) {
+        const accessToken = response.authResponse.accessToken;
+
+        window.FB.api('/me', { fields: 'name,email' }, function (userInfo) {
+          console.log('User info:', userInfo);
+
+          axios.post('http://localhost:8082/PureFoods/api/users/facebook', {
+            accessToken: accessToken
+          }).then(res => {
+            const user = res.data.user;
+            toast.success("Welcome " + user.fullName);
+
+            if (user.roleID === 1) navigate("/admin-dashboard");
+            else if (user.roleID === 2) navigate("/");
+            else if (user.roleID === 3) navigate("/wholesaler");
+            else if (user.roleID === 4) navigate("/importer");
+            else if (user.roleID === 5) navigate("/exporter");
+            else if (user.roleID === 6) navigate("/shipper");
+
+          }).catch(err => {
+            console.error("Facebook login failed", err);
+            toast.error("Facebook login failed");
+          });
+        });
+      } else {
+        toast.error("User cancelled login or did not fully authorize.");
+      }
+    }, { scope: 'public_profile,email' });
+  };
+
   return (
     <div>
       <section className="log-in-section section-b-space">
@@ -45,7 +170,7 @@ const SignUp = () => {
             <div className="col-xl-5 col-lg-6 me-auto">
               <div className="log-in-box">
                 <div className="log-in-title">
-                  <h3>Welcome To Fastkart</h3>
+                  <h3>Welcome To Pure Food</h3>
                   <h4>Sign Up Your Account</h4>
                 </div>
 
@@ -59,6 +184,7 @@ const SignUp = () => {
                           className="form-control"
                           placeholder="Full Name"
                           onChange={handleChange}
+                          required
                         />
                         <label>Full Name</label>
                       </div>
@@ -72,6 +198,7 @@ const SignUp = () => {
                           className="form-control"
                           placeholder="Email Address"
                           onChange={handleChange}
+                          required
                         />
                         <label>Email Address</label>
                       </div>
@@ -85,6 +212,7 @@ const SignUp = () => {
                           className="form-control"
                           placeholder="Password"
                           onChange={handleChange}
+                          required
                         />
                         <label>Password</label>
                       </div>
@@ -98,6 +226,7 @@ const SignUp = () => {
                           className="form-control"
                           placeholder="Phone"
                           onChange={handleChange}
+                          required
                         />
                         <label>Phone</label>
                       </div>
@@ -111,25 +240,26 @@ const SignUp = () => {
                           className="form-control"
                           placeholder="Address"
                           onChange={handleChange}
+                          required
                         />
                         <label>Address</label>
                       </div>
                     </div>
 
                     <div className="col-12">
-                    <div className="form-check ps-0 m-0 remember-box">
-                      <input
-                        className="checkbox_animated check-box"
-                        type="checkbox"
-                        id="terms"
-                        checked={agree}
-                        onChange={(e) => setAgree(e.target.checked)}
-                      />
-                      <label className="form-check-label" htmlFor="terms">
-                        I accept the terms and privacy policy.
-                      </label>
+                      <div className="form-check ps-0 m-0 remember-box">
+                        <input
+                          className="checkbox_animated check-box"
+                          type="checkbox"
+                          id="terms"
+                          checked={agree}
+                          onChange={(e) => setAgree(e.target.checked)}
+                        />
+                        <label className="form-check-label" htmlFor="terms">
+                          I accept the terms and privacy policy.
+                        </label>
+                      </div>
                     </div>
-                  </div>
 
                     <div className="col-12">
                       <button type="submit" className="btn btn-animation w-100 justify-content-center">
@@ -148,14 +278,18 @@ const SignUp = () => {
                 <div className="log-in-button">
                   <ul>
                     <li>
-                      <a href="https://www.google.com/" className="btn google-button w-100">
-                        <img src="../assets/images/inner-page/google.png" alt="" /> Sign up with Google
-                      </a>
+                      <div id="googleSignInDiv">
+                        <a className="btn google-button w-100">
+                          <img src="../assets/images/inner-page/google.png" alt="" /> Sign up with Google
+                        </a>
+                      </div>
                     </li>
                     <li>
-                      <a href="https://www.facebook.com/" className="btn google-button w-100">
-                        <img src="../assets/images/inner-page/facebook.png" alt="" /> Sign up with Facebook
-                      </a>
+                      <div onClick={handleFacebookLogin}>
+                        <a className="btn google-button w-100">
+                          <img src="../assets/images/inner-page/facebook.png" alt="" /> Log In with Facebook
+                        </a>
+                      </div>
                     </li>
                   </ul>
                 </div>

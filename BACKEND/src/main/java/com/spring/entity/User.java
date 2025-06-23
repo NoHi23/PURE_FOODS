@@ -1,6 +1,8 @@
 package com.spring.entity;
 
 import jakarta.persistence.*;
+
+import java.sql.Timestamp;
 import java.util.Date;
 
 @Entity
@@ -20,8 +22,8 @@ public class User {
     @Column(name = "Password", nullable = false, length = 255)
     private String password;
 
-    @Column(name = "RoleID", nullable = false, length = 50)
-    private int roleID; // 'Customer', 'Admin', 'Seller'
+    @Column(name = "RoleID")
+    private int roleID;
 
     @Column(name = "Phone", length = 20)
     private String phone;
@@ -35,6 +37,12 @@ public class User {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "CreatedAt")
     private java.sql.Timestamp createdAt;
+
+    @Column(name = "reset_token")
+    private String resetToken;
+
+    @Column(name = "token_expiry")
+    private Timestamp tokenExpiry;
 
     public User() {}
 
@@ -106,7 +114,21 @@ public class User {
     public int getStatus() {
         return status;
     }
+
     public void setStatus(int status) {
         this.status = status;
+    }
+
+    public Timestamp getTokenExpiry() {
+        return tokenExpiry;
+    }
+    public void setTokenExpiry(Timestamp tokenExpiry) {
+        this.tokenExpiry = tokenExpiry;
+    }
+    public String getResetToken() {
+        return resetToken;
+    }
+    public void setResetToken(String resetToken) {
+        this.resetToken = resetToken;
     }
 }
