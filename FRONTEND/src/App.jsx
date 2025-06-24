@@ -17,8 +17,6 @@ import ResetPassword from './component/Login/ResetPassword';
 import VerifyOtp from './component/Login/VerifyOtp';
 import Category from './component/Admin/Category';
 import AllUser from './component/Admin/AllUser';
-
-function App() {
 import Footer from './layouts/Footer';
 import Header from './layouts/Header';
 import BackToTopButton from './layouts/BackToTopButton';
@@ -86,37 +84,6 @@ function AppContent() {
           } />
 
         </Routes>
-      </BrowserRouter>
-        {/* Các route cần đăng nhập */}
-        <Route path="/admin-dashboard" element={
-          <PrivateRoute allowedRoles={1}>
-            <AdminDashboard />
-          </PrivateRoute>
-        } />
-        <Route path="/admin-product" element={
-          <PrivateRoute allowedRoles={1}>
-            <Product />
-          </PrivateRoute>
-        } />
-        <Route path="/admin-add-new-product" element={
-          <PrivateRoute allowedRoles={1}>
-            <AddNewProduct />
-          </PrivateRoute>
-        } />
-        {/* Các route dành cho Người nhập hàng - Importer */}
-        <Route path="/importer" element={
-          <PrivateRoute allowedRoles={4}>
-            <ImporterDashboard />
-          </PrivateRoute>
-        } />
-        {/* Các route dành cho người buôn hàng (Trader; seller; wholesaler) */}
-        <Route path="/wholesaler" element={
-          <PrivateRoute allowedRoles={3}>
-            <TraderDashboard />
-          </PrivateRoute>
-        } />
-      </Routes>
-
       {/* Chỉ hiện Footer nếu không nằm trong blacklist và user tồn tại*/}
       {!shouldHideFooter && <Footer user={user} />}
       <BackToTopButton />
