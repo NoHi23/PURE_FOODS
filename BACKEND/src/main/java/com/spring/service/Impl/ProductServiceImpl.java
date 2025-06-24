@@ -29,7 +29,9 @@ public class ProductServiceImpl implements ProductService {
             throw new RuntimeException("Danh sách sản phẩm trống");
         }
         for (Products product : productList) {
-            list.add(convertToDTO(product));
+            //thêm đoạn này mới hiện harvestDate, expirationDate, nutritionalInfo
+            ProductDetails details = productDAO.getProductDetailsById(product.getProductId());
+            list.add(convertToDTO(product, details));
         }
         return list;
     }
