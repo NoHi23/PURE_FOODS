@@ -50,22 +50,42 @@ public class ProductServiceImpl implements ProductService {
         q.setStockQuantity(product.getStockQuantity());
         q.setDescription(product.getDescription());
         q.setImageURL(product.getImageURL());
-        q.setLastUpdateBy(1);
+        q.setLastUpdateBy(product.getLastUpdatedBy());
         q.setStatus(product.getStatus());
         productDAO.addProduct(q);
         return convertToDTO(q);
     }
-
     @Override
     public ProductDTO updateProduct(ProductDTO product) {
         Products q = productDAO.getProductById(product.getProductId());
-        if(q == null){
+        if (q == null) {
             throw new RuntimeException("Product not found");
         }
+
+        // Validate fields (tùy chọn)
+        if (product.getPrice() < 0 || product.getStockQuantity() < 0) {
+            throw new IllegalArgumentException("Price and Stock must be non-negative");
+        }
+
+        // Update fields
         q.setProductName(product.getProductName());
-        productDAO.updateProduct(q);
+        q.setCategoryId(product.getCategoryId());
+        q.setSupplierId(product.getSupplierId());
+        q.setPrice(product.getPrice());
+        q.setStockQuantity(product.getStockQuantity());
+        q.setDescription(product.getDescription());
+        q.setImageURL(product.getImageURL());
+        q.setStatus(product.getStatus());
+        q.setLastUpdateBy(product.getLastUpdatedBy());
+        try {
+            productDAO.updateProduct(q);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to update product: " + e.getMessage(), e);
+        }
+
         return convertToDTO(q);
     }
+
 
     @Override
     public boolean deleteProduct(int id) {
@@ -73,7 +93,8 @@ public class ProductServiceImpl implements ProductService {
         if(product == null){
             throw new RuntimeException("Product not found");
         }
-        productDAO.deleteProduct(product.getProductId());
+        product.setStatus(1);
+        productDAO.updateProduct(product);
         return true;
     }
 

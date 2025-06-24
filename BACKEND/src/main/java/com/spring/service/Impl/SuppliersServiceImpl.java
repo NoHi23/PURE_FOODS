@@ -12,6 +12,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 @Transactional(propagation = Propagation.REQUIRED)
 public class SuppliersServiceImpl implements SuppliersService {
@@ -40,6 +43,12 @@ public class SuppliersServiceImpl implements SuppliersService {
                 suppliers.getStatus()
         );
     }
-
+    @Override
+    public List<SuppliersDTO> getAllSupplier() {
+        List<Suppliers> suppliers = suppliersDAO.getAllSupplier();
+        return suppliers.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
 
 }
