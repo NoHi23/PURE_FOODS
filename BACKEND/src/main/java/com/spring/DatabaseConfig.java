@@ -1,6 +1,7 @@
 package com.spring;
 
 import com.spring.common.Constants;
+import com.spring.entity.*;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -55,6 +56,10 @@ public class DatabaseConfig implements Constants.DatabaseConfig {
         sessionFactory.setPackagesToScan(new String[] { "com.spring.entity", "com.spring.dao",
                 "com.spring", "com.spring.dao.Impl", "com.spring.service.Impl"});
         sessionFactory.setHibernateProperties(hibernateProperties());
+
+        // Thêm ProductDetails vào danh sách các lớp được ánh xạ
+        sessionFactory.setAnnotatedClasses(Products.class, Suppliers.class, User.class, Category.class, ProductDetails.class, ProductOrganicInfo.class);
+
         System.out.println("--> ...sessionFactory= " + sessionFactory ==  null ? " null " : "SessionFactory is Not null");
         return sessionFactory;
     }

@@ -15,14 +15,17 @@ import PrivateRoute from './PrivateRoute';
 import AddNewProduct from './component/Admin/AddNewProduct';
 import ResetPassword from './component/Login/ResetPassword';
 import VerifyOtp from './component/Login/VerifyOtp';
-import Footer from './layouts/Footer'; // ✅ Thêm dòng này
+import Footer from './layouts/Footer';
+import Header from './layouts/Header';
+import BackToTopButton from './layouts/BackToTopButton';
 
 function AppContent() {
   const location = useLocation();
-
-  // ✅ Danh sách các path KHÔNG muốn hiện footer
+    // Danh sách các path KHÔNG muốn hiện header và footer
+  const hideHeaderPaths = ['/login', '/signup', '/forgot', '/reset-password', '/verify-otp'];
   const hideFooterPaths = ['/login', '/signup', '/forgot', '/reset-password', '/verify-otp'];
 
+  const shouldHideHeader = hideHeaderPaths.includes(location.pathname);
   const shouldHideFooter = hideFooterPaths.includes(location.pathname);
 
   const userString = localStorage.getItem('user');
@@ -30,6 +33,7 @@ function AppContent() {
 
   return (
     <>
+    {!shouldHideHeader && <Header />}
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage />} />
@@ -70,6 +74,7 @@ function AppContent() {
 
       {/* Chỉ hiện Footer nếu không nằm trong blacklist và user tồn tại*/}
       {!shouldHideFooter && <Footer user={user} />}
+      <BackToTopButton />
     </>
   );
 }

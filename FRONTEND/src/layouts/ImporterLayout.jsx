@@ -25,14 +25,14 @@ const ImporterLayout = ({ children }) => {
       "/assets/js/feather/feather.min.js",
       "/assets/js/feather/feather-icon.js",
       "/assets/js/lazysizes.min.js",
-      "/assets/js/slick/slick.js",
-      "/assets/js/slick/slick-animation.min.js",
-      "/assets/js/slick/custom_slick.js",
-      "/assets/js/ion.rangeSlider.min.js",
-      "/assets/js/quantity-2.js",
-      "/assets/js/filter-sidebar.js",
-      "/assets/js/script.js",
-      "/assets/js/theme-setting.js",
+      // "/assets/js/slick/slick.js",
+      //  "/assets/js/slick/slick-animation.min.js",
+      //  "/assets/js/slick/custom_slick.js",
+       "/assets/js/ion.rangeSlider.min.js",
+      // "/assets/js/quantity-2.js",
+      // "/assets/js/filter-sidebar.js",
+      // "/assets/js/script.js",
+      // "/assets/js/theme-setting.js",
     ];
 
     // Gắn link CSS
@@ -59,7 +59,6 @@ const ImporterLayout = ({ children }) => {
       scriptElements.forEach((script) => document.body.removeChild(script));
     };
   }, []);
-
 
   return <>{children}</>;
 };

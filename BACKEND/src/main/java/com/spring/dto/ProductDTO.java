@@ -1,7 +1,6 @@
 package com.spring.dto;
 
 import jakarta.persistence.Column;
-
 import java.util.Date;
 
 public class ProductDTO {
@@ -16,6 +15,10 @@ public class ProductDTO {
     private int lastUpdatedBy;
     private java.sql.Timestamp createdAt;
     private int status;
+
+    private Date harvestDate;
+    private Date expirationDate;
+    private String nutritionalInfo;
 
     public ProductDTO() {}
 
@@ -37,6 +40,15 @@ public class ProductDTO {
         this.createdAt = createdAt;
         this.status = status;
     }
+
+    //thêm mới importer
+    public Date getHarvestDate() { return harvestDate; }
+    public void setHarvestDate(Date harvestDate) { this.harvestDate = harvestDate; }
+    public Date getExpirationDate() { return expirationDate; }
+    public void setExpirationDate(Date expirationDate) { this.expirationDate = expirationDate; }
+    public String getNutritionalInfo() { return nutritionalInfo; }
+    public void setNutritionalInfo(String nutritionalInfo) { this.nutritionalInfo = nutritionalInfo; }
+
     public int getProductId() {
         return productId;
     }

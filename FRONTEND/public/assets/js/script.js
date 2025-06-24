@@ -180,26 +180,6 @@ $('.qty-box .quantity-left-minus').on('click', function () {
 });
 
 /*=====================
-  07. Tap to Top js
-   ==========================*/
-$(document).ready(function () {
-    $(window).scroll(function () {
-        if ($(this).scrollTop() > 50) {
-            $('.back-to-top').fadeIn();
-        } else {
-            $('.back-to-top').fadeOut();
-        }
-    });
-    // scroll body to 0px on click
-    $('.back-to-top').click(function () {
-        $('body,html').animate({
-            scrollTop: 0
-        }, 400);
-        return false;
-    });
-});
-
-/*=====================
    08. User Dashboard Left Sidebar Show Js
    ==========================*/
 $(".left-dashboard-show").click(function () {

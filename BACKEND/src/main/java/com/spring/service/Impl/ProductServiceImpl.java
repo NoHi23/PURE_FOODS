@@ -2,6 +2,7 @@ package com.spring.service.Impl;
 
 import com.spring.dao.ProductDAO;
 import com.spring.dto.ProductDTO;
+import com.spring.entity.ProductDetails;
 import com.spring.entity.Products;
 import com.spring.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,23 +10,25 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Service
 @Transactional(propagation = Propagation.REQUIRED)
-
 public class ProductServiceImpl implements ProductService {
     @Autowired
     private ProductDAO productDAO;
+
     @Override
     public List<ProductDTO> getAllProduct() {
         List<ProductDTO> list = new ArrayList<ProductDTO>();
         List<Products> productList = productDAO.getAllProduct();
-        if(productList == null || productList.size() == 0){
-            throw new RuntimeException("Product List is empty");
+        if (productList == null || productList.size() == 0) {
+            throw new RuntimeException("Danh sách sản phẩm trống");
         }
-        for(Products product : productList){
+        for (Products product : productList) {
             list.add(convertToDTO(product));
         }
         return list;
@@ -34,8 +37,8 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public ProductDTO getProductById(int id) {
         Products product = productDAO.getProductById(id);
-        if(product == null){
-            throw new RuntimeException("Product not found");
+        if (product == null) {
+            throw new RuntimeException("Không tìm thấy sản phẩm");
         }
         return convertToDTO(product);
     }
@@ -59,8 +62,8 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public ProductDTO updateProduct(ProductDTO product) {
         Products q = productDAO.getProductById(product.getProductId());
-        if(q == null){
-            throw new RuntimeException("Product not found");
+        if (q == null) {
+            throw new RuntimeException("Không tìm thấy sản phẩm");
         }
         q.setProductName(product.getProductName());
         productDAO.updateProduct(q);
@@ -70,8 +73,8 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public boolean deleteProduct(int id) {
         Products product = productDAO.getProductById(id);
-        if(product == null){
-            throw new RuntimeException("Product not found");
+        if (product == null) {
+            throw new RuntimeException("Không tìm thấy sản phẩm");
         }
         productDAO.deleteProduct(product.getProductId());
         return true;
@@ -82,8 +85,56 @@ public class ProductServiceImpl implements ProductService {
         return productDAO.countProduct();
     }
 
+    // Thêm logic nhập sản phẩm mới về kho
+    @Override
+    public ProductDTO importProduct(ProductDTO productDTO) {
+        Products q = new Products();
+        q.setProductName(productDTO.getProductName());
+        q.setCategoryId(productDTO.getCategoryId());
+        q.setSupplierId(productDTO.getSupplierId());
+        q.setPrice(productDTO.getPrice());
+        q.setStockQuantity(productDTO.getStockQuantity());
+        q.setDescription(productDTO.getDescription());
+        q.setImageURL(productDTO.getImageURL());
+        q.setLastUpdateBy(1); // Giả sử Importer có UserID = 1, cần điều chỉnh
+        q.setStatus(productDTO.getStatus());
+        q.setCreatedAt(new Timestamp(System.currentTimeMillis())); // Sử dụng Timestamp thay cho Date
+        productDAO.addProduct(q);
+
+        // Đảm bảo ProductDetails được lưu với dữ liệu từ ProductDTO
+        ProductDetails details = new ProductDetails();
+        details.setProductId(q.getProductId());
+        details.setHarvestDate(productDTO.getHarvestDate());
+        details.setExpirationDate(productDTO.getExpirationDate());
+        details.setNutritionalInfo(productDTO.getNutritionalInfo());
+        details.setStatus(productDTO.getStatus());
+        productDAO.addProductDetails(details);
+
+        // Lấy lại product và details để trả về dữ liệu đầy đủ
+        Products updatedProduct = productDAO.getProductById(q.getProductId());
+        ProductDetails updatedDetails = productDAO.getProductDetailsById(q.getProductId());
+        return convertToDTO(updatedProduct, updatedDetails);
+    }
+
+    // Thêm logic cập nhật trạng thái hữu cơ
+    @Override
+    public ProductDTO updateOrganicStatus(int productId, int organicStatusId) {
+        Products product = productDAO.getProductById(productId);
+        if (product == null) {
+            throw new RuntimeException("Không tìm thấy sản phẩm");
+        }
+        productDAO.updateProductOrganicInfo(productId, organicStatusId); // Giả sử DAO có phương thức này
+        product = productDAO.getProductById(productId); // Lấy lại để cập nhật DTO
+        return convertToDTO(product);
+    }
+
+    // Thay đổi convertToDTO để bao gồm dữ liệu từ ProductDetails
     private ProductDTO convertToDTO(Products product) {
-        return new ProductDTO(
+        return convertToDTO(product, null);
+    }
+
+    private ProductDTO convertToDTO(Products product, ProductDetails details) {
+        ProductDTO dto = new ProductDTO(
                 product.getProductId(),
                 product.getProductName(),
                 product.getCategoryId(),
@@ -96,6 +147,11 @@ public class ProductServiceImpl implements ProductService {
                 product.getCreatedAt(),
                 product.getStatus()
         );
+        if (details != null) {
+            dto.setHarvestDate(details.getHarvestDate());
+            dto.setExpirationDate(details.getExpirationDate());
+            dto.setNutritionalInfo(details.getNutritionalInfo());
+        }
+        return dto;
     }
-
 }

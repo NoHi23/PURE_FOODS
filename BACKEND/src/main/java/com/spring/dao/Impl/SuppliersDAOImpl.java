@@ -8,6 +8,8 @@ import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public class SuppliersDAOImpl implements SuppliersDAO {
     @Autowired
@@ -18,5 +20,10 @@ public class SuppliersDAOImpl implements SuppliersDAO {
         Session session = sessionFactory.getCurrentSession();
         return session.get(Suppliers.class, id);
     }
-
+    //thêm mới
+    @Override
+    public List<Suppliers> getAllSuppliers() {
+        Session session = sessionFactory.getCurrentSession();
+        return session.createQuery("FROM Suppliers WHERE status = 1", Suppliers.class).list();
+    }
 }

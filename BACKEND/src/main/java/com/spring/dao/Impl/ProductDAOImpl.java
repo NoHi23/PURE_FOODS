@@ -1,7 +1,9 @@
 package com.spring.dao.Impl;
 
 import com.spring.dao.ProductDAO;
+import com.spring.entity.ProductDetails;
 import com.spring.entity.Products;
+import com.spring.entity.*;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import jakarta.persistence.Query;
@@ -54,4 +56,25 @@ public class ProductDAOImpl implements ProductDAO {
         return ((Long) ((org.hibernate.query.Query<?>) query).uniqueResult()).intValue();
     }
 
+    @Override
+    public void addProductDetails(ProductDetails productDetails) {
+        Session session = sessionFactory.getCurrentSession();
+        session.persist(productDetails);
+    }
+
+    @Override
+    public void updateProductOrganicInfo(int productId, int organicStatusId) {
+        Session session = sessionFactory.getCurrentSession();
+        String hql = "UPDATE ProductOrganicInfo SET organicStatusId = :organicStatusId WHERE productId = :productId";
+        session.createQuery(hql)
+                .setParameter("organicStatusId", organicStatusId)
+                .setParameter("productId", productId)
+                .executeUpdate();
+    }
+
+    @Override
+    public ProductDetails getProductDetailsById(int productId) {
+        Session session = sessionFactory.getCurrentSession();
+        return session.get(ProductDetails.class, productId);
+    }
 }
