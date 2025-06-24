@@ -17,6 +17,8 @@ import PrivateRoute from './PrivateRoute';
 import AddNewProduct from './component/Admin/AddNewProduct';
 import ResetPassword from './component/Login/ResetPassword';
 import VerifyOtp from './component/Login/VerifyOtp';
+import Category from './component/Admin/Category';
+import AllUser from './component/Admin/AllUser';
 
 function App() {
   return (
@@ -41,9 +43,19 @@ function App() {
               <Product />
             </PrivateRoute>
           } />
-           <Route path="/admin-add-new-product" element={
+          <Route path="/admin-add-new-product" element={
             <PrivateRoute allowedRoles={1}>
               <AddNewProduct />
+            </PrivateRoute>
+          } />
+          <Route path="/category" element={
+            <PrivateRoute allowedRoles={1}>
+              <Category />
+            </PrivateRoute>
+          } />
+          <Route path="/all-user" element={
+            <PrivateRoute allowedRoles={1}>
+              <AllUser />
             </PrivateRoute>
           } />
           {/* Các route dành cho Người nhập hàng - Importer */}

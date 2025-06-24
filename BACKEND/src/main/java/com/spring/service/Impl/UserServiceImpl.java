@@ -63,7 +63,7 @@ public class UserServiceImpl implements UserService {
         user.setPhone(phone);
         user.setAddress(address);
         user.setCreatedAt(new java.sql.Timestamp(new Date().getTime()));
-        user.setStatus(1);
+        user.setStatus(0);
         user.setTokenExpiry(null);
         user.setResetToken(null);
         userDAO.addUser(user);
@@ -99,7 +99,7 @@ public class UserServiceImpl implements UserService {
             user.setPassword("123456");
             user.setRoleID(2);
             user.setCreatedAt(new java.sql.Timestamp(new Date().getTime()));
-            user.setStatus(1);
+            user.setStatus(0);
             user.setTokenExpiry(null);
             user.setResetToken(null);
             userDAO.addUser(user);
@@ -121,7 +121,7 @@ public class UserServiceImpl implements UserService {
             user.setPassword("facebook");
             user.setRoleID(2);
             user.setCreatedAt(new java.sql.Timestamp(new Date().getTime()));
-            user.setStatus(1);
+            user.setStatus(0);
             user.setTokenExpiry(null);
             user.setResetToken(null);
             userDAO.addUser(user);
@@ -167,7 +167,7 @@ public class UserServiceImpl implements UserService {
         if (user == null) {
             throw new RuntimeException("User not found!");
         }
-        user.setStatus(0);
+        user.setStatus(1);
         return convertToDTO(user);
     }
 
