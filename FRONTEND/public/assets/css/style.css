@@ -21801,8 +21801,8 @@ header .header-notification.remove {
 
 header .header-notification .close-notification {
   top: 50%;
-  -webkit-transform: translateY(-50%);
-  transform: translateY(-50%);
+  -webkit-transform: translateX(-100%);
+  transform: translateX(-100%);
   position: absolute;
   right: 11px;
   padding: 0;
