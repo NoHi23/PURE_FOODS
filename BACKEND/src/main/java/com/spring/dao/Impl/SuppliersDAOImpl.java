@@ -11,6 +11,8 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+import java.util.List;
+
 @Repository
 public class SuppliersDAOImpl implements SuppliersDAO {
     @Autowired
@@ -21,11 +23,10 @@ public class SuppliersDAOImpl implements SuppliersDAO {
         Session session = sessionFactory.getCurrentSession();
         return session.get(Suppliers.class, id);
     }
-
+    //thêm mới
     @Override
-    public List<Suppliers> getAllSupplier() {
+    public List<Suppliers> getAllSuppliers() {
         Session session = sessionFactory.getCurrentSession();
-        Query<Suppliers> query = session.createQuery("FROM Suppliers", Suppliers.class);
-        return query.getResultList();
+        return session.createQuery("FROM Suppliers WHERE status = 1", Suppliers.class).list();
     }
 }
