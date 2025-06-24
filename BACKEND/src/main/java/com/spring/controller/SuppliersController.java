@@ -30,7 +30,7 @@ public class SuppliersController {
         }
     }
     //Lấy full danh sách nhà cung cấp
-    @GetMapping
+    @GetMapping("/getAll")
     public ResponseEntity<?> getAllSuppliers() {
         try {
             List<SuppliersDTO> suppliersList = suppliersService.getAllSuppliers();

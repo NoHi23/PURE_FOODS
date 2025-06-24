@@ -24,8 +24,12 @@ import BackToTopButton from './layouts/BackToTopButton';
 function AppContent() {
   const location = useLocation();
   // Danh sách các path KHÔNG muốn hiện header và footer
-  const hideHeaderPaths = ['/login', '/signup', '/forgot', '/reset-password', '/verify-otp', '/admin-dashboard'];
-  const hideFooterPaths = ['/login', '/signup', '/forgot', '/reset-password', '/verify-otp', '/admin-dashboard'];
+  const hideHeaderPaths = ['/login', '/signup', '/forgot', '/reset-password', '/verify-otp', '/admin-dashboard', '/admin-product', '/admin-add-new-product',
+    '/category', '/all-user'
+  ];
+  const hideFooterPaths = ['/login', '/signup', '/forgot', '/reset-password', '/verify-otp', '/admin-dashboard', '/admin-product', '/admin-add-new-product',
+    '/category', '/all-user'
+  ];
   const backToTop = ['/login', '/signup', '/forgot', '/reset-password', '/verify-otp', '/'];
 
   const shouldHideHeader = hideHeaderPaths.includes(location.pathname);
