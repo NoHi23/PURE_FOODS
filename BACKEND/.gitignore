@@ -4,9 +4,6 @@ target/
 !**/src/test/**/target/
 /BACKEND/target/
 
-### Bỏ 2 file kết nối SQL ###
-/src/main/resources/application.properties
-/src/main/resources/database.properties
 
 
 ### IntelliJ IDEA ###
