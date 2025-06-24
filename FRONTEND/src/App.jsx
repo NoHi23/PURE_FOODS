@@ -23,19 +23,21 @@ import BackToTopButton from './layouts/BackToTopButton';
 
 function AppContent() {
   const location = useLocation();
-    // Danh sách các path KHÔNG muốn hiện header và footer
-  const hideHeaderPaths = ['/login', '/signup', '/forgot', '/reset-password', '/verify-otp'];
-  const hideFooterPaths = ['/login', '/signup', '/forgot', '/reset-password', '/verify-otp'];
+  // Danh sách các path KHÔNG muốn hiện header và footer
+  const hideHeaderPaths = ['/login', '/signup', '/forgot', '/reset-password', '/verify-otp', '/admin-dashboard'];
+  const hideFooterPaths = ['/login', '/signup', '/forgot', '/reset-password', '/verify-otp', '/admin-dashboard'];
+  const backToTop = ['/login', '/signup', '/forgot', '/reset-password', '/verify-otp', '/'];
 
   const shouldHideHeader = hideHeaderPaths.includes(location.pathname);
   const shouldHideFooter = hideFooterPaths.includes(location.pathname);
+  const shouldHideBackToTop = backToTop.includes(location.pathname);
 
   const userString = localStorage.getItem('user');
   const user = userString ? JSON.parse(userString) : null;
 
   return (
     <>
-    {!shouldHideHeader && <Header />}
+      {!shouldHideHeader && <Header />}
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage />} />
@@ -44,49 +46,49 @@ function AppContent() {
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/verify-otp" element={<VerifyOtp />} />
 
-          {/* Các route cần đăng nhập */}
-          <Route path="/admin-dashboard" element={
-            <PrivateRoute allowedRoles={1}>
-              <AdminDashboard />
-            </PrivateRoute>
-          } />
-          <Route path="/admin-product" element={
-            <PrivateRoute allowedRoles={1}>
-              <Product />
-            </PrivateRoute>
-          } />
-          <Route path="/admin-add-new-product" element={
-            <PrivateRoute allowedRoles={1}>
-              <AddNewProduct />
-            </PrivateRoute>
-          } />
-          <Route path="/category" element={
-            <PrivateRoute allowedRoles={1}>
-              <Category />
-            </PrivateRoute>
-          } />
-          <Route path="/all-user" element={
-            <PrivateRoute allowedRoles={1}>
-              <AllUser />
-            </PrivateRoute>
-          } />
-          {/* Các route dành cho Người nhập hàng - Importer */}
-          <Route path="/importer" element={
-            <PrivateRoute allowedRoles={4}>
-              <ImporterDashboard />
-            </PrivateRoute>
-          } />
-          {/* Các route dành cho người buôn hàng (Trader; seller; wholesaler) */}
-          <Route path="/wholesaler" element={
-            <PrivateRoute allowedRoles={3}>
-              <TraderDashboard />
-            </PrivateRoute>
-          } />
+        {/* Các route cần đăng nhập */}
+        <Route path="/admin-dashboard" element={
+          <PrivateRoute allowedRoles={1}>
+            <AdminDashboard />
+          </PrivateRoute>
+        } />
+        <Route path="/admin-product" element={
+          <PrivateRoute allowedRoles={1}>
+            <Product />
+          </PrivateRoute>
+        } />
+        <Route path="/admin-add-new-product" element={
+          <PrivateRoute allowedRoles={1}>
+            <AddNewProduct />
+          </PrivateRoute>
+        } />
+        <Route path="/category" element={
+          <PrivateRoute allowedRoles={1}>
+            <Category />
+          </PrivateRoute>
+        } />
+        <Route path="/all-user" element={
+          <PrivateRoute allowedRoles={1}>
+            <AllUser />
+          </PrivateRoute>
+        } />
+        {/* Các route dành cho Người nhập hàng - Importer */}
+        <Route path="/importer" element={
+          <PrivateRoute allowedRoles={4}>
+            <ImporterDashboard />
+          </PrivateRoute>
+        } />
+        {/* Các route dành cho người buôn hàng (Trader; seller; wholesaler) */}
+        <Route path="/wholesaler" element={
+          <PrivateRoute allowedRoles={3}>
+            <TraderDashboard />
+          </PrivateRoute>
+        } />
 
-        </Routes>
+      </Routes>
       {/* Chỉ hiện Footer nếu không nằm trong blacklist và user tồn tại*/}
       {!shouldHideFooter && <Footer user={user} />}
-      <BackToTopButton />
+      {!shouldHideBackToTop && <BackToTopButton />}
     </>
   );
 }
