@@ -61,7 +61,7 @@ public class ProductController {
             Map<String, Object> response = new HashMap<>();
             response.put("message", "add Product successfully!");
             response.put("status", 200);
-            response.put("producy", p);
+            response.put("product", p);
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
             Map<String, Object> errorResponse = new HashMap<>();

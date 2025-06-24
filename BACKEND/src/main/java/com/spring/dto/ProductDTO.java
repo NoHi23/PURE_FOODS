@@ -1,4 +1,4 @@
-package com.spring.dto;
+    package com.spring.dto;
 
 import jakarta.persistence.Column;
 import java.util.Date;
@@ -20,12 +20,12 @@ public class ProductDTO {
     private Date expirationDate;
     private String nutritionalInfo;
 
-    public ProductDTO() {}
+        public ProductDTO() {}
 
-    public ProductDTO(int productId, String productName) {
-        this.productId = productId;
-        this.productName = productName;
-    }
+        public ProductDTO(int productId, String productName) {
+            this.productId = productId;
+            this.productName = productName;
+        }
 
     public ProductDTO(int productId, String productName, int categoryId, int supplierId, float price, int stockQuantity, String description, String imageURL, int lastUpdatedBy, java.sql.Timestamp createdAt, int status) {
         this.productId = productId;

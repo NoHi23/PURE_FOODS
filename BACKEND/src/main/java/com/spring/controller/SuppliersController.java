@@ -1,6 +1,7 @@
 package com.spring.controller;
 
 
+import com.spring.dto.CategoryDTO;
 import com.spring.dto.SuppliersDTO;
 import com.spring.service.SuppliersService;
 import org.springframework.beans.factory.annotation.Autowired;
