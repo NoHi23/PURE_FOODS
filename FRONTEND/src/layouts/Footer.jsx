@@ -49,7 +49,7 @@ const Footer = ({ user }) => {
                     </li>
                     <li>
                       <i data-feather="mail"></i>
-                      <a href="#">{user.email}</a>
+                      <a href="#">supportPureFood@gmail.com</a>
                     </li>
                   </ul>
                 </div>
@@ -171,7 +171,7 @@ const Footer = ({ user }) => {
                       <i data-feather="phone"></i>
                       <div className="contact-number">
                         <h6 className="text-content">Hotline 24/7 :</h6>
-                        <h5>{user.phone}</h5>
+                        <h5>1900 10113</h5>
                       </div>
                     </div>
                   </li>
@@ -181,7 +181,7 @@ const Footer = ({ user }) => {
                       <i data-feather="mail"></i>
                       <div className="contact-number">
                         <h6 className="text-content">Địa chỉ Email :</h6>
-                        <h5>{user.email}</h5>
+                        <h5>supportPureFood@gmail.com</h5>
                       </div>
                     </div>
                   </li>
