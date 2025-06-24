@@ -12,6 +12,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Service
 @Transactional(propagation = Propagation.REQUIRED)
 public class SuppliersServiceImpl implements SuppliersService {
@@ -41,5 +44,17 @@ public class SuppliersServiceImpl implements SuppliersService {
         );
     }
 
+    @Override
+    public List<SuppliersDTO> getAllSuppliers() {
+        List<Suppliers> suppliersList = suppliersDAO.getAllSuppliers();
+        if (suppliersList == null || suppliersList.isEmpty()) {
+            throw new RuntimeException("No suppliers found");
+        }
+        List<SuppliersDTO> dtoList = new ArrayList<>();
+        for (Suppliers supplier : suppliersList) {
+            dtoList.add(convertToDTO(supplier));
+        }
+        return dtoList;
+    }
 
 }
