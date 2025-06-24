@@ -2,6 +2,9 @@ import React, { useState, useEffect } from "react";
 import ImporterLayout from "../../layouts/ImporterLayout";
 import Pagination from "../../layouts/Pagination";
 import axios from "axios";
+import ImporterProduct from "./ImporterProduct";
+import ImporterSetting from "./ImporterSetting";
+import ImporterProfile from "./ImporterProfile";
 
 const ImporterDashboard = () => {
   const user = JSON.parse(localStorage.getItem("user"));
@@ -23,7 +26,6 @@ const ImporterDashboard = () => {
       .then((res) => {
         const data = res.data.listProduct || [];
         setProducts(data);
-        console.log("xem có hiện không:", data);
       })
       .catch((err) => {
         console.error("Lỗi khi lấy dữ liệu sản phẩm:", err);
@@ -138,9 +140,7 @@ const ImporterDashboard = () => {
               </div>
 
               <div className="col-xxl-9 col-lg-8">
-                <button className="btn left-dashboard-show btn-animation btn-md fw-bold d-block mb-4 d-lg-none">
-                  Show Menu
-                </button>
+                
                 <div className="dashboard-right-sidebar">
                   <div className="tab-content" id="pills-tabContent">
                     <div className="tab-pane fade show active" id="pills-dashboard" role="tabpanel">
@@ -392,108 +392,17 @@ const ImporterDashboard = () => {
                         </div>
                       </div>
                     </div>
-                    {/* Thanh sidebar các sản phẩm bên trái */}
+                    {/* Thanh sidebar quản lý nhập kho bên trái */}
                     <div className="tab-pane fade" id="pills-product" role="tabpanel">
-                      <div className="product-tab">
-                        <div className="title">
-                          <h2>Tất cả sản phẩm</h2>
-                          <span className="title-leaf">
-                            <svg className="icon-width bg-gray">
-                              <use href="../assets/svg/leaf.svg#leaf"></use>
-                            </svg>
-                          </span>
-                        </div>
-
-                        <div className="table-responsive dashboard-bg-box">
-                          <table className="table product-table">
-                            <thead>
-                              <tr>
-                                <th scope="col">Ảnh</th>
-                                <th scope="col">Tên sản phẩm</th>
-                                <th scope="col">Giá</th>
-                                <th scope="col">Số lượng</th>
-                                <th scope="col">Đã bán</th>
-                                <th scope="col">Hành động</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {currentProducts.length > 0 ? (
-                                currentProducts.map((product, index) => (
-                                  <tr key={index}>
-                                    <td className="product-image">
-                                      <img
-                                        src={`http://localhost:8082/PureFoods/images/${product.imageURL}`}
-                                        className="img-fluid"
-                                        alt={product.productName}
-                                      />
-                                    </td>
-                                    <td>
-                                      <h6>{product.productName || "Không xác định"}</h6>
-                                    </td>
-                                    <td>
-                                      <h6 className="theme-color fw-bold">
-                                        {product.price ? `$${product.price}` : "Không xác định"}
-                                      </h6>
-                                    </td>
-                                    <td>
-                                      <h6>{product.stockQuantity || "0"}</h6>
-                                    </td>
-                                    <td>
-                                      <h6>Chưa có</h6> {/* Giả định chưa có trường "đã bán" trong API */}
-                                    </td>
-                                    <td className="edit-delete">
-                                      <i
-                                        className="edit"
-                                        style={{
-                                          cursor: "pointer",
-                                          backgroundColor: "#e0f7fa",
-                                          border: "1px solid #00acc1",
-                                          padding: "4px 8px",
-                                          borderRadius: "4px",
-                                          color: "#007c91",
-                                          fontWeight: "500",
-                                        }}
-                                      >
-                                        Sửa ✏️
-                                      </i>
-                                      <i
-                                        className="delete"
-                                        style={{
-                                          cursor: "pointer",
-                                          marginLeft: "10px",
-                                          backgroundColor: "#ffebee",
-                                          border: "1px solid #e53935",
-                                          padding: "4px 8px",
-                                          borderRadius: "4px",
-                                          color: "#c62828",
-                                          fontWeight: "500",
-                                        }}
-                                      >
-                                        Xoá 🗑️
-                                      </i>
-                                    </td>
-                                  </tr>
-                                ))
-                              ) : (
-                                <tr>
-                                  <td colSpan="6" className="text-center">
-                                    Không có sản phẩm nào.
-                                  </td>
-                                </tr>
-                              )}
-                            </tbody>
-                          </table>
-                          {/* Thanh phân trang */}
-                          <Pagination
-                            currentPage={currentPage}
-                            totalPages={totalPages}
-                            onPageChange={(page) => setCurrentPage(page)}
-                          />
-                          {/* Hết phân trang */}
-                        </div>
-                      </div>
+                      <ImporterProduct
+                        products={products}
+                        setProducts={setProducts}
+                        currentPage={currentPage}
+                        setCurrentPage={setCurrentPage}
+                      />
                     </div>
-
+                    
+                    {/* Thanh tab Lịch sử nhập kho */}
                     <div className="tab-pane fade" id="pills-order" role="tabpanel">
                       <div className="dashboard-order">
                         <div className="title">
@@ -642,213 +551,18 @@ const ImporterDashboard = () => {
                         </div>
                       </div>
                     </div>
+
                     {/* Thanh sidebar bên trái, thông tin cá nhân */}
                     <div className="tab-pane fade" id="pills-profile" role="tabpanel">
-                      <div className="dashboard-profile">
-                        <div className="title">
-                          <h2>Thông tin cá nhân</h2>
-                          <span className="title-leaf">
-                            <svg className="icon-width bg-gray">
-                              <use href="../assets/svg/leaf.svg#leaf"></use>
-                            </svg>
-                          </span>
-                        </div>
-
-                        <div className="profile-tab dashboard-bg-box">
-                          <div className="dashboard-title dashboard-flex">
-                            <h3>Tên hồ sơ</h3>
-                            <button
-                              className="btn btn-sm theme-bg-color text-white"
-                              data-bs-toggle="modal"
-                              data-bs-target="#edit-profile"
-                            >
-                              Chỉnh sửa
-                            </button>
-                          </div>
-
-                          <ul>
-                            <li>
-                              <h5>Tên công ty :</h5>
-                              <h5>PURE_FOODS</h5>
-                            </li>
-                            <li>
-                              <h5>Họ và tên :</h5>
-                              <h5>{user.fullName}</h5>
-                            </li>
-                            <li>
-                              <h5>Địa chỉ Email :</h5>
-                              <h5>{user.email}</h5>
-                            </li>
-                            <li>
-                              <h5>Số điện thoại :</h5>
-                              <h5>{user.phone}</h5>
-                            </li>
-                            <li>
-                              <h5>Địa chỉ :</h5>
-                              <h5>{user.address}</h5>
-                            </li>
-                            <li>
-                              <h5>Tài khoản được tạo lúc :</h5>
-                              <h5>
-                                {new Date(user.createdAt).toLocaleString("vi-VN", {
-                                  year: "numeric",
-                                  month: "2-digit",
-                                  day: "2-digit",
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                  second: "2-digit",
-                                })}
-                              </h5>
-                            </li>
-                            <li>
-                              <h5>Trạng thái :</h5>
-                              {user.status === 1 && <h5 style={{ color: "green", margin: 0 }}>Đang hoạt động</h5>}
-                              {user.status === 2 && <h5 style={{ color: "red", margin: 0 }}>Bị cấm</h5>}
-                              {![1, 2].includes(user.status) && <h5 style={{ margin: 0 }}>Không xác định</h5>}
-                            </li>
-                            <li>
-                              <h5>Thiết lập lại token :</h5>
-                              <h5>{user.resetToken ?? "trống"}</h5>
-                            </li>
-                            <li>
-                              <h5>Token hết hạn :</h5>
-                              <h5>{user.tokenExpiry ?? "trống"}</h5>
-                            </li>
-                          </ul>
-                        </div>
-                      </div>
+                      <ImporterProfile user={user} />
                     </div>
+                    {/* hết thông tin cá nhân */}
 
+                    {/* Thanh Tab phần Cài đặt (setting) */}
                     <div className="tab-pane fade" id="pills-security" role="tabpanel">
-                      <div className="dashboard-privacy">
-                        <div className="title">
-                          <h2>Cài đặt</h2>
-                          <span className="title-leaf">
-                            <svg className="icon-width bg-gray">
-                              <use href="../assets/svg/leaf.svg#leaf"></use>
-                            </svg>
-                          </span>
-                        </div>
-
-                        <div className="dashboard-bg-box">
-                          <div className="dashboard-title mb-4">
-                            <h3>Thông báo</h3>
-                          </div>
-
-                          <div className="privacy-box">
-                            <div className="form-check custom-form-check custom-form-check-2 d-flex align-items-center">
-                              <input
-                                className="form-check-input"
-                                type="radio"
-                                id="desktop"
-                                name="desktop"
-                                defaultChecked
-                              />
-                              <label className="form-check-label ms-2" htmlFor="desktop">
-                                Hiện thông báo lên màn hình chính
-                              </label>
-                            </div>
-                          </div>
-
-                          <div className="privacy-box">
-                            <div className="form-check custom-form-check custom-form-check-2 d-flex align-items-center">
-                              <input className="form-check-input" type="radio" id="enable" name="desktop" />
-                              <label className="form-check-label ms-2" htmlFor="enable">
-                                Bật thông báo
-                              </label>
-                            </div>
-                          </div>
-
-                          <div className="privacy-box">
-                            <div className="form-check custom-form-check custom-form-check-2 d-flex align-items-center">
-                              <input className="form-check-input" type="radio" id="activity" name="desktop" />
-                              <label className="form-check-label ms-2" htmlFor="activity">
-                                Nhận thông báo cho các hoạt động của tôi
-                              </label>
-                            </div>
-                          </div>
-
-                          <div className="privacy-box">
-                            <div className="form-check custom-form-check custom-form-check-2 d-flex align-items-center">
-                              <input className="form-check-input" type="radio" id="dnd" name="desktop" />
-                              <label className="form-check-label ms-2" htmlFor="dnd">
-                                Không làm phiền (DND)
-                              </label>
-                            </div>
-                          </div>
-
-                          <button className="btn theme-bg-color btn-md fw-bold mt-4 text-white">Lưu thay đổi</button>
-                        </div>
-
-                        <div className="dashboard-bg-box">
-                          <div className="dashboard-title mb-4">
-                            <h3>Vô hiệu hoá tài khoản</h3>
-                          </div>
-                          <div className="privacy-box">
-                            <div className="form-check custom-form-check custom-form-check-2 d-flex align-items-center">
-                              <input className="form-check-input" type="radio" id="concern" name="concern" />
-                              <label className="form-check-label ms-2" htmlFor="concern">
-                                Tôi có mối lo ngại về quyền riêng tư
-                              </label>
-                            </div>
-                          </div>
-                          <div className="privacy-box">
-                            <div className="form-check custom-form-check custom-form-check-2 d-flex align-items-center">
-                              <input className="form-check-input" type="radio" id="temporary" name="concern" />
-                              <label className="form-check-label ms-2" htmlFor="temporary">
-                                Đây chỉ là tạm thời
-                              </label>
-                            </div>
-                          </div>
-                          <div className="privacy-box">
-                            <div className="form-check custom-form-check custom-form-check-2 d-flex align-items-center">
-                              <input className="form-check-input" type="radio" id="other" name="concern" />
-                              <label className="form-check-label ms-2" htmlFor="other">
-                                Lý do khác
-                              </label>
-                            </div>
-                          </div>
-
-                          <button style={{ backgroundColor: "#FFE57F" }} className="btn btn-md fw-bold mt-4 text-black">
-                            Vô hiệu hoá tài khoản
-                          </button>
-                        </div>
-
-                        <div className="dashboard-bg-box">
-                          <div className="dashboard-title mb-4">
-                            <h3>Xoá tài khoản</h3>
-                          </div>
-                          <div className="privacy-box">
-                            <div className="form-check custom-form-check custom-form-check-2 d-flex align-items-center">
-                              <input className="form-check-input" type="radio" id="usable" name="usable" />
-                              <label className="form-check-label ms-2" htmlFor="usable">
-                                Không còn sử dụng nữa
-                              </label>
-                            </div>
-                          </div>
-                          <div className="privacy-box">
-                            <div className="form-check custom-form-check custom-form-check-2 d-flex align-items-center">
-                              <input className="form-check-input" type="radio" id="account" name="usable" />
-                              <label className="form-check-label ms-2" htmlFor="account">
-                                Muốn chuyển sang tài khoản khác
-                              </label>
-                            </div>
-                          </div>
-                          <div className="privacy-box">
-                            <div className="form-check custom-form-check custom-form-check-2 d-flex align-items-center">
-                              <input className="form-check-input" type="radio" id="other-2" name="usable" />
-                              <label className="form-check-label ms-2" htmlFor="other-2">
-                                Lý do khác
-                              </label>
-                            </div>
-                          </div>
-
-                          <button style={{ backgroundColor: "red" }} className="btn btn-md fw-bold mt-4 text-white">
-                            Xoá tài khoản của tôi
-                          </button>
-                        </div>
-                      </div>
+                      <ImporterSetting />
                     </div>
+                    {/* Hết setting (cài đặt) */}
                   </div>
                 </div>
               </div>
@@ -922,255 +636,6 @@ const ImporterDashboard = () => {
           </div>
         </div>
         {/* <!-- Add address modal box end -->
-
-    <!-- Location Modal Start --> */}
-        <div className="modal location-modal fade theme-modal" id="locationModal" tabIndex="-1">
-          <div className="modal-dialog modal-dialog-centered modal-fullscreen-sm-down">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title" id="exampleModalLabel1">
-                  Choose your Delivery Location
-                </h5>
-                <p className="mt-1 text-content">Enter your address and we will specify the offer for your area.</p>
-                <button type="button" className="btn-close" data-bs-dismiss="modal">
-                  <i className="fa-solid fa-xmark"></i>
-                </button>
-              </div>
-              <div className="modal-body">
-                <div className="location-list">
-                  <div className="search-input">
-                    <input type="search" className="form-control" placeholder="Search Your Area" />
-                    <i className="fa-solid fa-magnifying-glass"></i>
-                  </div>
-
-                  <div className="disabled-box">
-                    <h6>Select a Location</h6>
-                  </div>
-
-                  <ul className="location-select custom-height">
-                    <li>
-                      <a href="javascript:void(0)">
-                        <h6>Alabama</h6>
-                        <span>Min: $130</span>
-                      </a>
-                    </li>
-
-                    <li>
-                      <a href="javascript:void(0)">
-                        <h6>Arizona</h6>
-                        <span>Min: $150</span>
-                      </a>
-                    </li>
-
-                    <li>
-                      <a href="javascript:void(0)">
-                        <h6>California</h6>
-                        <span>Min: $110</span>
-                      </a>
-                    </li>
-
-                    <li>
-                      <a href="javascript:void(0)">
-                        <h6>Colorado</h6>
-                        <span>Min: $140</span>
-                      </a>
-                    </li>
-
-                    <li>
-                      <a href="javascript:void(0)">
-                        <h6>Florida</h6>
-                        <span>Min: $160</span>
-                      </a>
-                    </li>
-
-                    <li>
-                      <a href="javascript:void(0)">
-                        <h6>Georgia</h6>
-                        <span>Min: $120</span>
-                      </a>
-                    </li>
-
-                    <li>
-                      <a href="javascript:void(0)">
-                        <h6>Kansas</h6>
-                        <span>Min: $170</span>
-                      </a>
-                    </li>
-
-                    <li>
-                      <a href="javascript:void(0)">
-                        <h6>Minnesota</h6>
-                        <span>Min: $120</span>
-                      </a>
-                    </li>
-
-                    <li>
-                      <a href="javascript:void(0)">
-                        <h6>New York</h6>
-                        <span>Min: $110</span>
-                      </a>
-                    </li>
-
-                    <li>
-                      <a href="javascript:void(0)">
-                        <h6>Washington</h6>
-                        <span>Min: $130</span>
-                      </a>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        {/* <!-- Location Modal End -->
-
-    <!-- Edit Profile Start --> */}
-        <div className="modal fade theme-modal" id="editProfile" tabIndex="-1">
-          <div className="modal-dialog modal-lg modal-dialog-centered modal-fullscreen-sm-down">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title" id="exampleModalLabel2">
-                  Edit Profile
-                </h5>
-                <button type="button" className="btn-close" data-bs-dismiss="modal">
-                  <i className="fa-solid fa-xmark"></i>
-                </button>
-              </div>
-              <div className="modal-body">
-                <div className="row g-4">
-                  <div className="col-xxl-12">
-                    <form>
-                      <div className="form-floating theme-form-floating">
-                        <input type="text" className="form-control" id="pname" defaultValue="Jack Jennas" />
-                        <label htmlFor="pname">Full Name</label>
-                      </div>
-                    </form>
-                  </div>
-
-                  <div className="col-xxl-6">
-                    <form>
-                      <div className="form-floating theme-form-floating">
-                        <input type="email" className="form-control" id="email1" defaultValue="vicki.pope@gmail.com" />
-                        <label htmlFor="email1">Email address</label>
-                      </div>
-                    </form>
-                  </div>
-
-                  <div className="col-xxl-6">
-                    <form>
-                      <div className="form-floating theme-form-floating">
-                        <input
-                          className="form-control"
-                          type="tel"
-                          defaultValue="4567891234"
-                          name="mobile"
-                          id="mobile"
-                          maxLength="10"
-                          onInput={(e) => {
-                            const maxLength = 10;
-                            if (e.target.value.length > maxLength) {
-                              e.target.value = e.target.value.slice(0, maxLength);
-                            }
-                          }}
-                        />
-                        <label htmlFor="mobile">Email address</label>
-                      </div>
-                    </form>
-                  </div>
-
-                  <div className="col-12">
-                    <form>
-                      <div className="form-floating theme-form-floating">
-                        <input
-                          type="text"
-                          className="form-control"
-                          id="address1"
-                          defaultValue="8424 James Lane South San Francisco"
-                        />
-                        <label htmlFor="address1">Add Address</label>
-                      </div>
-                    </form>
-                  </div>
-
-                  <div className="col-12">
-                    <form>
-                      <div className="form-floating theme-form-floating">
-                        <input type="text" className="form-control" id="address2" defaultValue="CA 94080" />
-                        <label htmlFor="address2">Add Address 2</label>
-                      </div>
-                    </form>
-                  </div>
-
-                  <div className="col-xxl-4">
-                    <form>
-                      <div className="form-floating theme-form-floating">
-                        <select className="form-select" id="floatingSelect1" defaultValue="">
-                          <option value="" disabled>
-                            Choose Your Country
-                          </option>
-                          <option value="kingdom">United Kingdom</option>
-                          <option value="states">United States</option>
-                          <option value="fra">France</option>
-                          <option value="china">China</option>
-                          <option value="spain">Spain</option>
-                          <option value="italy">Italy</option>
-                          <option value="turkey">Turkey</option>
-                          <option value="germany">Germany</option>
-                          <option value="russian">Russian Federation</option>
-                          <option value="malay">Malaysia</option>
-                          <option value="mexico">Mexico</option>
-                          <option value="austria">Austria</option>
-                          <option value="hong">Hong Kong SAR, China</option>
-                          <option value="ukraine">Ukraine</option>
-                          <option value="thailand">Thailand</option>
-                          <option value="saudi">Saudi Arabia</option>
-                          <option value="canada">Canada</option>
-                          <option value="singa">Singapore</option>
-                        </select>
-                        <label htmlFor="floatingSelect">Country</label>
-                      </div>
-                    </form>
-                  </div>
-
-                  <div className="col-xxl-4">
-                    <form>
-                      <div className="form-floating theme-form-floating">
-                        <select className="form-select" id="floatingSelect" defaultValue="">
-                          <option value="">Choose Your City</option>
-                          <option value="kingdom">India</option>
-                          <option value="states">Canada</option>
-                          <option value="fra">Dubai</option>
-                          <option value="china">Los Angeles</option>
-                          <option value="spain">Thailand</option>
-                        </select>
-                        <label htmlFor="floatingSelect">City</label>
-                      </div>
-                    </form>
-                  </div>
-
-                  <div className="col-xxl-4">
-                    <form>
-                      <div className="form-floating theme-form-floating">
-                        <input type="text" className="form-control" id="address3" defaultValue="94080" />
-                        <label htmlFor="address3">Pin Code</label>
-                      </div>
-                    </form>
-                  </div>
-                </div>
-              </div>
-              <div className="modal-footer">
-                <button type="button" className="btn btn-animation btn-md fw-bold" data-bs-dismiss="modal">
-                  Close
-                </button>
-                <button type="button" data-bs-dismiss="modal" className="btn theme-bg-color btn-md fw-bold text-light">
-                  Save changes
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-        {/* <!-- Edit Profile End -->
 
     <!-- Edit Card Start --> */}
         <div className="modal fade theme-modal" id="editCard" tabIndex="-1">
