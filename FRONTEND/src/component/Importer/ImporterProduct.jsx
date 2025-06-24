@@ -3,9 +3,12 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import Pagination from "../../layouts/Pagination";
+import ImporterEditProduct from "./ImporterEditProduct";
 
 const ImporterProduct = ({ setProducts, currentPage, setCurrentPage }) => {
   const [products, setLocalProducts] = useState([]);
+  const [showEditModal, setShowEditModal] = useState(false); //show modal sửa
+  const [selectedProduct, setSelectedProduct] = useState(null); //chọn id của product để sửa
   const [newProduct, setNewProduct] = useState({
     productId: null,
     productName: "",
@@ -28,19 +31,23 @@ const ImporterProduct = ({ setProducts, currentPage, setCurrentPage }) => {
   const indexOfFirst = indexOfLast - productsPerPage;
   const currentProducts = products.slice(indexOfFirst, indexOfLast);
 
-  // Fetch danh sách sản phẩm khi mount
-  useEffect(() => {
+  // Đặt ở trên useEffect
+  const fetchProducts = () => {
     axios
       .get("http://localhost:8082/PureFoods/api/product/getAll")
       .then((res) => {
         const data = res.data.listProduct || [];
         setLocalProducts(data);
         setProducts(data); // Đồng bộ với state cha
-        console.log("xem có hiện ảnh k:", data);
       })
       .catch((err) => {
         console.error("Lỗi khi lấy danh sách sản phẩm:", err);
       });
+  };
+
+  // Rồi trong useEffect thì gọi nó ra
+  useEffect(() => {
+    fetchProducts();
   }, [setProducts]);
 
   // Submit form nhập kho
@@ -133,21 +140,20 @@ const ImporterProduct = ({ setProducts, currentPage, setCurrentPage }) => {
 
   // Xử lý Delete sản phẩm
   const handleDeleteProduct = async (productId) => {
-  if (window.confirm("Bạn có chắc muốn xóa sản phẩm này?")) {
-    try {
-      await axios.delete("http://localhost:8082/PureFoods/api/product/delete", {
-        data: { productId }, // Gửi productId trong body
-      });
-      setLocalProducts((prev) => prev.filter((p) => p.productId !== productId));
-      setProducts((prev) => prev.filter((p) => p.productId !== productId));
-      toast.success("Xóa sản phẩm thành công!");
-    } catch (err) {
-      console.error("Lỗi khi xóa sản phẩm:", err);
-      toast.error("Xóa sản phẩm thất bại. Vui lòng kiểm tra lại!");
+    if (window.confirm("Bạn có chắc muốn xóa sản phẩm này?")) {
+      try {
+        await axios.delete("http://localhost:8082/PureFoods/api/product/delete", {
+          data: { productId }, // Gửi productId trong body
+        });
+        setLocalProducts((prev) => prev.filter((p) => p.productId !== productId));
+        setProducts((prev) => prev.filter((p) => p.productId !== productId));
+        toast.success("Xóa sản phẩm thành công!");
+      } catch (err) {
+        console.error("Lỗi khi xóa sản phẩm:", err);
+        toast.error("Xóa sản phẩm thất bại. Vui lòng kiểm tra lại!");
+      }
     }
-  }
-};
-
+  };
 
   return (
     <div className="product-tab">
@@ -411,7 +417,10 @@ const ImporterProduct = ({ setProducts, currentPage, setCurrentPage }) => {
                         color: "#007c91",
                         fontWeight: "400",
                       }}
-                      onClick={() => handleEditProduct(product)}
+                      onClick={() => {
+                        setSelectedProduct(product);
+                        setShowEditModal(true);
+                      }}
                     >
                       Sửa ✏️
                     </button>
@@ -445,6 +454,15 @@ const ImporterProduct = ({ setProducts, currentPage, setCurrentPage }) => {
 
         {/* Phân trang */}
         <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+        {/* Show modal để edit (chỉnh sửa sản phẩm) */}
+        {showEditModal && (
+          <ImporterEditProduct
+            show={showEditModal}
+            onClose={() => setShowEditModal(false)}
+            product={selectedProduct}
+            onUpdated={fetchProducts}
+          />
+        )}
       </div>
     </div>
   );

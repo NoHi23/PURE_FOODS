@@ -72,11 +72,7 @@ const ImporterProfile = ({ user }) => {
             {![0, 1].includes(user.status) && <h5 style={{ margin: 0 }}>Không xác định</h5>}
           </li>
           <li>
-            <h5>Thiết lập lại token :</h5>
-            <h5>{user.resetToken ?? "trống"}</h5>
-          </li>
-          <li>
-            <h5>Token hết hạn :</h5>
+            <h5>Lần đổi mật khẩu gần nhất :</h5>
             <h5>
               {user.tokenExpiry
                 ? new Date(
