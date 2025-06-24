@@ -3,7 +3,7 @@ import { useEffect } from "react";
 const HomepageLayout = ({ children }) => {
   useEffect(() => {
     const headLinks = [
-        "https://fonts.googleapis.com/css2?family=Russo+One&display=swap",
+      "https://fonts.googleapis.com/css2?family=Russo+One&display=swap",
       "https://fonts.googleapis.com/css2?family=Pacifico&display=swap",
       "https://fonts.googleapis.com/css2?family=Kaushan+Script&display=swap",
       "https://fonts.googleapis.com/css2?family=Exo+2:wght@400;500;600;700;800;900&display=swap",
@@ -23,6 +23,33 @@ const HomepageLayout = ({ children }) => {
       return link;
     });
 
+
+    // JS
+    const jsScripts = [
+      "/assets/js/jquery-3.6.0.min.js",
+      "/assets/js/jquery-ui.min.js",
+      "/assets/js/bootstrap/bootstrap.bundle.min.js",
+      "/assets/js/bootstrap/bootstrap-notify.min.js",
+      "assets/js/bootstrap/popper.min.js",
+      "/assets/js/feather/feather.min.js",
+      "/assets/js/feather/feather-icon.js",
+      "/assets/js/lazysizes.min.js",
+      "/assets/js/auto-height.js",
+      "/assets/js/timer1.js",
+      "/assets/js/fly-cart.js",
+      "/assets/js/quantity-2.js",
+      "/assets/js/script.js",
+      "/assets/js/theme-setting.js"
+    ];
+
+    const scripts = jsScripts.map((src) => {
+      const script = document.createElement("script");
+      script.src = src;
+      script.async = true;
+      document.body.appendChild(script);
+      return script;
+    });
+    
     return () => {
       links.forEach((link) => document.head.removeChild(link));
     };

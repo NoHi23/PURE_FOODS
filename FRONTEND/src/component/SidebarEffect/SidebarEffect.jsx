@@ -10,18 +10,21 @@ const SidebarEffect = () => {
     let nodes = [];
     let bgGradient, overlayGradient;
     let animationFrameId;
+    let isCancelled = false;
 
-    function Node(x, y, radius, blur, speed) {
-      speed /= 2;
-      this.x = x;
-      this.y = y;
-      this.radius = radius;
-      this.blur = blur;
-      this.a = Math.random() * Math.PI * 2;
-      this.speed = Math.random() * speed + speed;
+    class Node {
+      constructor(x, y, radius, blur, speed) {
+        speed /= 2;
+        this.x = x;
+        this.y = y;
+        this.radius = radius;
+        this.blur = blur;
+        this.a = Math.random() * Math.PI * 2;
+        this.speed = Math.random() * speed + speed;
+      }
     }
 
-    function redraw() {
+    const redraw = () => {
       width = window.innerWidth;
       height = window.innerHeight;
 
@@ -38,54 +41,52 @@ const SidebarEffect = () => {
       overlayGradient = ctx.createLinearGradient(0, height, width, 0);
       overlayGradient.addColorStop(0.25, "teal");
       overlayGradient.addColorStop(0.75, "orange");
-    }
+    };
 
-    function render() {
-      animationFrameId = requestAnimationFrame(render);
-      ctx.fillStyle = bgGradient;
-      ctx.fillRect(0, 0, width, height);
+    const render = () => {
+      if (isCancelled) return;
 
-      for (let node of nodes) {
-        let dx = Math.cos(node.a) * node.speed;
-        let dy = Math.sin(node.a) * node.speed;
+      animationFrameId = setTimeout(() => {
+        requestAnimationFrame(render);
+        ctx.fillStyle = bgGradient;
+        ctx.fillRect(0, 0, width, height);
 
-        node.x += dx;
-        node.y += dy;
+        for (let node of nodes) {
+          const dx = Math.cos(node.a) * node.speed;
+          const dy = Math.sin(node.a) * node.speed;
 
-        if (node.x < -node.radius * 2 && dx < 0) {
-          node.x = width + node.radius * 2;
-        } else if (node.x > width + node.radius && dx > 0) {
-          node.x = -node.radius;
+          node.x += dx;
+          node.y += dy;
+
+          if (node.x < -node.radius * 2 && dx < 0) node.x = width + node.radius * 2;
+          else if (node.x > width + node.radius && dx > 0) node.x = -node.radius;
+
+          if (node.y < -node.radius && dy < 0) node.y = height + node.radius * 2;
+          else if (node.y > height + node.radius && dy > 0) node.y = -node.radius;
+
+          const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, node.radius);
+          gradient.addColorStop(0, "rgba(255,255,255,0.5)");
+          gradient.addColorStop(node.blur, "rgba(255,255,255,0.5)");
+          gradient.addColorStop(1, "rgba(255,255,255,0.0)");
+          ctx.fillStyle = gradient;
+          ctx.save();
+          ctx.translate(node.x, node.y);
+          ctx.beginPath();
+          ctx.arc(0, 0, node.radius, 0, Math.PI * 2, true);
+          ctx.fill();
+          ctx.restore();
         }
 
-        if (node.y < -node.radius && dy < 0) {
-          node.y = height + node.radius * 2;
-        } else if (node.y > height + node.radius && dy > 0) {
-          node.y = -node.radius;
-        }
-
-        const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, node.radius);
-        gradient.addColorStop(0, "rgba(255,255,255,0.5)");
-        gradient.addColorStop(node.blur, "rgba(255,255,255,0.5)");
-        gradient.addColorStop(1, "rgba(255,255,255,0.0)");
-        ctx.fillStyle = gradient;
         ctx.save();
-        ctx.translate(node.x, node.y);
-        ctx.beginPath();
-        ctx.arc(0, 0, node.radius, 0, Math.PI * 2, true);
-        ctx.fill();
+        ctx.globalCompositeOperation = "overlay";
+        ctx.fillStyle = overlayGradient;
+        ctx.fillRect(0, 0, width, height);
         ctx.restore();
-      }
+      }, 1000 / 30); // ~30fps
+    };
 
-      ctx.save();
-      ctx.globalCompositeOperation = "overlay";
-      ctx.fillStyle = overlayGradient;
-      ctx.fillRect(0, 0, width, height);
-      ctx.restore();
-    }
-
-    for (let i = 0; i < 100; i++) {
-      const radius = Math.random() * 32 + 32;
+    for (let i = 0; i < 50; i++) {
+      const radius = Math.random() * 24 + 24;
       const blur = Math.random() * 0.3 + 0.7;
       const x = Math.random() * width;
       const y = Math.random() * height;
@@ -102,13 +103,14 @@ const SidebarEffect = () => {
     render();
 
     return () => {
+      isCancelled = true;
       window.removeEventListener("resize", redraw);
-      cancelAnimationFrame(animationFrameId);
+      clearTimeout(animationFrameId);
       if (container && canvas) container.removeChild(canvas);
     };
   }, []);
 
-  return (null);
+  return null;
 };
 
 export default SidebarEffect;

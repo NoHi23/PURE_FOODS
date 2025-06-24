@@ -36,7 +36,8 @@
     "simplebar": "^6.3.1",
     "simplebar-react": "^3.3.1",
     "slick-carousel": "^1.8.1",
-    "web-vitals": "^2.1.4"
+    "web-vitals": "^2.1.4",
+    "xlsx": "^0.18.5"
   },
   "scripts": {
     "start": "react-scripts start",
