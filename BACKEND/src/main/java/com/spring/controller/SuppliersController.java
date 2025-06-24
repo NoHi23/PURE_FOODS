@@ -1,11 +1,14 @@
 package com.spring.controller;
 
 
+import com.spring.dto.CategoryDTO;
 import com.spring.dto.SuppliersDTO;
 import com.spring.service.SuppliersService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/supplier")
@@ -22,5 +25,11 @@ public class SuppliersController {
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
         }
+    }
+
+    @GetMapping("/getAll")
+    public ResponseEntity<List<SuppliersDTO>> getAllSuppliers() {
+        List<SuppliersDTO> supplier = suppliersService.getAllSupplier();
+        return ResponseEntity.ok(supplier);
     }
 }

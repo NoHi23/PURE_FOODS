@@ -32,6 +32,28 @@ const Category = () => {
     }
   }, [categories]);
 
+  
+    useEffect(() => {
+      const sidebarLinks = document.querySelectorAll('.sidebar-link');
+  
+      const handleClick = (e) => {
+        const nextEl = e.currentTarget.nextElementSibling;
+        if (nextEl && nextEl.classList.contains('sidebar-submenu')) {
+          e.preventDefault();
+          nextEl.classList.toggle('show');
+        }
+      };
+  
+      sidebarLinks.forEach(link => {
+        link.addEventListener('click', handleClick);
+      });
+  
+      return () => {
+        sidebarLinks.forEach(link => {
+          link.removeEventListener('click', handleClick);
+        });
+      };
+    }, []);
   return (
     <div className="page-wrapper compact-wrapper" id="pageWrapper">
       <TopBar />

@@ -39,7 +39,7 @@ public class UserController {
         Map<String, Object> response = new HashMap<>();
 
         if (isAuthenticated) {
-            if (user.getStatus() == 0) {
+            if (user.getStatus() == 1) {
                 response.put("message", "Tài khoản đã bị khóa hoặc không được phép đăng nhập!");
                 response.put("status", 403); // Forbidden
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
