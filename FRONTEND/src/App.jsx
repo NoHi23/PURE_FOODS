@@ -32,9 +32,6 @@ function AppContent() {
   const shouldHideFooter = hideFooterPaths.includes(location.pathname);
   const shouldHideBackToTop = backToTop.includes(location.pathname);
 
-  const userString = localStorage.getItem('user');
-  const user = userString ? JSON.parse(userString) : null;
-
   return (
     <>
       {!shouldHideHeader && <Header />}
@@ -87,7 +84,7 @@ function AppContent() {
 
       </Routes>
       {/* Chỉ hiện Footer nếu không nằm trong blacklist và user tồn tại*/}
-      {!shouldHideFooter && <Footer user={user} />}
+      {!shouldHideFooter && <Footer />}
       {!shouldHideBackToTop && <BackToTopButton />}
     </>
   );
