@@ -66,27 +66,11 @@ const SideBar = () => {
                   </a>
                   <ul className="sidebar-submenu">
                     <li>
-                      <a href="category.html">Category List</a>
+                      <Link to={'/category'}>Category List</Link>
                     </li>
 
                     <li>
                       <a href="add-new-category.html">Add New Category</a>
-                    </li>
-                  </ul>
-                </li>
-
-                <li className="sidebar-list">
-                  <a className="linear-icon-link sidebar-link sidebar-title" href="javascript:void(0)">
-                    <i className="ri-list-settings-line"></i>
-                    <span>Attributes</span>
-                  </a>
-                  <ul className="sidebar-submenu">
-                    <li>
-                      <a href="attributes.html">Attributes</a>
-                    </li>
-
-                    <li>
-                      <a href="add-new-attributes.html">Add Attributes</a>
                     </li>
                   </ul>
                 </li>
@@ -98,7 +82,7 @@ const SideBar = () => {
                   </a>
                   <ul className="sidebar-submenu">
                     <li>
-                      <a href="all-users.html">All users</a>
+                      <Link to={"/all-user"}>All users</Link>
                     </li>
                     <li>
                       <a href="add-new-user.html">Add new user</a>
