@@ -38,4 +38,22 @@ public class InventoryLogsDAOImpl implements InventoryLogsDAO {
                 .setMaxResults(1)
                 .uniqueResult();
     }
+
+    @Override
+    public List<InventoryLogs> getAllLogs() {
+        Session session = sessionFactory.getCurrentSession();
+        return session.createQuery("FROM InventoryLogs", InventoryLogs.class).list();
+    }
+
+    @Override
+    public void updateInventoryLog(InventoryLogs log) {
+        Session session = sessionFactory.getCurrentSession();
+        session.update(log);
+    }
+
+    @Override
+    public InventoryLogs getLogById(int id) {
+        Session session = sessionFactory.getCurrentSession();
+        return session.get(InventoryLogs.class, id);
+    }
 }
