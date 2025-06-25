@@ -17,7 +17,7 @@ const ImporterInventoryLog = ({ currentPage, setCurrentPage, setLogs }) => {
           axios.get("http://localhost:8082/PureFoods/api/users/getAll"),
         ]);
 
-        const logData = logsRes.data.logs || []; // Sửa từ listLog thành logs
+        const logData = logsRes.data.logs || [];
         setLocalLogs(logData);
         if (setLogs) setLogs(logData);
         console.log("Logs fetched:", logData);
