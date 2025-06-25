@@ -9,6 +9,7 @@ import ImporterInventoryLog from "./ImporterInventoryLog";
 const ImporterDashboard = () => {
   const user = JSON.parse(localStorage.getItem("user"));
   const [products, setProducts] = useState([]);
+  const [logs, setLogs] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
@@ -396,6 +397,7 @@ const ImporterDashboard = () => {
                     <div className="tab-pane fade" id="pills-order" role="tabpanel">
                       <ImporterInventoryLog
                         products={products}
+                        setLogs={setLogs}
                         currentPage={currentPage}
                         setCurrentPage={setCurrentPage}
                       />

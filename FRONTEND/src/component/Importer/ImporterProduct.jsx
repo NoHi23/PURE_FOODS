@@ -50,35 +50,39 @@ const ImporterProduct = ({ setProducts, currentPage, setCurrentPage }) => {
     fetchProducts();
   }, [setProducts]);
 
-  // Submit form nhập kho
-  const handleImportProduct = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await axios.post("http://localhost:8082/PureFoods/api/product/import", newProduct);
-      const importedProduct = response.data.product;
-      setLocalProducts((prev) => [...prev, importedProduct]);
-      setProducts((prev) => [...prev, importedProduct]);
-      setShowModal(false);
-      setNewProduct({
-        productId: null,
-        productName: "",
-        categoryId: 1,
-        supplierId: 1,
-        price: "",
-        stockQuantity: "",
-        description: "",
-        imageURL: "",
-        harvestDate: "",
-        expirationDate: "",
-        nutritionalInfo: "",
-        status: 1,
-      });
-      toast.success("Nhập sản phẩm thành công!");
-    } catch (err) {
-      console.error("Lỗi khi nhập sản phẩm:", err);
-      toast.error("Nhập sản phẩm thất bại. Vui lòng kiểm tra lại!");
-    }
-  };
+  // Submit form tạo đơn nhập kho gửi cho supplier
+const handleCreateOrder = async (e) => {
+  e.preventDefault();
+  try {
+    const response = await axios.post("http://localhost:8082/PureFoods/api/inventory-logs/create-order", {
+      ...newProduct,
+      userId: 1, // Giả sử userId của nhân viên kho, cần điều chỉnh
+      status: 0, // Đang xử lý
+    });
+    const createdOrder = response.data.log;
+    setLocalProducts((prev) => [...prev, { ...newProduct, productId: createdOrder.productId }]); // Cập nhật tạm thời
+    setProducts((prev) => [...prev, { ...newProduct, productId: createdOrder.productId }]);
+    setShowModal(false);
+    setNewProduct({
+      productId: null,
+      productName: "",
+      categoryId: 1,
+      supplierId: 1,
+      price: "",
+      stockQuantity: "",
+      description: "",
+      imageURL: "",
+      harvestDate: "",
+      expirationDate: "",
+      nutritionalInfo: "",
+      status: 1,
+    });
+    alert("Đơn nhập đã được tạo thành công!");
+  } catch (err) {
+    console.error("Lỗi khi tạo đơn nhập:", err);
+    alert("Tạo đơn nhập thất bại. Vui lòng kiểm tra lại!");
+  }
+};
 
   // Xử lý nhập liệu
   const handleInputChange = (e) => {
@@ -89,26 +93,7 @@ const ImporterProduct = ({ setProducts, currentPage, setCurrentPage }) => {
     }));
   };
 
-  // Xử lý Edit sản phẩm
-  const handleEditProduct = (product) => {
-    setNewProduct({
-      productId: product.productId,
-      productName: product.productName,
-      categoryId: product.categoryId,
-      supplierId: product.supplierId,
-      price: product.price,
-      stockQuantity: product.stockQuantity,
-      description: product.description,
-      imageURL: product.imageURL,
-      harvestDate: product.harvestDate ? new Date(product.harvestDate).toISOString().split("T")[0] : "",
-      expirationDate: product.expirationDate ? new Date(product.expirationDate).toISOString().split("T")[0] : "",
-      nutritionalInfo: product.nutritionalInfo,
-      status: product.status,
-    });
-    setShowModal(true);
-  };
-
-  // Xử lý Update sản phẩm
+  // Xử lý Update (edit) sản phẩm
   const handleUpdateProduct = async (e) => {
     e.preventDefault();
     try {
@@ -208,7 +193,7 @@ const ImporterProduct = ({ setProducts, currentPage, setCurrentPage }) => {
               <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div className="modal-body">
-              <form onSubmit={newProduct.productId ? handleUpdateProduct : handleImportProduct}>
+              <form onSubmit={newProduct.productId ? handleUpdateProduct : handleCreateOrder}>
                 <div className="mb-3">
                   <label className="form-label">Tên sản phẩm</label>
                   <input
@@ -328,12 +313,14 @@ const ImporterProduct = ({ setProducts, currentPage, setCurrentPage }) => {
                     <option value={0}>Không hoạt động</option>
                   </select>
                 </div>
-                <button type="submit" className="btn theme-bg-color btn-md fw-bold text-white">
-                  {newProduct.productId ? "Cập nhật" : "Nhập sản phẩm"}
-                </button>
-                <button type="button" className="btn btn-secondary btn-md fw-bold ms-2" data-bs-dismiss="modal">
-                  Hủy
-                </button>
+                <div className="d-flex justify-content-end gap-2 mt-3">
+                  <button type="submit" className="btn theme-bg-color btn-md fw-bold text-white">
+                    {newProduct.productId ? "Cập nhật" : "Tạo đơn nhập"}
+                  </button>
+                  <button type="button" className="btn btn-secondary btn-md fw-bold" data-bs-dismiss="modal">
+                    Hủy
+                  </button>
+                </div>
               </form>
             </div>
           </div>

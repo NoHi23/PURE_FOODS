@@ -2,8 +2,10 @@
 package com.spring.service.Impl;
 
 import com.spring.dao.InventoryLogsDAO;
+import com.spring.dao.ProductDAO;
 import com.spring.dto.InventoryLogsDTO;
 import com.spring.entity.InventoryLogs;
+import com.spring.entity.Products;
 import com.spring.service.InventoryLogsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -12,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Date;
 
 // Bắt đầu thay đổi phương thức recordImport
 @Service
@@ -21,27 +24,55 @@ public class InventoryLogsServiceImpl implements InventoryLogsService {
     @Autowired
     private InventoryLogsDAO inventoryLogsDAO;
 
+    @Autowired
+    private ProductDAO productDAO;
+
     @Override
-    public InventoryLogsDTO recordImport(InventoryLogsDTO inventoryLogsDTO) {
+    public InventoryLogsDTO createOrder(InventoryLogsDTO orderDTO) {
         InventoryLogs log = new InventoryLogs();
-        log.setProductId(inventoryLogsDTO.getProductId());
-        log.setUserId(inventoryLogsDTO.getUserId()); // Giả sử UserID của Importer
-        log.setQuantityChange(inventoryLogsDTO.getQuantityChange());
-        log.setReason(inventoryLogsDTO.getReason());
-        log.setCreatedAt(new java.util.Date());
-        log.setStatus(inventoryLogsDTO.getStatus());
+        log.setProductId(orderDTO.getProductId());
+        log.setUserId(orderDTO.getUserId()); // Giả sử từ nhân viên kho
+        log.setQuantityChange(orderDTO.getQuantityChange());
+        log.setReason(orderDTO.getReason());
+        log.setCreatedAt(new Date());
+        log.setStatus(0); // 0: Đang xử lý
         inventoryLogsDAO.addInventoryLog(log);
 
-        // Lấy lại log từ database để lấy logId và createdAt chính xác
-        InventoryLogs savedLog = inventoryLogsDAO.getLatestLog(); // Giả sử có phương thức này
-        InventoryLogsDTO resultDTO = convertToDTO(savedLog);
-        return resultDTO;
+        InventoryLogs savedLog = inventoryLogsDAO.getLatestLog();
+        return convertToDTO(savedLog);
     }
 
-    // Giữ nguyên các phương thức khác
+    @Override
+    public InventoryLogsDTO confirmOrder(InventoryLogsDTO orderDTO) {
+        InventoryLogs log = inventoryLogsDAO.getLogById(orderDTO.getLogId());
+        if (log == null) {
+            throw new RuntimeException("Log not found!");
+        }
+        log.setStatus(orderDTO.getStatus()); // 1: Hoàn thành, 2: Từ chối
+        if (log.getStatus() == 1) { // Hoàn thành
+            Products product = productDAO.getProductById(log.getProductId());
+            if (product != null) {
+                product.setStockQuantity(product.getStockQuantity() + log.getQuantityChange());
+                productDAO.updateProduct(product);
+            }
+        }
+        inventoryLogsDAO.updateInventoryLog(log);
+        return convertToDTO(log);
+    }
+
     @Override
     public List<InventoryLogsDTO> getLogsByProductId(int productId) {
         List<InventoryLogs> logs = inventoryLogsDAO.getLogsByProductId(productId);
+        List<InventoryLogsDTO> dtoList = new ArrayList<>();
+        for (InventoryLogs log : logs) {
+            dtoList.add(convertToDTO(log));
+        }
+        return dtoList;
+    }
+
+    @Override
+    public List<InventoryLogsDTO> getAllLogs() {
+        List<InventoryLogs> logs = inventoryLogsDAO.getAllLogs(); // Giả định DAO có phương thức này
         List<InventoryLogsDTO> dtoList = new ArrayList<>();
         for (InventoryLogs log : logs) {
             dtoList.add(convertToDTO(log));
