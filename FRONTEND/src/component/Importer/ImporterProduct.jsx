@@ -1,4 +1,3 @@
-// Giữ nguyên phần import
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
@@ -7,8 +6,10 @@ import ImporterEditProduct from "./ImporterEditProduct";
 
 const ImporterProduct = ({ setProducts, currentPage, setCurrentPage }) => {
   const [products, setLocalProducts] = useState([]);
-  const [showEditModal, setShowEditModal] = useState(false); //show modal sửa
-  const [selectedProduct, setSelectedProduct] = useState(null); //chọn id của product để sửa
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [categories, setCategories] = useState([]);
+  const [suppliers, setSuppliers] = useState([]);
   const [newProduct, setNewProduct] = useState({
     productId: null,
     productName: "",
@@ -31,60 +32,63 @@ const ImporterProduct = ({ setProducts, currentPage, setCurrentPage }) => {
   const indexOfFirst = indexOfLast - productsPerPage;
   const currentProducts = products.slice(indexOfFirst, indexOfLast);
 
-  // Đặt ở trên useEffect
-  const fetchProducts = () => {
-    axios
-      .get("http://localhost:8082/PureFoods/api/product/getAll")
-      .then((res) => {
-        const data = res.data.listProduct || [];
-        setLocalProducts(data);
-        setProducts(data); // Đồng bộ với state cha
-      })
-      .catch((err) => {
-        console.error("Lỗi khi lấy danh sách sản phẩm:", err);
-      });
+  const fetchProducts = async () => {
+    try {
+      const [productsRes, suppliersRes, categoriesRes] = await Promise.all([
+        axios.get("http://localhost:8082/PureFoods/api/product/getAll"),
+        axios.get("http://localhost:8082/PureFoods/api/supplier/getAll"),
+        axios.get("http://localhost:8082/PureFoods/api/category/getAll"),
+      ]);
+
+      setLocalProducts(productsRes.data.listProduct || []);
+      setProducts(productsRes.data.listProduct || []);
+      setSuppliers(suppliersRes.data.suppliers || []);
+      setCategories(categoriesRes.data || []); // Sử dụng res.data trực tiếp vì API trả về mảng
+    } catch (err) {
+      console.error("Lỗi khi lấy dữ liệu:", err);
+      setLocalProducts([]);
+      setSuppliers([]);
+      setCategories([]);
+    }
   };
 
-  // Rồi trong useEffect thì gọi nó ra
   useEffect(() => {
     fetchProducts();
   }, [setProducts]);
 
-  // Submit form tạo đơn nhập kho gửi cho supplier
-const handleCreateOrder = async (e) => {
-  e.preventDefault();
-  try {
-    const response = await axios.post("http://localhost:8082/PureFoods/api/inventory-logs/create-order", {
-      ...newProduct,
-      userId: 1, // Giả sử userId của nhân viên kho, cần điều chỉnh
-      status: 0, // Đang xử lý
-    });
-    const createdOrder = response.data.log;
-    setLocalProducts((prev) => [...prev, { ...newProduct, productId: createdOrder.productId }]); // Cập nhật tạm thời
-    setProducts((prev) => [...prev, { ...newProduct, productId: createdOrder.productId }]);
-    setShowModal(false);
-    setNewProduct({
-      productId: null,
-      productName: "",
-      categoryId: 1,
-      supplierId: 1,
-      price: "",
-      stockQuantity: "",
-      description: "",
-      imageURL: "",
-      harvestDate: "",
-      expirationDate: "",
-      nutritionalInfo: "",
-      status: 1,
-    });
-    alert("Đơn nhập đã được tạo thành công!");
-  } catch (err) {
-    console.error("Lỗi khi tạo đơn nhập:", err);
-    alert("Tạo đơn nhập thất bại. Vui lòng kiểm tra lại!");
-  }
-};
+  const handleCreateOrder = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await axios.post("http://localhost:8082/PureFoods/api/inventory-logs/create-order", {
+        ...newProduct,
+        userId: 1,
+        status: 0,
+      });
+      const createdOrder = response.data.log;
+      setLocalProducts((prev) => [...prev, { ...newProduct, productId: createdOrder.productId }]);
+      setProducts((prev) => [...prev, { ...newProduct, productId: createdOrder.productId }]);
+      setShowModal(false);
+      setNewProduct({
+        productId: null,
+        productName: "",
+        categoryId: 1,
+        supplierId: 1,
+        price: "",
+        stockQuantity: "",
+        description: "",
+        imageURL: "",
+        harvestDate: "",
+        expirationDate: "",
+        nutritionalInfo: "",
+        status: 1,
+      });
+      toast.success("Đơn nhập đã được tạo thành công!");
+    } catch (err) {
+      console.error("Lỗi khi tạo đơn nhập:", err);
+      toast.error("Tạo đơn nhập thất bại. Vui lòng kiểm tra lại!");
+    }
+  };
 
-  // Xử lý nhập liệu
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setNewProduct((prev) => ({
@@ -93,7 +97,6 @@ const handleCreateOrder = async (e) => {
     }));
   };
 
-  // Xử lý Update (edit) sản phẩm
   const handleUpdateProduct = async (e) => {
     e.preventDefault();
     try {
@@ -123,12 +126,11 @@ const handleCreateOrder = async (e) => {
     }
   };
 
-  // Xử lý Delete sản phẩm
   const handleDeleteProduct = async (productId) => {
     if (window.confirm("Bạn có chắc muốn xóa sản phẩm này?")) {
       try {
         await axios.delete("http://localhost:8082/PureFoods/api/product/delete", {
-          data: { productId }, // Gửi productId trong body
+          data: { productId },
         });
         setLocalProducts((prev) => prev.filter((p) => p.productId !== productId));
         setProducts((prev) => prev.filter((p) => p.productId !== productId));
@@ -151,12 +153,11 @@ const handleCreateOrder = async (e) => {
         </span>
       </div>
 
-      {/* Nút mở modal nhập sản phẩm */}
       <button
         className="btn theme-bg-color btn-md fw-bold text-white mb-4"
         data-bs-toggle="modal"
         data-bs-target="#importProductModal"
-        onClick={() =>
+        onClick={() => {
           setNewProduct({
             productId: null,
             productName: "",
@@ -170,13 +171,12 @@ const handleCreateOrder = async (e) => {
             expirationDate: "",
             nutritionalInfo: "",
             status: 1,
-          })
-        }
+          });
+        }}
       >
         Nhập thêm
       </button>
 
-      {/* Modal nhập sản phẩm */}
       <div
         className="modal fade"
         id="importProductModal"
@@ -206,26 +206,43 @@ const handleCreateOrder = async (e) => {
                   />
                 </div>
                 <div className="mb-3">
-                  <label className="form-label">Danh mục (ID)</label>
-                  <input
-                    type="number"
-                    className="form-control"
+                  <label className="form-label">Thể loại</label>
+                  <select
                     name="categoryId"
                     value={newProduct.categoryId}
                     onChange={handleInputChange}
                     required
-                  />
-                </div>
-                <div className="mb-3">
-                  <label className="form-label">Nhà cung cấp (ID)</label>
-                  <input
-                    type="number"
                     className="form-control"
+                  >
+                    <option value="">--Chọn thể loại--</option>
+                    {categories.length > 0 ? (
+                      categories.map((c) => (
+                        <option key={c.categoryID} value={c.categoryID}>
+                          {c.categoryName}
+                        </option>
+                      ))
+                    ) : (
+                      <option value="" disabled>Đang tải danh mục...</option>
+                    )}
+                  </select>
+                </div>
+
+                <div className="mb-3">
+                  <label className="form-label">Nhà cung cấp</label>
+                  <select
                     name="supplierId"
                     value={newProduct.supplierId}
                     onChange={handleInputChange}
                     required
-                  />
+                    className="form-control"
+                  >
+                    <option value="">--Chọn nhà cung cấp--</option>
+                    {suppliers.map((s) => (
+                      <option key={s.supplierId} value={s.supplierId}>
+                        {s.supplierName}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 <div className="mb-3">
                   <label className="form-label">Giá</label>
@@ -326,9 +343,7 @@ const handleCreateOrder = async (e) => {
           </div>
         </div>
       </div>
-      {/* Hết modal */}
 
-      {/* Bảng sản phẩm */}
       <div className="table-responsive dashboard-bg-box">
         <table className="table product-table">
           <thead>
@@ -439,9 +454,7 @@ const handleCreateOrder = async (e) => {
           </tbody>
         </table>
 
-        {/* Phân trang */}
         <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
-        {/* Show modal để edit (chỉnh sửa sản phẩm) */}
         {showEditModal && (
           <ImporterEditProduct
             show={showEditModal}

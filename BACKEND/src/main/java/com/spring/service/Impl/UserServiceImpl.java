@@ -254,7 +254,7 @@ public class UserServiceImpl implements UserService {
         user.setPassword(userDTO.getPassword());
         user.setPhone(userDTO.getPhone());
         user.setAddress(userDTO.getAddress());
-        user.setStatus(user.getStatus()); // giữ nguyên
+        user.setStatus(user.getStatus());
 
         userDAO.updateUser(user);
         return convertToDTO(user);

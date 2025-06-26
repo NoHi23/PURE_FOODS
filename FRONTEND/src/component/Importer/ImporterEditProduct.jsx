@@ -96,6 +96,7 @@ const ImporterEditProduct = ({ show, onClose, product, onUpdated }) => {
             >
               Chỉnh sửa sản phẩm
             </h5>
+            <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             <button
               type="button"
               className="btn-close"
