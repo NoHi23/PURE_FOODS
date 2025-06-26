@@ -206,6 +206,23 @@ public class UserController {
         }
     }
 
+    @PutMapping("/profile/update")
+    public ResponseEntity<?> updateProfile(@RequestBody UserDTO userDTO) {
+        try {
+            UserDTO updatedUser = userService.updateProfile(userDTO);
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Profile updated successfully!");
+            response.put("status", 200);
+            response.put("user", updatedUser);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("message", e.getMessage());
+            errorResponse.put("status", 400);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        }
+    }
+
     @PutMapping("/delete")
     public ResponseEntity<?> deleteUser(@RequestBody UserDTO userDTO) {
         try {

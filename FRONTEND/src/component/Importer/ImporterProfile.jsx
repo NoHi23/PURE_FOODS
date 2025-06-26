@@ -1,4 +1,3 @@
-// ImporterProfile.jsx
 import React from "react";
 import ImporterEditProfile from "./ImporterEditProfile";
 
@@ -46,6 +45,19 @@ const ImporterProfile = ({ user }) => {
           <li>
             <h5>Địa chỉ :</h5>
             <h5>{user.address}</h5>
+          </li>
+          <li>
+            <h5>Chức vụ :</h5>
+            <h5>
+              {{
+                1: "Admin",
+                2: "Khách hàng",
+                3: "Người buôn hàng (Nhà cung cấp)",
+                4: "Người nhập hàng (Làm việc tại kho hàng)",
+                5: "Người xuất hàng",
+                6: "Người vận chuyển",
+              }[user.roleID] || "Không xác định"}
+            </h5>
           </li>
           <li>
             <h5>Tài khoản được tạo :</h5>

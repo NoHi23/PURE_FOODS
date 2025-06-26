@@ -234,4 +234,31 @@ public class UserServiceImpl implements UserService {
         return true;
     }
 
+    @Override
+    @Transactional(propagation = Propagation.REQUIRED)
+    public UserDTO updateProfile(UserDTO userDTO) {
+        User user = userDAO.getUserById(userDTO.getUserId());
+        if (user == null) {
+            throw new RuntimeException("User not found!");
+        }
+
+        // Kiểm tra email có bị trùng không
+        User existingUser = userDAO.findUserByEmail(userDTO.getEmail());
+        if (existingUser != null && existingUser.getUserId() != user.getUserId()) {
+            throw new RuntimeException("Email already exists!");
+        }
+
+        // Cập nhật thông tin KHÔNG đụng đến roleID và status
+        user.setFullName(userDTO.getFullName());
+        user.setEmail(userDTO.getEmail());
+        user.setPassword(userDTO.getPassword());
+        user.setPhone(userDTO.getPhone());
+        user.setAddress(userDTO.getAddress());
+        user.setStatus(user.getStatus()); // giữ nguyên
+
+        userDAO.updateUser(user);
+        return convertToDTO(user);
+    }
+
+
 }
