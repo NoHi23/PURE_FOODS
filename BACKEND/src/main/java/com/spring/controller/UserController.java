@@ -39,7 +39,7 @@ public class UserController {
         Map<String, Object> response = new HashMap<>();
 
         if (isAuthenticated) {
-            if (user.getStatus() == 0) {
+            if (user.getStatus() == 1) {
                 response.put("message", "Tài khoản đã bị khóa hoặc không được phép đăng nhập!");
                 response.put("status", 403); // Forbidden
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
@@ -202,6 +202,23 @@ public class UserController {
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("message", e.getMessage());
             errorResponse.put("status", 201);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        }
+    }
+
+    @PutMapping("/profile/update")
+    public ResponseEntity<?> updateProfile(@RequestBody UserDTO userDTO) {
+        try {
+            UserDTO updatedUser = userService.updateProfile(userDTO);
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Profile updated successfully!");
+            response.put("status", 200);
+            response.put("user", updatedUser);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("message", e.getMessage());
+            errorResponse.put("status", 400);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
     }

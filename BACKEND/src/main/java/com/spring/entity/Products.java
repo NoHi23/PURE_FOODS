@@ -26,10 +26,10 @@ public class Products {
     @Column(name = "StockQuantity")
     private int stockQuantity;
 
-    @Column(name = "Description" , nullable = true, length = 5000)
+    @Column(name = "Description" , nullable = true)
     private String description;
 
-    @Column(name = "ImageURL", nullable = true, length = 255)
+    @Column(name = "ImageURL", nullable = true)
     private String imageURL;
 
     @Column(name = "LastUpdatedBy")

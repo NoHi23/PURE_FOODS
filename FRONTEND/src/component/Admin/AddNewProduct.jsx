@@ -8,14 +8,17 @@ const AddNewProduct = () => {
   const [product, setProduct] = useState([]);
   const [form, setForm] = useState({
     productName: "",
-    categoryID: 0,
-    supplierID: 0,
+    categoryId: 0,
+    supplierId: 0,
     price: 0,
     stockQuantity: 0,
     description: "",
     imageURL: "",
-    status: ""
+    status: 0,
+    lastUpdatedBy: 1
   });
+  const [categories, setCategories] = useState([]);
+  const [suppliers, setSuppliers] = useState([]);
   useEffect(() => {
     const sidebarLinks = document.querySelectorAll('.sidebar-link');
 
@@ -40,8 +43,12 @@ const AddNewProduct = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setForm({ ...form, [name]: value });
+    const newValue = ['categoryId', 'supplierId', 'price', 'stockQuantity'].includes(name)
+      ? parseInt(value)
+      : value;
+    setForm({ ...form, [name]: newValue });
   };
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -51,13 +58,14 @@ const AddNewProduct = () => {
         toast.success("Thêm sản phẩm thành công!");
         setForm({
           productName: "",
-          categoryID: 0,
-          supplierID: 0,
+          categoryId: 0,
+          supplierId: 0,
           price: 0,
           stockQuantity: 0,
           description: "",
           imageURL: "",
-          status: ""
+          status: 0,
+          lastUpdatedBy: 1
         });
       } else {
         toast.error(res.data.message || "Có lỗi xảy ra");
@@ -67,6 +75,16 @@ const AddNewProduct = () => {
       console.error(error);
     }
   };
+
+  useEffect(() => {
+    axios.get("http://localhost:8082/PureFoods/api/category/getAll")
+      .then(res => setCategories(res.data))
+      .catch(() => setCategories([]));
+
+    axios.get("http://localhost:8082/PureFoods/api/supplier/getAll")
+      .then(res => setSuppliers(res.data.suppliers))
+      .catch(() => setSuppliers([]));
+  }, []);
 
   return (
     <div>
@@ -90,7 +108,7 @@ const AddNewProduct = () => {
                             <h5>Product Information</h5>
                           </div>
 
-                          <form className="theme-form theme-form-2 mega-form">
+                          <form className="theme-form theme-form-2 mega-form" onSubmit={handleSubmit}>
                             <div className="mb-4 row align-items-center">
                               <label className="form-label-title col-sm-3 mb-0">Product
                                 Name</label>
@@ -107,441 +125,106 @@ const AddNewProduct = () => {
                               <label className="col-sm-3 col-form-label form-label-title">Category
                                 Name</label>
                               <div className="col-sm-9">
-                                <select className="js-example-basic-single w-100" name="state">
-                                  <option disabled>Static Menu</option>
-                                  <option>Simple</option>
-                                  <option>classNameified</option>
+                                <select className="js-example-basic-single w-100"
+                                  value={form.categoryId}
+                                  onChange={handleChange}
+                                  name="categoryId">
+                                  <option value="">-- Chọn loại --</option>
+                                  {categories.map(c => (
+                                    <option key={c.categoryID} value={c.categoryID}>{c.categoryName}</option>
+                                  ))}
                                 </select>
                               </div>
                             </div>
 
                             <div className="mb-4 row align-items-center">
                               <label
-                                className="col-sm-3 col-form-label form-label-title">Category</label>
+                                className="col-sm-3 col-form-label form-label-title">Supplier Name</label>
                               <div className="col-sm-9">
-                                <select className="js-example-basic-single w-100" name="state">
-                                  <option disabled>Category Menu</option>
-                                  <option>Electronics</option>
-                                  <option>TV & Appliances</option>
-                                  <option>Home & Furniture</option>
-                                  <option>Another</option>
-                                  <option>Baby & Kids</option>
-                                  <option>Health, Beauty & Perfumes</option>
-                                  <option>Uncategorized</option>
+                                <select className="js-example-basic-single w-100"
+                                  name="supplierId"
+                                  value={form.supplierId}
+                                  onChange={handleChange}>
+                                  <option value="">-- Chọn nhà cung cấp --</option>
+                                  {suppliers.map(s => (
+                                    <option key={s.supplierId} value={s.supplierId}>{s.supplierName}</option>
+                                  ))}
                                 </select>
                               </div>
                             </div>
 
                             <div className="mb-4 row align-items-center">
-                              <label
-                                className="col-sm-3 col-form-label form-label-title">Subcategory</label>
+                              <label className="form-label-title col-sm-3 mb-0">Price</label>
                               <div className="col-sm-9">
-                                <select className="js-example-basic-single w-100" name="state">
-                                  <option disabled>Subcategory Menu</option>
-                                  <option>Ethnic Wear</option>
-                                  <option>Ethnic Bottoms</option>
-                                  <option>Women Western Wear</option>
-                                  <option>Sandels</option>
-                                  <option>Shoes</option>
-                                  <option>Beauty & Grooming</option>
-                                </select>
-                              </div>
-                            </div>
-
-                            <div className="mb-4 row align-items-center">
-                              <label
-                                className="col-sm-3 col-form-label form-label-title">Brand</label>
-                              <div className="col-sm-9">
-                                <select className="js-example-basic-single w-100">
-                                  <option disabled>Brand Menu</option>
-                                  <option value="puma">Puma</option>
-                                  <option value="hrx">HRX</option>
-                                  <option value="roadster">Roadster</option>
-                                  <option value="zara">Zara</option>
-                                </select>
-                              </div>
-                            </div>
-
-                            <div className="mb-4 row align-items-center">
-                              <label className="col-sm-3 col-form-label form-label-title">Unit</label>
-                              <div className="col-sm-9">
-                                <select className="js-example-basic-single w-100">
-                                  <option disabled>Unit Menu</option>
-                                  <option>Kilogram</option>
-                                  <option>Pieces</option>
-                                </select>
+                                <input className="form-control" type="number"
+                                  placeholder="Price"
+                                  name="price"
+                                  value={form.price}
+                                  onChange={handleChange} min={0} />
                               </div>
                             </div>
                             <div className="mb-4 row align-items-center">
-                              <label className="col-sm-3 col-form-label form-label-title">Tags</label>
+                              <label className="form-label-title col-sm-3 mb-0">Stock Quantity</label>
                               <div className="col-sm-9">
-                                <div className="bs-example">
-                                  <input type="text" className="form-control"
-                                    placeholder="Type tag & hit enter" id="#inputTag"
-                                    data-role="tagsinput" />
-                                </div>
+                                <input className="form-control" type="number"
+                                  placeholder="Stock Quantity"
+                                  name="stockQuantity"
+                                  value={form.stockQuantity}
+                                  onChange={handleChange} min={0} />
                               </div>
                             </div>
-                            <div className="mb-4 row align-items-center">
-                              <label
-                                className="col-sm-3 col-form-label form-label-title">Exchangeable</label>
-                              <div className="col-sm-9">
-                                <label className="switch">
-                                  <input type="checkbox" /><span className="switch-state"></span>
-                                </label>
-                              </div>
-                            </div>
-                            <div className="row align-items-center">
-                              <label
-                                className="col-sm-3 col-form-label form-label-title">Refundable</label>
-                              <div className="col-sm-9">
-                                <label className="switch">
-                                  <input type="checkbox" checked="" /><span
-                                    className="switch-state"></span>
-                                </label>
-                              </div>
-                            </div>
-                          </form>
-                        </div>
-                      </div>
-
-                      <div className="card">
-                        <div className="card-body">
-                          <div className="card-header-2">
-                            <h5>Description</h5>
-                          </div>
-
-                          <form className="theme-form theme-form-2 mega-form">
-                            <div className="row">
-                              <div className="col-12">
-                                <div className="row">
-                                  <label className="form-label-title col-sm-3 mb-0">Product
-                                    Description</label>
-                                  <div className="col-sm-9">
-                                    <div id="editor"></div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </form>
-                        </div>
-                      </div>
-
-                      <div className="card">
-                        <div className="card-body">
-                          <div className="card-header-2">
-                            <h5>Product Images</h5>
-                          </div>
-
-                          <form className="theme-form theme-form-2 mega-form">
-                            <div className="mb-4 row align-items-center">
-                              <label
-                                className="col-sm-3 col-form-label form-label-title">Images</label>
-                              <div className="col-sm-9">
-                                <input className="form-control form-choose" type="file"
-                                  id="formFile" multiple />
-                              </div>
-                            </div>
-
-                            <div className="row align-items-center">
-                              <label className="col-sm-3 col-form-label form-label-title">Thumbnail
-                                Image</label>
-                              <div className="col-sm-9">
-                                <input className="form-control form-choose" type="file"
-                                  id="formFileMultiple1" multiple />
-                              </div>
-                            </div>
-                          </form>
-                        </div>
-                      </div>
-
-                      <div className="card">
-                        <div className="card-body">
-                          <div className="card-header-2">
-                            <h5>Product Videos</h5>
-                          </div>
-
-                          <form className="theme-form theme-form-2 mega-form">
-                            <div className="mb-4 row align-items-center">
-                              <label className="col-sm-3 col-form-label form-label-title">Video
-                                Provider</label>
-                              <div className="col-sm-9">
-                                <select className="js-example-basic-single w-100" name="state">
-                                  <option>Vimeo</option>
-                                  <option>Youtube</option>
-                                  <option>Dailymotion</option>
-                                  <option>Vimeo</option>
-                                </select>
-                              </div>
-                            </div>
-
-                            <div className="row align-items-center">
-                              <label className="form-label-title col-sm-3 mb-0">Video
-                                Link</label>
-                              <div className="col-sm-9">
-                                <input className="form-control" type="text"
-                                  placeholder="Video Link" />
-                              </div>
-                            </div>
-                          </form>
-                        </div>
-                      </div>
-
-                      <div className="card">
-                        <div className="card-body">
-                          <div className="card-header-2">
-                            <h5>Product variations</h5>
-                          </div>
-
-                          <form className="theme-form theme-form-2 mega-form">
-                            <div className="mb-4 row align-items-center">
-                              <label className="form-label-title col-sm-3 mb-0">Option
-                                Name</label>
-                              <div className="col-sm-9">
-                                <select className="js-example-basic-single w-100" name="state">
-                                  <option>Color</option>
-                                  <option>Size</option>
-                                  <option>Material</option>
-                                  <option>Style</option>
-                                </select>
-                              </div>
-                            </div>
-
-                            <div className="row align-items-center">
-                              <label className="col-sm-3 col-form-label form-label-title">Option
-                                Value</label>
-                              <div className="col-sm-9">
-                                <div className="bs-example">
-                                  <input type="text" className="form-control"
-                                    placeholder="Type tag & hit enter" id="#inputTag"
-                                    data-role="tagsinput" />
-                                </div>
-                              </div>
-                            </div>
-                          </form>
-
-                          <a href="#" className="add-option"><i className="ri-add-line me-2"></i> Add Another
-                            Option</a>
-                        </div>
-                      </div>
-
-                      <div className="card">
-                        <div className="card-body">
-                          <div className="card-header-2">
-                            <h5>Shipping</h5>
-                          </div>
-
-                          <form className="theme-form theme-form-2 mega-form">
-                            <div className="mb-4 row align-items-center">
-                              <label className="form-label-title col-sm-3 mb-0">Weight
-                                (kg)</label>
-                              <div className="col-sm-9">
-                                <input className="form-control" type="number" placeholder="Weight" />
-                              </div>
-                            </div>
-
-                            <div className="row align-items-center">
-                              <label className="col-sm-3 col-form-label form-label-title">Dimensions
-                                (cm)</label>
-                              <div className="col-sm-9">
-                                <select className="js-example-basic-single w-100" name="state">
-                                  <option>Length</option>
-                                  <option>Width</option>
-                                  <option>Height</option>
-                                </select>
-                              </div>
-                            </div>
-                          </form>
-                        </div>
-                      </div>
-
-                      <div className="card">
-                        <div className="card-body">
-                          <div className="card-header-2">
-                            <h5>Product Price</h5>
-                          </div>
-
-                          <form className="theme-form theme-form-2 mega-form">
-                            <div className="mb-4 row align-items-center">
-                              <label className="col-sm-3 form-label-title">price</label>
-                              <div className="col-sm-9">
-                                <input className="form-control" type="number" placeholder="0" />
-                              </div>
-                            </div>
-                            <div className="mb-4 row align-items-center">
-                              <label className="col-sm-3 form-label-title">Compare at
-                                price</label>
-                              <div className="col-sm-9">
-                                <input className="form-control" type="number" placeholder="0" />
-                              </div>
-                            </div>
-                            <div className="mb-4 row align-items-center">
-                              <label className="col-sm-3 form-label-title">Cost per item</label>
-                              <div className="col-sm-5">
-                                <input className="form-control" type="number" placeholder="0" />
-                              </div>
-                              <div className="col-sm-2">
-                                <label>Margin:</label>
-                                <span>25%</span>
-                              </div>
-                              <div className="col-sm-2">
-                                <label>Profit:</label>
-                                <span>$5</span>
-                              </div>
-                            </div>
-                          </form>
-                        </div>
-                      </div>
-
-                      <div className="card">
-                        <div className="card-body">
-                          <div className="card-header-2">
-                            <h5>Product Inventory</h5>
-                          </div>
-
-                          <form className="theme-form theme-form-2 mega-form">
-                            <div className="mb-4 row align-items-center">
-                              <label className="form-label-title col-sm-3 mb-0">SKU</label>
-                              <div className="col-sm-9">
-                                <input className="form-control" type="text" />
-                              </div>
-                            </div>
-                            <div className="mb-4 row align-items-center">
-                              <label className="col-sm-3 col-form-label form-label-title">Stock
-                                Status</label>
-                              <div className="col-sm-9">
-                                <select className="js-example-basic-single w-100" name="state">
-                                  <option>In Stock</option>
-                                  <option>Out Of Stock</option>
-                                  <option>On Backorder</option>
-                                </select>
-                              </div>
-                            </div>
-                          </form>
-                          <table className="table variation-table table-responsive-sm">
-                            <thead>
-                              <tr>
-                                <th scope="col">Variant</th>
-                                <th scope="col">Price</th>
-                                <th scope="col">SKU</th>
-                                <th scope="col">Quantity</th>
-                                <th scope="col"></th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              <tr>
-                                <td>Red</td>
-                                <td>
-                                  <input className="form-control" type="number" placeholder="0" />
-                                </td>
-                                <td>
-                                  <input className="form-control" type="number" placeholder="0" />
-                                </td>
-                                <td>
-                                  <input className="form-control" type="number" placeholder="0" />
-                                </td>
-                                <td>
-                                  <ul className="order-option">
-                                    <li><a href="javascript:void(0)" data-toggle="modal"
-                                      data-target="#deleteModal"><i
-                                        className="ri-delete-bin-line"></i></a>
-                                    </li>
-                                  </ul>
-                                </td>
-                              </tr>
-                              <tr>
-                                <td>Blue</td>
-                                <td>
-                                  <input className="form-control" type="number" placeholder="0" />
-                                </td>
-                                <td>
-                                  <input className="form-control" type="number" placeholder="0" />
-                                </td>
-                                <td>
-                                  <input className="form-control" type="number" placeholder="0" />
-                                </td>
-                                <td>
-                                  <ul className="order-option">
-                                    <li><a href="javascript:void(0)" data-toggle="modal"
-                                      data-target="#deleteModal"><i
-                                        className="ri-delete-bin-line"></i></a>
-                                    </li>
-                                  </ul>
-                                </td>
-                              </tr>
-                            </tbody>
-                          </table>
-                        </div>
-                      </div>
-
-                      <div className="card">
-                        <div className="card-body">
-                          <div className="card-header-2">
-                            <h5>Link Products</h5>
-                          </div>
-
-                          <form className="theme-form theme-form-2 mega-form">
-                            <div className="mb-4 row align-items-center">
-                              <label className="form-label-title col-sm-3 mb-0">Upsells</label>
-                              <div className="col-sm-9">
-                                <input className="form-control" type="search" />
-                              </div>
-                            </div>
-
-                            <div className="row align-items-center">
-                              <label className="form-label-title col-sm-3 mb-0">Cross-Sells</label>
-                              <div className="col-sm-9">
-                                <input className="form-control" type="search" />
-                              </div>
-                            </div>
-                          </form>
-                        </div>
-                      </div>
-
-                      <div className="card">
-                        <div className="card-body">
-                          <div className="card-header-2">
-                            <h5>Search engine listing</h5>
-                          </div>
-
-                          <div className="seo-view">
-                            <span className="link">https://fastkart.com</span>
-                            <h5>Buy fresh vegetables & Fruits online at best price</h5>
-                            <p>Online Vegetable Store - Buy fresh vegetables & Fruits online at best
-                              prices. Order online and get free delivery.</p>
-                          </div>
-
-                          <form className="theme-form theme-form-2 mega-form">
-                            <div className="mb-4 row align-items-center">
-                              <label className="form-label-title col-sm-3 mb-0">Page title</label>
-                              <div className="col-sm-9">
-                                <input className="form-control" type="search"
-                                  placeholder="Fresh Fruits" />
-                              </div>
-                            </div>
-
                             <div className="mb-4 row">
-                              <label className="form-label-title col-sm-3 mb-0">Meta
-                                description</label>
+                              <label className="form-label-title col-sm-3 mb-0">Description</label>
                               <div className="col-sm-9">
-                                <textarea className="form-control" rows="3"></textarea>
+                                <textarea className="form-control" rows="3" name="description" value={form.description} onChange={handleChange}></textarea>
                               </div>
                             </div>
-
-                            <div className="row">
-                              <label className="form-label-title col-sm-3 mb-0">URL handle</label>
-                              <div className="col-sm-9">
-                                <input className="form-control" type="search"
-                                  placeholder="https://fastkart.com/fresh-veggies" />
+                            <div className="mb-3">
+                              <label className="form-label">Image URL</label>
+                              <input type="text" className="form-control" name="imageURL" value={form.imageURL} onChange={handleChange} />
+                            </div>
+                            {form.imageURL && (
+                              <div className="mb-3">
+                                <label className="form-label">Preview image</label>
+                                <div>
+                                  <img
+                                    src={form.imageURL}
+                                    alt="Preview"
+                                    style={{ maxWidth: '100%', maxHeight: '200px', border: '1px solid #ccc' }}
+                                    onError={(e) => {
+                                      e.target.src = "https://via.placeholder.com/150?text=Image+not+found";
+                                    }}
+                                  />
+                                </div>
                               </div>
+                            )}
+                            <div className="mb-4 row align-items-center">
+                              <label className="col-sm-3 col-form-label form-label-title">Status</label>
+                              <div className="col-sm-9">
+                                <label className="switch">
+                                  <input
+                                    type="checkbox"
+                                    name="status"
+                                    checked={form.status === 0}
+                                    onChange={(e) =>
+                                      setForm({
+                                        ...form,
+                                        status: e.target.checked ? 0 : 1,
+                                      })
+                                    }
+                                  />
+                                  <span className="switch-state"></span>
+                                </label>
+                              </div>
+                            </div>
+                            <div className="card-submit-button">
+                              <button className="btn btn-animation ms-auto" type="submit">Submit</button>
                             </div>
                           </form>
-                        </div>
 
-                        <div className="card-submit-button">
-                          <button className="btn btn-animation ms-auto" type="submit">Submit</button>
                         </div>
                       </div>
+
                     </div>
                   </div>
                 </div>

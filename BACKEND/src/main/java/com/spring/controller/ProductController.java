@@ -31,7 +31,7 @@ public class ProductController {
         } catch (RuntimeException e) {
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("message", e.getMessage());
-            errorResponse.put("status", 201);
+            errorResponse.put("status", 400);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
     }
@@ -49,7 +49,7 @@ public class ProductController {
         } catch (RuntimeException e) {
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("message", e.getMessage());
-            errorResponse.put("status", 201);
+            errorResponse.put("status", 400);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
     }
@@ -59,14 +59,14 @@ public class ProductController {
         try {
             ProductDTO p = productService.updateProduct(productDTO);
             Map<String, Object> response = new HashMap<>();
-            response.put("message", "add Product successfully!");
+            response.put("message", "Update Product successfully!");
             response.put("status", 200);
-            response.put("producy", p);
+            response.put("product", p);
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("message", e.getMessage());
-            errorResponse.put("status", 201);
+            errorResponse.put("status", 400);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
     }
@@ -83,7 +83,7 @@ public class ProductController {
         } catch (RuntimeException e) {
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("message", e.getMessage());
-            errorResponse.put("status", 201);
+            errorResponse.put("status", 400);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
     }
@@ -100,10 +100,47 @@ public class ProductController {
         } catch (RuntimeException e) {
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("message", e.getMessage());
-            errorResponse.put("status", 201);
+            errorResponse.put("status", 400);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
     }
 
+    // url: /api/product/import để nhập sản phẩm mới vào kho
+    @PostMapping("/import")
+    public ResponseEntity<?> importProduct(@RequestBody ProductDTO productDTO) {
+        try {
+            ProductDTO importedProduct = productService.importProduct(productDTO);
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Product imported successfully!");
+            response.put("status", 200);
+            response.put("product", importedProduct);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("message", e.getMessage());
+            errorResponse.put("status", 400);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        }
+    }
+
+    // thêm trạng thái hữu cơ (đồ sạch)
+    @PostMapping("/organic-status")
+    public ResponseEntity<?> updateOrganicStatus(@RequestBody Map<String, Integer> request) {
+        try {
+            int productId = request.get("productId");
+            int organicStatusId = request.get("organicStatusId");
+            ProductDTO updatedProduct = productService.updateOrganicStatus(productId, organicStatusId);
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Organic status updated successfully!");
+            response.put("status", 200);
+            response.put("product", updatedProduct);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("message", e.getMessage());
+            errorResponse.put("status", 400);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        }
+    }
 
 }

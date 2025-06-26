@@ -21801,8 +21801,8 @@ header .header-notification.remove {
 
 header .header-notification .close-notification {
   top: 50%;
-  -webkit-transform: translateY(-50%);
-  transform: translateY(-50%);
+  -webkit-transform: translateX(-100%);
+  transform: translateX(-100%);
   position: absolute;
   right: 11px;
   padding: 0;
@@ -42473,6 +42473,11 @@ body.rtl .menu-label {
 .order-table tbody tr td label.danger {
   background-color: rgba(255, 114, 114, .1);
   color: #ff7272
+}
+
+.order-table tbody tr td label.warning {
+  background-color: rgba(245, 158, 11, 0.1); /* vàng nhạt */
+  color: #f59e0b; /* vàng tươi */
 }
 
 .order-table tbody tr td:first-child {

@@ -15,7 +15,8 @@ public interface UserService {
     UserDTO autoRegisterFacebookAccountIfNotExists(String name, String email);
 
     UserDTO updateInfo(UserDTO userDTO);
-
+    //cái này dành cho role thường cập nhập thông tin, cái trên là cuả admin phải sửa cả role
+    UserDTO updateProfile(UserDTO userDTO);
     UserDTO deleteUser(int userID);
 
     List<UserDTO> getAllUsers();

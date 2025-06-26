@@ -63,7 +63,7 @@ public class UserServiceImpl implements UserService {
         user.setPhone(phone);
         user.setAddress(address);
         user.setCreatedAt(new java.sql.Timestamp(new Date().getTime()));
-        user.setStatus(1);
+        user.setStatus(0);
         user.setTokenExpiry(null);
         user.setResetToken(null);
         userDAO.addUser(user);
@@ -99,7 +99,7 @@ public class UserServiceImpl implements UserService {
             user.setPassword("123456");
             user.setRoleID(2);
             user.setCreatedAt(new java.sql.Timestamp(new Date().getTime()));
-            user.setStatus(1);
+            user.setStatus(0);
             user.setTokenExpiry(null);
             user.setResetToken(null);
             userDAO.addUser(user);
@@ -121,7 +121,7 @@ public class UserServiceImpl implements UserService {
             user.setPassword("facebook");
             user.setRoleID(2);
             user.setCreatedAt(new java.sql.Timestamp(new Date().getTime()));
-            user.setStatus(1);
+            user.setStatus(0);
             user.setTokenExpiry(null);
             user.setResetToken(null);
             userDAO.addUser(user);
@@ -167,7 +167,7 @@ public class UserServiceImpl implements UserService {
         if (user == null) {
             throw new RuntimeException("User not found!");
         }
-        user.setStatus(0);
+        user.setStatus(1);
         return convertToDTO(user);
     }
 
@@ -233,5 +233,32 @@ public class UserServiceImpl implements UserService {
         }
         return true;
     }
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRED)
+    public UserDTO updateProfile(UserDTO userDTO) {
+        User user = userDAO.getUserById(userDTO.getUserId());
+        if (user == null) {
+            throw new RuntimeException("User not found!");
+        }
+
+        // Kiểm tra email có bị trùng không
+        User existingUser = userDAO.findUserByEmail(userDTO.getEmail());
+        if (existingUser != null && existingUser.getUserId() != user.getUserId()) {
+            throw new RuntimeException("Email already exists!");
+        }
+
+        // Cập nhật thông tin KHÔNG đụng đến roleID và status
+        user.setFullName(userDTO.getFullName());
+        user.setEmail(userDTO.getEmail());
+        user.setPassword(userDTO.getPassword());
+        user.setPhone(userDTO.getPhone());
+        user.setAddress(userDTO.getAddress());
+        user.setStatus(user.getStatus());
+
+        userDAO.updateUser(user);
+        return convertToDTO(user);
+    }
+
 
 }

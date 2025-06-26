@@ -180,26 +180,6 @@ $('.qty-box .quantity-left-minus').on('click', function () {
 });
 
 /*=====================
-  07. Tap to Top js
-   ==========================*/
-$(document).ready(function () {
-    $(window).scroll(function () {
-        if ($(this).scrollTop() > 50) {
-            $('.back-to-top').fadeIn();
-        } else {
-            $('.back-to-top').fadeOut();
-        }
-    });
-    // scroll body to 0px on click
-    $('.back-to-top').click(function () {
-        $('body,html').animate({
-            scrollTop: 0
-        }, 400);
-        return false;
-    });
-});
-
-/*=====================
    08. User Dashboard Left Sidebar Show Js
    ==========================*/
 $(".left-dashboard-show").click(function () {
@@ -313,17 +293,22 @@ $(".notifi-wishlist").on("click", function () {
 /*=====================
    14. Loader Js
    ==========================*/
-const loaderEl = document.getElementsByClassName("fullpage-loader")[0];
-document.addEventListener("readystatechange", (event) => {
-    const readyState = "complete";
-    if (document.readyState == readyState) {
-        loaderEl.classList.add("fullpage-loader--invisible");
+document.addEventListener("readystatechange", () => {
+    if (document.readyState === "complete") {
+        const loaderEl = document.querySelector(".fullpage-loader");
 
-        setTimeout(() => {
-            loaderEl.parentNode.removeChild(loaderEl);
-        }, 100);
+        if (loaderEl) {
+            loaderEl.classList.add("fullpage-loader--invisible");
+
+            setTimeout(() => {
+                loaderEl.parentNode.removeChild(loaderEl);
+            }, 100);
+        } else {
+            console.warn("Không tìm thấy phần tử .fullpage-loader");
+        }
     }
 });
+
 
 /*=====================
     15. header Dropdown Js
