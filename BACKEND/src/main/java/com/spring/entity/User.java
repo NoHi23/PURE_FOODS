@@ -13,8 +13,6 @@ public class User {
     @Column(name = "UserID")
     private int userId;
 
-    private String s;
-
     @Column(name = "FullName", nullable = false, length = 100)
     private String fullName;
 

@@ -32,6 +32,7 @@ const Product = () => {
   const [suppliers, setSuppliers] = useState([]);
   const [productToDelete, setProductToDelete] = useState(null);
 
+  
   const handleEditClick = (product) => {
     setEditProduct(product);
     setEditForm({
@@ -184,7 +185,7 @@ const Product = () => {
       .catch(() => setCategories([]));
 
     axios.get("http://localhost:8082/PureFoods/api/supplier/getAll")
-      .then(res => setSuppliers(res.data))
+      .then(res => setSuppliers(res.data.suppliers))
       .catch(() => setSuppliers([]));
   }, []);
 

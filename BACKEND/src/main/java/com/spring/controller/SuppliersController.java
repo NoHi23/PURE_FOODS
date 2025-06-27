@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/supplier")
@@ -30,7 +31,7 @@ public class SuppliersController {
         }
     }
     //Lấy full danh sách nhà cung cấp
-    @GetMapping
+    @GetMapping("/getAll")
     public ResponseEntity<?> getAllSuppliers() {
         try {
             List<SuppliersDTO> suppliersList = suppliersService.getAllSuppliers();
@@ -44,6 +45,36 @@ public class SuppliersController {
             errorResponse.put("message", e.getMessage());
             errorResponse.put("status", 201);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        }
+    }
+
+    // CREATE
+    @PostMapping("/create")
+    public ResponseEntity<SuppliersDTO> createSupplier(@RequestBody SuppliersDTO dto) {
+        SuppliersDTO created = suppliersService.createSupplier(dto);
+        return ResponseEntity.ok(created);
+    }
+
+    // UPDATE
+    @PutMapping("/update/{id}")
+    public ResponseEntity<SuppliersDTO> updateSupplier(@PathVariable("id") int id,
+                                                       @RequestBody SuppliersDTO dto) {
+        try {
+            SuppliersDTO updated = suppliersService.updateSupplier(id, dto);
+            return ResponseEntity.ok(updated);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    // DELETE
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<Void> deleteSupplier(@PathVariable("id") int id) {
+        try {
+            suppliersService.deleteSupplier(id);
+            return ResponseEntity.noContent().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
         }
     }
 }
