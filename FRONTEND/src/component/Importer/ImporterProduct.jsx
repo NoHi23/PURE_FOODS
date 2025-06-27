@@ -401,10 +401,10 @@ const ImporterProduct = ({ setProducts, currentPage, setCurrentPage }) => {
                   </td>
                   <td>
                     <span
-                      className={`badge ${product.status === 1 ? "bg-success" : "bg-secondary"}`}
+                      className={`badge ${product.status === 0 ? "bg-success" : "bg-secondary"}`}
                       style={{ fontSize: "0.8rem" }}
                     >
-                      {product.status === 1 ? "Hoạt động" : "Không hoạt động"}
+                      {product.status === 0 ? "Đang bán" : "Ngừng bán"}
                     </span>
                   </td>
                   <td className="edit-delete">
@@ -424,7 +424,7 @@ const ImporterProduct = ({ setProducts, currentPage, setCurrentPage }) => {
                         setShowEditModal(true);
                       }}
                     >
-                      Sửa ✏️
+                      ✏️
                     </button>
                     <button
                       className="delete ms-2"
@@ -439,7 +439,7 @@ const ImporterProduct = ({ setProducts, currentPage, setCurrentPage }) => {
                       }}
                       onClick={() => handleDeleteProduct(product.productId)}
                     >
-                      Xoá 🗑️
+                      🗑️
                     </button>
                   </td>
                 </tr>

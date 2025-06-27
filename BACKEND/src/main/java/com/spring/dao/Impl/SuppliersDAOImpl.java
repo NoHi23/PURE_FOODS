@@ -49,4 +49,11 @@ public class SuppliersDAOImpl implements SuppliersDAO {
         }
     }
 
+    @Override
+    public int countSuppliers() {
+        Session session = sessionFactory.getCurrentSession();
+        Query<Long> query = session.createQuery("SELECT COUNT(*) FROM Suppliers", Long.class);
+        return query.uniqueResult().intValue();
+    }
+
 }
