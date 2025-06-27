@@ -11,6 +11,10 @@ const ImporterDashboard = () => {
   const user = JSON.parse(localStorage.getItem("user"));
   const [products, setProducts] = useState([]);
   const [logs, setLogs] = useState([]);
+  const [recentLogs, setRecentLogs] = useState([]);
+  const [productMap, setProductMap] = useState({});
+  const [userMap, setUserMap] = useState({});
+
   const [currentPage, setCurrentPage] = useState(1);
   const [countProduct, setCountProduct] = useState(0);
   const [countSupplier, setCountSupplier] = useState(0);
@@ -56,6 +60,30 @@ const ImporterDashboard = () => {
       .catch((err) => {
         console.error("Lỗi khi lấy số lượng sản phẩm:", err);
       });
+    Promise.all([
+      axios.get("http://localhost:8082/PureFoods/api/inventory-logs/getAll"),
+      axios.get("http://localhost:8082/PureFoods/api/product/getAll"),
+      axios.get("http://localhost:8082/PureFoods/api/users/getAll"),
+    ])
+      .then(([logRes, productRes, userRes]) => {
+        const logs = logRes.data.logs || [];
+        setRecentLogs(logs.slice(-10).reverse()); // Lấy 10 đơn gần nhất
+
+        const productMapTemp = {};
+        productRes.data.listProduct?.forEach((p) => {
+          productMapTemp[p.productId] = p.productName;
+        });
+        setProductMap(productMapTemp);
+
+        const userMapTemp = {};
+        userRes.data.userList?.forEach((u) => {
+          userMapTemp[u.userId] = u.fullName;
+        });
+        setUserMap(userMapTemp);
+      })
+      .catch((err) => {
+        console.error("Lỗi khi lấy dữ liệu logs gần đây:", err);
+      });
   }, []);
 
   return (
@@ -83,9 +111,12 @@ const ImporterDashboard = () => {
                           </span>
                         </div>
                         <div className="dashboard-user-name">
-                          <p className="text-content">
-                            Tại đây, bạn có thể xem nhanh hoạt động nhập hàng gần đây và cập nhật thông tin tài khoản.
-                            Chọn liên kết bên dưới để xem hoặc chỉnh sửa thông tin.
+                          <p className="text-content" style={{ color: "#0da385", fontFamily: "Inconsolata, monospace" }}>
+                            Tại đây, bạn có thể theo dõi toàn bộ hoạt động nhập hàng mới nhất, quản lý sản phẩm trong
+                            kho, và kiểm tra nhanh các thay đổi liên quan đến toàn bộ hoạt động kho bãi. Dashboard này
+                            là trung tâm quản trị giúp bạn tối ưu hoá quy trình nhập hàng, nắm bắt dữ liệu kịp thời và
+                            đưa ra quyết định nhanh chóng hơn bao giờ hết. Chọn các liên kết bên trái để xem hoặc chỉnh
+                            sửa thông tin.
                           </p>
                         </div>
 
@@ -182,91 +213,58 @@ const ImporterDashboard = () => {
                           <div className="col-xxl-12 mb-4">
                             <div className="order-tab dashboard-bg-box">
                               <div className="dashboard-title mb-4">
-                                <h3>10 Đơn hàng gần đây</h3>
-                                <p style={{color:"#f98050", marginTop:"5px", fontFamily:"Inconsolata, monospace"}}>
-                                  (*)Truy cập vào lịch sử nhập hàng để xem toàn bộ lịch sử giao dịch đã được ghi lại trên
-                                  hệ thống từ trước tới nay.
+                                <h3>
+                                  10 Đơn hàng gần đây <i className="fa-solid fa-arrow-down ms-2 text-muted"></i>
+                                </h3>
+                                <p style={{ color: "#f98050", marginTop: "5px", fontFamily: "Inconsolata, monospace" }}>
+                                  (*)Truy cập vào lịch sử nhập hàng để xem toàn bộ lịch sử giao dịch đã được ghi lại
+                                  trên hệ thống từ trước tới nay để cập nhật sản phẩm trong kho!
                                 </p>
                               </div>
                               <div className="table-responsive">
                                 <table className="table order-table">
                                   <thead>
                                     <tr>
-                                      <th scope="col">Order ID</th>
-                                      <th scope="col">Product Name</th>
-                                      <th scope="col">Status</th>
+                                      <th scope="col">ID</th>
+                                      <th scope="col">Sản phẩm</th>
+                                      <th scope="col">Người nhập</th>
+                                      <th scope="col">Số lượng</th>
+                                      <th scope="col">Trạng thái</th>
                                     </tr>
                                   </thead>
                                   <tbody>
-                                    <tr>
-                                      <td className="product-image">#254834</td>
-                                      <td>
-                                        <h6>Choco Chip Cookies</h6>
-                                      </td>
-                                      <td>
-                                        <label className="success">Shipped</label>
-                                      </td>
-                                    </tr>
+                                    {recentLogs.length > 0 ? (
+                                      recentLogs.map((log, index) => {
+                                        const statusText =
+                                          log.status === 0 ? "Đang xử lý" : log.status === 1 ? "Hoàn thành" : "Từ chối";
+                                        const statusClass =
+                                          log.status === 0 ? "warning" : log.status === 1 ? "success" : "danger";
 
-                                    <tr>
-                                      <td className="product-image">#355678</td>
-                                      <td>
-                                        <h6>Premium Butter Cookies</h6>
-                                      </td>
-                                      <td>
-                                        <label className="danger">Pending</label>
-                                      </td>
-                                    </tr>
-
-                                    <tr>
-                                      <td className="product-image">#647536</td>
-                                      <td>
-                                        <h6>Sprinkled Potato Chips</h6>
-                                      </td>
-                                      <td>
-                                        <label className="success">Shipped</label>
-                                      </td>
-                                    </tr>
-
-                                    <tr>
-                                      <td className="product-image">#125689</td>
-                                      <td>
-                                        <h6>Milk 1 L</h6>
-                                      </td>
-                                      <td>
-                                        <label className="danger">Pending</label>
-                                      </td>
-                                    </tr>
-
-                                    <tr>
-                                      <td className="product-image">#215487</td>
-                                      <td>
-                                        <h6>Raw Mutton Leg</h6>
-                                      </td>
-                                      <td>
-                                        <label className="danger">Pending</label>
-                                      </td>
-                                    </tr>
-
-                                    <tr>
-                                      <td className="product-image">#365474</td>
-                                      <td>
-                                        <h6>Instant Coffee</h6>
-                                      </td>
-                                      <td>
-                                        <label className="success">Shipped</label>
-                                      </td>
-                                    </tr>
-
-                                    <tr>
-                                      <td className="product-image">#368415</td>
-                                      <td>
-                                        <h6>Jowar Stick and Jowar Chips</h6>
-                                      </td>
-                                      <td>
-                                        <label className="danger">Pending</label>
-                                      </td>
-                                    </tr>
+                                        return (
+                                          <tr key={index}>
+                                            <td>#{log.logId}</td>
+                                            <td>
+                                              <h6>{productMap[log.productId] || "Không rõ"}</h6>
+                                            </td>
+                                            <td>
+                                              <h6>{userMap[log.userId] || "Không rõ"}</h6>
+                                            </td>
+                                            <td>
+                                              <h6>{log.quantityChange || "không rõ"}</h6>
+                                            </td>
+                                            <td>
+                                              <label className={statusClass}>{statusText}</label>
+                                            </td>
+                                          </tr>
+                                        );
+                                      })
+                                    ) : (
+                                      <tr>
+                                        <td colSpan="3" className="text-center">
+                                          Không có đơn nào gần đây.
+                                        </td>
+                                      </tr>
+                                    )}
                                   </tbody>
                                 </table>
                               </div>
