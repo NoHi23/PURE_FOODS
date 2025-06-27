@@ -12,6 +12,9 @@ const ImporterDashboard = () => {
   const [products, setProducts] = useState([]);
   const [logs, setLogs] = useState([]);
   const [recentLogs, setRecentLogs] = useState([]);
+  const [pendingCount, setPendingCount] = useState(0);
+  const [rejectedCount, setRejectedCount] = useState(0);
+  const [finishedCount, setFinishedCount] = useState(0);
   const [productMap, setProductMap] = useState({});
   const [userMap, setUserMap] = useState({});
 
@@ -68,6 +71,13 @@ const ImporterDashboard = () => {
       .then(([logRes, productRes, userRes]) => {
         const logs = logRes.data.logs || [];
         setRecentLogs(logs.slice(-10).reverse()); // Lấy 10 đơn gần nhất
+        // Đếm đơn đang xử lý và từ chối và hoàn thành
+        const pending = logs.filter((log) => log.status === 0).length;
+        const finished = logs.filter((log) => log.status === 1).length;
+        const rejected = logs.filter((log) => log.status === 2).length;
+        setPendingCount(pending);
+        setFinishedCount(finished);
+        setRejectedCount(rejected);
 
         const productMapTemp = {};
         productRes.data.listProduct?.forEach((p) => {
@@ -111,7 +121,10 @@ const ImporterDashboard = () => {
                           </span>
                         </div>
                         <div className="dashboard-user-name">
-                          <p className="text-content" style={{ color: "#0da385", fontFamily: "Inconsolata, monospace" }}>
+                          <p
+                            className="text-content"
+                            style={{ color: "#0da385", fontFamily: "Inconsolata, monospace" }}
+                          >
                             Tại đây, bạn có thể theo dõi toàn bộ hoạt động nhập hàng mới nhất, quản lý sản phẩm trong
                             kho, và kiểm tra nhanh các thay đổi liên quan đến toàn bộ hoạt động kho bãi. Dashboard này
                             là trung tâm quản trị giúp bạn tối ưu hoá quy trình nhập hàng, nắm bắt dữ liệu kịp thời và
@@ -133,18 +146,7 @@ const ImporterDashboard = () => {
                               </div>
                             </div>
 
-                            <div className="col-xxl-4 col-lg-6 col-md-4 col-sm-6">
-                              <div className="total-contain">
-                                <img src="../assets/images/svg/pending.svg" className="img-1 blur-up lazyload" alt="" />
-                                <img src="../assets/images/svg/pending.svg" className="blur-up lazyload" alt="" />
-                                <div className="total-detail">
-                                  <h5>Tổng bán ra</h5>
-                                  <h3>12550</h3>
-                                </div>
-                              </div>
-                            </div>
-
-                            <div className="col-xxl-4 col-lg-6 col-md-4 col-sm-6">
+                            <div className="col-xxl-5 col-lg-6 col-md-4 col-sm-6">
                               <div className="total-contain">
                                 <img
                                   src="../assets/images/svg/wishlist.svg"
@@ -153,8 +155,27 @@ const ImporterDashboard = () => {
                                 />
                                 <img src="../assets/images/svg/wishlist.svg" className="blur-up lazyload" alt="" />
                                 <div className="total-detail">
-                                  <h5>Đơn chờ xử lý</h5>
-                                  <h3>36</h3>
+                                  <h5>Đơn chưa hoàn thành</h5>
+                                  <h3>
+                                    <span style={{ color: "#fbb03b", fontWeight: "bold" }}>
+                                      {pendingCount} chờ xử lý
+                                    </span>{" "}
+                                    /{" "}
+                                    <span style={{ color: "#ff4d4f", fontWeight: "bold" }}>
+                                      {rejectedCount} bị từ chối
+                                    </span>
+                                  </h3>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="col-xxl-3 col-lg-6 col-md-4 col-sm-6">
+                              <div className="total-contain">
+                                <img src="../assets/images/svg/pending.svg" className="img-1 blur-up lazyload" alt="" />
+                                <img src="../assets/images/svg/pending.svg" className="blur-up lazyload" alt="" />
+                                <div className="total-detail">
+                                  <h5>Tổng xuất kho</h5>
+                                  <h3>{finishedCount}</h3>
                                 </div>
                               </div>
                             </div>
