@@ -182,9 +182,12 @@ const ImporterDashboard = () => {
                           <div className="col-xxl-12 mb-4">
                             <div className="order-tab dashboard-bg-box">
                               <div className="dashboard-title mb-4">
-                                <h3>Đơn hàng gần đây</h3>
+                                <h3>10 Đơn hàng gần đây</h3>
+                                <p style={{color:"#f98050", marginTop:"5px", fontFamily:"Inconsolata, monospace"}}>
+                                  (*)Truy cập vào lịch sử nhập hàng để xem toàn bộ lịch sử giao dịch đã được ghi lại trên
+                                  hệ thống từ trước tới nay.
+                                </p>
                               </div>
-
                               <div className="table-responsive">
                                 <table className="table order-table">
                                   <thead>

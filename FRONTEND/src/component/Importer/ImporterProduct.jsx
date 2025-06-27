@@ -25,12 +25,32 @@ const ImporterProduct = ({ setProducts, currentPage, setCurrentPage }) => {
     status: 1,
   });
   const [showModal, setShowModal] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const filteredProducts = products.filter((p) => {
+    const productName = p.productName?.toLowerCase() || "";
+    const price = p.price?.toString() || "";
+    const quantity = p.stockQuantity?.toString() || "";
+    const harvestDate = p.harvestDate ? new Date(p.harvestDate).toLocaleDateString("vi-VN").toLowerCase() : "";
+    const expirationDate = p.expirationDate ? new Date(p.expirationDate).toLocaleDateString("vi-VN").toLowerCase() : "";
+
+    const statusText = p.status === 0 ? "đang bán" : "ngừng bán";
+
+    return (
+      productName.includes(searchTerm.toLowerCase()) ||
+      price.includes(searchTerm) ||
+      quantity.includes(searchTerm) ||
+      harvestDate.includes(searchTerm.toLowerCase()) ||
+      expirationDate.includes(searchTerm.toLowerCase()) ||
+      statusText.includes(searchTerm.toLowerCase())
+    );
+  });
 
   const productsPerPage = 7;
-  const totalPages = Math.ceil(products.length / productsPerPage);
+  const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
   const indexOfLast = currentPage * productsPerPage;
   const indexOfFirst = indexOfLast - productsPerPage;
-  const currentProducts = products.slice(indexOfFirst, indexOfLast);
+  const currentProducts = filteredProducts.slice(indexOfFirst, indexOfLast);
 
   const fetchProducts = async () => {
     try {
@@ -152,7 +172,16 @@ const ImporterProduct = ({ setProducts, currentPage, setCurrentPage }) => {
           </svg>
         </span>
       </div>
-
+      <input
+        type="text"
+        className="form-control mb-4"
+        placeholder="Nhập bất cứ thứ gì để tìm kiếm ....."
+        value={searchTerm}
+        onChange={(e) => {
+          setSearchTerm(e.target.value);
+          setCurrentPage(1); // Reset trang khi search
+        }}
+      />
       <button
         className="btn theme-bg-color btn-md fw-bold text-white mb-4"
         data-bs-toggle="modal"
@@ -222,7 +251,9 @@ const ImporterProduct = ({ setProducts, currentPage, setCurrentPage }) => {
                         </option>
                       ))
                     ) : (
-                      <option value="" disabled>Đang tải danh mục...</option>
+                      <option value="" disabled>
+                        Đang tải danh mục...
+                      </option>
                     )}
                   </select>
                 </div>
