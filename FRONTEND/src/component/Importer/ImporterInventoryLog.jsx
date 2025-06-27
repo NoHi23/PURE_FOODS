@@ -6,7 +6,25 @@ const ImporterInventoryLog = ({ currentPage, setCurrentPage, setLogs }) => {
   const [logs, setLocalLogs] = useState([]);
   const [products, setProducts] = useState({});
   const [users, setUsers] = useState({});
-  const logsPerPage = 7;
+  const [searchTerm, setSearchTerm] = useState("");
+  // Lọc dữ liệu real-time
+  const filteredLogs = logs.filter((log) => {
+    const productName = products[log.productId]?.name?.toLowerCase() || "";
+    const userName = users[log.userId]?.toLowerCase() || "";
+    const quantity = log.quantityChange?.toString() || "";
+    const reason = log.reason?.toLowerCase() || "";
+    const createdAt = log.createdAt ? new Date(log.createdAt).toLocaleString("vi-VN").toLowerCase() : "";
+    const statusText = log.status === 0 ? "đang xử lý" : log.status === 1 ? "hoàn thành" : "từ chối";
+
+    return (
+      productName.includes(searchTerm.toLowerCase()) ||
+      userName.includes(searchTerm.toLowerCase()) ||
+      quantity.includes(searchTerm) ||
+      reason.includes(searchTerm.toLowerCase()) ||
+      createdAt.includes(searchTerm.toLowerCase()) ||
+      statusText.includes(searchTerm.toLowerCase())
+    );
+  });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -41,10 +59,11 @@ const ImporterInventoryLog = ({ currentPage, setCurrentPage, setLogs }) => {
     fetchData();
   }, [setLogs]);
 
-  const totalPages = Math.ceil(logs.length / logsPerPage);
+  const logsPerPage = 7;
+  const totalPages = Math.ceil(filteredLogs.length / logsPerPage);
   const indexOfLast = currentPage * logsPerPage;
   const indexOfFirst = indexOfLast - logsPerPage;
-  const currentLogs = logs.slice(indexOfFirst, indexOfLast);
+  const currentLogs = filteredLogs.slice(indexOfFirst, indexOfLast);
 
   return (
     <div className="dashboard-order">
@@ -56,7 +75,16 @@ const ImporterInventoryLog = ({ currentPage, setCurrentPage, setLogs }) => {
           </svg>
         </span>
       </div>
-
+      <input
+        type="text"
+        className="form-control my-3 mb-5"
+        placeholder="Nhập bất cứ thứ gì để tìm kiếm..."
+        value={searchTerm}
+        onChange={(e) => {
+          setSearchTerm(e.target.value);
+          setCurrentPage(1); // Reset về trang 1 mỗi khi search
+        }}
+      />
       <div className="order-tab dashboard-bg-box">
         <div className="table-responsive">
           <table className="table order-table">
