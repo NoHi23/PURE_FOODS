@@ -20,7 +20,6 @@ const ImporterInventoryLog = ({ currentPage, setCurrentPage, setLogs }) => {
         const logData = logsRes.data.logs || [];
         setLocalLogs(logData);
         if (setLogs) setLogs(logData);
-        console.log("Logs fetched:", logData);
 
         const productData = productsRes.data.listProduct || [];
         const productMap = {};
@@ -28,7 +27,6 @@ const ImporterInventoryLog = ({ currentPage, setCurrentPage, setLogs }) => {
           productMap[p.productId] = { name: p.productName, imageURL: p.imageURL };
         });
         setProducts(productMap);
-        console.log("Products fetched:", productMap);
 
         const userData = usersRes.data.userList || [];
         const userMap = {};
@@ -36,7 +34,6 @@ const ImporterInventoryLog = ({ currentPage, setCurrentPage, setLogs }) => {
           userMap[u.userId] = u.fullName;
         });
         setUsers(userMap);
-        console.log("Users fetched:", userMap);
       } catch (err) {
         console.error("Lỗi khi lấy dữ liệu:", err);
       }

@@ -76,4 +76,21 @@ public class SuppliersController {
             return ResponseEntity.notFound().build();
         }
     }
+
+    @GetMapping("/count")
+    public ResponseEntity<?> countSuppliers() {
+        try {
+            int count = suppliersService.countSupplier();
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Lấy danh sách các nhà cung cấp thành công!");
+            response.put("status", 200);
+            response.put("countSupplier", count);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("message", e.getMessage());
+            errorResponse.put("status", 400);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        }
+    }
 }
