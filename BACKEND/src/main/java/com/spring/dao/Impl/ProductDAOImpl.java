@@ -77,6 +77,21 @@ public class ProductDAOImpl implements ProductDAO {
         Session session = sessionFactory.getCurrentSession();
         return session.get(ProductDetails.class, productId);
     }
+    public Products findById(int id) {
+        return getProductById(id);
+    }
+    @Override
+    public Products save(Products product) {
+        Session session = sessionFactory.getCurrentSession();
+        if (product.getProductId() == 0) {
+            session.persist(product); // Thêm mới
+        } else {
+            session.merge(product); // Cập nhật
+        }
+        return product;
+    }
+
+
 
     @Override
     public List<Products> getProductByStatus(int status) {

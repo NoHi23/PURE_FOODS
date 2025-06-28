@@ -35,6 +35,7 @@ const Product = () => {
   const [suppliers, setSuppliers] = useState([]);
   const [productToDelete, setProductToDelete] = useState(null);
 
+  
   const handleEditClick = (product) => {
     setEditProduct(product);
     setEditForm({

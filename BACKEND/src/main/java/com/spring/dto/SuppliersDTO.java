@@ -5,7 +5,7 @@ import com.google.api.client.util.DateTime;
 import java.util.Date;
 
 public class SuppliersDTO {
-    private int supplierId;
+    private int supplierID;
     private String supplierName;
     private String contactName;
     private String phone;
@@ -18,8 +18,8 @@ public class SuppliersDTO {
 
     public SuppliersDTO() {}
 
-    public SuppliersDTO(int supplierId, String supplierName, String contactName, String phone, String email, String address, String organicCertification, Date certificationExpiry, java.sql.Timestamp createdAt, int status) {
-        this.supplierId = supplierId;
+    public SuppliersDTO(int supplierID, String supplierName, String contactName, String phone, String email, String address, String organicCertification, Date certificationExpiry, java.sql.Timestamp createdAt, int status) {
+        this.supplierID = supplierID;
         this.supplierName = supplierName;
         this.contactName = contactName;
         this.phone = phone;
@@ -30,11 +30,11 @@ public class SuppliersDTO {
         this.createdAt = createdAt;
         this.status = status;
         }
-        public int getSupplierId() {
-            return supplierId;
+        public int getSupplierID() {
+            return supplierID;
         }
-        public void setSupplierId(int supplierId) {
-            this.supplierId = supplierId;
+        public void setSupplierID(int supplierID) {
+            this.supplierID = supplierID;
         }
         public String getSupplierName() {
         return supplierName;

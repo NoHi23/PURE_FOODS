@@ -4,7 +4,7 @@ import com.spring.entity.ProductDetails;
 import com.spring.entity.Products;
 import java.util.List;
 
-public interface ProductDAO {
+public interface ProductDAO   {
 
     List<Products> getAllProduct();
     Products getProductById(int id);
@@ -16,6 +16,9 @@ public interface ProductDAO {
     void addProductDetails(ProductDetails productDetails);
     void updateProductOrganicInfo(int productId, int organicStatusId);
     ProductDetails getProductDetailsById(int productId);
+    Products findById(int id);
+    Products save(Products product);
+
     List<Products> getProductByStatus(int status);
     List<Products> getTopDiscountProducts(int limit);
 
