@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { FiSearch } from "react-icons/fi";
 import Pagination from "../../layouts/Pagination";
 import ImporterEditProduct from "./ImporterEditProduct";
 
@@ -171,17 +172,35 @@ const ImporterProduct = ({ setProducts, currentPage, setCurrentPage }) => {
             <use href="../assets/svg/leaf.svg#leaf"></use>
           </svg>
         </span>
+        <p style={{ color: "#f98050", marginTop: "5px", fontFamily: "Inconsolata, monospace" }}>
+          (*)Hàng vừa nhập về cần được kiểm tra kỹ càng và cập nhật ngay số lượng tồn kho. Đảm bảo mọi thứ còn nguyên
+          vẹn trước khi lưu kho, mọi sai lệch sẽ ảnh hưởng đến quá trình xử lý sau này! Kiểm tra kỹ để tránh thất thoát,
+          sai sót nhỏ có thể gây ảnh hưởng lớn.
+        </p>
       </div>
-      <input
-        type="text"
-        className="form-control mb-4"
-        placeholder="Nhập bất cứ thứ gì để tìm kiếm ....."
-        value={searchTerm}
-        onChange={(e) => {
-          setSearchTerm(e.target.value);
-          setCurrentPage(1); // Reset trang khi search
-        }}
-      />
+      <div className="position-relative mb-4">
+        <input
+          type="text"
+          className="form-control pe-5" // padding right để tránh icon đè chữ
+          placeholder="Nhập bất cứ thứ gì để tìm kiếm..."
+          value={searchTerm}
+          onChange={(e) => {
+            setSearchTerm(e.target.value);
+            setCurrentPage(1); // Reset về trang đầu khi tìm
+          }}
+        />
+        <FiSearch
+          style={{
+            position: "absolute",
+            right: "15px",
+            top: "50%",
+            transform: "translateY(-50%)",
+            color: "#aaa",
+            pointerEvents: "none", // để icon không ảnh hưởng đến việc gõ
+          }}
+          size={18}
+        />
+      </div>
       <button
         className="btn theme-bg-color btn-md fw-bold text-white mb-4"
         data-bs-toggle="modal"

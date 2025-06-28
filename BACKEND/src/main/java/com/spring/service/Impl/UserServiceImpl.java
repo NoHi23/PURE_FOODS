@@ -160,14 +160,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public boolean deleteUser(int userID) {
+    public UserDTO  deleteUser(int userID) {
         User user = userDAO.getUserById(userID);
         if (user == null) {
             throw new RuntimeException("User not found!");
         }
-        user.setStatus(1);
+        user.setStatus(1); // đánh dấu là đã xoá mềm, vẫn còn ở DB SQL
         userDAO.updateUser(user);
-        return true;
+        return convertToDTO(user);
     }
 
     @Override
