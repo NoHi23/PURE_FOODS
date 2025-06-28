@@ -11,7 +11,8 @@ const SignUp = () => {
     email: '',
     password: '',
     phone: '',
-    address: ''
+    address: '',
+    confirm: "",
   });
   const navigate = useNavigate();
 
@@ -37,8 +38,12 @@ const SignUp = () => {
       const res = await axios.post('http://localhost:8082/PureFoods/api/users/register', formData);
       toast.success(res.data.message || "Đăng ký thành công!");
       navigate('/login')
-    } catch (error) {
-      toast.error(error.response?.data?.message || "Đăng ký thất bại!");
+    } catch (err) {
+      const errorMessage =
+        err.response && err.response.data && err.response.data.message
+          ? err.response.data.message
+          : "ERROR";
+      toast.error(errorMessage);
     }
   };
 
@@ -90,8 +95,11 @@ const SignUp = () => {
       }
 
     } catch (error) {
-      toast.error("Google login failed!");
-      console.error(error);
+      const errorMessage =
+        error.response && error.response.data && error.response.data.message
+          ? error.response.data.message
+          : "Google login failed!";
+      toast.error(errorMessage);
     }
   };
   useEffect(() => {
@@ -149,8 +157,11 @@ const SignUp = () => {
             else if (user.roleID === 6) navigate("/shipper");
 
           }).catch(err => {
-            console.error("Facebook login failed", err);
-            toast.error("Facebook login failed");
+            const errorMessage =
+              err.response && err.response.data && err.response.data.message
+                ? err.response.data.message
+                : "Facebook login failed";
+            toast.error(errorMessage);
           });
         });
       } else {
@@ -215,6 +226,28 @@ const SignUp = () => {
                           required
                         />
                         <label>Password</label>
+                      </div>
+                    </div>
+                    <div className="col-12">
+                      <div className="form-floating theme-form-floating log-in-form">
+                        <input
+                          type="password"
+                          className={`form-control ${formData.confirm
+                            ? formData.confirm === formData.password
+                              ? "is-valid"
+                              : "is-invalid"
+                            : ""
+                            }`} name="confirm"
+                          value={formData.confirm}
+                          onChange={handleChange}
+                        />
+                        {formData.confirm && formData.confirm !== formData.password && (
+                          <p className="text-danger mt-1">Confirmation password does not match</p>
+                        )}
+                        {formData.confirm && formData.confirm === formData.password && (
+                          <p className="text-success mt-1">Password matches</p>
+                        )}
+                        <label>Confirm Password</label>
                       </div>
                     </div>
 

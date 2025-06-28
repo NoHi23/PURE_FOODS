@@ -1,6 +1,8 @@
 package com.spring.entity;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.CreationTimestamp;
+
 import java.util.Date;
 
 @Entity
@@ -23,6 +25,9 @@ public class Products {
     @Column(name = "Price")
     private float price;
 
+    @Column(name = "DiscountPercent")
+    private Float discountPercent;
+
     @Column(name = "StockQuantity")
     private int stockQuantity;
 
@@ -35,6 +40,7 @@ public class Products {
     @Column(name = "LastUpdatedBy")
     private int lastUpdatedBy;
 
+    @CreationTimestamp
     @jakarta.persistence.Temporal(jakarta.persistence.TemporalType.TIMESTAMP)
     @jakarta.persistence.Column(name = "CreatedAt")
     private java.sql.Timestamp createdAt;
@@ -74,6 +80,8 @@ public class Products {
     public void setPrice(float price) {
         this.price = price;
     }
+    public Float getDiscountPercent() { return discountPercent; }
+    public void setDiscountPercent(Float discountPercent) { this.discountPercent = discountPercent; }
     public int getStockQuantity() {
         return stockQuantity;
     }
@@ -111,6 +119,12 @@ public class Products {
         this.status = status;
     }
 
-
+    @Transient
+    public float getPriceAfterDiscount() {
+        if (discountPercent != null && discountPercent > 0) {
+            return price * (1 - discountPercent / 100);
+        }
+        return price;
+    }
 
 }

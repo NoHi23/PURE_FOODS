@@ -143,4 +143,26 @@ public class ProductController {
         }
     }
 
+    @GetMapping("/getAll/status0")
+    public ResponseEntity<?> getAllProductStatus0() {
+        try {
+            List<ProductDTO> list = productService.getAllProductByStatus(0);
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Lấy sản phẩm có status = 0 thành công!");
+            response.put("status", 200);
+            response.put("listProduct", list);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("message", e.getMessage());
+            errorResponse.put("status", 201);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        }
+    }
+
+    @GetMapping("/top-discount")
+    public ResponseEntity<List<ProductDTO>> getTopDiscountProducts() {
+        return ResponseEntity.ok(productService.getTopDiscountProducts(12));
+    }
+
 }

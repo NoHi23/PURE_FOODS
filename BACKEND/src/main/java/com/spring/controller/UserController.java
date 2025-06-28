@@ -7,6 +7,7 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.jackson2.JacksonFactory;
+import com.spring.dto.ProductDTO;
 import com.spring.dto.UserDTO;
 import com.spring.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -95,7 +96,10 @@ public class UserController {
 
                 // Tạo user nếu chưa có
                 UserDTO userDTO = userService.autoRegisterIfNotExists(name, email);
-
+                if (userDTO.getStatus() == 1) {
+                    return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                            .body(Map.of("message", "Tài khoản đã bị khóa hoặc không được phép đăng nhập!", "status", 403));
+                }
                 // Có thể trả JWT token nếu dùng
                 return ResponseEntity.ok(userDTO);
             } else {
@@ -169,6 +173,10 @@ public class UserController {
                 response.put("message", "User registration failed.");
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
             }
+            if (userDTO.getStatus() == 1) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(Map.of("message", "Tài khoản đã bị khóa hoặc không được phép đăng nhập!", "status", 403));
+            }
 
             response.put("message", "Login successful");
             response.put("user", userDTO);
@@ -226,7 +234,7 @@ public class UserController {
     @PutMapping("/delete")
     public ResponseEntity<?> deleteUser(@RequestBody UserDTO userDTO) {
         try {
-            UserDTO updatedUser = userService.deleteUser(userDTO.getUserId());
+            boolean updatedUser = userService.deleteUser(userDTO.getUserId());
             Map<String, Object> response = new HashMap<>();
             response.put("message", "User deleted successfully!");
             response.put("status", 200);
@@ -330,4 +338,23 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "OTP không hợp lệ hoặc đã hết hạn", "status", 400));
         }
     }
+
+
+    @PostMapping("/add")
+    public ResponseEntity<?> addUser(@RequestBody UserDTO userDTO) {
+        try {
+            UserDTO u = userService.addUser(userDTO);
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "add User successfully!");
+            response.put("status", 200);
+            response.put("user", u);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("message", e.getMessage());
+            errorResponse.put("status", 201);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        }
+    }
+
 }

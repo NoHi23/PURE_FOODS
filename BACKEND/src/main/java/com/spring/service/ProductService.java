@@ -16,4 +16,7 @@ public interface ProductService {
 
     ProductDTO importProduct(ProductDTO productDTO);
     ProductDTO updateOrganicStatus(int productId, int organicStatusId);
+    List<ProductDTO> getAllProductByStatus(int status);
+    List<ProductDTO> getTopDiscountProducts(int limit);
+
 }
