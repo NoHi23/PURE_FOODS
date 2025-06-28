@@ -16,4 +16,7 @@ public interface ProductDAO {
     void addProductDetails(ProductDetails productDetails);
     void updateProductOrganicInfo(int productId, int organicStatusId);
     ProductDetails getProductDetailsById(int productId);
+    List<Products> getProductByStatus(int status);
+    List<Products> getTopDiscountProducts(int limit);
+
 }

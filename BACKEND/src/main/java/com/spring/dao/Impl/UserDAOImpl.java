@@ -1,6 +1,7 @@
 package com.spring.dao.Impl;
 
 import com.spring.dao.UserDAO;
+import com.spring.entity.Products;
 import com.spring.entity.User;
 import jakarta.persistence.NoResultException;
 import org.hibernate.Session;
@@ -57,14 +58,10 @@ public class UserDAOImpl implements UserDAO {
     }
 
     @Override
-    public User deleteUser(int id) {
+    public void deleteUser(int id) {
         Session session = sessionFactory.getCurrentSession();
         User user = session.get(User.class, id);
-        if (user != null) {
-            user.setStatus(0);
-            session.update(user);
-        }
-        return user;
+        session.delete(user);
     }
 
     @Override

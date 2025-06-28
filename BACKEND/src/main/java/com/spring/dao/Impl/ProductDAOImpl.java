@@ -17,7 +17,7 @@ public class ProductDAOImpl implements ProductDAO {
     @Autowired
     private SessionFactory sessionFactory;
     @Override
-    public List getAllProduct() {
+    public List<Products> getAllProduct() {
         Session session = sessionFactory.getCurrentSession();
         return session.createQuery("from Products").list();
     }
@@ -77,4 +77,23 @@ public class ProductDAOImpl implements ProductDAO {
         Session session = sessionFactory.getCurrentSession();
         return session.get(ProductDetails.class, productId);
     }
+
+    @Override
+    public List<Products> getProductByStatus(int status) {
+        String hql = "FROM Products WHERE status = :status";
+        return sessionFactory.getCurrentSession()
+                .createQuery(hql, Products.class)
+                .setParameter("status", status)
+                .getResultList();
+    }
+
+    @Override
+    public List<Products> getTopDiscountProducts(int limit) {
+        String hql = "FROM Products WHERE status = 0 ORDER BY discountPercent DESC";
+        return sessionFactory.getCurrentSession()
+                .createQuery(hql, Products.class)
+                .setMaxResults(limit)
+                .getResultList();
+    }
+
 }

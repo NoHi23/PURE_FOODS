@@ -11,6 +11,7 @@ const OtpVerify = () => {
   const [otp, setOtp] = useState(new Array(6).fill(''));
   const inputRefs = useRef([]);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isResending, setIsResending] = useState(false);
 
   const maskEmail = (email) => {
     const [name, domain] = email.split('@');
@@ -71,11 +72,18 @@ const OtpVerify = () => {
         toast.error("Mã OTP không đúng hoặc hết hạn!");
       }
     } catch (err) {
-      toast.error("Mã OTP không đúng hoặc hết hạn!");
+      const errorMessage =
+        err.response && err.response.data && err.response.data.message
+          ? err.response.data.message
+          : "ERROR";
+      toast.error(errorMessage);
     }
   };
 
   const handleResend = async () => {
+    if (isResending) return;
+    setIsResending(true);
+
     try {
       const res = await axios.post("http://localhost:8082/PureFoods/api/users/forgot-password", {
         email: email
@@ -88,6 +96,9 @@ const OtpVerify = () => {
       }
     } catch (err) {
       toast.error("Lỗi khi gửi lại mã xác nhận.");
+    }
+    finally {
+      setIsResending(false);
     }
   };
 
@@ -132,8 +143,16 @@ const OtpVerify = () => {
               <div className="send-box pt-4">
                 <h5>
                   Didn't get the code?{' '}
-                  <a href="" className="theme-color fw-bold" onClick={(e) => { e.preventDefault(); handleResend() }}>
-                    Resend It
+                  <a href="" className="theme-color fw-bold" style={{ cursor: isResending ? 'not-allowed' : 'pointer' }}
+                    onClick={(e) => { e.preventDefault(); handleResend() }}
+                    disabled={isResending}>
+                    {isResending ? (
+                      <>
+                        <span className="spinner-border spinner-border-sm me-1" /> Sending...
+                      </>
+                    ) : (
+                      'Resend It'
+                    )}
                   </a>
                 </h5>
               </div>

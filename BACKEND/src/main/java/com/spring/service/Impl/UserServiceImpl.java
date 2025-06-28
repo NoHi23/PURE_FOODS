@@ -2,7 +2,9 @@ package com.spring.service.Impl;
 
 import com.spring.common.EmailUtil;
 import com.spring.dao.UserDAO;
+import com.spring.dto.ProductDTO;
 import com.spring.dto.UserDTO;
+import com.spring.entity.Products;
 import com.spring.entity.User;
 import com.spring.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -146,10 +148,9 @@ public class UserServiceImpl implements UserService {
         if (existingUser != null && existingUser.getUserId() != user.getUserId()) {
             throw new RuntimeException("Email already exists!");
         }
-
         user.setFullName(userDTO.getFullName());
         user.setEmail(userDTO.getEmail());
-        user.setPassword(userDTO.getPassword());
+//        user.setPassword(userDTO.getPassword());
         user.setPhone(userDTO.getPhone());
         user.setRoleID(userDTO.getRoleID());
         user.setStatus(userDTO.getStatus());
@@ -158,17 +159,15 @@ public class UserServiceImpl implements UserService {
         return convertToDTO(user);
     }
 
-    @Transactional(propagation = Propagation.REQUIRED)
     @Override
-    public UserDTO deleteUser(int userID) {
+    public boolean deleteUser(int userID) {
         User user = userDAO.getUserById(userID);
-        System.out.println("UserID: " + userID);
-        System.out.println("User: "+user);
         if (user == null) {
             throw new RuntimeException("User not found!");
         }
         user.setStatus(1);
-        return convertToDTO(user);
+        userDAO.updateUser(user);
+        return true;
     }
 
     @Override
@@ -204,7 +203,18 @@ public class UserServiceImpl implements UserService {
 
         // Gửi email
         String subject = "Mã xác nhận đặt lại mật khẩu";
-        String body = "Mã xác nhận của bạn là: " + code + "\nMã này sẽ hết hạn sau 15 phút.";
+        String body = "<html><body>" +
+                "<h2 style='color:#00b894;'>Yêu cầu đặt lại mật khẩu</h2>" +
+                "<p>Chúng tôi đã nhận được yêu cầu đặt lại mật khẩu cho tài khoản của bạn.</p>" +
+                "<p>Vui lòng sử dụng mã xác nhận dưới đây để tiếp tục quá trình:</p>" +
+                "<div style='padding:15px;background:#f0f0f0;font-size:24px;font-weight:bold;" +
+                "text-align:center;border-radius:6px;margin:20px 0;color:#2d3436;'>" +
+                code + "</div>" +
+                "<p>Mã xác nhận này sẽ hết hạn sau <strong>15 phút</strong>.</p>" +
+                "<p>Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này.</p>" +
+                "<div style='margin-top:30px;color:#777;font-size:14px;text-align:center'>" +
+                "&copy; 2025 Hệ thống của bạn. Mọi quyền được bảo lưu.</div>" +
+                "</body></html>";
 
         EmailUtil.sendEmail(email, subject, body); // bạn sẽ tạo lớp EmailUtil riêng
 
@@ -232,6 +242,23 @@ public class UserServiceImpl implements UserService {
             return false;
         }
         return true;
+    }
+
+    @Override
+    public UserDTO addUser(UserDTO user) {
+        User u = new User();
+        u.setFullName(user.getFullName());
+        u.setEmail(user.getEmail());
+        u.setPassword(user.getPassword());
+        u.setRoleID(user.getRoleID());
+        u.setPhone(user.getPhone());
+        u.setStatus(user.getStatus());
+        u.setAddress(user.getAddress());
+        user.setTokenExpiry(null);
+        user.setResetToken(null);
+        user.setCreatedAt(new java.sql.Timestamp(new Date().getTime()));
+        userDAO.addUser(u);
+        return convertToDTO(u);
     }
 
 }

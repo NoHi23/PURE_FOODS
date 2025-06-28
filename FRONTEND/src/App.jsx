@@ -20,15 +20,18 @@ import AllUser from './component/Admin/AllUser';
 import Footer from './layouts/Footer';
 import Header from './layouts/Header';
 import BackToTopButton from './layouts/BackToTopButton';
+import AllRole from './component/Admin/AllRole';
+import AddNewUser from './component/Admin/AddNewUser';
+import AddNewRole from './component/Admin/AddNewRole';
 
 function AppContent() {
   const location = useLocation();
   // Danh sách các path KHÔNG muốn hiện header và footer
   const hideHeaderPaths = ['/login', '/signup', '/forgot', '/reset-password', '/verify-otp', '/admin-dashboard', '/admin-product', '/admin-add-new-product',
-    '/category', '/all-user'
+    '/category', '/all-user', '/all-role', '/add-new-user',"/add-new-role"
   ];
   const hideFooterPaths = ['/login', '/signup', '/forgot', '/reset-password', '/verify-otp', '/admin-dashboard', '/admin-product', '/admin-add-new-product',
-    '/category', '/all-user'
+    '/category', '/all-user', '/all-role', '/add-new-user',"/add-new-role"
   ];
   const backToTop = ['/login', '/signup', '/forgot', '/reset-password', '/verify-otp', '/'];
 
@@ -74,6 +77,21 @@ function AppContent() {
         <Route path="/all-user" element={
           <PrivateRoute allowedRoles={1}>
             <AllUser />
+          </PrivateRoute>
+        } />
+        <Route path="/all-role" element={
+          <PrivateRoute allowedRoles={1}>
+            <AllRole />
+          </PrivateRoute>
+        } />
+        <Route path="/add-new-user" element={
+          <PrivateRoute allowedRoles={1}>
+            <AddNewUser />
+          </PrivateRoute>
+        } />
+        <Route path="/add-new-role" element={
+          <PrivateRoute allowedRoles={1}>
+            <AddNewRole />
           </PrivateRoute>
         } />
         {/* Các route dành cho Người nhập hàng - Importer */}

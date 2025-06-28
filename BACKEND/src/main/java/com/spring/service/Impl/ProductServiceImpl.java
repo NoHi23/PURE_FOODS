@@ -21,6 +21,7 @@ public class ProductServiceImpl implements ProductService {
     @Autowired
     private ProductDAO productDAO;
 
+
     @Override
     public List<ProductDTO> getAllProduct() {
         List<ProductDTO> list = new ArrayList<ProductDTO>();
@@ -50,6 +51,7 @@ public class ProductServiceImpl implements ProductService {
         q.setCategoryId(product.getCategoryId());
         q.setSupplierId(product.getSupplierId());
         q.setPrice(product.getPrice());
+        q.setDiscountPercent(product.getDiscountPercent());
         q.setStockQuantity(product.getStockQuantity());
         q.setDescription(product.getDescription());
         q.setImageURL(product.getImageURL());
@@ -75,6 +77,7 @@ public class ProductServiceImpl implements ProductService {
         q.setCategoryId(product.getCategoryId());
         q.setSupplierId(product.getSupplierId());
         q.setPrice(product.getPrice());
+        q.setDiscountPercent(product.getDiscountPercent());
         q.setStockQuantity(product.getStockQuantity());
         q.setDescription(product.getDescription());
         q.setImageURL(product.getImageURL());
@@ -161,6 +164,8 @@ public class ProductServiceImpl implements ProductService {
                 product.getCategoryId(),
                 product.getSupplierId(),
                 product.getPrice(),
+                product.getDiscountPercent(),
+                product.getPriceAfterDiscount(),
                 product.getStockQuantity(),
                 product.getDescription(),
                 product.getImageURL(),
@@ -175,4 +180,33 @@ public class ProductServiceImpl implements ProductService {
         }
         return dto;
     }
+
+    @Override
+    public List<ProductDTO> getAllProductByStatus(int status) {
+        List<Products> productList = productDAO.getProductByStatus(status);
+        if (productList == null || productList.isEmpty()) {
+            throw new RuntimeException("Không tìm thấy sản phẩm có status = " + status);
+        }
+
+        List<ProductDTO> list = new ArrayList<>();
+        for (Products product : productList) {
+            list.add(convertToDTO(product));
+        }
+        return list;
+    }
+
+    @Override
+    public List<ProductDTO> getTopDiscountProducts(int limit) {
+        List<Products> topDiscountProducts = productDAO.getTopDiscountProducts(limit);
+        if (topDiscountProducts == null || topDiscountProducts.isEmpty()) {
+            throw new RuntimeException("Không tìm thấy sản phẩm giảm giá");
+        }
+
+        List<ProductDTO> result = new ArrayList<>();
+        for (Products product : topDiscountProducts) {
+            result.add(convertToDTO(product));
+        }
+        return result;
+    }
+
 }

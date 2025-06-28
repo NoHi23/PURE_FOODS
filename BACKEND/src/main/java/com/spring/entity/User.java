@@ -1,6 +1,7 @@
 package com.spring.entity;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.sql.Timestamp;
 import java.util.Date;
@@ -34,6 +35,7 @@ public class User {
     @Column(name = "Status")
     private int status;
 
+    @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "CreatedAt")
     private java.sql.Timestamp createdAt;

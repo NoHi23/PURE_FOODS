@@ -2,6 +2,7 @@ package com.spring.entity;
 
 import com.google.api.client.util.DateTime;
 import jakarta.persistence.*;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.util.Date;
 
@@ -33,7 +34,7 @@ public class Suppliers {
 
     @Column(name = "CertificationExpiry")
     private Date certificationExpiry;
-
+    @CreationTimestamp
     @Column(name = "CreatedAt")
     private java.sql.Timestamp createdAt;
 
