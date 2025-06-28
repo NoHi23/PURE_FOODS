@@ -11,6 +11,6 @@ public interface SuppliersService {
     SuppliersDTO createSupplier(SuppliersDTO dto);
     SuppliersDTO updateSupplier(int id, SuppliersDTO dto);
     void deleteSupplier(int id);
-
+    int countSupplier();
 
 }

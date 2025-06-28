@@ -9,13 +9,14 @@ public class ProductDTO {
     private int categoryId;
     private int supplierId;
     private float price;
+    private Float discountPercent;
+    private Float salePrice;
     private int stockQuantity;
     private String description;
     private String imageURL;
     private int lastUpdatedBy;
     private java.sql.Timestamp createdAt;
     private int status;
-
     private Date harvestDate;
     private Date expirationDate;
     private String nutritionalInfo;
@@ -27,12 +28,14 @@ public class ProductDTO {
             this.productName = productName;
         }
 
-    public ProductDTO(int productId, String productName, int categoryId, int supplierId, float price, int stockQuantity, String description, String imageURL, int lastUpdatedBy, java.sql.Timestamp createdAt, int status) {
+    public ProductDTO(int productId, String productName, int categoryId, int supplierId, float price, Float discountPercent, Float salePrice, int stockQuantity, String description, String imageURL, int lastUpdatedBy, java.sql.Timestamp createdAt, int status) {
         this.productId = productId;
         this.productName = productName;
         this.categoryId = categoryId;
         this.supplierId = supplierId;
         this.price = price;
+        this.discountPercent = discountPercent;
+        this.salePrice = salePrice;
         this.stockQuantity = stockQuantity;
         this.description = description;
         this.imageURL = imageURL;
@@ -48,7 +51,6 @@ public class ProductDTO {
     public void setExpirationDate(Date expirationDate) { this.expirationDate = expirationDate; }
     public String getNutritionalInfo() { return nutritionalInfo; }
     public void setNutritionalInfo(String nutritionalInfo) { this.nutritionalInfo = nutritionalInfo; }
-
     public int getProductId() {
         return productId;
     }
@@ -114,6 +116,18 @@ public class ProductDTO {
     }
     public void setStatus(int status) {
         this.status = status;
+    }
+    public Float getDiscountPercent() {
+            return discountPercent;
+    }
+    public void setDiscountPercent(Float discountPercent) {
+            this.discountPercent = discountPercent;
+    }
+    public Float getSalePrice() {
+            return salePrice;
+    }
+    public void setSalePrice(Float salePrice) {
+            this.salePrice = salePrice;
     }
 
 }

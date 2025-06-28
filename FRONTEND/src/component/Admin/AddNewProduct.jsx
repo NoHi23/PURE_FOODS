@@ -11,12 +11,15 @@ const AddNewProduct = () => {
     categoryId: 0,
     supplierId: 0,
     price: 0,
+    discountPercent: 0,
     stockQuantity: 0,
     description: "",
     imageURL: "",
     status: 0,
     lastUpdatedBy: 1
   });
+  const salePrice =
+    (form.price || 0) * (1 - (form.discountPercent || 0) / 100);
   const [categories, setCategories] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
   useEffect(() => {
@@ -61,6 +64,7 @@ const AddNewProduct = () => {
           categoryId: 0,
           supplierId: 0,
           price: 0,
+          discountPercent: 0,
           stockQuantity: 0,
           description: "",
           imageURL: "",
@@ -70,9 +74,12 @@ const AddNewProduct = () => {
       } else {
         toast.error(res.data.message || "Có lỗi xảy ra");
       }
-    } catch (error) {
-      toast.error("Lỗi khi gọi API");
-      console.error(error);
+    } catch (err) {
+      const errorMessage =
+        err.response && err.response.data && err.response.data.message
+          ? err.response.data.message
+          : "ERROR";
+      toast.error(errorMessage);
     }
   };
 
@@ -161,6 +168,36 @@ const AddNewProduct = () => {
                                   name="price"
                                   value={form.price}
                                   onChange={handleChange} min={0} />
+                              </div>
+                            </div>
+                            <div className="mb-4 row align-items-center">
+                              <label className="form-label-title col-sm-3 mb-0"> Discount: </label>
+                              <div className="col-sm-9">
+                                <label className="form-label">
+                                  {form.discountPercent || 0}%
+                                </label>
+                                <input className="form-range" type="range"
+                                  placeholder="Price"
+                                  name="discountPercent"
+                                  min={0}
+                                  max={100}
+                                  step={1}
+                                  value={form.discountPercent || 0}
+                                  onChange={handleChange} />
+                              </div>
+                            </div>
+
+                            <div className="mb-4 row align-items-center">
+                              <label className="form-label-title col-sm-3 mb-0"> Price After Discount: </label>
+                              <div className="col-sm-9">
+                                <label className="form-label">
+                                  &nbsp;
+                                  {salePrice.toLocaleString("en-US", {
+                                    style: "currency",
+                                    currency: "USD",
+                                    minimumFractionDigits: 0,
+                                  })}
+                                </label>
                               </div>
                             </div>
                             <div className="mb-4 row align-items-center">

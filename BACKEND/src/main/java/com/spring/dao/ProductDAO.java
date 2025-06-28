@@ -19,4 +19,7 @@ public interface ProductDAO   {
     Products findById(int id);
     Products save(Products product);
 
+    List<Products> getProductByStatus(int status);
+    List<Products> getTopDiscountProducts(int limit);
+
 }

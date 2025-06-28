@@ -23,11 +23,14 @@ const Product = () => {
     categoryId: 0,
     supplierId: 0,
     price: '',
+    discountPercent: 0,
     stockQuantity: '',
     description: '',
     imageURL: '',
     status: 0
   });
+  const salePrice =
+    (editForm.price || 0) * (1 - (editForm.discountPercent || 0) / 100);
   const [categories, setCategories] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
   const [productToDelete, setProductToDelete] = useState(null);
@@ -41,6 +44,7 @@ const Product = () => {
       categoryId: product.categoryId || '',
       supplierId: product.supplierId || '',
       price: product.price || '',
+      discountPercent: product.discountPercent || '',
       stockQuantity: product.stockQuantity || '',
       description: product.description || '',
       imageURL: product.imageURL || '',
@@ -78,8 +82,12 @@ const Product = () => {
       modal.hide();
 
       toast.success("Cập nhật sản phẩm thành công!");
-    } catch (error) {
-      toast.error("Lỗi khi cập nhật sản phẩm");
+    } catch (err) {
+      const errorMessage =
+        err.response && err.response.data && err.response.data.message
+          ? err.response.data.message
+          : "ERROR";
+      toast.error(errorMessage);
     }
   };
 
@@ -202,8 +210,12 @@ const Product = () => {
       setProducts(res.data.listProduct);
 
       toast.success("Xóa sản phẩm thành công!");
-    } catch (error) {
-      toast.error("Xóa sản phẩm thất bại!");
+    } catch (err) {
+      const errorMessage =
+        err.response && err.response.data && err.response.data.message
+          ? err.response.data.message
+          : "ERROR";
+      toast.error(errorMessage);
     }
   };
 
@@ -250,6 +262,8 @@ const Product = () => {
                                 <th>Supplier</th>
                                 <th>Current Qty</th>
                                 <th>Price</th>
+                                <th>Discount</th>
+                                <th>Price After Discount</th>
                                 <th>Status</th>
                                 <th>Option</th>
                               </tr>
@@ -270,6 +284,11 @@ const Product = () => {
                                   <td>{suppliersName[p.supplierId] || 'Đang tải...'}</td>
                                   <td>{p.stockQuantity}</td>
                                   <td className="td-price">${p.price}</td>
+                                  <td className="td-price">{p.discountPercent || 0}%</td>
+                                  <td className="td-price">
+                                    ${p.salePrice != null ? p.salePrice.toFixed(2) : "0.00"}
+                                  </td>
+
 
                                   <td className={p.status === 1 ? "status-danger" : "status-success"}>
                                     <span>{p.status === 1 ? "Private" : "Public"}</span>
@@ -331,6 +350,8 @@ const Product = () => {
                             <p><strong>Supplier:</strong> {suppliersName[selectedProduct.supplierId]}</p>
                             <p><strong>Stock Quantity:</strong> {selectedProduct.stockQuantity}</p>
                             <p><strong>Price:</strong> ${selectedProduct.price}</p>
+                            <p><strong>Discount:</strong> {selectedProduct.discountPercent || 0}%</p>
+                            <p><strong>Price After Discount:</strong> ${selectedProduct.salePrice != null ? selectedProduct.salePrice.toFixed(2) : "0.00"}</p>
                             <p><strong>Description:</strong> {selectedProduct.description}</p>
                             <p><strong>Trạng thái:</strong> {selectedProduct.status === 1 ? "Private" : "Public"}</p>
                           </div>
@@ -378,6 +399,35 @@ const Product = () => {
                         <input type="number" className="form-control" name="price" value={editForm.price} onChange={handleInputChange} min={0} />
                       </div>
 
+                      <div className="mb-3">
+                        <label className="form-label">
+                          Discount: {editForm.discountPercent || 0}%
+                        </label>
+
+                        <input
+                          type="range"
+                          className="form-range"
+                          name="discountPercent"
+                          min={0}
+                          max={100}
+                          step={1}
+                          value={editForm.discountPercent || 0}
+                          onChange={(e) =>
+                            setEditForm({ ...editForm, discountPercent: Number(e.target.value) })
+                          }
+                        />
+                      </div>
+
+                      <div className="mb-3">
+                        <label className="form-label">
+                          Giá sau giảm:&nbsp;
+                          {salePrice.toLocaleString("en-US", {
+                            style: "currency",
+                            currency: "USD",
+                            minimumFractionDigits: 0,
+                          })}
+                        </label>
+                      </div>
                       <div className="mb-3">
                         <label className="form-label">Số lượng</label>
                         <input type="number" className="form-control" name="stockQuantity" value={editForm.stockQuantity} onChange={handleInputChange} min={0} />
