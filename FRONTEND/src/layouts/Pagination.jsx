@@ -9,12 +9,18 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
     return pages;
   };
 
+  // Chuyển trang và cuộn lên đầu trang
+  const handlePageChange = (page) => {
+    onPageChange(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
     <nav className="custom-pagination mt-4">
       <ul className="pagination justify-content-center">
         {/* Nút về đầu */}
         <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
-          <button className="page-link" onClick={() => onPageChange(1)}>
+          <button className="page-link" onClick={() => handlePageChange(1)}>
             <i className="fa-solid fa-angles-left"></i>
           </button>
         </li>
@@ -25,7 +31,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
             key={page}
             className={`page-item ${currentPage === page ? 'active' : ''}`}
           >
-            <button className="page-link" onClick={() => onPageChange(page)}>
+            <button className="page-link" onClick={() => handlePageChange(page)}>
               {page}
             </button>
           </li>
@@ -33,7 +39,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
 
         {/* Nút về cuối */}
         <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
-          <button className="page-link" onClick={() => onPageChange(totalPages)}>
+          <button className="page-link" onClick={() => handlePageChange(totalPages)}>
             <i className="fa-solid fa-angles-right"></i>
           </button>
         </li>

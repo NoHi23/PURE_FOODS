@@ -234,11 +234,11 @@ public class UserController {
     @PutMapping("/delete")
     public ResponseEntity<?> deleteUser(@RequestBody UserDTO userDTO) {
         try {
-            boolean updatedUser = userService.deleteUser(userDTO.getUserId());
+            UserDTO deletedUser = userService.deleteUser(userDTO.getUserId());
             Map<String, Object> response = new HashMap<>();
             response.put("message", "User deleted successfully!");
             response.put("status", 200);
-            response.put("user", updatedUser);
+            response.put("user", deletedUser);
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
             Map<String, Object> errorResponse = new HashMap<>();

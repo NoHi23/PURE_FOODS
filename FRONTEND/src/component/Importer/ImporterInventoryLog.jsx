@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { FiSearch } from "react-icons/fi";
 import Pagination from "../../layouts/Pagination";
 
 const ImporterInventoryLog = ({ currentPage, setCurrentPage, setLogs }) => {
@@ -75,16 +76,30 @@ const ImporterInventoryLog = ({ currentPage, setCurrentPage, setLogs }) => {
           </svg>
         </span>
       </div>
-      <input
-        type="text"
-        className="form-control my-3 mb-5"
-        placeholder="Nhập bất cứ thứ gì để tìm kiếm..."
-        value={searchTerm}
-        onChange={(e) => {
-          setSearchTerm(e.target.value);
-          setCurrentPage(1); // Reset về trang 1 mỗi khi search
-        }}
-      />
+      <div className="position-relative mb-4">
+        <input
+          type="text"
+          className="form-control my-3 mb-5"
+          placeholder="Nhập bất cứ thứ gì để tìm kiếm..."
+          value={searchTerm}
+          onChange={(e) => {
+            setSearchTerm(e.target.value);
+            setCurrentPage(1); // Reset về trang 1 mỗi khi search
+          }}
+        />
+        <FiSearch
+          style={{
+            position: "absolute",
+            right: "15px",
+            top: "50%",
+            transform: "translateY(-50%)",
+            color: "#aaa",
+            pointerEvents: "none", // để icon không ảnh hưởng đến việc gõ
+          }}
+          size={18}
+        />
+      </div>
+
       <div className="order-tab dashboard-bg-box">
         <div className="table-responsive">
           <table className="table order-table">
