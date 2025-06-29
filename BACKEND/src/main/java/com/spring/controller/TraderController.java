@@ -1,21 +1,19 @@
 package com.spring.controller;
 
 import com.spring.dto.TraderDTO;
-import com.spring.dto.TraderTransactionDTO;
+import com.spring.entity.Orders;
 import com.spring.service.TraderService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @RestController
-@RequestMapping("/api/trader")
+@RequestMapping(value = "/api/trader")
 @CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 public class TraderController {
+
     @Autowired
     private TraderService traderService;
 
@@ -23,54 +21,43 @@ public class TraderController {
     public ResponseEntity<TraderDTO> getTraderById(@PathVariable("id") int id) {
         try {
             TraderDTO traderDTO = traderService.getTraderById(id);
-            return ResponseEntity.ok(traderDTO);
+            return traderDTO != null ? ResponseEntity.ok(traderDTO) : ResponseEntity.notFound().build();
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
         }
     }
 
-    @GetMapping("/transactions/{traderId}")
-    public ResponseEntity<?> getTraderTransactions(@PathVariable("traderId") int traderId) {
+    @PostMapping("/order")
+    public ResponseEntity<Orders> createOrder(@RequestBody Orders order) {
         try {
-            List<TraderTransactionDTO> transactions = traderService.getTraderTransactions(traderId);
-            Map<String, Object> response = new HashMap<>();
-            response.put("message", "Get trader transactions successfully!");
-            response.put("status", 200);
-            response.put("transactions", transactions);
-            return ResponseEntity.ok(response);
+            Orders savedOrder = traderService.createOrder(order);
+            return ResponseEntity.ok(savedOrder);
         } catch (RuntimeException e) {
-            Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("message", e.getMessage());
-            errorResponse.put("status", 201);
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+            return ResponseEntity.badRequest().build();
         }
     }
 
-    @PostMapping("/import")
-    public ResponseEntity<String> recordTraderImport(
-            @RequestParam int traderId,
-            @RequestParam int supplierId,
-            @RequestParam int productId,
-            @RequestParam int quantity) {
+    @GetMapping("/orders/{traderId}")
+    public ResponseEntity<List<Orders>> trackOrders(@PathVariable("traderId") int traderId) {
         try {
-            traderService.recordTraderImport(traderId, supplierId, productId, quantity);
-            return ResponseEntity.ok("Import transaction recorded successfully");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            List<Orders> orders = traderService.trackOrders(traderId);
+            return ResponseEntity.ok(orders);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
         }
     }
 
-    @PostMapping("/sale")
-    public ResponseEntity<String> recordTraderSale(
+    @PostMapping("/inventory")
+    public ResponseEntity<Void> manageInventory(
             @RequestParam int traderId,
             @RequestParam int productId,
             @RequestParam int quantity,
-            @RequestParam String orderId) {
+            @RequestParam String action) {
         try {
-            traderService.recordTraderSale(traderId, productId, quantity, orderId);
-            return ResponseEntity.ok("Sale transaction recorded successfully");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            traderService.manageInventory(traderId, productId, quantity, action);
+            return ResponseEntity.ok().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().build();
         }
     }
 }

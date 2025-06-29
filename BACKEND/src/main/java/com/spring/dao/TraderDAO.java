@@ -1,12 +1,7 @@
 package com.spring.dao;
 
-import com.spring.dto.TraderDTO;
-import com.spring.dto.TraderTransactionDTO;
-import java.util.List;
+import com.spring.entity.Trader;
 
 public interface TraderDAO {
-     TraderDTO getTraderById(int id);
-     List<TraderTransactionDTO> getTraderTransactions(int traderId);
-     void recordTraderImport(int traderId, int supplierId, int productId, int quantity);
-     void recordTraderSale(int traderId, int productId, int quantity, String orderId);
+     Trader getTraderById(int id);
 }

@@ -1,95 +1,67 @@
 package com.spring.dao.Impl;
 
 import com.spring.dao.TraderDAO;
-import com.spring.dto.TraderDTO;
-import com.spring.dto.TraderTransactionDTO;
-import com.spring.entity.User;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.query.Query;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.spring.entity.Orders;
+import com.spring.entity.Products;
+import com.spring.entity.Trader;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
 @Repository
 public class TraderDAOImpl implements TraderDAO {
-    @Autowired
-    private SessionFactory sessionFactory;
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     @Override
-    public TraderDTO getTraderById(int id) {
-        Session session = sessionFactory.getCurrentSession();
-        Query<User> query = session.createQuery("FROM User WHERE userId = :id AND roleID = 3 AND status = 1", User.class);
+    public Trader getTraderById(int id) {
+        Query query = entityManager.createQuery("SELECT t FROM Trader t WHERE t.userID = :id AND t.roleID = 3");
         query.setParameter("id", id);
-        User user = query.uniqueResult();
-        if (user == null) {
-            return null;
-        }
-        return new TraderDTO(
-                user.getUserId(),          // Thay getUserID() bằng getUserId()
-                user.getFullName(),
-                user.getEmail(),
-                user.getPhone(),
-                user.getAddress(),
-                user.getCreatedAt(),
-                user.getStatus()
-        );
+        List<Trader> traders = query.getResultList();
+        return traders.isEmpty() ? null : traders.get(0);
     }
 
-    @Override
-    public List<TraderTransactionDTO> getTraderTransactions(int traderId) {
-        Session session = sessionFactory.getCurrentSession();
-        String hql = "SELECT new com.spring.dto.TraderTransactionDTO(" +
-                "il.userID, il.productID, ABS(il.quantityChange), " +
-                "CASE WHEN il.quantityChange > 0 THEN 'IN' ELSE 'OUT' END, " +
-                "s.supplierName, p.productName, CAST(o.orderID AS string)) " +
-                "FROM InventoryLogs il " +
-                "JOIN Products p ON il.productID = p.productID " +
-                "JOIN Suppliers s ON p.supplierID = s.supplierID " +
-                "LEFT JOIN Orders o ON il.reason LIKE '%đơn hàng #' + CAST(o.orderID AS string) " +
-                "WHERE il.userID = :traderId AND il.status = 1";
-        Query<TraderTransactionDTO> query = session.createQuery(hql, TraderTransactionDTO.class);
+    public Orders createOrder(Orders order) {
+        entityManager.persist(order);
+        return order;
+    }
+
+    public List<Orders> getOrdersByTraderId(int traderId) {
+        Query query = entityManager.createQuery("SELECT o FROM Orders o WHERE o.customerId = :traderId");
         query.setParameter("traderId", traderId);
-        return query.list();
+        return query.getResultList();
     }
 
-    @Override
-    public void recordTraderImport(int traderId, int supplierId, int productId, int quantity) {
-        Session session = sessionFactory.getCurrentSession();
-        session.createNativeQuery(
-                        "INSERT INTO InventoryLogs (ProductID, UserID, QuantityChange, Reason, CreatedAt, Status) " +
-                                "VALUES (?, ?, ?, 'Stock replenishment from Supplier #' + CAST(? AS NVARCHAR), GETDATE(), 1)")
-                .setParameter(1, productId)
-                .setParameter(2, traderId)
-                .setParameter(3, quantity)
-                .setParameter(4, supplierId)
-                .executeUpdate();
-
-        session.createNativeQuery(
-                        "UPDATE Products SET StockQuantity = StockQuantity + ? WHERE ProductID = ? AND SupplierID = ?")
-                .setParameter(1, quantity)
-                .setParameter(2, productId)
-                .setParameter(3, supplierId)
-                .executeUpdate();
+    public Products getProductById(int productId) {
+        return entityManager.find(Products.class, productId);
     }
 
-    @Override
-    public void recordTraderSale(int traderId, int productId, int quantity, String orderId) {
-        Session session = sessionFactory.getCurrentSession();
-        session.createNativeQuery(
-                        "INSERT INTO InventoryLogs (ProductID, UserID, QuantityChange, Reason, CreatedAt, Status) " +
-                                "VALUES (?, ?, ?, 'Xuất kho theo đơn hàng #' + ?, GETDATE(), 1)")
-                .setParameter(1, productId)
-                .setParameter(2, traderId)
-                .setParameter(3, -quantity)
-                .setParameter(4, orderId)
-                .executeUpdate();
+    public void updateProductStock(int productId, int stockQuantity) {
+        Products product = entityManager.find(Products.class, productId);
+        if (product != null) {
+            product.setStockQuantity(stockQuantity);
+            entityManager.merge(product);
+        }
+    }
 
-        session.createNativeQuery(
-                        "UPDATE Products SET StockQuantity = StockQuantity - ? WHERE ProductID = ?")
-                .setParameter(1, quantity)
-                .setParameter(2, productId)
-                .executeUpdate();
+    public void deleteProduct(int productId) {
+        Products product = entityManager.find(Products.class, productId);
+        if (product != null) {
+            entityManager.remove(product);
+        }
+    }
+
+    public void importFromSupplier(int traderId, int productId, int quantity) {
+        Products product = entityManager.find(Products.class, productId);
+        if (product != null) {
+            int newStock = product.getStockQuantity() + quantity;
+            product.setStockQuantity(newStock);
+            product.setLastUpdateBy(traderId); // Sử dụng trường hiện có, mặc dù tên có lỗi
+            entityManager.merge(product);
+        }
     }
 }
