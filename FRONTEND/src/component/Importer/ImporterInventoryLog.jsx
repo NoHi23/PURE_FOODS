@@ -1,12 +1,31 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { FiSearch } from "react-icons/fi";
 import Pagination from "../../layouts/Pagination";
 
 const ImporterInventoryLog = ({ currentPage, setCurrentPage, setLogs }) => {
   const [logs, setLocalLogs] = useState([]);
   const [products, setProducts] = useState({});
   const [users, setUsers] = useState({});
-  const logsPerPage = 7;
+  const [searchTerm, setSearchTerm] = useState("");
+  // Lọc dữ liệu real-time
+  const filteredLogs = logs.filter((log) => {
+    const productName = products[log.productId]?.name?.toLowerCase() || "";
+    const userName = users[log.userId]?.toLowerCase() || "";
+    const quantity = log.quantityChange?.toString() || "";
+    const reason = log.reason?.toLowerCase() || "";
+    const createdAt = log.createdAt ? new Date(log.createdAt).toLocaleString("vi-VN").toLowerCase() : "";
+    const statusText = log.status === 0 ? "đang xử lý" : log.status === 1 ? "hoàn thành" : "từ chối";
+
+    return (
+      productName.includes(searchTerm.toLowerCase()) ||
+      userName.includes(searchTerm.toLowerCase()) ||
+      quantity.includes(searchTerm) ||
+      reason.includes(searchTerm.toLowerCase()) ||
+      createdAt.includes(searchTerm.toLowerCase()) ||
+      statusText.includes(searchTerm.toLowerCase())
+    );
+  });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -17,10 +36,9 @@ const ImporterInventoryLog = ({ currentPage, setCurrentPage, setLogs }) => {
           axios.get("http://localhost:8082/PureFoods/api/users/getAll"),
         ]);
 
-        const logData = logsRes.data.logs || []; // Sửa từ listLog thành logs
+        const logData = logsRes.data.logs || [];
         setLocalLogs(logData);
         if (setLogs) setLogs(logData);
-        console.log("Logs fetched:", logData);
 
         const productData = productsRes.data.listProduct || [];
         const productMap = {};
@@ -28,7 +46,6 @@ const ImporterInventoryLog = ({ currentPage, setCurrentPage, setLogs }) => {
           productMap[p.productId] = { name: p.productName, imageURL: p.imageURL };
         });
         setProducts(productMap);
-        console.log("Products fetched:", productMap);
 
         const userData = usersRes.data.userList || [];
         const userMap = {};
@@ -36,7 +53,6 @@ const ImporterInventoryLog = ({ currentPage, setCurrentPage, setLogs }) => {
           userMap[u.userId] = u.fullName;
         });
         setUsers(userMap);
-        console.log("Users fetched:", userMap);
       } catch (err) {
         console.error("Lỗi khi lấy dữ liệu:", err);
       }
@@ -44,10 +60,11 @@ const ImporterInventoryLog = ({ currentPage, setCurrentPage, setLogs }) => {
     fetchData();
   }, [setLogs]);
 
-  const totalPages = Math.ceil(logs.length / logsPerPage);
+  const logsPerPage = 7;
+  const totalPages = Math.ceil(filteredLogs.length / logsPerPage);
   const indexOfLast = currentPage * logsPerPage;
   const indexOfFirst = indexOfLast - logsPerPage;
-  const currentLogs = logs.slice(indexOfFirst, indexOfLast);
+  const currentLogs = filteredLogs.slice(indexOfFirst, indexOfLast);
 
   return (
     <div className="dashboard-order">
@@ -58,6 +75,29 @@ const ImporterInventoryLog = ({ currentPage, setCurrentPage, setLogs }) => {
             <use href="../assets/svg/leaf.svg#leaf"></use>
           </svg>
         </span>
+      </div>
+      <div className="position-relative mb-4">
+        <input
+          type="text"
+          className="form-control my-3 mb-5"
+          placeholder="Nhập bất cứ thứ gì để tìm kiếm..."
+          value={searchTerm}
+          onChange={(e) => {
+            setSearchTerm(e.target.value);
+            setCurrentPage(1); // Reset về trang 1 mỗi khi search
+          }}
+        />
+        <FiSearch
+          style={{
+            position: "absolute",
+            right: "15px",
+            top: "50%",
+            transform: "translateY(-50%)",
+            color: "#aaa",
+            pointerEvents: "none", // để icon không ảnh hưởng đến việc gõ
+          }}
+          size={18}
+        />
       </div>
 
       <div className="order-tab dashboard-bg-box">

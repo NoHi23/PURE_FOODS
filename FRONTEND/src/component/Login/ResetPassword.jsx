@@ -32,7 +32,11 @@ const ResetPassword = () => {
         toast.error("Mã xác thực không hợp lệ hoặc đã hết hạn.");
       }
     } catch (err) {
-      toast.error("Có lỗi khi đặt lại mật khẩu.");
+      const errorMessage =
+        err.response && err.response.data && err.response.data.message
+          ? err.response.data.message
+          : "ERROR";
+      toast.error(errorMessage);
     }
   };
 
@@ -72,13 +76,25 @@ const ResetPassword = () => {
                   <div className="form-floating theme-form-floating log-in-form">
                     <input
                       type="password"
-                      className="form-control"
+                      className={`form-control ${confirm
+                        ? confirm === password
+                          ? "is-valid"
+                          : "is-invalid"
+                        : ""
+                        }`}
+                      name="confirm"
                       id="confirm"
                       value={confirm}
                       onChange={(e) => setConfirm(e.target.value)}
                       placeholder="Confirm Password"
                       required
                     />
+                    {confirm && confirm !== password && (
+                      <p className="text-danger mt-1">Confirmation password does not match</p>
+                    )}
+                    {confirm && confirm === password && (
+                      <p className="text-success mt-1">Password matches</p>
+                    )}
                     <label htmlFor="confirm">Confirm Password</label>
                   </div>
                 </div>

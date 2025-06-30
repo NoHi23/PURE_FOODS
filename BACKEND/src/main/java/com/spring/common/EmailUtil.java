@@ -32,6 +32,7 @@ public class EmailUtil {
             );
             message.setSubject(subject);
             message.setText(body);
+            message.setContent(body, "text/html; charset=UTF-8");
 
             Transport.send(message);
         } catch (MessagingException e) {

@@ -5,11 +5,12 @@ import { useNavigate } from 'react-router-dom';
 
 const Forgot = () => {
   const [email, setEmail] = useState('');
-  const [message, setMessage] = useState('');
   const navigate = useNavigate()
+  const [isLoading, setIsLoading] = useState(false);
   const handleForgotPassword = async (e) => {
     e.preventDefault();
-
+    if (isLoading) return;
+    setIsLoading(true);
     try {
       const res = await axios.post("http://localhost:8082/PureFoods/api/users/forgot-password", {
         email: email
@@ -22,9 +23,14 @@ const Forgot = () => {
       } else {
         toast.error("Gửi thất bại: " + res.data.message);
       }
-    } catch (error) {
-      console.error(error);
-      toast.warn(" Đã xảy ra lỗi khi gửi email.");
+    } catch (err) {
+      const errorMessage =
+        err.response && err.response.data && err.response.data.message
+          ? err.response.data.message
+          : "ERROR";
+      toast.error(errorMessage);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -53,8 +59,16 @@ const Forgot = () => {
                     </div>
 
                     <div class="col-12">
-                      <button type="submit" class="btn btn-animation w-100 justify-content-center">Send
-                        link</button>
+                      <button type="submit" class="btn btn-animation w-100 justify-content-center" disabled={isLoading} >
+                        {isLoading ? (                    
+                          <>
+                            <span class="spinner-border spinner-border-sm me-2"></span>
+                            Sending…
+                          </>
+                        ) : (
+                          'Send link'
+                        )}
+                      </button>
                     </div>
                   </form>
                 </div>

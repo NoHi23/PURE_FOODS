@@ -1,15 +1,17 @@
-
 .sidebar-main {
-  width: 280px;
-  background-color: #009688; 
-  height: 100vh;
-  padding-top: 20px;
-  position: fixed;
-  overflow-y: auto;
-  color: white;
-  font-family: 'Segoe UI', sans-serif;
+  position: relative;
+  /* quan trọng để con zIndex hoạt động đúng */
+  z-index: 1;
+  background-color: transparent;
+  /* để canvas hiển thị */
+  scrollbar-width: none;
+  /* ẩn thanh cuộn */
+  -ms-overflow-style: none;
 }
-
+.sidebar-main::-webkit-scrollbar {
+  width: 0;                     /* chiều rộng 0 = không thấy */
+  height: 0;
+}
 .sidebar-main .sidebar-links {
   list-style: none;
   padding: 0;
@@ -61,8 +63,9 @@
   text-decoration: underline;
 }
 
-.left-arrow, .right-arrow {
-  display: inline-block; 
+.left-arrow,
+.right-arrow {
+  display: inline-block;
 }
 
 /* Responsive */
@@ -71,6 +74,8 @@
     overflow-y: scroll;
   }
 }
+
+
 .sidebar-submenu {
   display: none;
   transition: all 0.6s ease;
@@ -86,7 +91,8 @@
   overflow-x: auto;
   padding: 10px 0;
   scroll-behavior: smooth;
-  scrollbar-width: thin; /* Firefox */
+  scrollbar-width: thin;
+  /* Firefox */
 }
 
 .category-slider-scroll::-webkit-scrollbar {
@@ -106,3 +112,13 @@
 .dashboard-category {
   text-align: center;
 }
+.logoSide{
+  display: flex;
+  align-items: center;
+  height: 50px;
+}
+
+.sb{
+  margin-right: 20px;
+}
+
