@@ -46,6 +46,9 @@ public class User {
     @Column(name = "token_expiry")
     private Timestamp tokenExpiry;
 
+    @Column(name = "last_login")
+    private Timestamp lastLogin;
+
     public User() {}
 
     // Getters & Setters
@@ -132,5 +135,11 @@ public class User {
     }
     public void setResetToken(String resetToken) {
         this.resetToken = resetToken;
+    }
+    public Timestamp getLastLogin() {
+        return lastLogin;
+    }
+    public void setLastLogin(Timestamp lastLogin) {
+        this.lastLogin = lastLogin;
     }
 }

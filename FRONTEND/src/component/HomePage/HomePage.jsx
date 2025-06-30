@@ -1,7 +1,67 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import HomepageLayout from "../../layouts/HomepageLayout";
+import axios from "axios";
+import * as bootstrap from 'bootstrap';
 
+const getOrUpdateExpiryTime = () => {
+  let expiry = localStorage.getItem('countdownExpiry');
+  const now = new Date().getTime();
+
+  if (!expiry || now >= Number(expiry)) {
+    const newExpiry = now + 15 * 24 * 60 * 60 * 1000; // 15 ngày
+    localStorage.setItem('countdownExpiry', newExpiry);
+    expiry = newExpiry;
+  }
+
+  const remaining = Math.floor((Number(expiry) - now) / 1000); // giây
+  return remaining > 0 ? remaining : 0;
+};
 const HomePage = () => {
+  const [dealProduct, setDealProduct] = useState([]);
+  const [saveProduct, setSaveProduct] = useState([]);
+
+  const [timeLeft, setTimeLeft] = useState(getOrUpdateExpiryTime());
+  const [timeObj, setTimeObj] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => {
+        let newTime = prev - 1;
+        if (newTime <= 0) {
+          newTime = getOrUpdateExpiryTime(); // Reset lại 15 ngày nếu hết giờ
+        }
+
+        const d = Math.floor(newTime / (3600 * 24));
+        const h = Math.floor((newTime % (3600 * 24)) / 3600);
+        const m = Math.floor((newTime % 3600) / 60);
+        const s = newTime % 60;
+
+        setTimeObj({ days: d, hours: h, minutes: m, seconds: s });
+        return newTime;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+  useEffect(() => {
+    axios.get('http://localhost:8082/PureFoods/api/product/top-discount')
+      .then((res) => setDealProduct(res.data))
+
+    axios.get('http://localhost:8082/PureFoods/api/product/top-save')
+      .then((res) => setSaveProduct(res.data))
+  }, [])
+  const [selectedProduct, setSelectedProduct] = useState(null);
+
+  const handleViewProduct = (product) => {
+    setSelectedProduct(product);
+    const modal = new bootstrap.Modal(document.getElementById('view'));
+    modal.show();
+    console.log("hi: " + product);
+
+
+  };
+
+
   return (
     <HomepageLayout>
       <div>
@@ -1489,33 +1549,33 @@ const HomePage = () => {
                       <div className="timing">
                         <i data-feather="clock"></i>
                         <h6 className="name">Expires in :</h6>
-                        <div className="time" id="clockdiv-1" data-hours="1" data-minutes="2" data-seconds="3">
+                        <div className="time" id="clockdiv-1">
                           <ul>
                             <li>
                               <div className="counter">
                                 <div className="days">
-                                  <h6></h6>
+                                  <h6>{timeObj.days}d</h6>
                                 </div>
                               </div>
                             </li>
                             <li>
                               <div className="counter">
                                 <div className="hours">
-                                  <h6></h6>
+                                  <h6>{timeObj.hours.toString().padStart(2, '0')}h</h6>
                                 </div>
                               </div>
                             </li>
                             <li>
                               <div className="counter">
                                 <div className="minutes">
-                                  <h6></h6>
+                                  <h6>{timeObj.minutes.toString().padStart(2, '0')}m</h6>
                                 </div>
                               </div>
                             </li>
                             <li>
                               <div className="counter">
                                 <div className="seconds">
-                                  <h6></h6>
+                                  <h6>{timeObj.seconds.toString().padStart(2, '0')}s</h6>
                                 </div>
                               </div>
                             </li>
@@ -1534,26 +1594,29 @@ const HomePage = () => {
                               <div className="product-box">
                                 <div className="product-image">
                                   <a href="product-left-thumbnail.html">
-                                    <img
-                                      src="../assets/images/vegetable/product/1.png"
-                                      className="img-fluid blur-up lazyload"
-                                      alt=""
-                                    />
+                                    <img src={saveProduct?.[0]?.imageURL}
+                                      className="img-fluid blur-up lazyload" alt="" />
                                   </a>
                                   <ul className="product-option">
-                                    <li data-bs-toggle="tooltip" data-bs-placement="top" title="View">
-                                      <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#view">
+                                    <li data-bs-toggle="tooltip" data-bs-placement="top"
+                                      title="View">
+                                      <a href="#" onClick={(e) => {
+                                        e.preventDefault();
+                                        handleViewProduct(saveProduct?.[0]);
+                                      }}>
                                         <i data-feather="eye"></i>
                                       </a>
                                     </li>
 
-                                    <li data-bs-toggle="tooltip" data-bs-placement="top" title="Compare">
+                                    <li data-bs-toggle="tooltip" data-bs-placement="top"
+                                      title="Compare">
                                       <a href="compare.html">
                                         <i data-feather="refresh-cw"></i>
                                       </a>
                                     </li>
 
-                                    <li data-bs-toggle="tooltip" data-bs-placement="top" title="Wishlist">
+                                    <li data-bs-toggle="tooltip" data-bs-placement="top"
+                                      title="Wishlist">
                                       <a href="wishlist.html" className="notifi-wishlist">
                                         <i data-feather="heart"></i>
                                       </a>
@@ -1562,12 +1625,12 @@ const HomePage = () => {
                                 </div>
                                 <div className="product-detail">
                                   <a href="product-left-thumbnail.html">
-                                    <h6 className="name">Fantasy Crunchy Choco Chip Cookies</h6>
+                                    <h6 className="name">{saveProduct?.[0]?.productName}</h6>
                                   </a>
 
                                   <h5 className="sold text-content">
-                                    <span className="theme-color price">$26.69</span>
-                                    <del>28.56</del>
+                                    <span className="theme-color price">${saveProduct?.[0]?.salePrice != null ? saveProduct?.[0]?.salePrice.toFixed(2) : '0.00'}</span>
+                                    <del>${saveProduct?.[0]?.price}</del>
                                   </h5>
 
                                   <div className="product-rating mt-sm-2 mt-1">
@@ -1593,29 +1656,21 @@ const HomePage = () => {
                                   </div>
 
                                   <div className="add-to-cart-box">
-                                    <button className="btn btn-add-cart addcart-button">
-                                      Add
+                                    <button className="btn btn-add-cart addcart-button">Add
                                       <span className="add-icon">
                                         <i className="fa-solid fa-plus"></i>
                                       </span>
                                     </button>
                                     <div className="cart_qty qty-box">
                                       <div className="input-group">
-                                        <button
-                                          type="button"
-                                          className="qty-left-minus"
-                                          data-type="minus"
-                                          data-field=""
-                                        >
+                                        <button type="button" className="qty-left-minus"
+                                          data-type="minus" data-field="">
                                           <i className="fa fa-minus"></i>
                                         </button>
-                                        <input
-                                          className="form-control input-number qty-input"
-                                          type="text"
-                                          name="quantity"
-                                          defaultValue="0"
-                                        />
-                                        <button type="button" className="qty-right-plus" data-type="plus" data-field="">
+                                        <input className="form-control input-number qty-input"
+                                          type="text" name="quantity" value="0" />
+                                        <button type="button" className="qty-right-plus"
+                                          data-type="plus" data-field="">
                                           <i className="fa fa-plus"></i>
                                         </button>
                                       </div>
@@ -1625,30 +1680,34 @@ const HomePage = () => {
                               </div>
                             </div>
 
+
                             <div className="col-12 px-0">
                               <div className="product-box">
                                 <div className="product-image">
                                   <a href="product-left-thumbnail.html">
-                                    <img
-                                      src="../assets/images/vegetable/product/2.png"
-                                      className="img-fluid blur-up lazyload"
-                                      alt=""
-                                    />
+                                    <img src={saveProduct?.[1]?.imageURL}
+                                      className="img-fluid blur-up lazyload" alt="" />
                                   </a>
                                   <ul className="product-option">
-                                    <li data-bs-toggle="tooltip" data-bs-placement="top" title="View">
-                                      <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#view">
+                                    <li data-bs-toggle="tooltip" data-bs-placement="top"
+                                      title="View">
+                                      <a href="#" onClick={(e) => {
+                                        e.preventDefault();
+                                        handleViewProduct(saveProduct?.[1]);
+                                      }}>
                                         <i data-feather="eye"></i>
                                       </a>
                                     </li>
 
-                                    <li data-bs-toggle="tooltip" data-bs-placement="top" title="Compare">
+                                    <li data-bs-toggle="tooltip" data-bs-placement="top"
+                                      title="Compare">
                                       <a href="compare.html">
                                         <i data-feather="refresh-cw"></i>
                                       </a>
                                     </li>
 
-                                    <li data-bs-toggle="tooltip" data-bs-placement="top" title="Wishlist">
+                                    <li data-bs-toggle="tooltip" data-bs-placement="top"
+                                      title="Wishlist">
                                       <a href="wishlist.html" className="notifi-wishlist">
                                         <i data-feather="heart"></i>
                                       </a>
@@ -1657,12 +1716,12 @@ const HomePage = () => {
                                 </div>
                                 <div className="product-detail">
                                   <a href="product-left-thumbnail.html">
-                                    <h6 className="name">Cold Brew Coffee Instant Coffee 50 g</h6>
+                                    <h6 className="name">{saveProduct?.[1]?.productName}</h6>
                                   </a>
 
                                   <h5 className="sold text-content">
-                                    <span className="theme-color price">$26.69</span>
-                                    <del>28.56</del>
+                                    <span className="theme-color price">${saveProduct?.[1]?.salePrice != null ? saveProduct?.[1]?.salePrice.toFixed(2) : '0.00'}</span>
+                                    <del>${saveProduct?.[1]?.price}</del>
                                   </h5>
 
                                   <div className="product-rating mt-sm-2 mt-1">
@@ -1688,29 +1747,21 @@ const HomePage = () => {
                                   </div>
 
                                   <div className="add-to-cart-box">
-                                    <button className="btn btn-add-cart addcart-button">
-                                      Add
+                                    <button className="btn btn-add-cart addcart-button">Add
                                       <span className="add-icon">
                                         <i className="fa-solid fa-plus"></i>
                                       </span>
                                     </button>
                                     <div className="cart_qty qty-box">
                                       <div className="input-group">
-                                        <button
-                                          type="button"
-                                          className="qty-left-minus"
-                                          data-type="minus"
-                                          data-field=""
-                                        >
+                                        <button type="button" className="qty-left-minus"
+                                          data-type="minus" data-field="">
                                           <i className="fa fa-minus"></i>
                                         </button>
-                                        <input
-                                          className="form-control input-number qty-input"
-                                          type="text"
-                                          name="quantity"
-                                          defaultValue="0"
-                                        />
-                                        <button type="button" className="qty-right-plus" data-type="plus" data-field="">
+                                        <input className="form-control input-number qty-input"
+                                          type="text" name="quantity" value="0" />
+                                        <button type="button" className="qty-right-plus"
+                                          data-type="plus" data-field="">
                                           <i className="fa fa-plus"></i>
                                         </button>
                                       </div>
@@ -1728,26 +1779,29 @@ const HomePage = () => {
                               <div className="product-box">
                                 <div className="product-image">
                                   <a href="product-left-thumbnail.html">
-                                    <img
-                                      src="../assets/images/vegetable/product/3.png"
-                                      className="img-fluid blur-up lazyload"
-                                      alt=""
-                                    />
+                                    <img src={saveProduct?.[2]?.imageURL}
+                                      className="img-fluid blur-up lazyload" alt="" />
                                   </a>
                                   <ul className="product-option">
-                                    <li data-bs-toggle="tooltip" data-bs-placement="top" title="View">
-                                      <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#view">
+                                    <li data-bs-toggle="tooltip" data-bs-placement="top"
+                                      title="View">
+                                       <a href="#" onClick={(e) => {
+                                        e.preventDefault();
+                                        handleViewProduct(saveProduct?.[2]);
+                                      }}>
                                         <i data-feather="eye"></i>
                                       </a>
                                     </li>
 
-                                    <li data-bs-toggle="tooltip" data-bs-placement="top" title="Compare">
+                                    <li data-bs-toggle="tooltip" data-bs-placement="top"
+                                      title="Compare">
                                       <a href="compare.html">
                                         <i data-feather="refresh-cw"></i>
                                       </a>
                                     </li>
 
-                                    <li data-bs-toggle="tooltip" data-bs-placement="top" title="Wishlist">
+                                    <li data-bs-toggle="tooltip" data-bs-placement="top"
+                                      title="Wishlist">
                                       <a href="wishlist.html" className="notifi-wishlist">
                                         <i data-feather="heart"></i>
                                       </a>
@@ -1756,12 +1810,13 @@ const HomePage = () => {
                                 </div>
                                 <div className="product-detail">
                                   <a href="product-left-thumbnail.html">
-                                    <h6 className="name">Peanut Butter Bite Premium Butter Cookies 600 g</h6>
+                                    <h6 className="name">{saveProduct?.[2]?.productName}
+                                    </h6>
                                   </a>
 
                                   <h5 className="sold text-content">
-                                    <span className="theme-color price">$26.69</span>
-                                    <del>28.56</del>
+                                    <span className="theme-color price">${saveProduct?.[2]?.salePrice != null ? saveProduct?.[2]?.salePrice.toFixed(2) : '0.00'}</span>
+                                    <del>${saveProduct?.[2]?.price}</del>
                                   </h5>
 
                                   <div className="product-rating mt-sm-2 mt-1">
@@ -1787,29 +1842,21 @@ const HomePage = () => {
                                   </div>
 
                                   <div className="add-to-cart-box">
-                                    <button className="btn btn-add-cart addcart-button">
-                                      Add
+                                    <button className="btn btn-add-cart addcart-button">Add
                                       <span className="add-icon">
                                         <i className="fa-solid fa-plus"></i>
                                       </span>
                                     </button>
                                     <div className="cart_qty qty-box">
                                       <div className="input-group">
-                                        <button
-                                          type="button"
-                                          className="qty-left-minus"
-                                          data-type="minus"
-                                          data-field=""
-                                        >
+                                        <button type="button" className="qty-left-minus"
+                                          data-type="minus" data-field="">
                                           <i className="fa fa-minus"></i>
                                         </button>
-                                        <input
-                                          className="form-control input-number qty-input"
-                                          type="text"
-                                          name="quantity"
-                                          defaultValue="0"
-                                        />
-                                        <button type="button" className="qty-right-plus" data-type="plus" data-field="">
+                                        <input className="form-control input-number qty-input"
+                                          type="text" name="quantity" value="0" />
+                                        <button type="button" className="qty-right-plus"
+                                          data-type="plus" data-field="">
                                           <i className="fa fa-plus"></i>
                                         </button>
                                       </div>
@@ -1826,26 +1873,29 @@ const HomePage = () => {
                                 </div>
                                 <div className="product-image">
                                   <a href="product-left-thumbnail.html">
-                                    <img
-                                      src="../assets/images/vegetable/product/4.png"
-                                      className="img-fluid blur-up lazyload"
-                                      alt=""
-                                    />
+                                    <img src={saveProduct?.[3]?.imageURL}
+                                      className="img-fluid blur-up lazyload" alt="" />
                                   </a>
                                   <ul className="product-option">
-                                    <li data-bs-toggle="tooltip" data-bs-placement="top" title="View">
-                                      <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#view">
+                                    <li data-bs-toggle="tooltip" data-bs-placement="top"
+                                      title="View">
+                                      <a href="#" onClick={(e) => {
+                                        e.preventDefault();
+                                        handleViewProduct(saveProduct?.[3]);
+                                      }}>
                                         <i data-feather="eye"></i>
                                       </a>
                                     </li>
 
-                                    <li data-bs-toggle="tooltip" data-bs-placement="top" title="Compare">
+                                    <li data-bs-toggle="tooltip" data-bs-placement="top"
+                                      title="Compare">
                                       <a href="compare.html">
                                         <i data-feather="refresh-cw"></i>
                                       </a>
                                     </li>
 
-                                    <li data-bs-toggle="tooltip" data-bs-placement="top" title="Wishlist">
+                                    <li data-bs-toggle="tooltip" data-bs-placement="top"
+                                      title="Wishlist">
                                       <a href="wishlist.html" className="notifi-wishlist">
                                         <i data-feather="heart"></i>
                                       </a>
@@ -1854,12 +1904,12 @@ const HomePage = () => {
                                 </div>
                                 <div className="product-detail">
                                   <a href="product-left-thumbnail.html">
-                                    <h6 className="name">SnackAmor Combo Pack of Jowar Stick and Jowar Chips</h6>
+                                    <h6 className="name">{saveProduct?.[3]?.productName}</h6>
                                   </a>
 
                                   <h5 className="sold text-content">
-                                    <span className="theme-color price">$26.69</span>
-                                    <del>28.56</del>
+                                    <span className="theme-color price">${saveProduct?.[3]?.salePrice != null ? saveProduct?.[3]?.salePrice.toFixed(2) : '0.00'}</span>
+                                    <del>${saveProduct?.[3]?.price}</del>
                                   </h5>
 
                                   <div className="product-rating mt-sm-2 mt-1">
@@ -1885,29 +1935,21 @@ const HomePage = () => {
                                   </div>
 
                                   <div className="add-to-cart-box">
-                                    <button className="btn btn-add-cart addcart-button">
-                                      Add
+                                    <button className="btn btn-add-cart addcart-button">Add
                                       <span className="add-icon">
                                         <i className="fa-solid fa-plus"></i>
                                       </span>
                                     </button>
                                     <div className="cart_qty qty-box">
                                       <div className="input-group">
-                                        <button
-                                          type="button"
-                                          className="qty-left-minus"
-                                          data-type="minus"
-                                          data-field=""
-                                        >
+                                        <button type="button" className="qty-left-minus"
+                                          data-type="minus" data-field="">
                                           <i className="fa fa-minus"></i>
                                         </button>
-                                        <input
-                                          className="form-control input-number qty-input"
-                                          type="text"
-                                          name="quantity"
-                                          defaultValue="0"
-                                        />
-                                        <button type="button" className="qty-right-plus" data-type="plus" data-field="">
+                                        <input className="form-control input-number qty-input"
+                                          type="text" name="quantity" value="0" />
+                                        <button type="button" className="qty-right-plus"
+                                          data-type="plus" data-field="">
                                           <i className="fa fa-plus"></i>
                                         </button>
                                       </div>
@@ -1925,26 +1967,29 @@ const HomePage = () => {
                               <div className="product-box">
                                 <div className="product-image">
                                   <a href="product-left-thumbnail.html">
-                                    <img
-                                      src="../assets/images/vegetable/product/5.png"
-                                      className="img-fluid blur-up lazyload"
-                                      alt=""
-                                    />
+                                    <img src={saveProduct?.[4]?.imageURL}
+                                      className="img-fluid blur-up lazyload" alt="" />
                                   </a>
                                   <ul className="product-option">
-                                    <li data-bs-toggle="tooltip" data-bs-placement="top" title="View">
-                                      <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#view">
+                                    <li data-bs-toggle="tooltip" data-bs-placement="top"
+                                      title="View">
+                                     <a href="#" onClick={(e) => {
+                                        e.preventDefault();
+                                        handleViewProduct(saveProduct?.[4]);
+                                      }}>
                                         <i data-feather="eye"></i>
                                       </a>
                                     </li>
 
-                                    <li data-bs-toggle="tooltip" data-bs-placement="top" title="Compare">
+                                    <li data-bs-toggle="tooltip" data-bs-placement="top"
+                                      title="Compare">
                                       <a href="compare.html">
                                         <i data-feather="refresh-cw"></i>
                                       </a>
                                     </li>
 
-                                    <li data-bs-toggle="tooltip" data-bs-placement="top" title="Wishlist">
+                                    <li data-bs-toggle="tooltip" data-bs-placement="top"
+                                      title="Wishlist">
                                       <a href="wishlist.html" className="notifi-wishlist">
                                         <i data-feather="heart"></i>
                                       </a>
@@ -1953,12 +1998,13 @@ const HomePage = () => {
                                 </div>
                                 <div className="product-detail">
                                   <a href="product-left-thumbnail.html">
-                                    <h6 className="name">Yumitos Chilli Sprinkled Potato Chips 100 g</h6>
+                                    <h6 className="name">{saveProduct?.[4]?.productName}
+                                    </h6>
                                   </a>
 
                                   <h5 className="sold text-content">
-                                    <span className="theme-color price">$26.69</span>
-                                    <del>28.56</del>
+                                    <span className="theme-color price">${saveProduct?.[4]?.salePrice != null ? saveProduct?.[4]?.salePrice.toFixed(2) : '0.00'}</span>
+                                    <del>${saveProduct?.[4]?.price}</del>
                                   </h5>
 
                                   <div className="product-rating mt-sm-2 mt-1">
@@ -1984,29 +2030,21 @@ const HomePage = () => {
                                   </div>
 
                                   <div className="add-to-cart-box">
-                                    <button className="btn btn-add-cart addcart-button">
-                                      Add
+                                    <button className="btn btn-add-cart addcart-button">Add
                                       <span className="add-icon">
                                         <i className="fa-solid fa-plus"></i>
                                       </span>
                                     </button>
                                     <div className="cart_qty qty-box">
                                       <div className="input-group">
-                                        <button
-                                          type="button"
-                                          className="qty-left-minus"
-                                          data-type="minus"
-                                          data-field=""
-                                        >
+                                        <button type="button" className="qty-left-minus"
+                                          data-type="minus" data-field="">
                                           <i className="fa fa-minus"></i>
                                         </button>
-                                        <input
-                                          className="form-control input-number qty-input"
-                                          type="text"
-                                          name="quantity"
-                                          defaultValue="0"
-                                        />
-                                        <button type="button" className="qty-right-plus" data-type="plus" data-field="">
+                                        <input className="form-control input-number qty-input"
+                                          type="text" name="quantity" value="0" />
+                                        <button type="button" className="qty-right-plus"
+                                          data-type="plus" data-field="">
                                           <i className="fa fa-plus"></i>
                                         </button>
                                       </div>
@@ -2020,26 +2058,29 @@ const HomePage = () => {
                               <div className="product-box">
                                 <div className="product-image">
                                   <a href="product-left-thumbnail.html">
-                                    <img
-                                      src="../assets/images/vegetable/product/6.png"
-                                      className="img-fluid blur-up lazyload"
-                                      alt=""
-                                    />
+                                    <img src={saveProduct?.[5]?.imageURL}
+                                      className="img-fluid blur-up lazyload" alt="" />
                                   </a>
                                   <ul className="product-option">
-                                    <li data-bs-toggle="tooltip" data-bs-placement="top" title="View">
-                                      <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#view">
+                                    <li data-bs-toggle="tooltip" data-bs-placement="top"
+                                      title="View">
+                                      <a href="#" onClick={(e) => {
+                                        e.preventDefault();
+                                        handleViewProduct(saveProduct?.[5]);
+                                      }}>
                                         <i data-feather="eye"></i>
                                       </a>
                                     </li>
 
-                                    <li data-bs-toggle="tooltip" data-bs-placement="top" title="Compare">
+                                    <li data-bs-toggle="tooltip" data-bs-placement="top"
+                                      title="Compare">
                                       <a href="compare.html">
                                         <i data-feather="refresh-cw"></i>
                                       </a>
                                     </li>
 
-                                    <li data-bs-toggle="tooltip" data-bs-placement="top" title="Wishlist">
+                                    <li data-bs-toggle="tooltip" data-bs-placement="top"
+                                      title="Wishlist">
                                       <a href="wishlist.html" className="notifi-wishlist">
                                         <i data-feather="heart"></i>
                                       </a>
@@ -2048,12 +2089,12 @@ const HomePage = () => {
                                 </div>
                                 <div className="product-detail">
                                   <a href="product-left-thumbnail.html">
-                                    <h6 className="name">Neu Farm Unpolished Desi Toor Dal 1 kg</h6>
+                                    <h6 className="name">{saveProduct?.[5]?.productName}</h6>
                                   </a>
 
                                   <h5 className="sold text-content">
-                                    <span className="theme-color price">$26.69</span>
-                                    <del>28.56</del>
+                                    <span className="theme-color price">${saveProduct?.[5]?.salePrice != null ? saveProduct?.[5]?.salePrice.toFixed(2) : '0.00'}</span>
+                                    <del>${saveProduct?.[5]?.price}</del>
                                   </h5>
 
                                   <div className="product-rating mt-sm-2 mt-1">
@@ -2079,29 +2120,21 @@ const HomePage = () => {
                                   </div>
 
                                   <div className="add-to-cart-box">
-                                    <button className="btn btn-add-cart addcart-button">
-                                      Add
+                                    <button className="btn btn-add-cart addcart-button">Add
                                       <span className="add-icon">
                                         <i className="fa-solid fa-plus"></i>
                                       </span>
                                     </button>
                                     <div className="cart_qty qty-box">
                                       <div className="input-group">
-                                        <button
-                                          type="button"
-                                          className="qty-left-minus"
-                                          data-type="minus"
-                                          data-field=""
-                                        >
+                                        <button type="button" className="qty-left-minus"
+                                          data-type="minus" data-field="">
                                           <i className="fa fa-minus"></i>
                                         </button>
-                                        <input
-                                          className="form-control input-number qty-input"
-                                          type="text"
-                                          name="quantity"
-                                          defaultValue="0"
-                                        />
-                                        <button type="button" className="qty-right-plus" data-type="plus" data-field="">
+                                        <input className="form-control input-number qty-input"
+                                          type="text" name="quantity" value="0" />
+                                        <button type="button" className="qty-right-plus"
+                                          data-type="plus" data-field="">
                                           <i className="fa fa-plus"></i>
                                         </button>
                                       </div>
@@ -2122,26 +2155,29 @@ const HomePage = () => {
                                 </div>
                                 <div className="product-image">
                                   <a href="product-left-thumbnail.html">
-                                    <img
-                                      src="../assets/images/vegetable/product/7.png"
-                                      className="img-fluid blur-up lazyload"
-                                      alt=""
-                                    />
+                                    <img src={saveProduct?.[6]?.imageURL}
+                                      className="img-fluid blur-up lazyload" alt="" />
                                   </a>
                                   <ul className="product-option">
-                                    <li data-bs-toggle="tooltip" data-bs-placement="top" title="View">
-                                      <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#view">
+                                    <li data-bs-toggle="tooltip" data-bs-placement="top"
+                                      title="View">
+                                      <a href="#" onClick={(e) => {
+                                        e.preventDefault();
+                                        handleViewProduct(saveProduct?.[6]);
+                                      }}>
                                         <i data-feather="eye"></i>
                                       </a>
                                     </li>
 
-                                    <li data-bs-toggle="tooltip" data-bs-placement="top" title="Compare">
+                                    <li data-bs-toggle="tooltip" data-bs-placement="top"
+                                      title="Compare">
                                       <a href="compare.html">
                                         <i data-feather="refresh-cw"></i>
                                       </a>
                                     </li>
 
-                                    <li data-bs-toggle="tooltip" data-bs-placement="top" title="Wishlist">
+                                    <li data-bs-toggle="tooltip" data-bs-placement="top"
+                                      title="Wishlist">
                                       <a href="wishlist.html" className="notifi-wishlist">
                                         <i data-feather="heart"></i>
                                       </a>
@@ -2150,12 +2186,12 @@ const HomePage = () => {
                                 </div>
                                 <div className="product-detail">
                                   <a href="product-left-thumbnail.html">
-                                    <h6 className="name">healthy Long Life Toned Milk 1 L</h6>
+                                    <h6 className="name">{saveProduct?.[6]?.productName}</h6>
                                   </a>
 
                                   <h5 className="sold text-content">
-                                    <span className="theme-color price">$26.69</span>
-                                    <del>28.56</del>
+                                    <span className="theme-color price">${saveProduct?.[6]?.salePrice != null ? saveProduct?.[6]?.salePrice.toFixed(2) : '0.00'}</span>
+                                    <del>${saveProduct?.[6]?.price}</del>
                                   </h5>
 
                                   <div className="product-rating mt-sm-2 mt-1">
@@ -2181,29 +2217,21 @@ const HomePage = () => {
                                   </div>
 
                                   <div className="add-to-cart-box">
-                                    <button className="btn btn-add-cart addcart-button">
-                                      Add
+                                    <button className="btn btn-add-cart addcart-button">Add
                                       <span className="add-icon">
                                         <i className="fa-solid fa-plus"></i>
                                       </span>
                                     </button>
                                     <div className="cart_qty qty-box">
                                       <div className="input-group">
-                                        <button
-                                          type="button"
-                                          className="qty-left-minus"
-                                          data-type="minus"
-                                          data-field=""
-                                        >
+                                        <button type="button" className="qty-left-minus"
+                                          data-type="minus" data-field="">
                                           <i className="fa fa-minus"></i>
                                         </button>
-                                        <input
-                                          className="form-control input-number qty-input"
-                                          type="text"
-                                          name="quantity"
-                                          defaultValue="0"
-                                        />
-                                        <button type="button" className="qty-right-plus" data-type="plus" data-field="">
+                                        <input className="form-control input-number qty-input"
+                                          type="text" name="quantity" value="0" />
+                                        <button type="button" className="qty-right-plus"
+                                          data-type="plus" data-field="">
                                           <i className="fa fa-plus"></i>
                                         </button>
                                       </div>
@@ -2217,26 +2245,29 @@ const HomePage = () => {
                               <div className="product-box">
                                 <div className="product-image">
                                   <a href="product-left-thumbnail.html">
-                                    <img
-                                      src="../assets/images/vegetable/product/8.png"
-                                      className="img-fluid blur-up lazyload"
-                                      alt=""
-                                    />
+                                    <img src={saveProduct?.[7]?.imageURL}
+                                      className="img-fluid blur-up lazyload" alt="" />
                                   </a>
                                   <ul className="product-option">
-                                    <li data-bs-toggle="tooltip" data-bs-placement="top" title="View">
-                                      <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#view">
+                                    <li data-bs-toggle="tooltip" data-bs-placement="top"
+                                      title="View">
+                                     <a href="#" onClick={(e) => {
+                                        e.preventDefault();
+                                        handleViewProduct(saveProduct?.[7]);
+                                      }}>
                                         <i data-feather="eye"></i>
                                       </a>
                                     </li>
 
-                                    <li data-bs-toggle="tooltip" data-bs-placement="top" title="Compare">
+                                    <li data-bs-toggle="tooltip" data-bs-placement="top"
+                                      title="Compare">
                                       <a href="compare.html">
                                         <i data-feather="refresh-cw"></i>
                                       </a>
                                     </li>
 
-                                    <li data-bs-toggle="tooltip" data-bs-placement="top" title="Wishlist">
+                                    <li data-bs-toggle="tooltip" data-bs-placement="top"
+                                      title="Wishlist">
                                       <a href="wishlist.html" className="notifi-wishlist">
                                         <i data-feather="heart"></i>
                                       </a>
@@ -2245,12 +2276,13 @@ const HomePage = () => {
                                 </div>
                                 <div className="product-detail">
                                   <a href="product-left-thumbnail.html">
-                                    <h6 className="name">Dog Treats Natural Yak Milk Bars For Small Dogs 100g</h6>
+                                    <h6 className="name">{saveProduct?.[7]?.productName}
+                                    </h6>
                                   </a>
 
                                   <h5 className="sold text-content">
-                                    <span className="theme-color price">$26.69</span>
-                                    <del>28.56</del>
+                                    <span className="theme-color price">${saveProduct?.[7]?.salePrice != null ? saveProduct?.[7]?.salePrice.toFixed(2) : '0.00'}</span>
+                                    <del>${saveProduct?.[7]?.price}</del>
                                   </h5>
 
                                   <div className="product-rating mt-sm-2 mt-1">
@@ -2276,29 +2308,21 @@ const HomePage = () => {
                                   </div>
 
                                   <div className="add-to-cart-box">
-                                    <button className="btn btn-add-cart addcart-button">
-                                      Add
+                                    <button className="btn btn-add-cart addcart-button">Add
                                       <span className="add-icon">
                                         <i className="fa-solid fa-plus"></i>
                                       </span>
                                     </button>
                                     <div className="cart_qty qty-box">
                                       <div className="input-group">
-                                        <button
-                                          type="button"
-                                          className="qty-left-minus"
-                                          data-type="minus"
-                                          data-field=""
-                                        >
+                                        <button type="button" className="qty-left-minus"
+                                          data-type="minus" data-field="">
                                           <i className="fa fa-minus"></i>
                                         </button>
-                                        <input
-                                          className="form-control input-number qty-input"
-                                          type="text"
-                                          name="quantity"
-                                          defaultValue="0"
-                                        />
-                                        <button type="button" className="qty-right-plus" data-type="plus" data-field="">
+                                        <input className="form-control input-number qty-input"
+                                          type="text" name="quantity" value="0" />
+                                        <button type="button" className="qty-right-plus"
+                                          data-type="plus" data-field="">
                                           <i className="fa fa-plus"></i>
                                         </button>
                                       </div>
@@ -2316,26 +2340,29 @@ const HomePage = () => {
                               <div className="product-box">
                                 <div className="product-image">
                                   <a href="product-left-thumbnail.html">
-                                    <img
-                                      src="../assets/images/vegetable/product/9.png"
-                                      className="img-fluid blur-up lazyload"
-                                      alt=""
-                                    />
+                                    <img src={saveProduct?.[8]?.imageURL}
+                                      className="img-fluid blur-up lazyload" alt="" />
                                   </a>
                                   <ul className="product-option">
-                                    <li data-bs-toggle="tooltip" data-bs-placement="top" title="View">
-                                      <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#view">
+                                    <li data-bs-toggle="tooltip" data-bs-placement="top"
+                                      title="View">
+                                      <a href="#" onClick={(e) => {
+                                        e.preventDefault();
+                                        handleViewProduct(saveProduct?.[8]);
+                                      }}>
                                         <i data-feather="eye"></i>
                                       </a>
                                     </li>
 
-                                    <li data-bs-toggle="tooltip" data-bs-placement="top" title="Compare">
+                                    <li data-bs-toggle="tooltip" data-bs-placement="top"
+                                      title="Compare">
                                       <a href="compare.html">
                                         <i data-feather="refresh-cw"></i>
                                       </a>
                                     </li>
 
-                                    <li data-bs-toggle="tooltip" data-bs-placement="top" title="Wishlist">
+                                    <li data-bs-toggle="tooltip" data-bs-placement="top"
+                                      title="Wishlist">
                                       <a href="wishlist.html" className="notifi-wishlist">
                                         <i data-feather="heart"></i>
                                       </a>
@@ -2344,12 +2371,12 @@ const HomePage = () => {
                                 </div>
                                 <div className="product-detail">
                                   <a href="product-left-thumbnail.html">
-                                    <h6 className="name">Raw Mutton Leg, Packaging 5 Kg</h6>
+                                    <h6 className="name">{saveProduct?.[8]?.productName}</h6>
                                   </a>
 
                                   <h5 className="sold text-content">
-                                    <span className="theme-color price">$26.69</span>
-                                    <del>28.56</del>
+                                    <span className="theme-color price">${saveProduct?.[8]?.salePrice != null ? saveProduct?.[8]?.salePrice.toFixed(2) : '0.00'}</span>
+                                    <del>${saveProduct?.[8]?.price}</del>
                                   </h5>
 
                                   <div className="product-rating mt-sm-2 mt-1">
@@ -2375,29 +2402,21 @@ const HomePage = () => {
                                   </div>
 
                                   <div className="add-to-cart-box">
-                                    <button className="btn btn-add-cart addcart-button">
-                                      Add
+                                    <button className="btn btn-add-cart addcart-button">Add
                                       <span className="add-icon">
                                         <i className="fa-solid fa-plus"></i>
                                       </span>
                                     </button>
                                     <div className="cart_qty qty-box">
                                       <div className="input-group">
-                                        <button
-                                          type="button"
-                                          className="qty-left-minus"
-                                          data-type="minus"
-                                          data-field=""
-                                        >
+                                        <button type="button" className="qty-left-minus"
+                                          data-type="minus" data-field="">
                                           <i className="fa fa-minus"></i>
                                         </button>
-                                        <input
-                                          className="form-control input-number qty-input"
-                                          type="text"
-                                          name="quantity"
-                                          defaultValue="0"
-                                        />
-                                        <button type="button" className="qty-right-plus" data-type="plus" data-field="">
+                                        <input className="form-control input-number qty-input"
+                                          type="text" name="quantity" value="0" />
+                                        <button type="button" className="qty-right-plus"
+                                          data-type="plus" data-field="">
                                           <i className="fa fa-plus"></i>
                                         </button>
                                       </div>
@@ -2411,26 +2430,29 @@ const HomePage = () => {
                               <div className="product-box">
                                 <div className="product-image">
                                   <a href="product-left-thumbnail.html">
-                                    <img
-                                      src="../assets/images/vegetable/product/10.png"
-                                      className="img-fluid blur-up lazyload"
-                                      alt=""
-                                    />
+                                    <img src={saveProduct?.[9]?.imageURL}
+                                      className="img-fluid blur-up lazyload" alt="" />
                                   </a>
                                   <ul className="product-option">
-                                    <li data-bs-toggle="tooltip" data-bs-placement="top" title="View">
-                                      <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#view">
+                                    <li data-bs-toggle="tooltip" data-bs-placement="top"
+                                      title="View">
+                                      <a href="#" onClick={(e) => {
+                                        e.preventDefault();
+                                        handleViewProduct(saveProduct?.[9]);
+                                      }}>
                                         <i data-feather="eye"></i>
                                       </a>
                                     </li>
 
-                                    <li data-bs-toggle="tooltip" data-bs-placement="top" title="Compare">
+                                    <li data-bs-toggle="tooltip" data-bs-placement="top"
+                                      title="Compare">
                                       <a href="compare.html">
                                         <i data-feather="refresh-cw"></i>
                                       </a>
                                     </li>
 
-                                    <li data-bs-toggle="tooltip" data-bs-placement="top" title="Wishlist">
+                                    <li data-bs-toggle="tooltip" data-bs-placement="top"
+                                      title="Wishlist">
                                       <a href="wishlist.html" className="notifi-wishlist">
                                         <i data-feather="heart"></i>
                                       </a>
@@ -2439,12 +2461,13 @@ const HomePage = () => {
                                 </div>
                                 <div className="product-detail">
                                   <a href="product-left-thumbnail.html">
-                                    <h6 className="name">Blended Instant Coffee 50 g Buy 1 Get 1 Free</h6>
+                                    <h6 className="name">{saveProduct?.[9]?.productName}
+                                    </h6>
                                   </a>
 
                                   <h5 className="sold text-content">
-                                    <span className="theme-color price">$26.69</span>
-                                    <del>28.56</del>
+                                    <span className="theme-color price">${saveProduct?.[9]?.salePrice != null ? saveProduct?.[9]?.salePrice.toFixed(2) : '0.00'}</span>
+                                    <del>${saveProduct?.[9]?.price}</del>
                                   </h5>
 
                                   <div className="product-rating mt-sm-2 mt-1">
@@ -2470,29 +2493,21 @@ const HomePage = () => {
                                   </div>
 
                                   <div className="add-to-cart-box">
-                                    <button className="btn btn-add-cart addcart-button">
-                                      Add
+                                    <button className="btn btn-add-cart addcart-button">Add
                                       <span className="add-icon">
                                         <i className="fa-solid fa-plus"></i>
                                       </span>
                                     </button>
                                     <div className="cart_qty qty-box">
                                       <div className="input-group">
-                                        <button
-                                          type="button"
-                                          className="qty-left-minus"
-                                          data-type="minus"
-                                          data-field=""
-                                        >
+                                        <button type="button" className="qty-left-minus"
+                                          data-type="minus" data-field="">
                                           <i className="fa fa-minus"></i>
                                         </button>
-                                        <input
-                                          className="form-control input-number qty-input"
-                                          type="text"
-                                          name="quantity"
-                                          defaultValue="0"
-                                        />
-                                        <button type="button" className="qty-right-plus" data-type="plus" data-field="">
+                                        <input className="form-control input-number qty-input"
+                                          type="text" name="quantity" value="0" />
+                                        <button type="button" className="qty-right-plus"
+                                          data-type="plus" data-field="">
                                           <i className="fa fa-plus"></i>
                                         </button>
                                       </div>
@@ -2510,26 +2525,29 @@ const HomePage = () => {
                               <div className="product-box">
                                 <div className="product-image">
                                   <a href="product-left-thumbnail.html">
-                                    <img
-                                      src="../assets/images/vegetable/product/3.png"
-                                      className="img-fluid blur-up lazyload"
-                                      alt=""
-                                    />
+                                    <img src={saveProduct?.[10]?.imageURL}
+                                      className="img-fluid blur-up lazyload" alt="" />
                                   </a>
                                   <ul className="product-option">
-                                    <li data-bs-toggle="tooltip" data-bs-placement="top" title="View">
-                                      <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#view">
+                                    <li data-bs-toggle="tooltip" data-bs-placement="top"
+                                      title="View">
+                                      <a href="#" onClick={(e) => {
+                                        e.preventDefault();
+                                        handleViewProduct(saveProduct?.[10]);
+                                      }}>
                                         <i data-feather="eye"></i>
                                       </a>
                                     </li>
 
-                                    <li data-bs-toggle="tooltip" data-bs-placement="top" title="Compare">
+                                    <li data-bs-toggle="tooltip" data-bs-placement="top"
+                                      title="Compare">
                                       <a href="compare.html">
                                         <i data-feather="refresh-cw"></i>
                                       </a>
                                     </li>
 
-                                    <li data-bs-toggle="tooltip" data-bs-placement="top" title="Wishlist">
+                                    <li data-bs-toggle="tooltip" data-bs-placement="top"
+                                      title="Wishlist">
                                       <a href="wishlist.html" className="notifi-wishlist">
                                         <i data-feather="heart"></i>
                                       </a>
@@ -2538,12 +2556,13 @@ const HomePage = () => {
                                 </div>
                                 <div className="product-detail">
                                   <a href="product-left-thumbnail.html">
-                                    <h6 className="name">Peanut Butter Bite Premium Butter Cookies 600 g</h6>
+                                    <h6 className="name">{saveProduct?.[10]?.productName}
+                                    </h6>
                                   </a>
 
                                   <h5 className="sold text-content">
-                                    <span className="theme-color price">$26.69</span>
-                                    <del>28.56</del>
+                                    <span className="theme-color price">${saveProduct?.[10]?.salePrice != null ? saveProduct?.[10]?.salePrice.toFixed(2) : '0.00'}</span>
+                                    <del>${saveProduct?.[10]?.price}</del>
                                   </h5>
 
                                   <div className="product-rating mt-sm-2 mt-1">
@@ -2569,29 +2588,21 @@ const HomePage = () => {
                                   </div>
 
                                   <div className="add-to-cart-box">
-                                    <button className="btn btn-add-cart addcart-button">
-                                      Add
+                                    <button className="btn btn-add-cart addcart-button">Add
                                       <span className="add-icon">
                                         <i className="fa-solid fa-plus"></i>
                                       </span>
                                     </button>
                                     <div className="cart_qty qty-box">
                                       <div className="input-group">
-                                        <button
-                                          type="button"
-                                          className="qty-left-minus"
-                                          data-type="minus"
-                                          data-field=""
-                                        >
+                                        <button type="button" className="qty-left-minus"
+                                          data-type="minus" data-field="">
                                           <i className="fa fa-minus"></i>
                                         </button>
-                                        <input
-                                          className="form-control input-number qty-input"
-                                          type="text"
-                                          name="quantity"
-                                          defaultValue="0"
-                                        />
-                                        <button type="button" className="qty-right-plus" data-type="plus" data-field="">
+                                        <input className="form-control input-number qty-input"
+                                          type="text" name="quantity" value="0" />
+                                        <button type="button" className="qty-right-plus"
+                                          data-type="plus" data-field="">
                                           <i className="fa fa-plus"></i>
                                         </button>
                                       </div>
@@ -2605,26 +2616,29 @@ const HomePage = () => {
                               <div className="product-box">
                                 <div className="product-image">
                                   <a href="product-left-thumbnail.html">
-                                    <img
-                                      src="../assets/images/vegetable/product/5.png"
-                                      className="img-fluid blur-up lazyload"
-                                      alt=""
-                                    />
+                                    <img src={saveProduct?.[11]?.imageURL}
+                                      className="img-fluid blur-up lazyload" alt="" />
                                   </a>
                                   <ul className="product-option">
-                                    <li data-bs-toggle="tooltip" data-bs-placement="top" title="View">
-                                      <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#view">
+                                    <li data-bs-toggle="tooltip" data-bs-placement="top"
+                                      title="View">
+                                      <a href="#" onClick={(e) => {
+                                        e.preventDefault();
+                                        handleViewProduct(saveProduct?.[11]);
+                                      }}>
                                         <i data-feather="eye"></i>
                                       </a>
                                     </li>
 
-                                    <li data-bs-toggle="tooltip" data-bs-placement="top" title="Compare">
+                                    <li data-bs-toggle="tooltip" data-bs-placement="top"
+                                      title="Compare">
                                       <a href="compare.html">
                                         <i data-feather="refresh-cw"></i>
                                       </a>
                                     </li>
 
-                                    <li data-bs-toggle="tooltip" data-bs-placement="top" title="Wishlist">
+                                    <li data-bs-toggle="tooltip" data-bs-placement="top"
+                                      title="Wishlist">
                                       <a href="wishlist.html" className="notifi-wishlist">
                                         <i data-feather="heart"></i>
                                       </a>
@@ -2633,12 +2647,13 @@ const HomePage = () => {
                                 </div>
                                 <div className="product-detail">
                                   <a href="product-left-thumbnail.html">
-                                    <h6 className="name">Yumitos Chilli Sprinkled Potato Chips 100 g</h6>
+                                    <h6 className="name">{saveProduct?.[11]?.productName}
+                                    </h6>
                                   </a>
 
                                   <h5 className="sold text-content">
-                                    <span className="theme-color price">$26.69</span>
-                                    <del>28.56</del>
+                                    <span className="theme-color price">${saveProduct?.[11]?.salePrice != null ? saveProduct?.[11]?.salePrice.toFixed(2) : '0.00'}</span>
+                                    <del>${saveProduct?.[11]?.price}</del>
                                   </h5>
 
                                   <div className="product-rating mt-sm-2 mt-1">
@@ -2664,29 +2679,21 @@ const HomePage = () => {
                                   </div>
 
                                   <div className="add-to-cart-box">
-                                    <button className="btn btn-add-cart addcart-button">
-                                      Add
+                                    <button className="btn btn-add-cart addcart-button">Add
                                       <span className="add-icon">
                                         <i className="fa-solid fa-plus"></i>
                                       </span>
                                     </button>
                                     <div className="cart_qty qty-box">
                                       <div className="input-group">
-                                        <button
-                                          type="button"
-                                          className="qty-left-minus"
-                                          data-type="minus"
-                                          data-field=""
-                                        >
+                                        <button type="button" className="qty-left-minus"
+                                          data-type="minus" data-field="">
                                           <i className="fa fa-minus"></i>
                                         </button>
-                                        <input
-                                          className="form-control input-number qty-input"
-                                          type="text"
-                                          name="quantity"
-                                          defaultValue="0"
-                                        />
-                                        <button type="button" className="qty-right-plus" data-type="plus" data-field="">
+                                        <input className="form-control input-number qty-input"
+                                          type="text" name="quantity" value="0" />
+                                        <button type="button" className="qty-right-plus"
+                                          data-type="plus" data-field="">
                                           <i className="fa fa-plus"></i>
                                         </button>
                                       </div>
@@ -2853,9 +2860,12 @@ const HomePage = () => {
                                 </a>
                                 <ul className="product-option">
                                   <li data-bs-toggle="tooltip" data-bs-placement="top" title="View">
-                                    <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#view">
-                                      <i data-feather="eye"></i>
-                                    </a>
+                                    <a href="#" onClick={(e) => {
+                                        e.preventDefault();
+                                        handleViewProduct(saveProduct?.[12]);
+                                      }}>
+                                        <i data-feather="eye"></i>
+                                      </a>
                                   </li>
 
                                   <li data-bs-toggle="tooltip" data-bs-placement="top" title="Compare">
@@ -3913,101 +3923,113 @@ const HomePage = () => {
                     <div className="col-lg-6">
                       <div className="slider-image">
                         <img
-                          src="../assets/images/product/category/1.jpg"
+                          src={selectedProduct?.imageURL}
                           className="img-fluid blur-up lazyload"
                           alt=""
                         />
                       </div>
                     </div>
 
-                    <div className="col-lg-6">
-                      <div className="right-sidebar-modal">
-                        <h4 className="title-name">Peanut Butter Bite Premium Butter Cookies 600 g</h4>
-                        <h4 className="price">$36.99</h4>
-                        <div className="product-rating">
-                          <ul className="rating">
-                            <li>
-                              <i data-feather="star" className="fill"></i>
-                            </li>
-                            <li>
-                              <i data-feather="star" className="fill"></i>
-                            </li>
-                            <li>
-                              <i data-feather="star" className="fill"></i>
-                            </li>
-                            <li>
-                              <i data-feather="star" className="fill"></i>
-                            </li>
-                            <li>
-                              <i data-feather="star"></i>
-                            </li>
-                          </ul>
-                          <span className="ms-2">8 Reviews</span>
-                          <span className="ms-2 text-danger">6 sold in last 16 hours</span>
-                        </div>
+                    <div className="modal fade theme-modal view-modal" id="view" tabIndex="-1">
+                      <div className="modal-dialog modal-dialog-centered modal-xl modal-fullscreen-sm-down">
+                        <div className="modal-content">
+                          <div className="modal-header p-0">
+                            <button type="button" className="btn-close" data-bs-dismiss="modal">
+                              <i className="fa-solid fa-xmark"></i>
+                            </button>
+                          </div>
+                          <div className="modal-body">
+                            <div className="row g-sm-4 g-2">
+                              <div className="col-lg-6">
+                                <div className="slider-image">
+                                  <img
+                                    src={selectedProduct?.imageURL}
+                                    className="img-fluid blur-up lazyload"
+                                    alt=""
+                                  />
+                                </div>
+                              </div>
 
-                        <div className="product-detail">
-                          <h4>Product Details :</h4>
-                          <p>
-                            Candy canes sugar plum tart cotton candy chupa chups sugar plum chocolate I love. Caramels
-                            marshmallow icing dessert candy canes I love soufflé I love toffee. Marshmallow pie sweet
-                            sweet roll sesame snaps tiramisu jelly bear claw. Bonbon muffin I love carrot cake sugar
-                            plum dessert bonbon.
-                          </p>
-                        </div>
+                              <div className="col-lg-6">
+                                <div className="right-sidebar-modal">
+                                  <h4 className="title-name">{selectedProduct?.productName}</h4>
+                                  <h4 className="price">
+                                    ${selectedProduct?.salePrice?.toFixed(2)}{" "}
+                                    <del className="text-muted">${selectedProduct?.price}</del>
+                                  </h4>
 
-                        <ul className="brand-list">
-                          <li>
-                            <div className="brand-box">
-                              <h5>Brand Name:</h5>
-                              <h6>Black Forest</h6>
+                                  <div className="product-rating">
+                                    <ul className="rating">
+                                      <li><i data-feather="star" className="fill"></i></li>
+                                      <li><i data-feather="star" className="fill"></i></li>
+                                      <li><i data-feather="star" className="fill"></i></li>
+                                      <li><i data-feather="star" className="fill"></i></li>
+                                      <li><i data-feather="star"></i></li>
+                                    </ul>
+                                    <span className="ms-2">8 Reviews</span>
+                                    <span className="ms-2 text-danger">6 sold in last 16 hours</span>
+                                  </div>
+
+                                  <div className="product-detail">
+                                    <h4>Product Details :</h4>
+                                    <p>{selectedProduct?.description || "No description available."}</p>
+                                  </div>
+
+                                  <ul className="brand-list">
+                                    <li>
+                                      <div className="brand-box">
+                                        <h5>Brand Name:</h5>
+                                        <h6>{selectedProduct?.brandName || "N/A"}</h6>
+                                      </div>
+                                    </li>
+
+                                    <li>
+                                      <div className="brand-box">
+                                        <h5>Product Code:</h5>
+                                        <h6>{selectedProduct?.productId}</h6>
+                                      </div>
+                                    </li>
+
+                                    <li>
+                                      <div className="brand-box">
+                                        <h5>Product Type:</h5>
+                                        <h6>{selectedProduct?.productType || "N/A"}</h6>
+                                      </div>
+                                    </li>
+                                  </ul>
+
+                                  <div className="select-size">
+                                    <h4>Size :</h4>
+                                    <select className="form-select select-form-size" defaultValue="">
+                                      <option value="">Select Size</option>
+                                      <option value="0.5">1/2 KG</option>
+                                      <option value="1">1 KG</option>
+                                      <option value="1.5">1.5 KG</option>
+                                    </select>
+                                  </div>
+
+                                  <div className="modal-button">
+                                    <button
+                                      onClick={() => {
+                                        window.location.href = "shop-left-sidebar.html";
+                                      }}
+                                      className="btn btn-md add-cart-button icon"
+                                    >
+                                      Add To Cart
+                                    </button>
+                                    <button
+                                      onClick={() => {
+                                        window.location.href = "shop-left-sidebar.html";
+                                      }}
+                                      className="btn theme-bg-color view-button icon text-white fw-bold btn-md"
+                                    >
+                                      View More Details
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
                             </div>
-                          </li>
-
-                          <li>
-                            <div className="brand-box">
-                              <h5>Product Code:</h5>
-                              <h6>W0690034</h6>
-                            </div>
-                          </li>
-
-                          <li>
-                            <div className="brand-box">
-                              <h5>Product Type:</h5>
-                              <h6>White Cream Cake</h6>
-                            </div>
-                          </li>
-                        </ul>
-
-                        <div className="select-size">
-                          <h4>Cake Size :</h4>
-                          <select className="form-select select-form-size" defaultValue="">
-                            <option value="">Select Size</option>
-                            <option value="1.2">1/2 KG</option>
-                            <option value="0">1 KG</option>
-                            <option value="1.5">1/5 KG</option>
-                            <option value="red">Red Roses</option>
-                            <option value="pink">With Pink Roses</option>
-                          </select>
-                        </div>
-
-                        <div className="modal-button">
-                          <button
-                            onClick={() => {
-                              window.location.href = "shop-left-sidebar.html";
-                            }}
-                            className="btn btn-md add-cart-button icon"
-                          >
-                            Add To Cart
-                          </button>
-                          <button
-                            onClick={() => {
-                              window.location.href = "shop-left-sidebar.html";
-                            }}
-                            className="btn theme-bg-color view-button icon text-white fw-bold btn-md"
-                          >
-                            View More Details
-                          </button>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -4149,65 +4171,26 @@ const HomePage = () => {
                 <div className="modal-body">
                   <div className="deal-offer-box">
                     <ul className="deal-offer-list">
-                      <li className="list-1">
-                        <div className="deal-offer-contain">
-                          <a href="shop-left-sidebar.html" className="deal-image">
-                            <img src="../assets/images/vegetable/product/10.png" className="blur-up lazyload" alt="" />
-                          </a>
+                      {dealProduct?.map((dp, i) => (
+                        <li className={`list-${(i % 3) + 1}`} key={i}>
+                          <div className="deal-offer-contain">
+                            <a href="/" className="deal-image">
+                              <img src={dp.imageURL} className="blur-up lazyload" alt="" />
+                            </a>
 
-                          <a href="shop-left-sidebar.html" className="deal-contain">
-                            <h5>Blended Instant Coffee 50 g Buy 1 Get 1 Free</h5>
-                            <h6>
-                              $52.57 <del>57.62</del> <span>500 G</span>
-                            </h6>
-                          </a>
-                        </div>
-                      </li>
-
-                      <li className="list-2">
-                        <div className="deal-offer-contain">
-                          <a href="shop-left-sidebar.html" className="deal-image">
-                            <img src="../assets/images/vegetable/product/11.png" className="blur-up lazyload" alt="" />
-                          </a>
-
-                          <a href="shop-left-sidebar.html" className="deal-contain">
-                            <h5>Blended Instant Coffee 50 g Buy 1 Get 1 Free</h5>
-                            <h6>
-                              $52.57 <del>57.62</del> <span>500 G</span>
-                            </h6>
-                          </a>
-                        </div>
-                      </li>
-
-                      <li className="list-3">
-                        <div className="deal-offer-contain">
-                          <a href="shop-left-sidebar.html" className="deal-image">
-                            <img src="../assets/images/vegetable/product/12.png" className="blur-up lazyload" alt="" />
-                          </a>
-
-                          <a href="shop-left-sidebar.html" className="deal-contain">
-                            <h5>Blended Instant Coffee 50 g Buy 1 Get 1 Free</h5>
-                            <h6>
-                              $52.57 <del>57.62</del> <span>500 G</span>
-                            </h6>
-                          </a>
-                        </div>
-                      </li>
-
-                      <li className="list-1">
-                        <div className="deal-offer-contain">
-                          <a href="shop-left-sidebar.html" className="deal-image">
-                            <img src="../assets/images/vegetable/product/13.png" className="blur-up lazyload" alt="" />
-                          </a>
-
-                          <a href="shop-left-sidebar.html" className="deal-contain">
-                            <h5>Blended Instant Coffee 50 g Buy 1 Get 1 Free</h5>
-                            <h6>
-                              $52.57 <del>57.62</del> <span>500 G</span>
-                            </h6>
-                          </a>
-                        </div>
-                      </li>
+                            <a href="shop-left-sidebar.html" className="deal-contain">
+                              <h5>{dp.productName}</h5>
+                              <h6>
+                                {dp.salePrice.toLocaleString("en-US", {
+                                  style: "currency",
+                                  currency: "USD",
+                                  minimumFractionDigits: 0,
+                                })} <del>${dp.price}</del> <span>-{dp.discountPercent}%</span>
+                              </h6>
+                            </a>
+                          </div>
+                        </li>
+                      ))}
                     </ul>
                   </div>
                 </div>
@@ -4279,8 +4262,8 @@ const HomePage = () => {
           </div>
           <div className="bg-overlay"></div>
         </div>
-      </div>
-    </HomepageLayout>
+      </div >
+    </HomepageLayout >
   );
 };
 

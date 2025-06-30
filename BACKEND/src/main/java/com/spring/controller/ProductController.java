@@ -162,6 +162,11 @@ public class ProductController {
 
     @GetMapping("/top-discount")
     public ResponseEntity<List<ProductDTO>> getTopDiscountProducts() {
+        return ResponseEntity.ok(productService.getTopDiscountProducts(5));
+    }
+
+    @GetMapping("/top-save")
+    public ResponseEntity<List<ProductDTO>> getTopSaveProducts() {
         return ResponseEntity.ok(productService.getTopDiscountProducts(12));
     }
 
