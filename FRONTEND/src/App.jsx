@@ -23,6 +23,7 @@ import BackToTopButton from './layouts/BackToTopButton';
 import AllRole from './component/Admin/AllRole';
 import AddNewUser from './component/Admin/AddNewUser';
 import AddNewRole from './component/Admin/AddNewRole';
+import ExporterDashboard from './component/Exporter/ExporterDashboard';
 
 function AppContent() {
   const location = useLocation();
@@ -101,6 +102,12 @@ function AppContent() {
         <Route path="/wholesaler" element={
           <PrivateRoute allowedRoles={3}>
             <TraderDashboard />
+          </PrivateRoute>
+        } />
+        {/* Các route dành cho người xuất hàng (exporter) */}
+        <Route path="/exporter" element={
+          <PrivateRoute allowedRoles={5}>
+            <ExporterDashboard />
           </PrivateRoute>
         } />
 
