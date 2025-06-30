@@ -35,7 +35,7 @@ const Product = () => {
   const [suppliers, setSuppliers] = useState([]);
   const [productToDelete, setProductToDelete] = useState(null);
 
-  
+
   const handleEditClick = (product) => {
     setEditProduct(product);
     setEditForm({
@@ -296,7 +296,7 @@ const Product = () => {
                                   <td>
                                     <ul>
                                       <li>
-                                        <a href="#" onClick={() => handleViewProduct(p)}>
+                                        <a href="#" onClick={(e) => { e.preventDefault(); handleViewProduct(p) }}>
                                           <i className="ri-eye-line"></i>
                                         </a>
 

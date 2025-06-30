@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react'
 import TopBar from '../AdminDashboard/TopBar'
 import SideBar from '../AdminDashboard/SideBar'
@@ -15,9 +16,30 @@ const AddNewProduct = () => {
     stockQuantity: 0,
     description: "",
     imageURL: "",
+    galleryImages: [""],
     status: 0,
     lastUpdatedBy: 1
   });
+
+  const handleGalleryChange = (idx, value) => {
+    setForm(prev => {
+      const list = [...prev.galleryImages];
+      list[idx] = value;
+      return { ...prev, galleryImages: list };
+    });
+  };
+
+  const addGalleryField = () =>
+    setForm(prev => ({ ...prev, galleryImages: [...prev.galleryImages, ""] }));
+
+  const removeGalleryField = (idx) => {
+    setForm(prev => {
+      const list = [...prev.galleryImages];
+      list.splice(idx, 1);
+      return { ...prev, galleryImages: list };
+    });
+  };
+
   const salePrice =
     (form.price || 0) * (1 - (form.discountPercent || 0) / 100);
   const [categories, setCategories] = useState([]);
@@ -56,7 +78,7 @@ const AddNewProduct = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post(`http://localhost:8082/PureFoods/api/product/add`, form);
+      const res = await axios.post('http://localhost:8082/PureFoods/api/product/add', form);
       if (res.data.status === 200) {
         toast.success("Thêm sản phẩm thành công!");
         setForm({
@@ -154,7 +176,7 @@ const AddNewProduct = () => {
                                   onChange={handleChange}>
                                   <option value="">-- Chọn nhà cung cấp --</option>
                                   {suppliers.map(s => (
-                                    <option key={s.supplierId} value={s.supplierId}>{s.supplierName}</option>
+                                    <option key={s.supplierID} value={s.supplierID}>{s.supplierName}</option>
                                   ))}
                                 </select>
                               </div>
@@ -217,7 +239,7 @@ const AddNewProduct = () => {
                               </div>
                             </div>
                             <div className="mb-3">
-                              <label className="form-label">Image URL</label>
+                              <label className="form-label">Avatar URL</label>
                               <input type="text" className="form-control" name="imageURL" value={form.imageURL} onChange={handleChange} />
                             </div>
                             {form.imageURL && (
@@ -232,6 +254,67 @@ const AddNewProduct = () => {
                                       e.target.src = "https://via.placeholder.com/150?text=Image+not+found";
                                     }}
                                   />
+                                </div>
+                              </div>
+                            )}
+                            <label className="form-label">Image URL</label>
+
+                            {form.galleryImages?.map((url, idx) => (
+                              <div key={idx} className="d-flex mb-2 align-items-center">
+
+                                <input
+                                  type="text"
+                                  className="form-control"
+                                  placeholder={`Link ảnh #${idx + 1}`}
+                                  value={url}
+                                  onChange={e => handleGalleryChange(idx, e.target.value)}
+                                />
+
+                                {form.galleryImages.length > 1 && (
+                                  <button
+                                    type="button"
+                                    className="btn btn-sm btn-danger ms-2"
+                                    onClick={() => removeGalleryField(idx)}
+                                  >
+                                    −
+                                  </button>
+                                )}
+                                {idx === form.galleryImages.length - 1 && (
+                                  <button
+                                    type="button"
+                                    className="btn btn-sm btn-success ms-2"
+                                    onClick={addGalleryField}
+                                  >
+                                    +
+                                  </button>
+                                )}
+                              </div>
+                            ))}
+                            {form.galleryImages?.some(url => url.trim() !== "") && (
+                              <div className="mb-3">
+                                <label className="form-label">Preview gallery</label>
+
+                                <div className="d-flex flex-wrap gap-2">
+                                  {form.galleryImages.map((url, idx) =>
+                                    url.trim() ? (
+                                      <img
+                                        key={idx}
+                                        src={url}
+                                        alt={`gallery - ${idx + 1}`}
+                                        style={{
+                                          width: 120,
+                                          height: 120,
+                                          objectFit: "cover",
+                                          border: "1px solid #ccc",
+                                          borderRadius: 4
+                                        }}
+                                        onError={e => {
+                                          e.target.src =
+                                            "https://via.placeholder.com/120?text=404";
+                                        }}
+                                      />
+                                    ) : null
+                                  )}
                                 </div>
                               </div>
                             )}

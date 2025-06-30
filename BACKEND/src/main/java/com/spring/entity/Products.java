@@ -3,7 +3,6 @@ package com.spring.entity;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 
-import java.util.Date;
 
 @Entity
 @Table(name = "Products")
