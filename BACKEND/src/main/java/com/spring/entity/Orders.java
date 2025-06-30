@@ -1,128 +1,142 @@
 package com.spring.entity;
-import jakarta.persistence.*;
 
-
-import org.hibernate.annotations.CreationTimestamp;
-
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "Orders")
 public class Orders {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "OrderID")
-    private int orderId;
-
-    @Column(name = "CustomerID")
-    private Integer customerId;
-
-    @CreationTimestamp
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "OrderDate")
-    private Timestamp orderDate;
-
-    @Column(name = "TotalAmount", nullable = false)
+    @Column(
+            name = "OrderID"
+    )
+    private int orderID;
+    @Column(
+            name = "CustomerID"
+    )
+    private Integer customerID;
+    @Column(
+            name = "OrderDate"
+    )
+    private LocalDateTime orderDate;
+    @Column(
+            name = "TotalAmount"
+    )
     private BigDecimal totalAmount;
-
-    @Column(name = "StatusID")
-    private Integer statusId;
-
-    @Column(name = "ShippingAddress", nullable = false, length = 255)
+    @Column(
+            name = "StatusID"
+    )
+    private Integer statusID;
+    @Column(
+            name = "ShippingAddress"
+    )
     private String shippingAddress;
-
-    @Column(name = "ShippingMethodID")
-    private Integer shippingMethodId;
-
-    @Column(name = "ShippingCost")
+    @Column(
+            name = "ShippingMethodID"
+    )
+    private Integer shippingMethodID;
+    @Column(
+            name = "ShippingCost"
+    )
     private BigDecimal shippingCost;
-
-    @Column(name = "Distance")
+    @Column(
+            name = "Distance"
+    )
     private BigDecimal distance;
-
-    @Column(name = "DiscountAmount")
+    @Column(
+            name = "DiscountAmount"
+    )
     private BigDecimal discountAmount;
-
-    @Column(name = "Status")
+    @Column(
+            name = "Status"
+    )
     private Integer status;
-
-    @Column(name = "CancelReason", length = 255)
+    @Column(
+            name = "CancelReason"
+    )
     private String cancelReason;
-
-    @Column(name = "EstimatedDeliveryDate")
-    private Timestamp estimatedDeliveryDate;
-
-    @Column(name = "DelayReason", length = 255)
+    @Column(
+            name = "EstimatedDeliveryDate"
+    )
+    private LocalDateTime estimatedDeliveryDate;
+    @Column(
+            name = "DelayReason"
+    )
     private String delayReason;
-
-    @Column(name = "DriverID")
-    private Integer driverId;
-
-    @Column(name = "ReturnReason", length = 255)
+    @Column(
+            name = "DriverID"
+    )
+    private Integer driverID;
+    @Column(
+            name = "ReturnReason"
+    )
     private String returnReason;
 
-    public Orders() {}
-
-    // Getters and Setters
-    public int getOrderId() {
-        return orderId;
+    public int getOrderID() {
+        return this.orderID;
     }
 
-    public void setOrderId(int orderId) {
-        this.orderId = orderId;
+    public void setOrderID(int orderID) {
+        this.orderID = orderID;
     }
 
-    public Integer getCustomerId() {
-        return customerId;
+    public Integer getCustomerID() {
+        return this.customerID;
     }
 
-    public void setCustomerId(Integer customerId) {
-        this.customerId = customerId;
+    public void setCustomerID(Integer customerID) {
+        this.customerID = customerID;
     }
 
-    public Timestamp getOrderDate() {
-        return orderDate;
+    public LocalDateTime getOrderDate() {
+        return this.orderDate;
     }
 
-    public void setOrderDate(Timestamp orderDate) {
+    public void setOrderDate(LocalDateTime orderDate) {
         this.orderDate = orderDate;
     }
 
     public BigDecimal getTotalAmount() {
-        return totalAmount;
+        return this.totalAmount;
     }
 
     public void setTotalAmount(BigDecimal totalAmount) {
         this.totalAmount = totalAmount;
     }
 
-    public Integer getStatusId() {
-        return statusId;
+    public Integer getStatusID() {
+        return this.statusID;
     }
 
-    public void setStatusId(Integer statusId) {
-        this.statusId = statusId;
+    public void setStatusID(Integer statusID) {
+        this.statusID = statusID;
     }
 
     public String getShippingAddress() {
-        return shippingAddress;
+        return this.shippingAddress;
     }
 
     public void setShippingAddress(String shippingAddress) {
         this.shippingAddress = shippingAddress;
     }
 
-    public Integer getShippingMethodId() {
-        return shippingMethodId;
+    public Integer getShippingMethodID() {
+        return this.shippingMethodID;
     }
 
-    public void setShippingMethodId(Integer shippingMethodId) {
-        this.shippingMethodId = shippingMethodId;
+    public void setShippingMethodID(Integer shippingMethodID) {
+        this.shippingMethodID = shippingMethodID;
     }
 
     public BigDecimal getShippingCost() {
-        return shippingCost;
+        return this.shippingCost;
     }
 
     public void setShippingCost(BigDecimal shippingCost) {
@@ -130,7 +144,7 @@ public class Orders {
     }
 
     public BigDecimal getDistance() {
-        return distance;
+        return this.distance;
     }
 
     public void setDistance(BigDecimal distance) {
@@ -138,7 +152,7 @@ public class Orders {
     }
 
     public BigDecimal getDiscountAmount() {
-        return discountAmount;
+        return this.discountAmount;
     }
 
     public void setDiscountAmount(BigDecimal discountAmount) {
@@ -146,7 +160,7 @@ public class Orders {
     }
 
     public Integer getStatus() {
-        return status;
+        return this.status;
     }
 
     public void setStatus(Integer status) {
@@ -154,39 +168,39 @@ public class Orders {
     }
 
     public String getCancelReason() {
-        return cancelReason;
+        return this.cancelReason;
     }
 
     public void setCancelReason(String cancelReason) {
         this.cancelReason = cancelReason;
     }
 
-    public Timestamp getEstimatedDeliveryDate() {
-        return estimatedDeliveryDate;
+    public LocalDateTime getEstimatedDeliveryDate() {
+        return this.estimatedDeliveryDate;
     }
 
-    public void setEstimatedDeliveryDate(Timestamp estimatedDeliveryDate) {
+    public void setEstimatedDeliveryDate(LocalDateTime estimatedDeliveryDate) {
         this.estimatedDeliveryDate = estimatedDeliveryDate;
     }
 
     public String getDelayReason() {
-        return delayReason;
+        return this.delayReason;
     }
 
     public void setDelayReason(String delayReason) {
         this.delayReason = delayReason;
     }
 
-    public Integer getDriverId() {
-        return driverId;
+    public Integer getDriverID() {
+        return this.driverID;
     }
 
-    public void setDriverId(Integer driverId) {
-        this.driverId = driverId;
+    public void setDriverID(Integer driverID) {
+        this.driverID = driverID;
     }
 
     public String getReturnReason() {
-        return returnReason;
+        return this.returnReason;
     }
 
     public void setReturnReason(String returnReason) {
