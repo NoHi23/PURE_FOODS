@@ -1,0 +1,233 @@
+/* Order.css */
+
+/* Table status colors */
+.status-success {
+  color: #28a745;
+  font-weight: bold;
+}
+
+.status-warning {
+  color: #ffc107;
+  font-weight: bold;
+}
+
+.status-danger {
+  color: #dc3545;
+  font-weight: bold;
+}
+
+/* Icon list styling */
+td ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+td ul li a {
+  color: #333;
+  font-size: 1.1rem;
+  transition: color 0.3s ease;
+}
+
+td ul li a:hover {
+  color: #0d6efd;
+}
+
+/* Modal text center alignment */
+.modal-body p {
+  font-size: 1rem;
+  margin-bottom: 1rem;
+}
+
+/* Page layout fix for sidebar */
+.page-wrapper {
+  background-color: #f8f9fa;
+  min-height: 100vh;
+}
+
+/* Table header styling */
+.table thead th {
+  background-color: #f1f1f1;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.table tbody td {
+  vertical-align: middle;
+  text-align: center;
+}
+
+/* Order Detail Styling */
+.order-detail-container {
+  padding: 20px;
+  background: #fff;
+  border-radius: 10px;
+}
+
+.order-summary-box {
+  background-color: #f7f7f7;
+  padding: 20px;
+  border-radius: 10px;
+  margin-top: 20px;
+}
+
+.order-summary-box h5 {
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.order-item-list {
+  border-top: 2px solid #ddd;
+  padding-top: 10px;
+}
+
+.order-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #eee;
+  padding: 15px 0;
+}
+
+.order-item img {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.order-item-info {
+  flex: 1;
+  margin-left: 20px;
+}
+
+.order-totals {
+  margin-top: 20px;
+  font-size: 1rem;
+}
+
+.order-totals p {
+  display: flex;
+  justify-content: space-between;
+  padding: 5px 0;
+}
+
+.order-totals .total {
+  font-weight: bold;
+  color: #28a745;
+  font-size: 1.2rem;
+}
+
+.order-meta {
+  font-size: 0.9rem;
+  color: #555;
+  line-height: 1.5;
+  margin-top: 10px;
+}
+
+.order-meta span {
+  display: block;
+  margin-bottom: 5px;
+}
+
+.order-meta .expected-date {
+  color: #0d6efd;
+  font-weight: bold;
+}
+
+/* Order Tracking Styling */
+.order-tracking-container {
+  background-color: #fff;
+  padding: 30px;
+  border-radius: 10px;
+  margin-top: 20px;
+}
+
+.tracking-steps {
+  display: flex;
+  justify-content: space-between;
+  margin: 30px 0;
+  position: relative;
+  border-top: 2px solid #ccc;
+  padding-top: 40px;
+}
+
+.tracking-step {
+  position: relative;
+  text-align: center;
+  flex: 1;
+}
+
+.tracking-step::before {
+  content: '';
+  width: 15px;
+  height: 15px;
+  background-color: #28a745;
+  border-radius: 50%;
+  position: absolute;
+  top: -45px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1;
+}
+
+.tracking-step.pending::before {
+  background-color: #ccc;
+}
+
+.tracking-step span {
+  display: block;
+  font-size: 0.85rem;
+  margin-top: 8px;
+}
+
+.tracking-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.tracking-table th,
+.tracking-table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+  font-size: 0.95rem;
+}
+
+.tracking-table th {
+  background-color: #f9f9f9;
+  font-weight: bold;
+}
+
+.tracking-table td:last-child {
+  white-space: nowrap;
+}
+
+.tracking-actions {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.tracking-actions button {
+  padding: 8px 16px;
+  font-weight: bold;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.tracking-actions .submit-btn {
+  background-color: #0d6efd;
+  color: white;
+}
+
+.tracking-actions .cancel-btn {
+  background-color: #6c757d;
+  color: white;
+}
