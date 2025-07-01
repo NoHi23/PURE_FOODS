@@ -12,8 +12,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -80,7 +78,7 @@ public class SuppliersServiceImpl implements SuppliersService {
 
     private SuppliersDTO convertToDTO(Suppliers suppliers) {
         return new SuppliersDTO(
-                suppliers.getSupplierID(),
+                suppliers.getSupplierId(),
                 suppliers.getSupplierName(),
                 suppliers.getContactName(),
                 suppliers.getPhone(),
@@ -96,7 +94,7 @@ public class SuppliersServiceImpl implements SuppliersService {
    
     private Suppliers convertToEntity(SuppliersDTO dto) {
         Suppliers s = new Suppliers();
-        s.setSupplierID(dto.getSupplierID());
+        s.setSupplierId(dto.getSupplierId());
         s.setSupplierName(dto.getSupplierName());
         s.setContactName(dto.getContactName());
         s.setPhone(dto.getPhone());

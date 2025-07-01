@@ -2,24 +2,25 @@ package com.spring.dto;
 
 import com.google.api.client.util.DateTime;
 
-import java.util.Date;
+import java.time.LocalDate;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 public class SuppliersDTO {
-    private int supplierID;
+    private int supplierId;
     private String supplierName;
     private String contactName;
     private String phone;
     private String email;
     private String address;
     private String organicCertification;
-    private Date certificationExpiry;
+    private LocalDate certificationExpiry;
     private java.sql.Timestamp createdAt;
     private int status;
 
     public SuppliersDTO() {}
 
-    public SuppliersDTO(int supplierID, String supplierName, String contactName, String phone, String email, String address, String organicCertification, Date certificationExpiry, java.sql.Timestamp createdAt, int status) {
-        this.supplierID = supplierID;
+    public SuppliersDTO(int supplierId, String supplierName, String contactName, String phone, String email, String address, String organicCertification, LocalDate certificationExpiry, java.sql.Timestamp createdAt, int status) {
+        this.supplierId = supplierId;
         this.supplierName = supplierName;
         this.contactName = contactName;
         this.phone = phone;
@@ -30,11 +31,11 @@ public class SuppliersDTO {
         this.createdAt = createdAt;
         this.status = status;
         }
-        public int getSupplierID() {
-            return supplierID;
+        public int getSupplierId() {
+            return supplierId;
         }
-        public void setSupplierID(int supplierID) {
-            this.supplierID = supplierID;
+        public void setSupplierId(int supplierId) {
+            this.supplierId = supplierId;
         }
         public String getSupplierName() {
         return supplierName;
@@ -72,10 +73,10 @@ public class SuppliersDTO {
         public void setOrganicCertification(String organicCertification) {
         this.organicCertification = organicCertification;
         }
-        public Date getCertificationExpiry() {
+        public LocalDate getCertificationExpiry() {
         return certificationExpiry;
         }
-        public void setCertificationExpiry(Date certificationExpiry) {
+        public void setCertificationExpiry(LocalDate certificationExpiry) {
         this.certificationExpiry = certificationExpiry;
         }
         public java.sql.Timestamp getCreatedAt() {
