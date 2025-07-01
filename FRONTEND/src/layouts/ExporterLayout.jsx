@@ -1,6 +1,4 @@
 import React, { useEffect } from 'react';
-import Header from './Header';
-import Footer from './Footer';
 import BackToTopButton from './BackToTopButton';
 
 const ExporterLayout = ({ children }) => {
@@ -54,9 +52,8 @@ const ExporterLayout = ({ children }) => {
 
   return (
     <>
-      <Header />
       <main>{children}</main>
-      <Footer user={JSON.parse(localStorage.getItem('user'))} />
+      
       <BackToTopButton />
     </>
   );
