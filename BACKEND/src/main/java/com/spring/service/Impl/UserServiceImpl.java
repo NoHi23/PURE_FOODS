@@ -1,9 +1,11 @@
 package com.spring.service.Impl;
 
 import com.spring.common.EmailUtil;
+import com.spring.dao.NotificationDAO;
 import com.spring.dao.UserDAO;
 import com.spring.dto.ProductDTO;
 import com.spring.dto.UserDTO;
+import com.spring.entity.Notifications;
 import com.spring.entity.Products;
 import com.spring.entity.User;
 import com.spring.service.UserService;
@@ -13,6 +15,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -23,16 +26,33 @@ import java.util.UUID;
 public class UserServiceImpl implements UserService {
     @Autowired
     private UserDAO userDAO;
+    @Autowired
+    private NotificationDAO notificationDAO;
 
     @Transactional(propagation = Propagation.REQUIRED)
     @Override
     public boolean login(UserDTO userDTO) {
         try {
-            System.out.println("userDAO is null ? " + (userDAO == null ? " yes " : "no"));
-            assert userDAO != null;
             User user = userDAO.findUserByEmail(userDTO.getEmail());
-            System.out.println("LOG" + user.getEmail());
-            return user != null && userDTO.getPassword().equals(user.getPassword());
+            if (user == null || !userDTO.getPassword().equals(user.getPassword())) {
+                return false;
+            }
+
+            if (user.getLastLogin() == null) {
+                Notifications first = new Notifications();
+                first.setUserId(user.getUserId());
+                first.setTitle("Chào mừng!");
+                first.setContent("Bạn vừa đăng nhập lần đầu.");
+                notificationDAO.save(first);
+            }
+
+            Timestamp loginTime = Timestamp.valueOf(LocalDateTime.now());
+            user.setLastLogin(loginTime);
+            userDAO.updateUser(user);
+
+            userDTO.setLastLogin(loginTime);
+
+            return true;
         } catch (Exception e) {
             e.printStackTrace();
             return false;
@@ -165,7 +185,7 @@ public class UserServiceImpl implements UserService {
         if (user == null) {
             throw new RuntimeException("User not found!");
         }
-        user.setStatus(1); // đánh dấu là đã xoá mềm, vẫn còn ở DB SQL
+        user.setStatus(1);
         userDAO.updateUser(user);
         return convertToDTO(user);
     }
@@ -216,7 +236,7 @@ public class UserServiceImpl implements UserService {
                 "&copy; 2025 Hệ thống của bạn. Mọi quyền được bảo lưu.</div>" +
                 "</body></html>";
 
-        EmailUtil.sendEmail(email, subject, body); // bạn sẽ tạo lớp EmailUtil riêng
+        EmailUtil.sendEmail(email, subject, body);
 
         return true;
     }

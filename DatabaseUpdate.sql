@@ -20,4 +20,27 @@ CREATE TABLE Wishlist (
 );
 
 
+--new 29.4.2025
+ALTER TABLE dbo.ProductImages
+DROP CONSTRAINT DF__ProductIm__IsPri__534D60F1;
+GO
+ALTER TABLE ProductImages
+DROP COLUMN IsPrimary;
 
+ALTER TABLE ProductImages
+ALTER COLUMN ImageURL Nvarchar(max);
+
+-- Bảng Users: thêm cột theo dõi
+ALTER TABLE Users
+    ADD last_login DATETIME NULL;  
+
+	-- Bảng Notifications:
+CREATE TABLE Notifications (
+    id            INT IDENTITY PRIMARY KEY,
+    user_id       INT NOT NULL,
+    title         NVARCHAR(100),
+    content       NVARCHAR(MAX),
+    is_read       BIT DEFAULT 0,
+    created_at    DATETIME DEFAULT GETDATE(),
+    FOREIGN KEY (user_id) REFERENCES Users(UserID)
+);

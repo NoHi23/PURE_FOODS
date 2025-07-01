@@ -23,16 +23,17 @@ import BackToTopButton from './layouts/BackToTopButton';
 import AllRole from './component/Admin/AllRole';
 import AddNewUser from './component/Admin/AddNewUser';
 import AddNewRole from './component/Admin/AddNewRole';
+import Order from './component/Admin/Order';
 import ExporterDashboard from './component/Exporter/ExporterDashboard';
 
 function AppContent() {
   const location = useLocation();
   // Danh sách các path KHÔNG muốn hiện header và footer
   const hideHeaderPaths = ['/login', '/signup', '/forgot', '/reset-password', '/verify-otp', '/admin-dashboard', '/admin-product', '/admin-add-new-product',
-    '/category', '/all-user', '/all-role', '/add-new-user',"/add-new-role"
+    '/category', '/all-user', '/all-role', '/add-new-user',"/add-new-role", "/admin-order"
   ];
   const hideFooterPaths = ['/login', '/signup', '/forgot', '/reset-password', '/verify-otp', '/admin-dashboard', '/admin-product', '/admin-add-new-product',
-    '/category', '/all-user', '/all-role', '/add-new-user',"/add-new-role"
+    '/category', '/all-user', '/all-role', '/add-new-user',"/add-new-role", "/admin-order"
   ];
   const backToTop = ['/login', '/signup', '/forgot', '/reset-password', '/verify-otp', '/'];
 
@@ -92,6 +93,12 @@ function AppContent() {
             <AddNewRole />
           </PrivateRoute>
         } />
+        <Route path="/admin-order" element={
+          <PrivateRoute allowedRoles={1}>
+            <Order />
+          </PrivateRoute>
+        } />
+
         {/* Các route dành cho Người nhập hàng - Importer */}
         <Route path="/importer" element={
           <PrivateRoute allowedRoles={4}>

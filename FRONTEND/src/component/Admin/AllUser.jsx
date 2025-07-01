@@ -244,7 +244,10 @@ const AllUser = () => {
                                 <td>
                                   <ul>
                                     <li>
-                                      <a href="#" onClick={() => handleViewUser(u)}>
+                                      <a href="#" onClick={(e) =>{
+                                          e.preventDefault();
+                                          handleViewUser(u)
+                                      } }>
                                         <i className="ri-eye-line"></i>
                                       </a>
                                     </li>

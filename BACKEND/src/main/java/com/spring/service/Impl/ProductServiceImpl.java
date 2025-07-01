@@ -1,8 +1,10 @@
 package com.spring.service.Impl;
 
 import com.spring.dao.ProductDAO;
+import com.spring.dao.ProductImageDAO;
 import com.spring.dto.ProductDTO;
 import com.spring.entity.ProductDetails;
+import com.spring.entity.ProductImages;
 import com.spring.entity.Products;
 import com.spring.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,13 +16,15 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional(propagation = Propagation.REQUIRED)
 public class ProductServiceImpl implements ProductService {
     @Autowired
     private ProductDAO productDAO;
-
+    @Autowired
+    private ProductImageDAO productImageDAO;
 
     @Override
     public List<ProductDTO> getAllProduct() {
@@ -60,6 +64,18 @@ public class ProductServiceImpl implements ProductService {
         q.setLastUpdateBy(product.getLastUpdatedBy());
         q.setStatus(product.getStatus());
         productDAO.addProduct(q);
+        if (product.getGalleryImages() != null && !product.getGalleryImages().isEmpty()) {
+            for (String url : product.getGalleryImages()) {
+                if (url == null || url.isEmpty()) continue;
+
+                ProductImages image = new ProductImages();
+                image.setProductId(q.getProductId());
+                image.setImageUrl(url);
+                image.setCreatedAt(new Timestamp(System.currentTimeMillis()));
+                image.setStatus(0);;
+                productImageDAO.addImage(image);
+            }
+        }
         return convertToDTO(q);
     }
     @Override
@@ -69,12 +85,10 @@ public class ProductServiceImpl implements ProductService {
             throw new RuntimeException("Không tìm thấy sản phẩm");
         }
 
-        // Validate fields (tùy chọn)
         if (product.getPrice() < 0 || product.getStockQuantity() < 0) {
             throw new IllegalArgumentException("Price and Stock must be non-negative");
         }
 
-        // Update fields
         q.setProductName(product.getProductName());
         q.setCategoryId(product.getCategoryId());
         q.setSupplierId(product.getSupplierId());
@@ -180,6 +194,15 @@ public class ProductServiceImpl implements ProductService {
             dto.setExpirationDate(details.getExpirationDate());
             dto.setNutritionalInfo(details.getNutritionalInfo());
         }
+        List<ProductImages> imgEntities =
+                productImageDAO.getImagesByProductId(product.getProductId());
+
+        List<String> urls = imgEntities.stream()
+                .filter(i -> i.getStatus() == 0)
+                .map(ProductImages::getImageUrl)
+                .collect(Collectors.toList());
+
+        dto.setGalleryImages(urls);
         return dto;
     }
 
