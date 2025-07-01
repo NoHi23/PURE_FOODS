@@ -1,4 +1,5 @@
 package com.spring.service;
+import com.spring.dto.ProductDTO;
 import com.spring.dto.UserDTO;
 
 import java.util.List;
@@ -26,4 +27,8 @@ public interface UserService {
     boolean sendResetPasswordEmail(String email);
     boolean resetPassword(String token, String newPassword);
     boolean verifyResetToken(String token);
+
+    UserDTO addUser(UserDTO user);
+
+
 }

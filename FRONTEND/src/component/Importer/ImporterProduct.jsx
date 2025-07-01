@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { FiSearch } from "react-icons/fi";
 import Pagination from "../../layouts/Pagination";
 import ImporterEditProduct from "./ImporterEditProduct";
 
@@ -25,12 +26,32 @@ const ImporterProduct = ({ setProducts, currentPage, setCurrentPage }) => {
     status: 1,
   });
   const [showModal, setShowModal] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const filteredProducts = products.filter((p) => {
+    const productName = p.productName?.toLowerCase() || "";
+    const price = p.price?.toString() || "";
+    const quantity = p.stockQuantity?.toString() || "";
+    const harvestDate = p.harvestDate ? new Date(p.harvestDate).toLocaleDateString("vi-VN").toLowerCase() : "";
+    const expirationDate = p.expirationDate ? new Date(p.expirationDate).toLocaleDateString("vi-VN").toLowerCase() : "";
+
+    const statusText = p.status === 0 ? "đang bán" : "ngừng bán";
+
+    return (
+      productName.includes(searchTerm.toLowerCase()) ||
+      price.includes(searchTerm) ||
+      quantity.includes(searchTerm) ||
+      harvestDate.includes(searchTerm.toLowerCase()) ||
+      expirationDate.includes(searchTerm.toLowerCase()) ||
+      statusText.includes(searchTerm.toLowerCase())
+    );
+  });
 
   const productsPerPage = 7;
-  const totalPages = Math.ceil(products.length / productsPerPage);
+  const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
   const indexOfLast = currentPage * productsPerPage;
   const indexOfFirst = indexOfLast - productsPerPage;
-  const currentProducts = products.slice(indexOfFirst, indexOfLast);
+  const currentProducts = filteredProducts.slice(indexOfFirst, indexOfLast);
 
   const fetchProducts = async () => {
     try {
@@ -151,8 +172,35 @@ const ImporterProduct = ({ setProducts, currentPage, setCurrentPage }) => {
             <use href="../assets/svg/leaf.svg#leaf"></use>
           </svg>
         </span>
+        <p style={{ color: "#f98050", marginTop: "5px", fontFamily: "Inconsolata, monospace" }}>
+          (*)Hàng vừa nhập về cần được kiểm tra kỹ càng và cập nhật ngay số lượng tồn kho. Đảm bảo mọi thứ còn nguyên
+          vẹn trước khi lưu kho, mọi sai lệch sẽ ảnh hưởng đến quá trình xử lý sau này! Kiểm tra kỹ để tránh thất thoát,
+          sai sót nhỏ có thể gây ảnh hưởng lớn.
+        </p>
       </div>
-
+      <div className="position-relative mb-4">
+        <input
+          type="text"
+          className="form-control pe-5" // padding right để tránh icon đè chữ
+          placeholder="Nhập bất cứ thứ gì để tìm kiếm..."
+          value={searchTerm}
+          onChange={(e) => {
+            setSearchTerm(e.target.value);
+            setCurrentPage(1); // Reset về trang đầu khi tìm
+          }}
+        />
+        <FiSearch
+          style={{
+            position: "absolute",
+            right: "15px",
+            top: "50%",
+            transform: "translateY(-50%)",
+            color: "#aaa",
+            pointerEvents: "none", // để icon không ảnh hưởng đến việc gõ
+          }}
+          size={18}
+        />
+      </div>
       <button
         className="btn theme-bg-color btn-md fw-bold text-white mb-4"
         data-bs-toggle="modal"
@@ -222,7 +270,9 @@ const ImporterProduct = ({ setProducts, currentPage, setCurrentPage }) => {
                         </option>
                       ))
                     ) : (
-                      <option value="" disabled>Đang tải danh mục...</option>
+                      <option value="" disabled>
+                        Đang tải danh mục...
+                      </option>
                     )}
                   </select>
                 </div>
@@ -401,10 +451,10 @@ const ImporterProduct = ({ setProducts, currentPage, setCurrentPage }) => {
                   </td>
                   <td>
                     <span
-                      className={`badge ${product.status === 1 ? "bg-success" : "bg-secondary"}`}
+                      className={`badge ${product.status === 0 ? "bg-success" : "bg-secondary"}`}
                       style={{ fontSize: "0.8rem" }}
                     >
-                      {product.status === 1 ? "Hoạt động" : "Không hoạt động"}
+                      {product.status === 0 ? "Đang bán" : "Ngừng bán"}
                     </span>
                   </td>
                   <td className="edit-delete">
@@ -424,7 +474,7 @@ const ImporterProduct = ({ setProducts, currentPage, setCurrentPage }) => {
                         setShowEditModal(true);
                       }}
                     >
-                      Sửa ✏️
+                      ✏️
                     </button>
                     <button
                       className="delete ms-2"
@@ -439,7 +489,7 @@ const ImporterProduct = ({ setProducts, currentPage, setCurrentPage }) => {
                       }}
                       onClick={() => handleDeleteProduct(product.productId)}
                     >
-                      Xoá 🗑️
+                      🗑️
                     </button>
                   </td>
                 </tr>

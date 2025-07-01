@@ -23,6 +23,10 @@ import AllUser from './component/Admin/AllUser';
 import Footer from './layouts/Footer';
 import Header from './layouts/Header';
 import BackToTopButton from './layouts/BackToTopButton';
+import AllRole from './component/Admin/AllRole';
+import AddNewUser from './component/Admin/AddNewUser';
+import AddNewRole from './component/Admin/AddNewRole';
+import Order from './component/Admin/Order';
 
 function AppContent() {
   const location = useLocation();
@@ -91,6 +95,27 @@ function AppContent() {
             <AllUser />
           </PrivateRoute>
         } />
+        <Route path="/all-role" element={
+          <PrivateRoute allowedRoles={1}>
+            <AllRole />
+          </PrivateRoute>
+        } />
+        <Route path="/add-new-user" element={
+          <PrivateRoute allowedRoles={1}>
+            <AddNewUser />
+          </PrivateRoute>
+        } />
+        <Route path="/add-new-role" element={
+          <PrivateRoute allowedRoles={1}>
+            <AddNewRole />
+          </PrivateRoute>
+        } />
+        <Route path="/admin-order" element={
+          <PrivateRoute allowedRoles={1}>
+            <Order />
+          </PrivateRoute>
+        } />
+
         {/* Các route dành cho Người nhập hàng - Importer */}
         <Route path="/importer" element={
           <PrivateRoute allowedRoles={4}>

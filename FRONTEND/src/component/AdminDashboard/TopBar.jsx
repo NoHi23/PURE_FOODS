@@ -1,16 +1,89 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { toast } from 'react-toastify';
 import { Link, useNavigate } from 'react-router-dom'
+import axios from 'axios';
 
 const TopBar = () => {
   const user = JSON.parse(localStorage.getItem('user'));
   const navigate = useNavigate();
+  const [notifications, setNotifications] = useState([]);
+  const [history, setHistory] = useState([]);
 
   const handleLogout = () => {
     localStorage.removeItem('user');
     toast.success("Logout successfully!");
     navigate("/login");
   };
+  useEffect(() => {
+    if (!user) return;
+
+    const fetchAllNotifications = async () => {
+      try {
+        const { data } = await axios.get(
+          `http://localhost:8082/PureFoods/api/notifications/${user.userId}`
+        );
+
+        setNotifications(data.filter((n) => !n.isRead));
+        setHistory(data.filter((n) => n.isRead));
+      } catch (err) {
+        console.error("Error loading notifications:", err);
+      }
+    };
+
+    fetchAllNotifications();
+  }, [user?.userId]);
+
+  const handleMarkRead = async (notiId) => {
+    const id = Number(notiId);
+
+    setNotifications((prev) => prev.filter((n) => n.id !== id));
+
+    try {
+      await axios.put(
+        `http://localhost:8082/PureFoods/api/notifications/${id}/read`
+      );
+
+      setHistory((prev) => {
+        const justRead = notifications.find((n) => n.id === id);
+        return justRead ? [...prev, { ...justRead, isRead: true }] : prev;
+      });
+    } catch (err) {
+      toast.error("Không thể đánh dấu đã đọc");
+      setNotifications((prev) => {
+        const justRead = history.find((h) => h.id === id);
+        return justRead ? [...prev, justRead] : prev;
+      });
+    }
+  };
+
+  const loadAllNotifications = async () => {
+    try {
+      const { data } = await axios.get(
+        `http://localhost:8082/PureFoods/api/notifications/read/${user.userId}`
+      );
+      setHistory(data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleMarkAllRead = async () => {
+    try {
+      const { data } = await axios.put(
+        `http://localhost:8082/PureFoods/api/notifications/mark-all-read/${user.userId}`
+      );
+
+      setHistory((h) => [
+        ...notifications.map((n) => ({ ...n, isRead: true })),
+        ...h,
+      ]);
+      setNotifications([]);
+    } catch (err) {
+      console.error("Lỗi mark‑all‑read:", err);
+      toast.error("Không thể cập nhật thông báo.");
+    }
+  };
+
   return (
     <div>
       <div className="page-header">
@@ -39,41 +112,46 @@ const TopBar = () => {
                 </span>
               </li>
               <li className="onhover-dropdown">
-                <div className="notification-box">
+                <div className="notification-box" onClick={loadAllNotifications}>
                   <i className="ri-notification-line"></i>
-                  <span className="badge rounded-pill badge-theme">4</span>
+                  {notifications.length > 0 &&
+                    <span className="badge rounded-pill badge-theme">{notifications.length}</span>
+                  }
                 </div>
                 <ul className="notification-dropdown onhover-show-div">
                   <li>
                     <i className="ri-notification-line"></i>
                     <h6 className="f-18 mb-0">Notitications</h6>
                   </li>
+                  {notifications.map(n => (
+                    <li key={n.id} onClick={() => handleMarkRead(n.id)}>
+                      <p>
+                        <i className="fa fa-circle me-2 font-primary"></i>
+                        {n.title} – {n.content}
+                        <span className="pull-right">
+                          {new Date(n.createdAt).toLocaleString()}
+                        </span>
+                      </p>
+                    </li>
+                  ))}
+                  {history.map(h => (
+                    <li key={h.id}>
+                      <p style={{ opacity: .6 }}>
+                        <i className="fa fa-circle me-2 font-secondary"></i>
+                        {h.title} – {h.content}
+                        <span className="pull-right">
+                          {new Date(h.createdAt).toLocaleString()}
+                        </span>
+                      </p>
+                    </li>
+                  ))}
+                  {notifications.length === 0 && history.length === 0 && (
+                    <li><p>No notification.</p></li>
+                  )}
                   <li>
-                    <p>
-                      <i className="fa fa-circle me-2 font-primary"></i>Delivery processing <span
-                        className="pull-right">10 min.</span>
-                    </p>
-                  </li>
-                  <li>
-                    <p>
-                      <i className="fa fa-circle me-2 font-success"></i>Order Complete<span
-                        className="pull-right">1 hr</span>
-                    </p>
-                  </li>
-                  <li>
-                    <p>
-                      <i className="fa fa-circle me-2 font-info"></i>Tickets Generated<span
-                        className="pull-right">3 hr</span>
-                    </p>
-                  </li>
-                  <li>
-                    <p>
-                      <i className="fa fa-circle me-2 font-danger"></i>Delivery Complete<span
-                        className="pull-right">6 hr</span>
-                    </p>
-                  </li>
-                  <li>
-                    <a className="btn btn-primary" href="javascript:void(0)">Check all notification</a>
+                    <a className="btn btn-primary" onClick={handleMarkAllRead}>
+                      Check all notification
+                    </a>
                   </li>
                 </ul>
               </li>

@@ -39,7 +39,6 @@ const HomepageLayout = ({ children }) => {
       "/assets/js/fly-cart.js",
       "/assets/js/quantity-2.js",
       "/assets/js/script.js",
-      "/assets/js/theme-setting.js"
     ];
 
     const scripts = jsScripts.map((src) => {

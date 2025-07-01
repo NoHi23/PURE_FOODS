@@ -14,6 +14,7 @@ public class UserDTO {
     private java.sql.Timestamp createdAt;
     private String resetToken;
     private Timestamp tokenExpiry;
+    private Timestamp lastLogin;
 
     public UserDTO() {}
 
@@ -97,6 +98,11 @@ public class UserDTO {
     public void setTokenExpiry(Timestamp tokenExpiry) {
         this.tokenExpiry = tokenExpiry;
     }
-
+    public Timestamp getLastLogin() {
+        return lastLogin;
+    }
+    public void setLastLogin(Timestamp lastLogin) {
+        this.lastLogin = lastLogin;
+    }
 
 }

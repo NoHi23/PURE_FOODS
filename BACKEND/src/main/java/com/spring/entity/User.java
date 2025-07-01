@@ -1,6 +1,7 @@
 package com.spring.entity;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.sql.Timestamp;
 import java.util.Date;
@@ -34,6 +35,7 @@ public class User {
     @Column(name = "Status")
     private int status;
 
+    @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "CreatedAt")
     private java.sql.Timestamp createdAt;
@@ -43,6 +45,9 @@ public class User {
 
     @Column(name = "token_expiry")
     private Timestamp tokenExpiry;
+
+    @Column(name = "last_login")
+    private Timestamp lastLogin;
 
     public User() {}
 
@@ -130,5 +135,11 @@ public class User {
     }
     public void setResetToken(String resetToken) {
         this.resetToken = resetToken;
+    }
+    public Timestamp getLastLogin() {
+        return lastLogin;
+    }
+    public void setLastLogin(Timestamp lastLogin) {
+        this.lastLogin = lastLogin;
     }
 }

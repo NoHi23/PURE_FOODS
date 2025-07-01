@@ -1,49 +1,30 @@
 import React, { useEffect, useState } from 'react';
 import { FiChevronUp } from 'react-icons/fi';
+import './BackToTopButton.css';
 
 const BackToTopButton = () => {
   const [showButton, setShowButton] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
-      setShowButton(window.scrollY > 50);
+      setShowButton(window.scrollY > 100);
     };
     window.addEventListener('scroll', handleScroll);
-
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-    };
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   const scrollToTop = () => {
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth',
-    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
-    showButton && (
-      <button
-        onClick={scrollToTop}
-        className="back-to-top"
-        style={{
-          position: 'fixed',
-          bottom: '30px',
-          right: '30px',
-          backgroundColor: 'green',
-          color: '#fff',
-          border: 'none',
-          borderRadius: '20%',
-          padding: '10px',
-          cursor: 'pointer',
-          zIndex: 9999,
-        }}
-        aria-label="Back to top"
-      >
-        <FiChevronUp size={30} />
-      </button>
-    )
+    <button
+      onClick={scrollToTop}
+      className={`mint-capsule-button ${showButton ? 'show' : ''}`}
+      aria-label="Back to top"
+    >
+      <FiChevronUp size={18} />
+    </button>
   );
 };
 

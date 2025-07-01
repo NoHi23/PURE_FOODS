@@ -107,5 +107,9 @@ public class SuppliersServiceImpl implements SuppliersService {
         return s;
     }
 
+    @Override
+    public int countSupplier() {
+        return suppliersDAO.countSuppliers();
+    }
 
 }

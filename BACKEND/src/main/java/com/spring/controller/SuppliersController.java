@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/supplier")
@@ -75,6 +74,23 @@ public class SuppliersController {
             return ResponseEntity.noContent().build();
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
+        }
+    }
+
+    @GetMapping("/count")
+    public ResponseEntity<?> countSuppliers() {
+        try {
+            int count = suppliersService.countSupplier();
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Lấy danh sách các nhà cung cấp thành công!");
+            response.put("status", 200);
+            response.put("countSupplier", count);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("message", e.getMessage());
+            errorResponse.put("status", 400);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
     }
 }

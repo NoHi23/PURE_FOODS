@@ -423,8 +423,8 @@ const ImporterEditProduct = ({ show, onClose, product, onUpdated }) => {
                     backgroundColor: "#fff",
                   }}
                 >
-                  <option value={1}>Hoạt động</option>
-                  <option value={0}>Không hoạt động</option>
+                  <option value={0}>Hoạt động (đang bán)</option>
+                  <option value={1}>Không hoạt động (ngừng bán)</option>
                 </select>
               </div>
               <div className="d-flex justify-content-end">

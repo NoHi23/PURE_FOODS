@@ -10,4 +10,5 @@ public interface SuppliersDAO {
     void createSupplier(Suppliers supplier);
     void updateSupplier(Suppliers supplier);
     void deleteSupplier(int id);
+    int countSuppliers();
 }

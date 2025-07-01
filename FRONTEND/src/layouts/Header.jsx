@@ -1,11 +1,13 @@
 import { useNavigate } from 'react-router-dom';
 import { FiSearch, FiShoppingCart } from 'react-icons/fi';
 import { toast } from 'react-toastify';
-
+import axios from 'axios';
+import { useEffect, useState } from 'react';
+import './Header.css'
 export default function Header() {
   const user = JSON.parse(localStorage.getItem("user"));
   const navigate = useNavigate();
-
+  const userId = user?.userId;
 
   const handleLogout = () => {
     localStorage.removeItem("user");
@@ -15,6 +17,80 @@ export default function Header() {
 
   const cartCount = 0;
 
+
+  const [notifications, setNotifications] = useState([]);
+  const [history, setHistory] = useState([]);
+
+
+  useEffect(() => {
+    if (!user) return;
+
+    const fetchAllNotifications = async () => {
+      try {
+        const { data } = await axios.get(
+          `http://localhost:8082/PureFoods/api/notifications/${user.userId}`
+        );
+
+        setNotifications(data.filter((n) => !n.isRead));
+        setHistory(data.filter((n) => n.isRead));
+      } catch (err) {
+        console.error("Error loading notifications:", err);
+      }
+    };
+
+    fetchAllNotifications();
+  }, [userId]);
+
+  const handleMarkRead = async (notiId) => {
+    const id = Number(notiId);
+
+    setNotifications((prev) => prev.filter((n) => n.id !== id));
+
+    try {
+      await axios.put(
+        `http://localhost:8082/PureFoods/api/notifications/${id}/read`
+      );
+
+      setHistory((prev) => {
+        const justRead = notifications.find((n) => n.id === id);
+        return justRead ? [...prev, { ...justRead, isRead: true }] : prev;
+      });
+    } catch (err) {
+      toast.error("Không thể đánh dấu đã đọc");
+      setNotifications((prev) => {
+        const justRead = history.find((h) => h.id === id);
+        return justRead ? [...prev, justRead] : prev;
+      });
+    }
+  };
+
+  const loadAllNotifications = async () => {
+    try {
+      const { data } = await axios.get(
+        `http://localhost:8082/PureFoods/api/notifications/read/${userId}`
+      );
+      setHistory(data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleMarkAllRead = async () => {
+    try {
+      const { data } = await axios.put(
+        `http://localhost:8082/PureFoods/api/notifications/mark-all-read/${userId}`
+      );
+
+      setHistory((h) => [
+        ...notifications.map((n) => ({ ...n, isRead: true })),
+        ...h,
+      ]);
+      setNotifications([]);
+    } catch (err) {
+      console.error("Lỗi mark‑all‑read:", err);
+      toast.error("Không thể cập nhật thông báo.");
+    }
+  };
   return (
     <header className="pb-md-4 pb-0">
       <div className="header-top">
@@ -258,18 +334,66 @@ export default function Header() {
                         </div>
                       </div>
                     </li>
-
+                    <li className="right-side">
+                      <li className="onhover-dropdown">
+                        <div className="notification-box" onClick={loadAllNotifications}>
+                          <i className="ri-notification-line fs-5"></i>
+                          {notifications.length > 0 &&
+                            <span className="badge rounded-pill badge-theme">{notifications.length}</span>
+                          }
+                        </div>
+                        <ul className="notification-dropdown onhover-show-div">
+                          <li>
+                            <i className="ri-notification-line"></i>
+                            <h6 className="f-18 mb-0" style={{ marginLeft: "5px" }}>Notitications</h6>
+                          </li>
+                          {notifications.map(n => (
+                            <li key={n.id} onClick={() => handleMarkRead(n.id)}>
+                              <p>
+                                <i className="fa fa-circle me-2 font-primary"></i>
+                                {n.title} – {n.content}
+                                <span className="pull-right">
+                                  {new Date(n.createdAt).toLocaleString()}
+                                </span>
+                              </p>
+                            </li>
+                          ))}
+                          {history.map(h => (
+                            <li key={h.id}>
+                              <p style={{ opacity: .6 }}>
+                                <i className="fa fa-circle me-2 font-secondary"></i>
+                                {h.title} – {h.content}
+                                <span className="pull-right">
+                                  {new Date(h.createdAt).toLocaleString()}
+                                </span>
+                              </p>
+                            </li>
+                          ))}
+                          {notifications.length === 0 && history.length === 0 && (
+                            <li><p>No notification.</p></li>
+                          )}
+                          <li>
+                            <a className="btn btn-primary" onClick={handleMarkAllRead}>
+                              Check all notification
+                            </a>
+                          </li>
+                        </ul>
+                      </li>
+                    </li>
                     <li className="right-side onhover-dropdown">
                       <div className="delivery-login-box">
-                        <div className="delivery-icon">
+                        <div className="delivery-icon d-flex" style={{ alignItems: "center" }}>
                           <i data-feather="user"></i>
+                          <div style={{ marginLeft: "3px" }}>
+                            <h6>Hello,</h6>
+                            <h5>{user?.fullName || "My Account"}</h5>
+                          </div>
                         </div>
                         <div className="delivery-detail">
-                          <h6>Hello,</h6>
-                          <h5>{user?.fullName || "My Account"}</h5>
+
                         </div>
                       </div>
-                      <div className="onhover-div onhover-div-login">
+                      <div className="onhover-div onhover-div-login" style={{ width: "130%" }}>
                         <ul className="user-box-name">
                           {user ? (
                             <>
