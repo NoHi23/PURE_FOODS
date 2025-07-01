@@ -16,6 +16,9 @@ import AddNewProduct from './component/Admin/AddNewProduct';
 import ResetPassword from './component/Login/ResetPassword';
 import VerifyOtp from './component/Login/VerifyOtp';
 import Category from './component/Admin/Category';
+import AddNewCategory from './component/Admin/AddNewCategory';
+import Supplier from './component/Admin/Supplier';
+import AddNewSupplier from './component/Admin/AddNewSupplier';
 import AllUser from './component/Admin/AllUser';
 import Footer from './layouts/Footer';
 import Header from './layouts/Header';
@@ -25,10 +28,10 @@ function AppContent() {
   const location = useLocation();
   // Danh sách các path KHÔNG muốn hiện header và footer
   const hideHeaderPaths = ['/login', '/signup', '/forgot', '/reset-password', '/verify-otp', '/admin-dashboard', '/admin-product', '/admin-add-new-product',
-    '/category', '/all-user'
+    '/admin-category', '/admin-add-new-category', '/admin-supplier', '/admin-add-new-supplier', '/all-user'
   ];
   const hideFooterPaths = ['/login', '/signup', '/forgot', '/reset-password', '/verify-otp', '/admin-dashboard', '/admin-product', '/admin-add-new-product',
-    '/category', '/all-user'
+    '/admin-category', '/admin-add-new-category', '/admin-supplier', '/admin-add-new-supplier', '/all-user'
   ];
   const backToTop = ['/login', '/signup', '/forgot', '/reset-password', '/verify-otp', '/'];
 
@@ -63,9 +66,24 @@ function AppContent() {
             <AddNewProduct />
           </PrivateRoute>
         } />
-        <Route path="/category" element={
+        <Route path="/admin-category" element={
           <PrivateRoute allowedRoles={1}>
             <Category />
+          </PrivateRoute>
+        } />
+        <Route path="/admin-add-new-category" element={
+         <PrivateRoute allowedRoles={1}>
+            <AddNewCategory />
+          </PrivateRoute>
+        } />
+        <Route path="/admin-supplier" element={
+          <PrivateRoute allowedRoles={1}>
+            <Supplier />
+          </PrivateRoute>
+        } />
+        <Route path="/admin-add-new-supplier" element={
+         <PrivateRoute allowedRoles={1}>
+            <AddNewSupplier />
           </PrivateRoute>
         } />
         <Route path="/all-user" element={

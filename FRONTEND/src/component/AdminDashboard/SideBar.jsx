@@ -50,7 +50,7 @@ const SideBar = () => {
                   </a>
                   <ul className="sidebar-submenu">
                     <li>
-                      <Link to={'/admin-product'}>Prodcts</Link>
+                      <Link to={'/admin-product'}>Products</Link>
                     </li>
 
                     <li>
@@ -66,11 +66,27 @@ const SideBar = () => {
                   </a>
                   <ul className="sidebar-submenu">
                     <li>
-                      <Link to={'/category'}>Category List</Link>
+                      <Link to={'/admin-category'}>Category List</Link>
                     </li>
 
                     <li>
-                      <a href="add-new-category.html">Add New Category</a>
+                      <a href='/admin-add-new-category'>Add New Category</a>
+                    </li>
+                  </ul>
+                </li>
+
+                <li className="sidebar-list">
+                  <a className="linear-icon-link sidebar-link sidebar-title" href="javascript:void(0)">
+                    <i className="ri-list-check-2"></i>
+                    <span>Supplier</span>
+                  </a>
+                  <ul className="sidebar-submenu">
+                    <li>
+                      <Link to={'/admin-supplier'}>Supplier List</Link>
+                    </li>
+
+                    <li>
+                      <a href='/admin-add-new-supplier'>Add New Supplier</a>
                     </li>
                   </ul>
                 </li>
