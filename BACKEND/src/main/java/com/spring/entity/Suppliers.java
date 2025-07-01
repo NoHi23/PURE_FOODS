@@ -3,15 +3,16 @@ package com.spring.entity;
 import com.google.api.client.util.DateTime;
 import jakarta.persistence.*;
 
-import java.util.Date;
+import java.time.LocalDate;
+
 
 @Entity
 @Table(name = "Suppliers")
 public class Suppliers {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "SupplierID")
-    private int supplierID;
+    @Column(name = "SupplierId")
+    private int supplierId;
 
     @Column(name = "SupplierName", nullable = false, length = 100)
     private String supplierName;
@@ -32,7 +33,7 @@ public class Suppliers {
     private String organicCertification;
 
     @Column(name = "CertificationExpiry")
-    private Date certificationExpiry;
+    private LocalDate certificationExpiry;
 
     @Column(name = "CreatedAt")
     private java.sql.Timestamp createdAt;
@@ -42,11 +43,11 @@ public class Suppliers {
 
     public Suppliers() {}
 
-    public int getSupplierID() {
-        return supplierID;
+    public int getSupplierId() {
+        return supplierId;
     }
-    public void setSupplierID(int supplierID) {
-        this.supplierID = supplierID;
+    public void setSupplierId(int supplierId) {
+        this.supplierId = supplierId;
     }
     public String getSupplierName() {
         return supplierName;
@@ -84,10 +85,10 @@ public class Suppliers {
     public void setOrganicCertification(String organicCertification) {
         this.organicCertification = organicCertification;
     }
-    public Date getCertificationExpiry() {
+    public LocalDate getCertificationExpiry() {
         return certificationExpiry;
     }
-    public void setCertificationExpiry(Date certificationExpiry) {
+    public void setCertificationExpiry(LocalDate certificationExpiry) {
         this.certificationExpiry = certificationExpiry;
     }
     public java.sql.Timestamp getCreatedAt() {
