@@ -263,13 +263,7 @@ export default function Header() {
                         </div>
                       </div>
                     </li>
-                    <li className="right-side">
-                      <div className="delivery-detail">
-                        <i className="fa fa-phone" style={{ marginRight: "10px" }}></i>
-                        <span style={{ fontSize: "15px" }}>24/7 Delivery:</span>
-                        <strong style={{ marginLeft: "5px" }}>1900 10113</strong>
-                      </div>
-                    </li>
+
                     <li className="right-side">
                       <div className="onhover-dropdown header-badge">
                         <button type="button" className="btn p-0 position-relative header-wishlist">
@@ -335,6 +329,76 @@ export default function Header() {
                       </div>
                     </li>
                     <li className="right-side">
+                      <div className="onhover-dropdown header-badge">
+
+                        <li data-bs-placement="top"
+                          title="Wishlist">
+                          <a href="wishlist.html" className="notifi-wishlist">
+                            <i data-feather="heart"></i>
+                            <span className="position-absolute top-0 start-100 translate-middle badge"> {cartCount ?? 0}
+                              <span className="visually-hidden">unread messages</span>
+                            </span>
+                          </a>
+
+                        </li>
+
+                        <div className="onhover-div">
+                          <ul className="cart-list">
+                            <li className="product-box-contain">
+                              <div className="drop-cart">
+                                <a href="product-left-thumbnail.html" className="drop-image">
+                                  <img src="../assets/images/vegetable/product/1.png"
+                                    className="blur-up lazyload" alt="" />
+                                </a>
+
+                                <div className="drop-contain">
+                                  <a href="product-left-thumbnail.html">
+                                    <h5>Fantasy Crunchy Choco Chip Cookies</h5>
+                                  </a>
+                                  <h6><span>1 x</span> $80.58</h6>
+                                  <button className="close-button close_button">
+                                    <i className="fa-solid fa-xmark"></i>
+                                  </button>
+                                </div>
+                              </div>
+                            </li>
+
+                            <li className="product-box-contain">
+                              <div className="drop-cart">
+                                <a href="product-left-thumbnail.html" className="drop-image">
+                                  <img src="../assets/images/vegetable/product/2.png"
+                                    className="blur-up lazyload" alt="" />
+                                </a>
+
+                                <div className="drop-contain">
+                                  <a href="product-left-thumbnail.html">
+                                    <h5>Peanut Butter Bite Premium Butter Cookies 600 g
+                                    </h5>
+                                  </a>
+                                  <h6><span>1 x</span> $25.68</h6>
+                                  <button className="close-button close_button">
+                                    <i className="fa-solid fa-xmark"></i>
+                                  </button>
+                                </div>
+                              </div>
+                            </li>
+                          </ul>
+
+                          <div className="price-box">
+                            <h5>Total :</h5>
+                            <h4 className="theme-color fw-bold">$106.58</h4>
+                          </div>
+
+                          <div className="button-group">
+                            <a href="cart.html" className="btn btn-sm cart-button">View Cart</a>
+                            <a href="checkout.html" className="btn btn-sm cart-button theme-bg-color
+                                                    text-white">Checkout</a>
+                          </div>
+                        </div>
+                      </div>
+                    </li>
+
+                    <li className="right-side">
                       <li className="onhover-dropdown">
                         <div className="notification-box" onClick={loadAllNotifications}>
                           <i className="ri-notification-line fs-5"></i>
@@ -380,6 +444,7 @@ export default function Header() {
                         </ul>
                       </li>
                     </li>
+
                     <li className="right-side onhover-dropdown">
                       <div className="delivery-login-box">
                         <div className="delivery-icon d-flex" style={{ alignItems: "center" }}>

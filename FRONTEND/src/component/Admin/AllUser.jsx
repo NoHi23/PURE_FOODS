@@ -177,6 +177,14 @@ const AllUser = () => {
       toast.error(errorMessage);
     }
   };
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentUser = users.slice(startIndex, endIndex);
+  const totalPages = Math.ceil(users.length / itemsPerPage);
+
   return (
     <div>
       <div className="tap-top">
@@ -218,7 +226,7 @@ const AllUser = () => {
                           </thead>
 
                           <tbody>
-                            {users?.map((u, i) => (
+                            {currentUser?.map((u, i) => (
                               <tr key={i}>
                                 <td>
                                   <div className="table-image">
@@ -244,10 +252,10 @@ const AllUser = () => {
                                 <td>
                                   <ul>
                                     <li>
-                                      <a href="#" onClick={(e) =>{
-                                          e.preventDefault();
-                                          handleViewUser(u)
-                                      } }>
+                                      <a href="#" onClick={(e) => {
+                                        e.preventDefault();
+                                        handleViewUser(u)
+                                      }}>
                                         <i className="ri-eye-line"></i>
                                       </a>
                                     </li>
@@ -268,7 +276,29 @@ const AllUser = () => {
                               </tr>
                             ))}
                           </tbody>
+
                         </table>
+                        <div className="pagination-container d-flex justify-content-center mt-3">
+                          <nav>
+                            <ul className="pagination">
+                              <li className={`page-item ${currentPage === 1 && "disabled"}`}>
+                                <button className="page-link" onClick={() => setCurrentPage(currentPage - 1)}>Previous</button>
+                              </li>
+
+                              {[...Array(totalPages)].map((_, index) => (
+                                <li key={index} className={`page-item ${currentPage === index + 1 && "active"}`}>
+                                  <button className="page-link" onClick={() => setCurrentPage(index + 1)}>
+                                    {index + 1}
+                                  </button>
+                                </li>
+                              ))}
+
+                              <li className={`page-item ${currentPage === totalPages && "disabled"}`}>
+                                <button className="page-link" onClick={() => setCurrentPage(currentPage + 1)}>Next</button>
+                              </li>
+                            </ul>
+                          </nav>
+                        </div>
                       </div>
                     </div>
                   </div>

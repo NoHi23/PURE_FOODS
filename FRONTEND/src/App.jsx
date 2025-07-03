@@ -27,6 +27,7 @@ import AllRole from './component/Admin/AllRole';
 import AddNewUser from './component/Admin/AddNewUser';
 import AddNewRole from './component/Admin/AddNewRole';
 import Order from './component/Admin/Order';
+import Wishlist from './component/Wishlist/Wishlist';
 
 function AppContent() {
   const location = useLocation();
@@ -37,7 +38,7 @@ function AppContent() {
   const hideFooterPaths = ['/login', '/signup', '/forgot', '/reset-password', '/verify-otp', '/admin-dashboard', '/admin-product', '/admin-add-new-product',
     '/admin-category', '/admin-add-new-category', '/admin-supplier', '/admin-add-new-supplier', '/all-user'
   ];
-  const backToTop = ['/login', '/signup', '/forgot', '/reset-password', '/verify-otp', '/'];
+  const backToTop = ['/login', '/signup', '/forgot', '/reset-password', '/verify-otp', '/',"/wishlist"];
 
   const shouldHideHeader = hideHeaderPaths.includes(location.pathname);
   const shouldHideFooter = hideFooterPaths.includes(location.pathname);
@@ -113,6 +114,12 @@ function AppContent() {
         <Route path="/admin-order" element={
           <PrivateRoute allowedRoles={1}>
             <Order />
+          </PrivateRoute>
+        } />
+
+        <Route path="/wishlist" element={
+          <PrivateRoute allowedRoles={2}>
+            <Wishlist />
           </PrivateRoute>
         } />
 
