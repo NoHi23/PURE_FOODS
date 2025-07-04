@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import HomepageLayout from "../../layouts/HomepageLayout";
 import axios from "axios";
 import * as bootstrap from 'bootstrap';
+import feather from "feather-icons";
 
 const getOrUpdateExpiryTime = () => {
   let expiry = localStorage.getItem('countdownExpiry');
@@ -22,7 +23,8 @@ const HomePage = () => {
 
   const [timeLeft, setTimeLeft] = useState(getOrUpdateExpiryTime());
   const [timeObj, setTimeObj] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-
+  const user = JSON.parse(localStorage.getItem("user"));
+  const userId = user?.userId;
   useEffect(() => {
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
@@ -57,10 +59,52 @@ const HomePage = () => {
     const modal = new bootstrap.Modal(document.getElementById('view'));
     modal.show();
     console.log("hi: " + product);
-
-
   };
 
+
+  const [wishlistMap, setWishlistMap] = useState({});
+  useEffect(() => {
+    axios
+      .get(`http://localhost:8082/PureFoods/api/wishlist/${userId}`)
+      .then((res) => {
+        const map = {};
+        res.data.forEach((wl) => (map[wl.product.productId] = wl.wishlistId));
+        setWishlistMap(map);
+      })
+      .catch(console.error);
+  }, [userId]);
+
+  /* ---- Vẽ lại feather icon sau mỗi lần render ---- */
+  useEffect(() => feather.replace(), [wishlistMap]);
+
+  /* ---- Add / Delete ---- */
+  const toggleWishlist = async (p) => {
+    const hasWish = Boolean(wishlistMap[p.productId]);
+    try {
+      if (hasWish) {
+        // xoá
+        await axios.put("http://localhost:8082/PureFoods/api/wishlist/delete", {
+          wishlistId: wishlistMap[p.productId],
+        });
+        setWishlistMap((prev) => {
+          const { [p.productId]: _remove, ...rest } = prev;
+          return rest;
+        });
+      } else {
+        // thêm
+        const res = await axios.post("http://localhost:8082/PureFoods/api/wishlist/add", {
+          userId,
+          productId: p.productId,
+        });
+        const wlId = res.data.wishlist.wishlistId;
+        setWishlistMap((prev) => ({ ...prev, [p.productId]: wlId }));
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const wished = Boolean(wishlistMap[saveProduct?.productId]);
 
   return (
     <HomepageLayout>
@@ -1106,7 +1150,7 @@ const HomePage = () => {
                 <div className="col-xl-8 ratio_65">
                   <div className="home-contain h-100">
                     <div className="h-100">
-                      <img src="../assets/images/vegetable/banner/1.jpg" className="bg-img blur-up lazyload" alt="" />
+                      <img src="1.jpg" className="bg-img blur-up lazyload" alt="" />
                     </div>
                     <div className="home-detail p-center-left w-75">
                       <div>
@@ -1136,7 +1180,7 @@ const HomePage = () => {
                   <div className="row g-4">
                     <div className="col-xl-12 col-md-6">
                       <div className="home-contain">
-                        <img src="../assets/images/vegetable/banner/2.jpg" className="bg-img blur-up lazyload" alt="" />
+                        <img src="2.jpg" className="bg-img blur-up lazyload" alt="" />
                         <div className="home-detail p-center-left home-p-sm w-75">
                           <div>
                             <h2 className="mt-0 text-danger">
@@ -1154,7 +1198,7 @@ const HomePage = () => {
 
                     <div className="col-xl-12 col-md-6">
                       <div className="home-contain">
-                        <img src="../assets/images/vegetable/banner/3.jpg" className="bg-img blur-up lazyload" alt="" />
+                        <img src="3.jpg" className="bg-img blur-up lazyload" alt="" />
                         <div className="home-detail p-center-left home-p-sm w-75">
                           <div>
                             <h3 className="mt-0 theme-color fw-bold">Healthy Food</h3>
@@ -1177,7 +1221,7 @@ const HomePage = () => {
               <div className="banner-slider">
                 <div>
                   <div className="banner-contain hover-effect">
-                    <img src="../assets/images/vegetable/banner/4.jpg" className="bg-img blur-up lazyload" alt="" />
+                    <img src="4.jpg" className="bg-img blur-up lazyload" alt="" />
                     <div className="banner-details">
                       <div className="banner-box">
                         <h6 className="text-danger">5% OFF</h6>
@@ -1193,7 +1237,7 @@ const HomePage = () => {
 
                 <div>
                   <div className="banner-contain hover-effect">
-                    <img src="../assets/images/vegetable/banner/5.jpg" className="bg-img blur-up lazyload" alt="" />
+                    <img src="5.jpg" className="bg-img blur-up lazyload" alt="" />
                     <div className="banner-details">
                       <div className="banner-box">
                         <h6 className="text-danger">5% OFF</h6>
@@ -1209,7 +1253,7 @@ const HomePage = () => {
 
                 <div>
                   <div className="banner-contain hover-effect">
-                    <img src="../assets/images/vegetable/banner/6.jpg" className="bg-img blur-up lazyload" alt="" />
+                    <img src="6.jpg" className="bg-img blur-up lazyload" alt="" />
                     <div className="banner-details">
                       <div className="banner-box">
                         <h6 className="text-danger">5% OFF</h6>
@@ -1225,7 +1269,7 @@ const HomePage = () => {
 
                 <div>
                   <div className="banner-contain hover-effect">
-                    <img src="../assets/images/vegetable/banner/7.jpg" className="bg-img blur-up lazyload" alt="" />
+                    <img src="7.jpg" className="bg-img blur-up lazyload" alt="" />
                     <div className="banner-details">
                       <div className="banner-box">
                         <h6 className="text-danger">5% OFF</h6>
@@ -1358,7 +1402,7 @@ const HomePage = () => {
 
                     <div className="ratio_156 section-t-space">
                       <div className="home-contain hover-effect">
-                        <img src="../assets/images/vegetable/banner/8.jpg" className="bg-img blur-up lazyload" alt="" />
+                        <img src="8.jpg" className="bg-img blur-up lazyload" alt="" />
                         <div className="home-detail p-top-left home-p-medium">
                           <div>
                             <h6 className="text-yellow home-banner">Seafood</h6>
@@ -1382,7 +1426,7 @@ const HomePage = () => {
                     <div className="ratio_medium section-t-space">
                       <div className="home-contain hover-effect">
                         <img
-                          src="../assets/images/vegetable/banner/11.jpg"
+                          src="11.jpg"
                           className="img-fluid blur-up lazyload"
                           alt=""
                         />
@@ -1706,10 +1750,18 @@ const HomePage = () => {
                                       </a>
                                     </li>
 
-                                    <li data-bs-toggle="tooltip" data-bs-placement="top"
-                                      title="Wishlist">
-                                      <a href="wishlist.html" className="notifi-wishlist">
-                                        <i data-feather="heart"></i>
+                                    <li title="Wishlist">
+                                      <a
+                                        href="#"
+                                        onClick={(e) => {
+                                          e.preventDefault();
+                                          toggleWishlist(saveProduct?.[1]?.productId);
+                                        }}
+                                      >
+                                        <i
+                                          data-feather="heart"
+                                          className={wished ? "fill wishlist-active" : ""}
+                                        ></i>
                                       </a>
                                     </li>
                                   </ul>
@@ -1785,7 +1837,7 @@ const HomePage = () => {
                                   <ul className="product-option">
                                     <li data-bs-toggle="tooltip" data-bs-placement="top"
                                       title="View">
-                                       <a href="#" onClick={(e) => {
+                                      <a href="#" onClick={(e) => {
                                         e.preventDefault();
                                         handleViewProduct(saveProduct?.[2]);
                                       }}>
@@ -1973,7 +2025,7 @@ const HomePage = () => {
                                   <ul className="product-option">
                                     <li data-bs-toggle="tooltip" data-bs-placement="top"
                                       title="View">
-                                     <a href="#" onClick={(e) => {
+                                      <a href="#" onClick={(e) => {
                                         e.preventDefault();
                                         handleViewProduct(saveProduct?.[4]);
                                       }}>
@@ -2251,7 +2303,7 @@ const HomePage = () => {
                                   <ul className="product-option">
                                     <li data-bs-toggle="tooltip" data-bs-placement="top"
                                       title="View">
-                                     <a href="#" onClick={(e) => {
+                                      <a href="#" onClick={(e) => {
                                         e.preventDefault();
                                         handleViewProduct(saveProduct?.[7]);
                                       }}>
@@ -2788,7 +2840,7 @@ const HomePage = () => {
                       <div className="col-md-6">
                         <div className="banner-contain hover-effect">
                           <img
-                            src="../assets/images/vegetable/banner/9.jpg"
+                            src="9.jpg"
                             className="bg-img blur-up lazyload"
                             alt=""
                           />
@@ -2811,7 +2863,7 @@ const HomePage = () => {
                       <div className="col-md-6">
                         <div className="banner-contain hover-effect">
                           <img
-                            src="../assets/images/vegetable/banner/10.jpg"
+                            src="10.jpg"
                             className="bg-img blur-up lazyload"
                             alt=""
                           />
@@ -2861,11 +2913,11 @@ const HomePage = () => {
                                 <ul className="product-option">
                                   <li data-bs-toggle="tooltip" data-bs-placement="top" title="View">
                                     <a href="#" onClick={(e) => {
-                                        e.preventDefault();
-                                        handleViewProduct(saveProduct?.[12]);
-                                      }}>
-                                        <i data-feather="eye"></i>
-                                      </a>
+                                      e.preventDefault();
+                                      handleViewProduct(saveProduct?.[12]);
+                                    }}>
+                                      <i data-feather="eye"></i>
+                                    </a>
                                   </li>
 
                                   <li data-bs-toggle="tooltip" data-bs-placement="top" title="Compare">
@@ -3417,7 +3469,7 @@ const HomePage = () => {
 
                   <div className="section-t-space">
                     <div className="banner-contain">
-                      <img src="../assets/images/vegetable/banner/15.jpg" className="bg-img blur-up lazyload" alt="" />
+                      <img src="15.jpg" className="bg-img blur-up lazyload" alt="" />
                       <div className="banner-details p-center p-4 text-white text-center">
                         <div>
                           <h3 className="lh-base fw-bold offer-text">Get $3 Cashback! Min Order of $30</h3>
@@ -3432,7 +3484,7 @@ const HomePage = () => {
                       <div className="col-xxl-8 col-xl-12 col-md-7">
                         <div className="banner-contain hover-effect">
                           <img
-                            src="../assets/images/vegetable/banner/12.jpg"
+                            src="12.jpg"
                             className="bg-img blur-up lazyload"
                             alt=""
                           />
@@ -3460,7 +3512,7 @@ const HomePage = () => {
                       <div className="col-xxl-4 col-xl-12 col-md-5">
                         <a href="shop-left-sidebar.html" className="banner-contain hover-effect h-100">
                           <img
-                            src="../assets/images/vegetable/banner/13.jpg"
+                            src="13.jpg"
                             className="bg-img blur-up lazyload"
                             alt=""
                           />
@@ -3768,7 +3820,7 @@ const HomePage = () => {
 
                   <div className="section-t-space">
                     <div className="banner-contain hover-effect">
-                      <img src="../assets/images/vegetable/banner/14.jpg" className="bg-img blur-up lazyload" alt="" />
+                      <img src="14.jpg" className="bg-img blur-up lazyload" alt="" />
                       <div className="banner-details p-center banner-b-space w-100 text-center">
                         <div>
                           <h6 className="ls-expanded theme-color mb-sm-3 mb-1">SUMMER</h6>

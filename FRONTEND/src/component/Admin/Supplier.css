@@ -1,0 +1,44 @@
+/* Supplier Table Style */
+.card-table {
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.title-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.theme-table th,
+.theme-table td {
+  text-align: left;
+  vertical-align: middle;
+}
+
+.theme-table th {
+  background-color: #f8f9fa;
+  color: #333;
+}
+
+.status-success {
+  color: green;
+  font-weight: bold;
+}
+
+.status-danger {
+  color: red;
+  font-weight: bold;
+}
+
+.btn-solid {
+  background-color: #009688;
+  color: white;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+.btn-solid:hover {
+  background-color: #00796b;
+}

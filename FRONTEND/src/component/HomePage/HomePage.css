@@ -1,0 +1,5 @@
+.wishlist-active {
+  stroke: #ff5252 !important; 
+  fill: #ff5252 !important;   
+  transition: all 0.2s;
+}
