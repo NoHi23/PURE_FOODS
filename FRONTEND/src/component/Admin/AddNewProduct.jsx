@@ -176,7 +176,7 @@ const AddNewProduct = () => {
                                   onChange={handleChange}>
                                   <option value="">-- Chọn nhà cung cấp --</option>
                                   {suppliers.map(s => (
-                                    <option key={s.supplierID} value={s.supplierID}>{s.supplierName}</option>
+                                    <option key={s.supplierId} value={s.supplierId}>{s.supplierName}</option>
                                   ))}
                                 </select>
                               </div>
