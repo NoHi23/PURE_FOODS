@@ -1,0 +1,54 @@
+package com.spring.dao.Impl;
+
+import com.spring.dao.CartItemDAO;
+import com.spring.entity.CartItem;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.query.Query;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+import java.util.List;
+
+@Repository
+public class CartItemDAOImpl implements CartItemDAO {
+
+    @Autowired
+    private SessionFactory sessionFactory;
+
+    @Override
+    public CartItem getCartItemById(Long id) {
+        Session session = sessionFactory.getCurrentSession();
+        return session.get(CartItem.class, id);
+    }
+
+    @Override
+    public List<CartItem> getCartItemsByUserId(Long userId) {
+        Session session = sessionFactory.getCurrentSession();
+        Query<CartItem> query = session.createQuery("FROM CartItem WHERE userID = :userId", CartItem.class);
+        query.setParameter("userId", userId);
+        return query.getResultList();
+    }
+
+    @Override
+    public CartItem createCartItem(CartItem cartItem) {
+        Session session = sessionFactory.getCurrentSession();
+        session.save(cartItem);
+        return cartItem;
+    }
+
+    @Override
+    public CartItem updateCartItem(CartItem cartItem) {
+        Session session = sessionFactory.getCurrentSession();
+        session.update(cartItem);
+        return cartItem;
+    }
+
+    @Override
+    public void deleteCartItem(Long id) {
+        Session session = sessionFactory.getCurrentSession();
+        CartItem item = session.get(CartItem.class, id);
+        if (item != null) {
+            session.delete(item);
+        }
+    }
+}
