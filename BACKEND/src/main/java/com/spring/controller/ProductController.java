@@ -4,6 +4,8 @@ package com.spring.controller;
 import com.spring.dto.ProductDTO;
 import com.spring.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.*;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -168,6 +170,33 @@ public class ProductController {
     @GetMapping("/top-save")
     public ResponseEntity<List<ProductDTO>> getTopSaveProducts() {
         return ResponseEntity.ok(productService.getTopDiscountProducts(12));
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<?> searchProducts(
+            @RequestParam(name = "q", defaultValue = "") String q,
+            @RequestParam(name = "categoryId", required = false) Integer categoryId,
+            @RequestParam(name = "supplierId", required = false) Integer supplierId,
+            @RequestParam(name = "minDiscount", defaultValue = "0") Integer minDiscount,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "12") int size
+    ) {
+        Pageable pageable = PageRequest.of(page, size);
+
+        // Tìm kiếm sản phẩm
+        Page<ProductDTO> result = productService.searchProducts(
+                q == null ? "" : q.trim(), categoryId, supplierId, minDiscount, pageable);
+
+        // Tạo body phản hồi
+        Map<String, Object> body = new HashMap<>();
+        body.put("status", 200);
+        body.put("message", "Tìm sản phẩm thành công");
+        body.put("totalElements", result.getTotalElements());
+        body.put("totalPages", result.getTotalPages());
+        body.put("currentPage", result.getNumber());
+        body.put("products", result.getContent());
+
+        return ResponseEntity.ok(body);
     }
 
 }

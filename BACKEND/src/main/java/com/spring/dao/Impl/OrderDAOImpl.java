@@ -2,6 +2,7 @@ package com.spring.dao.Impl;
 
 import com.spring.dao.OrderDAO;
 import com.spring.entity.Order;
+import jakarta.persistence.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,5 +71,12 @@ public class OrderDAOImpl implements OrderDAO {
         return session.createQuery("FROM Order WHERE driverID = :driverId", Order.class)
                 .setParameter("driverId", driverId)
                 .list();
+    }
+
+    @Override
+    public int countOrder() {
+        Session session = sessionFactory.getCurrentSession();
+        Query query = session.createQuery("select count(*) from Order");
+        return ((Long) ((org.hibernate.query.Query<?>) query).uniqueResult()).intValue();
     }
 }

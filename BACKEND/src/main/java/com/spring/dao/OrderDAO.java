@@ -13,4 +13,6 @@ public interface OrderDAO {
     List<Order> getOrdersByCustomerId(int customerId);
     List<Order> getOrdersByStatus(String status);
     List<Order> getOrdersByDriverId(int driverId);
+    int countOrder();
+
 }
