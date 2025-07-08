@@ -116,4 +116,23 @@ public class OrderController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
     }
+
+    @GetMapping("/count")
+    public ResponseEntity<?> countOrders() {
+        try {
+            int count = orderService.countOrder();
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "get number of Order successfully!");
+            response.put("status", 200);
+            response.put("countOrder", count);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("message", e.getMessage());
+            errorResponse.put("status", 400);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        }
+    }
+
+
 }

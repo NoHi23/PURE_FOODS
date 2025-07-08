@@ -219,6 +219,14 @@ const Product = () => {
     }
   };
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentProducts = products.slice(startIndex, endIndex);
+  const totalPages = Math.ceil(products.length / itemsPerPage);
+
+
   return (
     <div>
       <div className="tap-top">
@@ -269,7 +277,7 @@ const Product = () => {
                               </tr>
                             </thead>
                             <tbody>
-                              {products?.map((p, i) => (
+                              {currentProducts?.map((p, i) => (
                                 <tr key={i}>
                                   <td>
                                     <div className="table-image">
@@ -303,7 +311,7 @@ const Product = () => {
                                       </li>
 
                                       <li>
-                                        <a href="#" onClick={() => handleEditClick(p)}>
+                                        <a href="#" onClick={(e) => { e.preventDefault();handleEditClick(p)}}>
                                           <i className="ri-pencil-line"></i>
                                         </a>
                                       </li>
@@ -311,7 +319,7 @@ const Product = () => {
                                       <li>
                                         <a href="javascript:void(0)" data-bs-toggle="modal"
                                           data-bs-target="#exampleModalToggle">
-                                          <a href="#" data-bs-toggle="modal" data-bs-target="#exampleModalToggle" onClick={() => setProductToDelete(p)}>
+                                          <a href="#" data-bs-toggle="modal" data-bs-target="#exampleModalToggle" onClick={(e) => {e.preventDefault();setProductToDelete(p)}}>
                                             <i className="ri-delete-bin-line"></i>
                                           </a>
                                         </a>
@@ -322,6 +330,27 @@ const Product = () => {
                               ))}
                             </tbody>
                           </table>
+                          <div className="pagination-container d-flex justify-content-center mt-3">
+                            <nav>
+                              <ul className="pagination">
+                                <li className={`page-item ${currentPage === 1 && "disabled"}`}>
+                                  <button className="page-link" onClick={() => setCurrentPage(currentPage - 1)}>Previous</button>
+                                </li>
+
+                                {[...Array(totalPages)].map((_, index) => (
+                                  <li key={index} className={`page-item ${currentPage === index + 1 && "active"}`}>
+                                    <button className="page-link" onClick={() => setCurrentPage(index + 1)}>
+                                      {index + 1}
+                                    </button>
+                                  </li>
+                                ))}
+
+                                <li className={`page-item ${currentPage === totalPages && "disabled"}`}>
+                                  <button className="page-link" onClick={() => setCurrentPage(currentPage + 1)}>Next</button>
+                                </li>
+                              </ul>
+                            </nav>
+                          </div>
                         </div>
                       </div>
                     </div>

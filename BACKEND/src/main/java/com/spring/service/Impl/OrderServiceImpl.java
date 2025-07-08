@@ -110,4 +110,10 @@ public class OrderServiceImpl implements OrderService {
         dto.setReturnReason(order.getReturnReason());
         return dto;
     }
+
+    @Override
+    public int countOrder() {
+        return orderDAO.countOrder();
+    }
+
 }

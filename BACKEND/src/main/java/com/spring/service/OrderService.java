@@ -10,4 +10,6 @@ public interface OrderService {
     OrderDTO getOrderById(int orderId);
     List<OrderDTO> getOrdersByCustomerId(int customerId);
     List<OrderDTO> getAllOrders();
+    int countOrder();
+
 }
