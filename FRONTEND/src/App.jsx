@@ -28,6 +28,7 @@ import AddNewUser from './component/Admin/AddNewUser';
 import AddNewRole from './component/Admin/AddNewRole';
 import Order from './component/Admin/Order';
 import Wishlist from './component/Wishlist/Wishlist';
+import AIChatWidget from './component/GeminiAISetup/AIChatWidget';
 
 function AppContent() {
   const location = useLocation();
@@ -38,11 +39,15 @@ function AppContent() {
   const hideFooterPaths = ['/login', '/signup', '/forgot', '/reset-password', '/verify-otp', '/admin-dashboard', '/admin-product', '/admin-add-new-product',
     '/admin-category', '/admin-add-new-category', '/admin-supplier', '/admin-add-new-supplier', '/all-user'
   ];
-  const backToTop = ['/login', '/signup', '/forgot', '/reset-password', '/verify-otp', '/',"/wishlist"];
+  const backToTop = ['/login', '/signup', '/forgot', '/reset-password', '/verify-otp', '/', "/wishlist"];
 
   const shouldHideHeader = hideHeaderPaths.includes(location.pathname);
   const shouldHideFooter = hideFooterPaths.includes(location.pathname);
   const shouldHideBackToTop = backToTop.includes(location.pathname);
+
+  const showAIChatPaths = ['/', '/wishlist'];
+  const shouldShowAIChat = showAIChatPaths.includes(location.pathname);
+
 
   return (
     <>
@@ -77,7 +82,7 @@ function AppContent() {
           </PrivateRoute>
         } />
         <Route path="/admin-add-new-category" element={
-         <PrivateRoute allowedRoles={1}>
+          <PrivateRoute allowedRoles={1}>
             <AddNewCategory />
           </PrivateRoute>
         } />
@@ -87,7 +92,7 @@ function AppContent() {
           </PrivateRoute>
         } />
         <Route path="/admin-add-new-supplier" element={
-         <PrivateRoute allowedRoles={1}>
+          <PrivateRoute allowedRoles={1}>
             <AddNewSupplier />
           </PrivateRoute>
         } />
@@ -140,6 +145,7 @@ function AppContent() {
       {/* Chỉ hiện Footer nếu không nằm trong blacklist và user tồn tại*/}
       {!shouldHideFooter && <Footer />}
       {!shouldHideBackToTop && <BackToTopButton />}
+      {shouldShowAIChat && <AIChatWidget />}
     </>
   );
 }
