@@ -321,7 +321,7 @@ export default function Header() {
                           </div>
 
                           <div className="button-group">
-                            <a href="cart.html" className="btn btn-sm cart-button">View Cart</a>
+                            <a href="/cart-detail" className="btn btn-sm cart-button">View Cart</a>
                             <a href="checkout.html" className="btn btn-sm cart-button theme-bg-color
                                                     text-white">Checkout</a>
                           </div>
@@ -390,7 +390,7 @@ export default function Header() {
                           </div>
 
                           <div className="button-group">
-                            <a href="cart.html" className="btn btn-sm cart-button">View Cart</a>
+                            <a href="/cart-detail" className="btn btn-sm cart-button">View Cart</a>
                             <a href="checkout.html" className="btn btn-sm cart-button theme-bg-color
                                                     text-white">Checkout</a>
                           </div>
@@ -462,6 +462,10 @@ export default function Header() {
                         <ul className="user-box-name">
                           {user ? (
                             <>
+                              <li className="product-box-contain">
+                                <a href="/customer-profile-update">Profile Setting</a>
+                              </li>
+
                               <li className="product-box-contain">
                                 <a href="#" onClick={handleLogout}>
                                   Logout
