@@ -109,6 +109,11 @@
       <artifactId>mail</artifactId>
       <version>1.4.7</version>
     </dependency>
+    <dependency>
+      <groupId>org.modelmapper</groupId>
+      <artifactId>modelmapper</artifactId>
+      <version>3.2.0</version>
+    </dependency>
 
 
 
@@ -131,6 +136,7 @@
           <target>15</target>
         </configuration>
       </plugin>
+
     </plugins>
   </build>
 

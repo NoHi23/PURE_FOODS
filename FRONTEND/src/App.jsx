@@ -94,7 +94,7 @@ function AppContent() {
           </PrivateRoute>
         } />
         <Route path="/admin-add-new-category" element={
-         <PrivateRoute allowedRoles={1}>
+          <PrivateRoute allowedRoles={1}>
             <AddNewCategory />
           </PrivateRoute>
         } />
@@ -104,7 +104,7 @@ function AppContent() {
           </PrivateRoute>
         } />
         <Route path="/admin-add-new-supplier" element={
-         <PrivateRoute allowedRoles={1}>
+          <PrivateRoute allowedRoles={1}>
             <AddNewSupplier />
           </PrivateRoute>
         } />
@@ -159,6 +159,7 @@ function AppContent() {
       {/* Chỉ hiện Footer nếu không nằm trong blacklist và user tồn tại*/}
       {!shouldHideFooter && <Footer />}
       {!shouldHideBackToTop && <BackToTopButton />}
+      {shouldShowAIChat && <AIChatWidget />}
     </>
   );
 }

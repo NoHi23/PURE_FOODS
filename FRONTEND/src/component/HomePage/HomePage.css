@@ -3,3 +3,43 @@
   fill: #ff5252 !important;   
   transition: all 0.2s;
 }
+
+
+/* Ví dụ: */
+a, .theme-color {
+  color: var(--theme-color, #0da487); 
+}
+button.theme-bg-color {
+  background-color: var(--theme-color, #0da487);
+}
+
+
+body.dark {
+  background-color: #222;
+  color: #eee;
+}
+
+body.dark .product-box {
+  background-color: #333;
+  border-color: #444;
+}
+
+
+.setting-box .theme-setting-2 {
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(20px);
+  transition: all 0.3s ease;
+}
+
+.setting-box.active .theme-setting-2 {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.btn-2.outline {
+  background-color: var(--theme-color, #0da487);
+  color: white;
+  border-color: var(--theme-color, #0da487);
+}

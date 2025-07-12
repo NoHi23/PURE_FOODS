@@ -4,6 +4,7 @@ import axios from "axios";
 import * as bootstrap from 'bootstrap';
 import feather from "feather-icons";
 import ProductSlider from "./ProductSlider";
+import CookieConsent from "./CookieConsent";
 
 const getOrUpdateExpiryTime = () => {
   let expiry = localStorage.getItem('countdownExpiry');
@@ -77,7 +78,7 @@ const HomePage = () => {
 
   useEffect(() => feather.replace(), [wishlistMap]);
 
-  
+
 
   const [category, setCategory] = useState(null)
   useEffect(() => {
@@ -1641,8 +1642,7 @@ const HomePage = () => {
                     <ProductSlider
                       products={saveProduct}
                       handleViewProduct={handleViewProduct}
-                      toggleWishlist={toggleWishlist}
-                      wishlistMap={wishlistMap}
+                     userId={userId}
                     />
                   </div>
 
@@ -3048,23 +3048,7 @@ const HomePage = () => {
               </div>
             </div>
           </div>
-          <div className="cookie-bar-box">
-            <div className="cookie-box">
-              <div className="cookie-image">
-                <img src="../assets/images/cookie-bar.png" className="blur-up lazyload" alt="" />
-                <h2>Cookies!</h2>
-              </div>
-
-              <div className="cookie-contain">
-                <h5 className="text-content">We use cookies to make your experience better</h5>
-              </div>
-            </div>
-
-            <div className="button-group">
-              <button className="btn privacy-button">Privacy Policy</button>
-              <button className="btn ok-button">OK</button>
-            </div>
-          </div>
+          <CookieConsent />
           <div className="modal fade theme-modal deal-modal" id="deal-box" tabIndex="-1">
             <div className="modal-dialog modal-dialog-centered modal-fullscreen-sm-down">
               <div className="modal-content">
@@ -3109,61 +3093,7 @@ const HomePage = () => {
             </div>
           </div>
           <div className="theme-option">
-            <div className="setting-box">
-              <button className="btn setting-button">
-                <i className="fa-solid fa-gear"></i>
-              </button>
-
-              <div className="theme-setting-2">
-                <div className="theme-box">
-                  <ul>
-                    <li>
-                      <div className="setting-name">
-                        <h4>Color</h4>
-                      </div>
-                      <div className="theme-setting-button color-picker">
-                        <form className="form-control">
-                          <label htmlFor="colorPick" className="form-label mb-0">
-                            Theme Color
-                          </label>
-                          <input
-                            type="color"
-                            className="form-control form-control-color"
-                            id="colorPick"
-                            defaultValue="#0da487"
-                            title="Choose your color"
-                          />
-                        </form>
-                      </div>
-                    </li>
-
-                    <li>
-                      <div className="setting-name">
-                        <h4>Dark</h4>
-                      </div>
-                      <div className="theme-setting-button">
-                        <button className="btn btn-2 outline" id="darkButton">
-                          Dark
-                        </button>
-                        <button className="btn btn-2 unline" id="lightButton">
-                          Light
-                        </button>
-                      </div>
-                    </li>
-
-                    <li>
-                      <div className="setting-name">
-                        <h4>RTL</h4>
-                      </div>
-                      <div className="theme-setting-button rtl">
-                        <button className="btn btn-2 rtl-unline">LTR</button>
-                        <button className="btn btn-2 rtl-outline">RTL</button>
-                      </div>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
+            {/* <SettingsBox /> */}
 
             <div className="back-to-top">
               <a id="back-to-top" href="#">
