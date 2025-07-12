@@ -4,8 +4,6 @@ import axios from "axios";
 import * as bootstrap from 'bootstrap';
 import feather from "feather-icons";
 import ProductSlider from "./ProductSlider";
-import CookieConsent from "./CookieConsent";
-import SettingsBox from "./SettingsBox";
 
 const getOrUpdateExpiryTime = () => {
   let expiry = localStorage.getItem('countdownExpiry');
@@ -1641,9 +1639,10 @@ const HomePage = () => {
 
                   <div className="section-b-space">
                     <ProductSlider
-                      userId={userId}
                       products={saveProduct}
                       handleViewProduct={handleViewProduct}
+                      toggleWishlist={toggleWishlist}
+                      wishlistMap={wishlistMap}
                     />
                   </div>
 
