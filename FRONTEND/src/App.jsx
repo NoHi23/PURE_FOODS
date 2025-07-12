@@ -28,21 +28,35 @@ import AddNewUser from './component/Admin/AddNewUser';
 import AddNewRole from './component/Admin/AddNewRole';
 import Order from './component/Admin/Order';
 import Wishlist from './component/Wishlist/Wishlist';
+import AIChatWidget from './component/GeminiAISetup/AIChatWidget';
+import { WishlistProvider } from './layouts/WishlistContext';
+import ProductDetail from './component/ProductDetail/ProductDetail';
 
 function AppContent() {
   const location = useLocation();
-  // Danh sách các path KHÔNG muốn hiện header và footer
-  const hideHeaderPaths = ['/login', '/signup', '/forgot', '/reset-password', '/verify-otp', '/admin-dashboard', '/admin-product', '/admin-add-new-product',
-    '/admin-category', '/admin-add-new-category', '/admin-supplier', '/admin-add-new-supplier', '/all-user'
+  const isProductDetail = location.pathname.startsWith('/product/');
+
+  const hideHeaderPaths = [
+    '/login', '/signup', '/forgot', '/reset-password', '/verify-otp',
+    '/admin-dashboard', '/admin-product', '/admin-add-new-product',
+    '/admin-category', '/admin-add-new-category', '/admin-supplier',
+    '/admin-add-new-supplier', '/all-user'
   ];
-  const hideFooterPaths = ['/login', '/signup', '/forgot', '/reset-password', '/verify-otp', '/admin-dashboard', '/admin-product', '/admin-add-new-product',
-    '/admin-category', '/admin-add-new-category', '/admin-supplier', '/admin-add-new-supplier', '/all-user'
+
+  const hideFooterPaths = [...hideHeaderPaths];
+
+  const backToTopPaths = [
+    '/login', '/signup', '/forgot', '/reset-password', '/verify-otp',
+    '/', '/wishlist'
   ];
-  const backToTop = ['/login', '/signup', '/forgot', '/reset-password', '/verify-otp', '/',"/wishlist"];
+
+  const aiChatPaths = ['/', '/wishlist'];
 
   const shouldHideHeader = hideHeaderPaths.includes(location.pathname);
   const shouldHideFooter = hideFooterPaths.includes(location.pathname);
-  const shouldHideBackToTop = backToTop.includes(location.pathname);
+  const shouldHideBackToTop = backToTopPaths.includes(location.pathname) || isProductDetail;
+  const shouldShowAIChat = aiChatPaths.includes(location.pathname) || isProductDetail;
+
 
   return (
     <>
@@ -60,6 +74,9 @@ function AppContent() {
           <PrivateRoute allowedRoles={1}>
             <AdminDashboard />
           </PrivateRoute>
+        } />
+        <Route path="/product/:id" element={
+          <ProductDetail />
         } />
         <Route path="/admin-product" element={
           <PrivateRoute allowedRoles={1}>
@@ -123,6 +140,8 @@ function AppContent() {
           </PrivateRoute>
         } />
 
+
+
         {/* Các route dành cho Người nhập hàng - Importer */}
         <Route path="/importer" element={
           <PrivateRoute allowedRoles={4}>
@@ -147,20 +166,23 @@ function AppContent() {
 function App() {
   return (
     <BrowserRouter>
-      <AppContent />
-      <ToastContainer
-        position="top-center"
-        autoClose={2000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick={false}
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover={false}
-        theme="light"
-        transition={Bounce}
-      />
+      <WishlistProvider>
+        <AppContent />
+        <ToastContainer
+          position="top-center"
+          autoClose={2000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick={false}
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover={false}
+          theme="light"
+          transition={Bounce}
+        />
+      </WishlistProvider>
+
     </BrowserRouter>
   );
 }

@@ -170,4 +170,46 @@ public class ProductController {
         return ResponseEntity.ok(productService.getTopDiscountProducts(12));
     }
 
+    @GetMapping("/search")
+    public ResponseEntity<?> searchProducts(
+            @RequestParam(name = "q", defaultValue = "") String q,
+            @RequestParam(name = "categoryId", required = false) Integer categoryId,
+            @RequestParam(name = "supplierId", required = false) Integer supplierId,
+            @RequestParam(name = "minDiscount", defaultValue = "0") Integer minDiscount,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "12") int size
+    ) {
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<ProductDTO> result = productService.searchProducts(
+                q == null ? "" : q.trim(), categoryId, supplierId, minDiscount, pageable);
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("status", 200);
+        body.put("message", "Tìm sản phẩm thành công");
+        body.put("totalElements", result.getTotalElements());
+        body.put("totalPages", result.getTotalPages());
+        body.put("currentPage", result.getNumber());
+        body.put("products", result.getContent());
+
+        return ResponseEntity.ok(body);
+    }
+
+    @GetMapping("/getById/{id}")
+    public ResponseEntity<?> getProductById(@PathVariable("id") int id) {
+        try {
+            ProductDTO product = productService.getProductById(id);
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Lấy sản phẩm theo ID thành công!");
+            response.put("status", 200);
+            response.put("product", product);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("message", e.getMessage());
+            errorResponse.put("status", 400);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        }
+    }
+
 }
