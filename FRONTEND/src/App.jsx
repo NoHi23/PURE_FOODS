@@ -129,14 +129,11 @@ function AppContent() {
             <CartDetail />
           </PrivateRoute>
         } />
-
-
         <Route path="/customer-profile-update" element={
           <PrivateRoute allowedRoles={2}>
             <CustomerProfileUpdate />
           </PrivateRoute>
         } />
-
       
         <Route path="/wishlist" element={
           <PrivateRoute allowedRoles={2}>
