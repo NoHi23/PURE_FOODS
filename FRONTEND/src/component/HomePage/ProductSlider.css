@@ -1,0 +1,18 @@
+.wishlist-icon {
+  color: #999;
+  transition: color 0.3s ease;
+  font-size: 18px;
+}
+
+.wishlist-icon.fas {
+  color: red;
+}
+
+.cookie-bar-box {
+  position: fixed;
+  bottom: 120px; 
+  transform: translateX(-30%);
+  z-index: 9999;
+ 
+}
+
