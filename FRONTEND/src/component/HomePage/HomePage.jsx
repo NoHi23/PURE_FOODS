@@ -4,6 +4,7 @@ import axios from "axios";
 import * as bootstrap from 'bootstrap';
 import feather from "feather-icons";
 import ProductSlider from "./ProductSlider";
+import CookieConsent from "./CookieConsent";
 
 const getOrUpdateExpiryTime = () => {
   let expiry = localStorage.getItem('countdownExpiry');
@@ -77,7 +78,7 @@ const HomePage = () => {
 
   useEffect(() => feather.replace(), [wishlistMap]);
 
-  
+
 
   const [category, setCategory] = useState(null)
   useEffect(() => {
@@ -1641,8 +1642,7 @@ const HomePage = () => {
                     <ProductSlider
                       products={saveProduct}
                       handleViewProduct={handleViewProduct}
-                      toggleWishlist={toggleWishlist}
-                      wishlistMap={wishlistMap}
+                     userId={userId}
                     />
                   </div>
 
@@ -3093,7 +3093,7 @@ const HomePage = () => {
             </div>
           </div>
           <div className="theme-option">
-            <SettingsBox />
+            {/* <SettingsBox /> */}
 
             <div className="back-to-top">
               <a id="back-to-top" href="#">

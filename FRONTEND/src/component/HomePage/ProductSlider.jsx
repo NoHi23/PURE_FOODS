@@ -63,6 +63,8 @@ const ProductSlider = ({ products, handleViewProduct, userId }) => {
     }
   };
 
+
+
   const settings = {
     dots: true,
     infinite: products?.length > 12,
@@ -80,6 +82,10 @@ const ProductSlider = ({ products, handleViewProduct, userId }) => {
 
   if (!products || products.length === 0) return null;
 
+
+
+
+  
   return (
     <div className="section-b-space">
       <Slider {...settings} className="product-box-slider">
