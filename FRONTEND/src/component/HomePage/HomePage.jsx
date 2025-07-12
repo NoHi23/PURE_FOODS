@@ -77,37 +77,44 @@ const HomePage = () => {
       .catch(console.error);
   }, [userId]);
 
-  /* ---- Vẽ lại feather icon sau mỗi lần render ---- */
   useEffect(() => feather.replace(), [wishlistMap]);
 
-  /* ---- Add / Delete ---- */
-  const toggleWishlist = async (p) => {
-    const hasWish = Boolean(wishlistMap[p.productId]);
-    try {
-      if (hasWish) {
-        // xoá
-        await axios.put("http://localhost:8082/PureFoods/api/wishlist/delete", {
-          wishlistId: wishlistMap[p.productId],
-        });
-        setWishlistMap((prev) => {
-          const { [p.productId]: _remove, ...rest } = prev;
-          return rest;
-        });
-      } else {
-        // thêm
-        const res = await axios.post("http://localhost:8082/PureFoods/api/wishlist/add", {
-          userId,
-          productId: p.productId,
-        });
-        const wlId = res.data.wishlist.wishlistId;
-        setWishlistMap((prev) => ({ ...prev, [p.productId]: wlId }));
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  };
+  
 
-  const wished = Boolean(wishlistMap[saveProduct?.productId]);
+  const [category, setCategory] = useState(null)
+  useEffect(() => {
+    const fetchCategory = async () => {
+      if (selectedProduct?.categoryId) {
+        try {
+          const res = await axios.get(`http://localhost:8082/PureFoods/api/category/${selectedProduct.categoryId}`);
+          setCategory(res.data);
+        } catch (err) {
+          console.error("Không thể lấy danh mục:", err);
+          setCategory(null);
+        }
+      }
+    };
+
+    fetchCategory();
+  }, [selectedProduct]);
+
+
+  const [supplier, setSupplier] = useState(null)
+  useEffect(() => {
+    const fetchSuppliers = async () => {
+      if (selectedProduct?.supplierId) {
+        try {
+          const res = await axios.get(`http://localhost:8082/PureFoods/api/supplier/${selectedProduct.supplierId}`);
+          setSupplier(res.data);
+        } catch (err) {
+          console.error("Không thể lấy:", err);
+          setSupplier(null);
+        }
+      }
+    };
+
+    fetchSuppliers();
+  }, [selectedProduct]);
 
   return (
     <HomepageLayout>
@@ -1634,10 +1641,9 @@ const HomePage = () => {
 
                   <div className="section-b-space">
                     <ProductSlider
+                      userId={userId}
                       products={saveProduct}
                       handleViewProduct={handleViewProduct}
-                      toggleWishlist={toggleWishlist}
-                      wishlistMap={wishlistMap}
                     />
                   </div>
 
@@ -2844,6 +2850,7 @@ const HomePage = () => {
           </section>
 
           <div className="modal fade theme-modal view-modal" id="view" tabIndex="-1">
+
             <div className="modal-dialog modal-dialog-centered modal-xl modal-fullscreen-sm-down">
               <div className="modal-content">
                 <div className="modal-header p-0">
@@ -2863,106 +2870,78 @@ const HomePage = () => {
                       </div>
                     </div>
 
-                    <div className="modal fade theme-modal view-modal" id="view" tabIndex="-1">
-                      <div className="modal-dialog modal-dialog-centered modal-xl modal-fullscreen-sm-down">
-                        <div className="modal-content">
-                          <div className="modal-header p-0">
-                            <button type="button" className="btn-close" data-bs-dismiss="modal">
-                              <i className="fa-solid fa-xmark"></i>
-                            </button>
-                          </div>
-                          <div className="modal-body">
-                            <div className="row g-sm-4 g-2">
-                              <div className="col-lg-6">
-                                <div className="slider-image">
-                                  <img
-                                    src={selectedProduct?.imageURL}
-                                    className="img-fluid blur-up lazyload"
-                                    alt=""
-                                  />
-                                </div>
-                              </div>
+                    <div className="col-lg-6">
+                      <div className="right-sidebar-modal">
+                        <h4 className="title-name">{selectedProduct?.productName}</h4>
+                        <h4 className="price theme-color ">
+                          ${selectedProduct?.salePrice?.toFixed(2)}{" "}
+                          <del className="text-muted ">${selectedProduct?.price}</del>
+                        </h4>
 
-                              <div className="col-lg-6">
-                                <div className="right-sidebar-modal">
-                                  <h4 className="title-name">{selectedProduct?.productName}</h4>
-                                  <h4 className="price">
-                                    ${selectedProduct?.salePrice?.toFixed(2)}{" "}
-                                    <del className="text-muted">${selectedProduct?.price}</del>
-                                  </h4>
+                        <div className="product-rating">
+                          <ul className="rating">
+                            <li><i data-feather="star" className="fill"></i></li>
+                            <li><i data-feather="star" className="fill"></i></li>
+                            <li><i data-feather="star" className="fill"></i></li>
+                            <li><i data-feather="star" className="fill"></i></li>
+                            <li><i data-feather="star"></i></li>
+                          </ul>
+                          <span className="ms-2">8 Reviews</span>
+                          <span className="ms-2 text-danger">6 sold in last 16 hours</span>
+                        </div>
 
-                                  <div className="product-rating">
-                                    <ul className="rating">
-                                      <li><i data-feather="star" className="fill"></i></li>
-                                      <li><i data-feather="star" className="fill"></i></li>
-                                      <li><i data-feather="star" className="fill"></i></li>
-                                      <li><i data-feather="star" className="fill"></i></li>
-                                      <li><i data-feather="star"></i></li>
-                                    </ul>
-                                    <span className="ms-2">8 Reviews</span>
-                                    <span className="ms-2 text-danger">6 sold in last 16 hours</span>
-                                  </div>
+                        <div className="product-detail">
+                          <p>{selectedProduct?.description || "No description available."}</p>
+                        </div>
 
-                                  <div className="product-detail">
-                                    <h4>Product Details :</h4>
-                                    <p>{selectedProduct?.description || "No description available."}</p>
-                                  </div>
-
-                                  <ul className="brand-list">
-                                    <li>
-                                      <div className="brand-box">
-                                        <h5>Brand Name:</h5>
-                                        <h6>{selectedProduct?.brandName || "N/A"}</h6>
-                                      </div>
-                                    </li>
-
-                                    <li>
-                                      <div className="brand-box">
-                                        <h5>Product Code:</h5>
-                                        <h6>{selectedProduct?.productId}</h6>
-                                      </div>
-                                    </li>
-
-                                    <li>
-                                      <div className="brand-box">
-                                        <h5>Product Type:</h5>
-                                        <h6>{selectedProduct?.productType || "N/A"}</h6>
-                                      </div>
-                                    </li>
-                                  </ul>
-
-                                  <div className="select-size">
-                                    <h4>Size :</h4>
-                                    <select className="form-select select-form-size" defaultValue="">
-                                      <option value="">Select Size</option>
-                                      <option value="0.5">1/2 KG</option>
-                                      <option value="1">1 KG</option>
-                                      <option value="1.5">1.5 KG</option>
-                                    </select>
-                                  </div>
-
-                                  <div className="modal-button">
-                                    <button
-                                      onClick={() => {
-                                        window.location.href = "shop-left-sidebar.html";
-                                      }}
-                                      className="btn btn-md add-cart-button icon"
-                                    >
-                                      Add To Cart
-                                    </button>
-                                    <button
-                                      onClick={() => {
-                                        window.location.href = "shop-left-sidebar.html";
-                                      }}
-                                      className="btn theme-bg-color view-button icon text-white fw-bold btn-md"
-                                    >
-                                      View More Details
-                                    </button>
-                                  </div>
-                                </div>
-                              </div>
+                        <ul className="brand-list">
+                          <li>
+                            <div className="brand-box">
+                              <h5>Category Name:</h5>
+                              <h6 className="mb-3">{category?.categoryName || "Đang tải..."}</h6>
                             </div>
-                          </div>
+                          </li>
+                          <li>
+                            <div className="brand-box">
+                              <h5>Supplier Name:</h5>
+                              <h6 className="mb-3">{supplier?.supplierName || "Đang tải..."}</h6>
+                            </div>
+                          </li>
+                        </ul>
+
+                        <ul className="brand-list">
+                          <li>
+                            <div className="brand-box">
+                              <h5>Stock Quantity:</h5>
+                              <h6 className="mb-3">{selectedProduct?.stockQuantity || "Đang tải..."}</h6>
+                            </div>
+                          </li>
+                          <li>
+                            <div className="brand-box">
+                              <h5>Supplier Name:</h5>
+                              <h6 className="mb-3">{supplier?.supplierName || "Đang tải..."}</h6>
+                            </div>
+                          </li>
+                        </ul>
+
+
+                        <div className="modal-button">
+                          <button
+                            onClick={() => {
+                              window.location.href = "shop-left-sidebar.html";
+                            }}
+                            className="btn btn-md add-cart-button icon"
+                          >
+                            Add To Cart
+                          </button>
+                          <button
+                            onClick={() => {
+                              window.location.href = "shop-left-sidebar.html";
+                            }}
+                            className="btn theme-bg-color view-button icon text-white fw-bold btn-md"
+                          >
+                            View More Details
+                          </button>
                         </div>
                       </div>
                     </div>

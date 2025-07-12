@@ -183,11 +183,9 @@ public class ProductController {
     ) {
         Pageable pageable = PageRequest.of(page, size);
 
-        // Tìm kiếm sản phẩm
         Page<ProductDTO> result = productService.searchProducts(
                 q == null ? "" : q.trim(), categoryId, supplierId, minDiscount, pageable);
 
-        // Tạo body phản hồi
         Map<String, Object> body = new HashMap<>();
         body.put("status", 200);
         body.put("message", "Tìm sản phẩm thành công");
@@ -197,6 +195,23 @@ public class ProductController {
         body.put("products", result.getContent());
 
         return ResponseEntity.ok(body);
+    }
+
+    @GetMapping("/getById/{id}")
+    public ResponseEntity<?> getProductById(@PathVariable("id") int id) {
+        try {
+            ProductDTO product = productService.getProductById(id);
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Lấy sản phẩm theo ID thành công!");
+            response.put("status", 200);
+            response.put("product", product);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("message", e.getMessage());
+            errorResponse.put("status", 400);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        }
     }
 
 }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-
+import './ProductSlider.css'
 function CookieConsent() {
   const [isVisible, setIsVisible] = useState(false);
 

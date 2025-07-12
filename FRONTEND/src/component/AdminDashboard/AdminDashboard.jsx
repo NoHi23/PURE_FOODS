@@ -2,14 +2,12 @@ import React, { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import './AdminDashboard.css'
 import axios from 'axios';
-import './script.js'
-import './ratio.js'
+
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 import $ from 'jquery';
 import 'slick-carousel';
-import './sidebar-menu.js'
-import './simplebar.js'
+
 import { toast } from 'react-toastify';
 import SideBar from './SideBar.jsx';
 import TopBar from './TopBar.jsx';
@@ -20,6 +18,22 @@ const AdminDashboard = () => {
     const [totalOrder, setTotalOrder] = useState(0);
 
     const navigate = useNavigate();
+
+
+    useEffect(() => {
+        Promise.all([
+            import('./script.js'),
+            import('./ratio.js'),
+            import('./sidebar-menu.js'),
+            import('./simplebar.js')
+        ]).then(() => {
+            console.log("All admin scripts loaded.");
+        }).catch(err => {
+            console.error("Failed to load admin scripts", err);
+        });
+    }, []);
+
+
     useEffect(() => {
         axios.get('http://localhost:8082/PureFoods/api/product/count')
             .then(res => { setTotalProduct(res.data.countProduct) })
@@ -179,7 +193,7 @@ const AdminDashboard = () => {
                                                 ].map((item, index) => (
                                                     <div className="dashboard-category-wrapper" key={index}>
                                                         <div className="dashboard-category">
-                                                            <a href="#" className="category-image" onClick={(e)=> e.preventDefault()}>
+                                                            <a href="#" className="category-image" onClick={(e) => e.preventDefault()}>
                                                                 <img
                                                                     src={`../back-end/assets/svg/${item.src}`}
                                                                     className="img-fluid"

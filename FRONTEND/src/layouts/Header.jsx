@@ -1,9 +1,11 @@
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { FiSearch, FiShoppingCart } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 import './Header.css'
+import { useWishlist } from './WishlistContext';
+
 export default function Header() {
   const user = JSON.parse(localStorage.getItem("user"));
   const navigate = useNavigate();
@@ -17,58 +19,55 @@ export default function Header() {
 
   const cartCount = 0;
 
-
   const [notifications, setNotifications] = useState([]);
   const [history, setHistory] = useState([]);
 
+  const {
+    wishlistCount,
+    wishlistItems,
+    refreshWishlist,
+    wishlistMap,
+  } = useWishlist();
 
   useEffect(() => {
-    if (!user) return;
+    if (!userId) return;
 
     const fetchAllNotifications = async () => {
       try {
-        const { data } = await axios.get(
-          `http://localhost:8082/PureFoods/api/notifications/${user.userId}`
-        );
-
-        setNotifications(data.filter((n) => !n.isRead));
-        setHistory(data.filter((n) => n.isRead));
+        const { data } = await axios.get(`http://localhost:8082/PureFoods/api/notifications/${userId}`);
+        setNotifications(data.filter(n => !n.isRead));
+        setHistory(data.filter(n => n.isRead));
       } catch (err) {
         console.error("Error loading notifications:", err);
       }
     };
 
     fetchAllNotifications();
+    refreshWishlist(); // ✅ Đồng bộ luôn wishlist khi load header
   }, [userId]);
 
   const handleMarkRead = async (notiId) => {
     const id = Number(notiId);
-
-    setNotifications((prev) => prev.filter((n) => n.id !== id));
+    setNotifications(prev => prev.filter(n => n.id !== id));
 
     try {
-      await axios.put(
-        `http://localhost:8082/PureFoods/api/notifications/${id}/read`
-      );
-
-      setHistory((prev) => {
-        const justRead = notifications.find((n) => n.id === id);
-        return justRead ? [...prev, { ...justRead, isRead: true }] : prev;
-      });
+      await axios.put(`http://localhost:8082/PureFoods/api/notifications/${id}/read`);
+      const justRead = notifications.find(n => n.id === id);
+      if (justRead) {
+        setHistory(prev => [...prev, { ...justRead, isRead: true }]);
+      }
     } catch (err) {
       toast.error("Không thể đánh dấu đã đọc");
-      setNotifications((prev) => {
-        const justRead = history.find((h) => h.id === id);
-        return justRead ? [...prev, justRead] : prev;
-      });
+      const justRead = history.find(h => h.id === id);
+      if (justRead) {
+        setNotifications(prev => [...prev, justRead]);
+      }
     }
   };
 
   const loadAllNotifications = async () => {
     try {
-      const { data } = await axios.get(
-        `http://localhost:8082/PureFoods/api/notifications/read/${userId}`
-      );
+      const { data } = await axios.get(`http://localhost:8082/PureFoods/api/notifications/read/${userId}`);
       setHistory(data);
     } catch (err) {
       console.error(err);
@@ -77,20 +76,32 @@ export default function Header() {
 
   const handleMarkAllRead = async () => {
     try {
-      const { data } = await axios.put(
-        `http://localhost:8082/PureFoods/api/notifications/mark-all-read/${userId}`
-      );
-
-      setHistory((h) => [
-        ...notifications.map((n) => ({ ...n, isRead: true })),
-        ...h,
-      ]);
+      await axios.put(`http://localhost:8082/PureFoods/api/notifications/mark-all-read/${userId}`);
+      setHistory(h => [...notifications.map(n => ({ ...n, isRead: true })), ...h]);
       setNotifications([]);
     } catch (err) {
-      console.error("Lỗi mark‑all‑read:", err);
       toast.error("Không thể cập nhật thông báo.");
     }
   };
+
+  const handleRemove = async (wishlistId) => {
+    if (!wishlistId) {
+      toast.error("Không tìm thấy wishlistId để xoá");
+      return;
+    }
+
+    try {
+      await axios.put("http://localhost:8082/PureFoods/api/wishlist/delete", {
+        wishlistId: wishlistId,
+      });
+
+      await refreshWishlist();
+
+    } catch (error) {
+      console.error("Lỗi xoá wishlist:", error);
+    }
+  };
+
   return (
     <header className="pb-md-4 pb-0">
       <div className="header-top">
@@ -331,70 +342,54 @@ export default function Header() {
                     <li className="right-side">
                       <div className="onhover-dropdown header-badge">
 
-                        <li data-bs-placement="top"
-                          title="Wishlist">
-                          <a href="wishlist.html" className="notifi-wishlist">
-                            <i data-feather="heart"></i>
-                            <span className="position-absolute top-0 start-100 translate-middle badge"> {cartCount ?? 0}
-                              <span className="visually-hidden">unread messages</span>
-                            </span>
-                          </a>
+                        <button type="button" className="btn p-0 position-relative header-wishlist">
+                          <i data-feather="heart"></i>
+                          <span className="position-absolute top-0 start-100 translate-middle badge">
+                            {wishlistCount ?? 0}
+                          </span>
+                        </button>
 
-                        </li>
 
                         <div className="onhover-div">
-                          <ul className="cart-list">
-                            <li className="product-box-contain">
-                              <div className="drop-cart">
-                                <a href="product-left-thumbnail.html" className="drop-image">
-                                  <img src="../assets/images/vegetable/product/1.png"
-                                    className="blur-up lazyload" alt="" />
+                          {wishlistItems.length === 0 ? (
+                            <div style={{ padding: '10px', textAlign: 'center' }}>
+                              <i className="fa fa-heart-broken" style={{ fontSize: '24px', color: '#999' }}></i>
+                              <p style={{ margin: '5px 0', color: '#777' }}>Không có sản phẩm yêu thích</p>
+                            </div>
+                          ) : (
+                            wishlistItems.map((item) => (
+                              <li className="product-box-contain" key={item.productId} style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
+                                <a href={`/product/${item.productId}`} className="drop-image" style={{ marginRight: '10px' }}>
+                                  <img
+                                    src={item.imageURL}
+                                    className="blur-up lazyload"
+                                    alt={item.productName}
+                                    style={{ width: '60px', height: '60px', objectFit: 'cover', borderRadius: '5px' }}
+                                  />
                                 </a>
-
-                                <div className="drop-contain">
-                                  <a href="product-left-thumbnail.html">
-                                    <h5>Fantasy Crunchy Choco Chip Cookies</h5>
+                                <div className="drop-contain" style={{ flex: 1 }}>
+                                  <a href={`/product/${item.productId}`}>
+                                    <h5 style={{ margin: '0 0 4px 0' }}>{item.productName}</h5>
                                   </a>
-                                  <h6><span>1 x</span> $80.58</h6>
-                                  <button className="close-button close_button">
-                                    <i className="fa-solid fa-xmark"></i>
-                                  </button>
+                                  <h6 style={{ margin: 0 }}>${item.price}</h6>
                                 </div>
-                              </div>
-                            </li>
+                                <button
+                                  className="wishlist-remove-btn"
+                                  onClick={() => handleRemove(item.wishlistId)}
+                                >
+                                  <i className="fa-solid fa-xmark"></i>
+                                </button>
+                              </li>
+                            ))
+                          )}
 
-                            <li className="product-box-contain">
-                              <div className="drop-cart">
-                                <a href="product-left-thumbnail.html" className="drop-image">
-                                  <img src="../assets/images/vegetable/product/2.png"
-                                    className="blur-up lazyload" alt="" />
-                                </a>
-
-                                <div className="drop-contain">
-                                  <a href="product-left-thumbnail.html">
-                                    <h5>Peanut Butter Bite Premium Butter Cookies 600 g
-                                    </h5>
-                                  </a>
-                                  <h6><span>1 x</span> $25.68</h6>
-                                  <button className="close-button close_button">
-                                    <i className="fa-solid fa-xmark"></i>
-                                  </button>
-                                </div>
-                              </div>
-                            </li>
-                          </ul>
-
-                          <div className="price-box">
-                            <h5>Total :</h5>
-                            <h4 className="theme-color fw-bold">$106.58</h4>
-                          </div>
-
-                          <div className="button-group">
-                            <a href="cart.html" className="btn btn-sm cart-button">View Cart</a>
-                            <a href="checkout.html" className="btn btn-sm cart-button theme-bg-color
-                                                    text-white">Checkout</a>
+                          <div className="button-group d-flex justify-content-center mt-2">
+                            <Link to={'/wishlist'} className="btn btn-sm cart-button theme-bg-color text-white">
+                              Detail Wishlist
+                            </Link>
                           </div>
                         </div>
+
                       </div>
                     </li>
 
