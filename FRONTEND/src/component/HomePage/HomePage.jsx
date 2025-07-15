@@ -2,6 +2,10 @@ import React, { useEffect, useState } from "react";
 import HomepageLayout from "../../layouts/HomepageLayout";
 import axios from "axios";
 import * as bootstrap from 'bootstrap';
+import feather from "feather-icons";
+import ProductSlider from "./ProductSlider";
+import CookieConsent from "./CookieConsent";
+import SettingsBox from "./SettingsBox";
 
 const getOrUpdateExpiryTime = () => {
   let expiry = localStorage.getItem('countdownExpiry');
@@ -22,7 +26,8 @@ const HomePage = () => {
 
   const [timeLeft, setTimeLeft] = useState(getOrUpdateExpiryTime());
   const [timeObj, setTimeObj] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-
+  const user = JSON.parse(localStorage.getItem("user"));
+  const userId = user?.userId;
   useEffect(() => {
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
@@ -57,10 +62,52 @@ const HomePage = () => {
     const modal = new bootstrap.Modal(document.getElementById('view'));
     modal.show();
     console.log("hi: " + product);
-
-
   };
 
+
+  const [wishlistMap, setWishlistMap] = useState({});
+  useEffect(() => {
+    axios
+      .get(`http://localhost:8082/PureFoods/api/wishlist/${userId}`)
+      .then((res) => {
+        const map = {};
+        res.data.forEach((wl) => (map[wl.product.productId] = wl.wishlistId));
+        setWishlistMap(map);
+      })
+      .catch(console.error);
+  }, [userId]);
+
+  /* ---- Vẽ lại feather icon sau mỗi lần render ---- */
+  useEffect(() => feather.replace(), [wishlistMap]);
+
+  /* ---- Add / Delete ---- */
+  const toggleWishlist = async (p) => {
+    const hasWish = Boolean(wishlistMap[p.productId]);
+    try {
+      if (hasWish) {
+        // xoá
+        await axios.put("http://localhost:8082/PureFoods/api/wishlist/delete", {
+          wishlistId: wishlistMap[p.productId],
+        });
+        setWishlistMap((prev) => {
+          const { [p.productId]: _remove, ...rest } = prev;
+          return rest;
+        });
+      } else {
+        // thêm
+        const res = await axios.post("http://localhost:8082/PureFoods/api/wishlist/add", {
+          userId,
+          productId: p.productId,
+        });
+        const wlId = res.data.wishlist.wishlistId;
+        setWishlistMap((prev) => ({ ...prev, [p.productId]: wlId }));
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const wished = Boolean(wishlistMap[saveProduct?.productId]);
 
   return (
     <HomepageLayout>
@@ -1106,7 +1153,7 @@ const HomePage = () => {
                 <div className="col-xl-8 ratio_65">
                   <div className="home-contain h-100">
                     <div className="h-100">
-                      <img src="../assets/images/vegetable/banner/1.jpg" className="bg-img blur-up lazyload" alt="" />
+                      <img src="1.jpg" className="bg-img blur-up lazyload" alt="" />
                     </div>
                     <div className="home-detail p-center-left w-75">
                       <div>
@@ -1136,7 +1183,7 @@ const HomePage = () => {
                   <div className="row g-4">
                     <div className="col-xl-12 col-md-6">
                       <div className="home-contain">
-                        <img src="../assets/images/vegetable/banner/2.jpg" className="bg-img blur-up lazyload" alt="" />
+                        <img src="2.jpg" className="bg-img blur-up lazyload" alt="" />
                         <div className="home-detail p-center-left home-p-sm w-75">
                           <div>
                             <h2 className="mt-0 text-danger">
@@ -1154,7 +1201,7 @@ const HomePage = () => {
 
                     <div className="col-xl-12 col-md-6">
                       <div className="home-contain">
-                        <img src="../assets/images/vegetable/banner/3.jpg" className="bg-img blur-up lazyload" alt="" />
+                        <img src="3.jpg" className="bg-img blur-up lazyload" alt="" />
                         <div className="home-detail p-center-left home-p-sm w-75">
                           <div>
                             <h3 className="mt-0 theme-color fw-bold">Healthy Food</h3>
@@ -1177,7 +1224,7 @@ const HomePage = () => {
               <div className="banner-slider">
                 <div>
                   <div className="banner-contain hover-effect">
-                    <img src="../assets/images/vegetable/banner/4.jpg" className="bg-img blur-up lazyload" alt="" />
+                    <img src="4.jpg" className="bg-img blur-up lazyload" alt="" />
                     <div className="banner-details">
                       <div className="banner-box">
                         <h6 className="text-danger">5% OFF</h6>
@@ -1193,7 +1240,7 @@ const HomePage = () => {
 
                 <div>
                   <div className="banner-contain hover-effect">
-                    <img src="../assets/images/vegetable/banner/5.jpg" className="bg-img blur-up lazyload" alt="" />
+                    <img src="5.jpg" className="bg-img blur-up lazyload" alt="" />
                     <div className="banner-details">
                       <div className="banner-box">
                         <h6 className="text-danger">5% OFF</h6>
@@ -1209,7 +1256,7 @@ const HomePage = () => {
 
                 <div>
                   <div className="banner-contain hover-effect">
-                    <img src="../assets/images/vegetable/banner/6.jpg" className="bg-img blur-up lazyload" alt="" />
+                    <img src="6.jpg" className="bg-img blur-up lazyload" alt="" />
                     <div className="banner-details">
                       <div className="banner-box">
                         <h6 className="text-danger">5% OFF</h6>
@@ -1225,7 +1272,7 @@ const HomePage = () => {
 
                 <div>
                   <div className="banner-contain hover-effect">
-                    <img src="../assets/images/vegetable/banner/7.jpg" className="bg-img blur-up lazyload" alt="" />
+                    <img src="7.jpg" className="bg-img blur-up lazyload" alt="" />
                     <div className="banner-details">
                       <div className="banner-box">
                         <h6 className="text-danger">5% OFF</h6>
@@ -1358,7 +1405,7 @@ const HomePage = () => {
 
                     <div className="ratio_156 section-t-space">
                       <div className="home-contain hover-effect">
-                        <img src="../assets/images/vegetable/banner/8.jpg" className="bg-img blur-up lazyload" alt="" />
+                        <img src="8.jpg" className="bg-img blur-up lazyload" alt="" />
                         <div className="home-detail p-top-left home-p-medium">
                           <div>
                             <h6 className="text-yellow home-banner">Seafood</h6>
@@ -1382,7 +1429,7 @@ const HomePage = () => {
                     <div className="ratio_medium section-t-space">
                       <div className="home-contain hover-effect">
                         <img
-                          src="../assets/images/vegetable/banner/11.jpg"
+                          src="11.jpg"
                           className="img-fluid blur-up lazyload"
                           alt=""
                         />
@@ -1586,1126 +1633,12 @@ const HomePage = () => {
                   </div>
 
                   <div className="section-b-space">
-                    <div className="product-border border-row overflow-hidden">
-                      <div className="product-box-slider no-arrow">
-                        <div>
-                          <div className="row m-0">
-                            <div className="col-12 px-0">
-                              <div className="product-box">
-                                <div className="product-image">
-                                  <a href="product-left-thumbnail.html">
-                                    <img src={saveProduct?.[0]?.imageURL}
-                                      className="img-fluid blur-up lazyload" alt="" />
-                                  </a>
-                                  <ul className="product-option">
-                                    <li data-bs-toggle="tooltip" data-bs-placement="top"
-                                      title="View">
-                                      <a href="#" onClick={(e) => {
-                                        e.preventDefault();
-                                        handleViewProduct(saveProduct?.[0]);
-                                      }}>
-                                        <i data-feather="eye"></i>
-                                      </a>
-                                    </li>
-
-                                    <li data-bs-toggle="tooltip" data-bs-placement="top"
-                                      title="Compare">
-                                      <a href="compare.html">
-                                        <i data-feather="refresh-cw"></i>
-                                      </a>
-                                    </li>
-
-                                    <li data-bs-toggle="tooltip" data-bs-placement="top"
-                                      title="Wishlist">
-                                      <a href="wishlist.html" className="notifi-wishlist">
-                                        <i data-feather="heart"></i>
-                                      </a>
-                                    </li>
-                                  </ul>
-                                </div>
-                                <div className="product-detail">
-                                  <a href="product-left-thumbnail.html">
-                                    <h6 className="name">{saveProduct?.[0]?.productName}</h6>
-                                  </a>
-
-                                  <h5 className="sold text-content">
-                                    <span className="theme-color price">${saveProduct?.[0]?.salePrice != null ? saveProduct?.[0]?.salePrice.toFixed(2) : '0.00'}</span>
-                                    <del>${saveProduct?.[0]?.price}</del>
-                                  </h5>
-
-                                  <div className="product-rating mt-sm-2 mt-1">
-                                    <ul className="rating">
-                                      <li>
-                                        <i data-feather="star" className="fill"></i>
-                                      </li>
-                                      <li>
-                                        <i data-feather="star" className="fill"></i>
-                                      </li>
-                                      <li>
-                                        <i data-feather="star" className="fill"></i>
-                                      </li>
-                                      <li>
-                                        <i data-feather="star" className="fill"></i>
-                                      </li>
-                                      <li>
-                                        <i data-feather="star"></i>
-                                      </li>
-                                    </ul>
-
-                                    <h6 className="theme-color">In Stock</h6>
-                                  </div>
-
-                                  <div className="add-to-cart-box">
-                                    <button className="btn btn-add-cart addcart-button">Add
-                                      <span className="add-icon">
-                                        <i className="fa-solid fa-plus"></i>
-                                      </span>
-                                    </button>
-                                    <div className="cart_qty qty-box">
-                                      <div className="input-group">
-                                        <button type="button" className="qty-left-minus"
-                                          data-type="minus" data-field="">
-                                          <i className="fa fa-minus"></i>
-                                        </button>
-                                        <input className="form-control input-number qty-input"
-                                          type="text" name="quantity" value="0" />
-                                        <button type="button" className="qty-right-plus"
-                                          data-type="plus" data-field="">
-                                          <i className="fa fa-plus"></i>
-                                        </button>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-
-
-                            <div className="col-12 px-0">
-                              <div className="product-box">
-                                <div className="product-image">
-                                  <a href="product-left-thumbnail.html">
-                                    <img src={saveProduct?.[1]?.imageURL}
-                                      className="img-fluid blur-up lazyload" alt="" />
-                                  </a>
-                                  <ul className="product-option">
-                                    <li data-bs-toggle="tooltip" data-bs-placement="top"
-                                      title="View">
-                                      <a href="#" onClick={(e) => {
-                                        e.preventDefault();
-                                        handleViewProduct(saveProduct?.[1]);
-                                      }}>
-                                        <i data-feather="eye"></i>
-                                      </a>
-                                    </li>
-
-                                    <li data-bs-toggle="tooltip" data-bs-placement="top"
-                                      title="Compare">
-                                      <a href="compare.html">
-                                        <i data-feather="refresh-cw"></i>
-                                      </a>
-                                    </li>
-
-                                    <li data-bs-toggle="tooltip" data-bs-placement="top"
-                                      title="Wishlist">
-                                      <a href="wishlist.html" className="notifi-wishlist">
-                                        <i data-feather="heart"></i>
-                                      </a>
-                                    </li>
-                                  </ul>
-                                </div>
-                                <div className="product-detail">
-                                  <a href="product-left-thumbnail.html">
-                                    <h6 className="name">{saveProduct?.[1]?.productName}</h6>
-                                  </a>
-
-                                  <h5 className="sold text-content">
-                                    <span className="theme-color price">${saveProduct?.[1]?.salePrice != null ? saveProduct?.[1]?.salePrice.toFixed(2) : '0.00'}</span>
-                                    <del>${saveProduct?.[1]?.price}</del>
-                                  </h5>
-
-                                  <div className="product-rating mt-sm-2 mt-1">
-                                    <ul className="rating">
-                                      <li>
-                                        <i data-feather="star" className="fill"></i>
-                                      </li>
-                                      <li>
-                                        <i data-feather="star" className="fill"></i>
-                                      </li>
-                                      <li>
-                                        <i data-feather="star" className="fill"></i>
-                                      </li>
-                                      <li>
-                                        <i data-feather="star" className="fill"></i>
-                                      </li>
-                                      <li>
-                                        <i data-feather="star"></i>
-                                      </li>
-                                    </ul>
-
-                                    <h6 className="theme-color">In Stock</h6>
-                                  </div>
-
-                                  <div className="add-to-cart-box">
-                                    <button className="btn btn-add-cart addcart-button">Add
-                                      <span className="add-icon">
-                                        <i className="fa-solid fa-plus"></i>
-                                      </span>
-                                    </button>
-                                    <div className="cart_qty qty-box">
-                                      <div className="input-group">
-                                        <button type="button" className="qty-left-minus"
-                                          data-type="minus" data-field="">
-                                          <i className="fa fa-minus"></i>
-                                        </button>
-                                        <input className="form-control input-number qty-input"
-                                          type="text" name="quantity" value="0" />
-                                        <button type="button" className="qty-right-plus"
-                                          data-type="plus" data-field="">
-                                          <i className="fa fa-plus"></i>
-                                        </button>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div>
-                          <div className="row m-0">
-                            <div className="col-12 px-0">
-                              <div className="product-box">
-                                <div className="product-image">
-                                  <a href="product-left-thumbnail.html">
-                                    <img src={saveProduct?.[2]?.imageURL}
-                                      className="img-fluid blur-up lazyload" alt="" />
-                                  </a>
-                                  <ul className="product-option">
-                                    <li data-bs-toggle="tooltip" data-bs-placement="top"
-                                      title="View">
-                                       <a href="#" onClick={(e) => {
-                                        e.preventDefault();
-                                        handleViewProduct(saveProduct?.[2]);
-                                      }}>
-                                        <i data-feather="eye"></i>
-                                      </a>
-                                    </li>
-
-                                    <li data-bs-toggle="tooltip" data-bs-placement="top"
-                                      title="Compare">
-                                      <a href="compare.html">
-                                        <i data-feather="refresh-cw"></i>
-                                      </a>
-                                    </li>
-
-                                    <li data-bs-toggle="tooltip" data-bs-placement="top"
-                                      title="Wishlist">
-                                      <a href="wishlist.html" className="notifi-wishlist">
-                                        <i data-feather="heart"></i>
-                                      </a>
-                                    </li>
-                                  </ul>
-                                </div>
-                                <div className="product-detail">
-                                  <a href="product-left-thumbnail.html">
-                                    <h6 className="name">{saveProduct?.[2]?.productName}
-                                    </h6>
-                                  </a>
-
-                                  <h5 className="sold text-content">
-                                    <span className="theme-color price">${saveProduct?.[2]?.salePrice != null ? saveProduct?.[2]?.salePrice.toFixed(2) : '0.00'}</span>
-                                    <del>${saveProduct?.[2]?.price}</del>
-                                  </h5>
-
-                                  <div className="product-rating mt-sm-2 mt-1">
-                                    <ul className="rating">
-                                      <li>
-                                        <i data-feather="star" className="fill"></i>
-                                      </li>
-                                      <li>
-                                        <i data-feather="star" className="fill"></i>
-                                      </li>
-                                      <li>
-                                        <i data-feather="star" className="fill"></i>
-                                      </li>
-                                      <li>
-                                        <i data-feather="star" className="fill"></i>
-                                      </li>
-                                      <li>
-                                        <i data-feather="star"></i>
-                                      </li>
-                                    </ul>
-
-                                    <h6 className="theme-color">In Stock</h6>
-                                  </div>
-
-                                  <div className="add-to-cart-box">
-                                    <button className="btn btn-add-cart addcart-button">Add
-                                      <span className="add-icon">
-                                        <i className="fa-solid fa-plus"></i>
-                                      </span>
-                                    </button>
-                                    <div className="cart_qty qty-box">
-                                      <div className="input-group">
-                                        <button type="button" className="qty-left-minus"
-                                          data-type="minus" data-field="">
-                                          <i className="fa fa-minus"></i>
-                                        </button>
-                                        <input className="form-control input-number qty-input"
-                                          type="text" name="quantity" value="0" />
-                                        <button type="button" className="qty-right-plus"
-                                          data-type="plus" data-field="">
-                                          <i className="fa fa-plus"></i>
-                                        </button>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-
-                            <div className="col-12 px-0">
-                              <div className="product-box">
-                                <div className="label-tag">
-                                  <span>NEW</span>
-                                </div>
-                                <div className="product-image">
-                                  <a href="product-left-thumbnail.html">
-                                    <img src={saveProduct?.[3]?.imageURL}
-                                      className="img-fluid blur-up lazyload" alt="" />
-                                  </a>
-                                  <ul className="product-option">
-                                    <li data-bs-toggle="tooltip" data-bs-placement="top"
-                                      title="View">
-                                      <a href="#" onClick={(e) => {
-                                        e.preventDefault();
-                                        handleViewProduct(saveProduct?.[3]);
-                                      }}>
-                                        <i data-feather="eye"></i>
-                                      </a>
-                                    </li>
-
-                                    <li data-bs-toggle="tooltip" data-bs-placement="top"
-                                      title="Compare">
-                                      <a href="compare.html">
-                                        <i data-feather="refresh-cw"></i>
-                                      </a>
-                                    </li>
-
-                                    <li data-bs-toggle="tooltip" data-bs-placement="top"
-                                      title="Wishlist">
-                                      <a href="wishlist.html" className="notifi-wishlist">
-                                        <i data-feather="heart"></i>
-                                      </a>
-                                    </li>
-                                  </ul>
-                                </div>
-                                <div className="product-detail">
-                                  <a href="product-left-thumbnail.html">
-                                    <h6 className="name">{saveProduct?.[3]?.productName}</h6>
-                                  </a>
-
-                                  <h5 className="sold text-content">
-                                    <span className="theme-color price">${saveProduct?.[3]?.salePrice != null ? saveProduct?.[3]?.salePrice.toFixed(2) : '0.00'}</span>
-                                    <del>${saveProduct?.[3]?.price}</del>
-                                  </h5>
-
-                                  <div className="product-rating mt-sm-2 mt-1">
-                                    <ul className="rating">
-                                      <li>
-                                        <i data-feather="star" className="fill"></i>
-                                      </li>
-                                      <li>
-                                        <i data-feather="star" className="fill"></i>
-                                      </li>
-                                      <li>
-                                        <i data-feather="star" className="fill"></i>
-                                      </li>
-                                      <li>
-                                        <i data-feather="star" className="fill"></i>
-                                      </li>
-                                      <li>
-                                        <i data-feather="star"></i>
-                                      </li>
-                                    </ul>
-
-                                    <h6 className="theme-color">In Stock</h6>
-                                  </div>
-
-                                  <div className="add-to-cart-box">
-                                    <button className="btn btn-add-cart addcart-button">Add
-                                      <span className="add-icon">
-                                        <i className="fa-solid fa-plus"></i>
-                                      </span>
-                                    </button>
-                                    <div className="cart_qty qty-box">
-                                      <div className="input-group">
-                                        <button type="button" className="qty-left-minus"
-                                          data-type="minus" data-field="">
-                                          <i className="fa fa-minus"></i>
-                                        </button>
-                                        <input className="form-control input-number qty-input"
-                                          type="text" name="quantity" value="0" />
-                                        <button type="button" className="qty-right-plus"
-                                          data-type="plus" data-field="">
-                                          <i className="fa fa-plus"></i>
-                                        </button>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div>
-                          <div className="row m-0">
-                            <div className="col-12 px-0">
-                              <div className="product-box">
-                                <div className="product-image">
-                                  <a href="product-left-thumbnail.html">
-                                    <img src={saveProduct?.[4]?.imageURL}
-                                      className="img-fluid blur-up lazyload" alt="" />
-                                  </a>
-                                  <ul className="product-option">
-                                    <li data-bs-toggle="tooltip" data-bs-placement="top"
-                                      title="View">
-                                     <a href="#" onClick={(e) => {
-                                        e.preventDefault();
-                                        handleViewProduct(saveProduct?.[4]);
-                                      }}>
-                                        <i data-feather="eye"></i>
-                                      </a>
-                                    </li>
-
-                                    <li data-bs-toggle="tooltip" data-bs-placement="top"
-                                      title="Compare">
-                                      <a href="compare.html">
-                                        <i data-feather="refresh-cw"></i>
-                                      </a>
-                                    </li>
-
-                                    <li data-bs-toggle="tooltip" data-bs-placement="top"
-                                      title="Wishlist">
-                                      <a href="wishlist.html" className="notifi-wishlist">
-                                        <i data-feather="heart"></i>
-                                      </a>
-                                    </li>
-                                  </ul>
-                                </div>
-                                <div className="product-detail">
-                                  <a href="product-left-thumbnail.html">
-                                    <h6 className="name">{saveProduct?.[4]?.productName}
-                                    </h6>
-                                  </a>
-
-                                  <h5 className="sold text-content">
-                                    <span className="theme-color price">${saveProduct?.[4]?.salePrice != null ? saveProduct?.[4]?.salePrice.toFixed(2) : '0.00'}</span>
-                                    <del>${saveProduct?.[4]?.price}</del>
-                                  </h5>
-
-                                  <div className="product-rating mt-sm-2 mt-1">
-                                    <ul className="rating">
-                                      <li>
-                                        <i data-feather="star" className="fill"></i>
-                                      </li>
-                                      <li>
-                                        <i data-feather="star" className="fill"></i>
-                                      </li>
-                                      <li>
-                                        <i data-feather="star" className="fill"></i>
-                                      </li>
-                                      <li>
-                                        <i data-feather="star" className="fill"></i>
-                                      </li>
-                                      <li>
-                                        <i data-feather="star"></i>
-                                      </li>
-                                    </ul>
-
-                                    <h6 className="theme-color">In Stock</h6>
-                                  </div>
-
-                                  <div className="add-to-cart-box">
-                                    <button className="btn btn-add-cart addcart-button">Add
-                                      <span className="add-icon">
-                                        <i className="fa-solid fa-plus"></i>
-                                      </span>
-                                    </button>
-                                    <div className="cart_qty qty-box">
-                                      <div className="input-group">
-                                        <button type="button" className="qty-left-minus"
-                                          data-type="minus" data-field="">
-                                          <i className="fa fa-minus"></i>
-                                        </button>
-                                        <input className="form-control input-number qty-input"
-                                          type="text" name="quantity" value="0" />
-                                        <button type="button" className="qty-right-plus"
-                                          data-type="plus" data-field="">
-                                          <i className="fa fa-plus"></i>
-                                        </button>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-
-                            <div className="col-12 px-0">
-                              <div className="product-box">
-                                <div className="product-image">
-                                  <a href="product-left-thumbnail.html">
-                                    <img src={saveProduct?.[5]?.imageURL}
-                                      className="img-fluid blur-up lazyload" alt="" />
-                                  </a>
-                                  <ul className="product-option">
-                                    <li data-bs-toggle="tooltip" data-bs-placement="top"
-                                      title="View">
-                                      <a href="#" onClick={(e) => {
-                                        e.preventDefault();
-                                        handleViewProduct(saveProduct?.[5]);
-                                      }}>
-                                        <i data-feather="eye"></i>
-                                      </a>
-                                    </li>
-
-                                    <li data-bs-toggle="tooltip" data-bs-placement="top"
-                                      title="Compare">
-                                      <a href="compare.html">
-                                        <i data-feather="refresh-cw"></i>
-                                      </a>
-                                    </li>
-
-                                    <li data-bs-toggle="tooltip" data-bs-placement="top"
-                                      title="Wishlist">
-                                      <a href="wishlist.html" className="notifi-wishlist">
-                                        <i data-feather="heart"></i>
-                                      </a>
-                                    </li>
-                                  </ul>
-                                </div>
-                                <div className="product-detail">
-                                  <a href="product-left-thumbnail.html">
-                                    <h6 className="name">{saveProduct?.[5]?.productName}</h6>
-                                  </a>
-
-                                  <h5 className="sold text-content">
-                                    <span className="theme-color price">${saveProduct?.[5]?.salePrice != null ? saveProduct?.[5]?.salePrice.toFixed(2) : '0.00'}</span>
-                                    <del>${saveProduct?.[5]?.price}</del>
-                                  </h5>
-
-                                  <div className="product-rating mt-sm-2 mt-1">
-                                    <ul className="rating">
-                                      <li>
-                                        <i data-feather="star" className="fill"></i>
-                                      </li>
-                                      <li>
-                                        <i data-feather="star" className="fill"></i>
-                                      </li>
-                                      <li>
-                                        <i data-feather="star" className="fill"></i>
-                                      </li>
-                                      <li>
-                                        <i data-feather="star" className="fill"></i>
-                                      </li>
-                                      <li>
-                                        <i data-feather="star"></i>
-                                      </li>
-                                    </ul>
-
-                                    <h6 className="theme-color">In Stock</h6>
-                                  </div>
-
-                                  <div className="add-to-cart-box">
-                                    <button className="btn btn-add-cart addcart-button">Add
-                                      <span className="add-icon">
-                                        <i className="fa-solid fa-plus"></i>
-                                      </span>
-                                    </button>
-                                    <div className="cart_qty qty-box">
-                                      <div className="input-group">
-                                        <button type="button" className="qty-left-minus"
-                                          data-type="minus" data-field="">
-                                          <i className="fa fa-minus"></i>
-                                        </button>
-                                        <input className="form-control input-number qty-input"
-                                          type="text" name="quantity" value="0" />
-                                        <button type="button" className="qty-right-plus"
-                                          data-type="plus" data-field="">
-                                          <i className="fa fa-plus"></i>
-                                        </button>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div>
-                          <div className="row m-0">
-                            <div className="col-12 px-0">
-                              <div className="product-box">
-                                <div className="label-tag">
-                                  <span>NEW</span>
-                                </div>
-                                <div className="product-image">
-                                  <a href="product-left-thumbnail.html">
-                                    <img src={saveProduct?.[6]?.imageURL}
-                                      className="img-fluid blur-up lazyload" alt="" />
-                                  </a>
-                                  <ul className="product-option">
-                                    <li data-bs-toggle="tooltip" data-bs-placement="top"
-                                      title="View">
-                                      <a href="#" onClick={(e) => {
-                                        e.preventDefault();
-                                        handleViewProduct(saveProduct?.[6]);
-                                      }}>
-                                        <i data-feather="eye"></i>
-                                      </a>
-                                    </li>
-
-                                    <li data-bs-toggle="tooltip" data-bs-placement="top"
-                                      title="Compare">
-                                      <a href="compare.html">
-                                        <i data-feather="refresh-cw"></i>
-                                      </a>
-                                    </li>
-
-                                    <li data-bs-toggle="tooltip" data-bs-placement="top"
-                                      title="Wishlist">
-                                      <a href="wishlist.html" className="notifi-wishlist">
-                                        <i data-feather="heart"></i>
-                                      </a>
-                                    </li>
-                                  </ul>
-                                </div>
-                                <div className="product-detail">
-                                  <a href="product-left-thumbnail.html">
-                                    <h6 className="name">{saveProduct?.[6]?.productName}</h6>
-                                  </a>
-
-                                  <h5 className="sold text-content">
-                                    <span className="theme-color price">${saveProduct?.[6]?.salePrice != null ? saveProduct?.[6]?.salePrice.toFixed(2) : '0.00'}</span>
-                                    <del>${saveProduct?.[6]?.price}</del>
-                                  </h5>
-
-                                  <div className="product-rating mt-sm-2 mt-1">
-                                    <ul className="rating">
-                                      <li>
-                                        <i data-feather="star" className="fill"></i>
-                                      </li>
-                                      <li>
-                                        <i data-feather="star" className="fill"></i>
-                                      </li>
-                                      <li>
-                                        <i data-feather="star" className="fill"></i>
-                                      </li>
-                                      <li>
-                                        <i data-feather="star" className="fill"></i>
-                                      </li>
-                                      <li>
-                                        <i data-feather="star"></i>
-                                      </li>
-                                    </ul>
-
-                                    <h6 className="theme-color">In Stock</h6>
-                                  </div>
-
-                                  <div className="add-to-cart-box">
-                                    <button className="btn btn-add-cart addcart-button">Add
-                                      <span className="add-icon">
-                                        <i className="fa-solid fa-plus"></i>
-                                      </span>
-                                    </button>
-                                    <div className="cart_qty qty-box">
-                                      <div className="input-group">
-                                        <button type="button" className="qty-left-minus"
-                                          data-type="minus" data-field="">
-                                          <i className="fa fa-minus"></i>
-                                        </button>
-                                        <input className="form-control input-number qty-input"
-                                          type="text" name="quantity" value="0" />
-                                        <button type="button" className="qty-right-plus"
-                                          data-type="plus" data-field="">
-                                          <i className="fa fa-plus"></i>
-                                        </button>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-
-                            <div className="col-12 px-0">
-                              <div className="product-box">
-                                <div className="product-image">
-                                  <a href="product-left-thumbnail.html">
-                                    <img src={saveProduct?.[7]?.imageURL}
-                                      className="img-fluid blur-up lazyload" alt="" />
-                                  </a>
-                                  <ul className="product-option">
-                                    <li data-bs-toggle="tooltip" data-bs-placement="top"
-                                      title="View">
-                                     <a href="#" onClick={(e) => {
-                                        e.preventDefault();
-                                        handleViewProduct(saveProduct?.[7]);
-                                      }}>
-                                        <i data-feather="eye"></i>
-                                      </a>
-                                    </li>
-
-                                    <li data-bs-toggle="tooltip" data-bs-placement="top"
-                                      title="Compare">
-                                      <a href="compare.html">
-                                        <i data-feather="refresh-cw"></i>
-                                      </a>
-                                    </li>
-
-                                    <li data-bs-toggle="tooltip" data-bs-placement="top"
-                                      title="Wishlist">
-                                      <a href="wishlist.html" className="notifi-wishlist">
-                                        <i data-feather="heart"></i>
-                                      </a>
-                                    </li>
-                                  </ul>
-                                </div>
-                                <div className="product-detail">
-                                  <a href="product-left-thumbnail.html">
-                                    <h6 className="name">{saveProduct?.[7]?.productName}
-                                    </h6>
-                                  </a>
-
-                                  <h5 className="sold text-content">
-                                    <span className="theme-color price">${saveProduct?.[7]?.salePrice != null ? saveProduct?.[7]?.salePrice.toFixed(2) : '0.00'}</span>
-                                    <del>${saveProduct?.[7]?.price}</del>
-                                  </h5>
-
-                                  <div className="product-rating mt-sm-2 mt-1">
-                                    <ul className="rating">
-                                      <li>
-                                        <i data-feather="star" className="fill"></i>
-                                      </li>
-                                      <li>
-                                        <i data-feather="star" className="fill"></i>
-                                      </li>
-                                      <li>
-                                        <i data-feather="star" className="fill"></i>
-                                      </li>
-                                      <li>
-                                        <i data-feather="star" className="fill"></i>
-                                      </li>
-                                      <li>
-                                        <i data-feather="star"></i>
-                                      </li>
-                                    </ul>
-
-                                    <h6 className="theme-color">In Stock</h6>
-                                  </div>
-
-                                  <div className="add-to-cart-box">
-                                    <button className="btn btn-add-cart addcart-button">Add
-                                      <span className="add-icon">
-                                        <i className="fa-solid fa-plus"></i>
-                                      </span>
-                                    </button>
-                                    <div className="cart_qty qty-box">
-                                      <div className="input-group">
-                                        <button type="button" className="qty-left-minus"
-                                          data-type="minus" data-field="">
-                                          <i className="fa fa-minus"></i>
-                                        </button>
-                                        <input className="form-control input-number qty-input"
-                                          type="text" name="quantity" value="0" />
-                                        <button type="button" className="qty-right-plus"
-                                          data-type="plus" data-field="">
-                                          <i className="fa fa-plus"></i>
-                                        </button>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div>
-                          <div className="row m-0">
-                            <div className="col-12 px-0">
-                              <div className="product-box">
-                                <div className="product-image">
-                                  <a href="product-left-thumbnail.html">
-                                    <img src={saveProduct?.[8]?.imageURL}
-                                      className="img-fluid blur-up lazyload" alt="" />
-                                  </a>
-                                  <ul className="product-option">
-                                    <li data-bs-toggle="tooltip" data-bs-placement="top"
-                                      title="View">
-                                      <a href="#" onClick={(e) => {
-                                        e.preventDefault();
-                                        handleViewProduct(saveProduct?.[8]);
-                                      }}>
-                                        <i data-feather="eye"></i>
-                                      </a>
-                                    </li>
-
-                                    <li data-bs-toggle="tooltip" data-bs-placement="top"
-                                      title="Compare">
-                                      <a href="compare.html">
-                                        <i data-feather="refresh-cw"></i>
-                                      </a>
-                                    </li>
-
-                                    <li data-bs-toggle="tooltip" data-bs-placement="top"
-                                      title="Wishlist">
-                                      <a href="wishlist.html" className="notifi-wishlist">
-                                        <i data-feather="heart"></i>
-                                      </a>
-                                    </li>
-                                  </ul>
-                                </div>
-                                <div className="product-detail">
-                                  <a href="product-left-thumbnail.html">
-                                    <h6 className="name">{saveProduct?.[8]?.productName}</h6>
-                                  </a>
-
-                                  <h5 className="sold text-content">
-                                    <span className="theme-color price">${saveProduct?.[8]?.salePrice != null ? saveProduct?.[8]?.salePrice.toFixed(2) : '0.00'}</span>
-                                    <del>${saveProduct?.[8]?.price}</del>
-                                  </h5>
-
-                                  <div className="product-rating mt-sm-2 mt-1">
-                                    <ul className="rating">
-                                      <li>
-                                        <i data-feather="star" className="fill"></i>
-                                      </li>
-                                      <li>
-                                        <i data-feather="star" className="fill"></i>
-                                      </li>
-                                      <li>
-                                        <i data-feather="star" className="fill"></i>
-                                      </li>
-                                      <li>
-                                        <i data-feather="star" className="fill"></i>
-                                      </li>
-                                      <li>
-                                        <i data-feather="star"></i>
-                                      </li>
-                                    </ul>
-
-                                    <h6 className="theme-color">In Stock</h6>
-                                  </div>
-
-                                  <div className="add-to-cart-box">
-                                    <button className="btn btn-add-cart addcart-button">Add
-                                      <span className="add-icon">
-                                        <i className="fa-solid fa-plus"></i>
-                                      </span>
-                                    </button>
-                                    <div className="cart_qty qty-box">
-                                      <div className="input-group">
-                                        <button type="button" className="qty-left-minus"
-                                          data-type="minus" data-field="">
-                                          <i className="fa fa-minus"></i>
-                                        </button>
-                                        <input className="form-control input-number qty-input"
-                                          type="text" name="quantity" value="0" />
-                                        <button type="button" className="qty-right-plus"
-                                          data-type="plus" data-field="">
-                                          <i className="fa fa-plus"></i>
-                                        </button>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-
-                            <div className="col-12 px-0">
-                              <div className="product-box">
-                                <div className="product-image">
-                                  <a href="product-left-thumbnail.html">
-                                    <img src={saveProduct?.[9]?.imageURL}
-                                      className="img-fluid blur-up lazyload" alt="" />
-                                  </a>
-                                  <ul className="product-option">
-                                    <li data-bs-toggle="tooltip" data-bs-placement="top"
-                                      title="View">
-                                      <a href="#" onClick={(e) => {
-                                        e.preventDefault();
-                                        handleViewProduct(saveProduct?.[9]);
-                                      }}>
-                                        <i data-feather="eye"></i>
-                                      </a>
-                                    </li>
-
-                                    <li data-bs-toggle="tooltip" data-bs-placement="top"
-                                      title="Compare">
-                                      <a href="compare.html">
-                                        <i data-feather="refresh-cw"></i>
-                                      </a>
-                                    </li>
-
-                                    <li data-bs-toggle="tooltip" data-bs-placement="top"
-                                      title="Wishlist">
-                                      <a href="wishlist.html" className="notifi-wishlist">
-                                        <i data-feather="heart"></i>
-                                      </a>
-                                    </li>
-                                  </ul>
-                                </div>
-                                <div className="product-detail">
-                                  <a href="product-left-thumbnail.html">
-                                    <h6 className="name">{saveProduct?.[9]?.productName}
-                                    </h6>
-                                  </a>
-
-                                  <h5 className="sold text-content">
-                                    <span className="theme-color price">${saveProduct?.[9]?.salePrice != null ? saveProduct?.[9]?.salePrice.toFixed(2) : '0.00'}</span>
-                                    <del>${saveProduct?.[9]?.price}</del>
-                                  </h5>
-
-                                  <div className="product-rating mt-sm-2 mt-1">
-                                    <ul className="rating">
-                                      <li>
-                                        <i data-feather="star" className="fill"></i>
-                                      </li>
-                                      <li>
-                                        <i data-feather="star" className="fill"></i>
-                                      </li>
-                                      <li>
-                                        <i data-feather="star" className="fill"></i>
-                                      </li>
-                                      <li>
-                                        <i data-feather="star" className="fill"></i>
-                                      </li>
-                                      <li>
-                                        <i data-feather="star"></i>
-                                      </li>
-                                    </ul>
-
-                                    <h6 className="theme-color">In Stock</h6>
-                                  </div>
-
-                                  <div className="add-to-cart-box">
-                                    <button className="btn btn-add-cart addcart-button">Add
-                                      <span className="add-icon">
-                                        <i className="fa-solid fa-plus"></i>
-                                      </span>
-                                    </button>
-                                    <div className="cart_qty qty-box">
-                                      <div className="input-group">
-                                        <button type="button" className="qty-left-minus"
-                                          data-type="minus" data-field="">
-                                          <i className="fa fa-minus"></i>
-                                        </button>
-                                        <input className="form-control input-number qty-input"
-                                          type="text" name="quantity" value="0" />
-                                        <button type="button" className="qty-right-plus"
-                                          data-type="plus" data-field="">
-                                          <i className="fa fa-plus"></i>
-                                        </button>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div>
-                          <div className="row m-0">
-                            <div className="col-12 px-0">
-                              <div className="product-box">
-                                <div className="product-image">
-                                  <a href="product-left-thumbnail.html">
-                                    <img src={saveProduct?.[10]?.imageURL}
-                                      className="img-fluid blur-up lazyload" alt="" />
-                                  </a>
-                                  <ul className="product-option">
-                                    <li data-bs-toggle="tooltip" data-bs-placement="top"
-                                      title="View">
-                                      <a href="#" onClick={(e) => {
-                                        e.preventDefault();
-                                        handleViewProduct(saveProduct?.[10]);
-                                      }}>
-                                        <i data-feather="eye"></i>
-                                      </a>
-                                    </li>
-
-                                    <li data-bs-toggle="tooltip" data-bs-placement="top"
-                                      title="Compare">
-                                      <a href="compare.html">
-                                        <i data-feather="refresh-cw"></i>
-                                      </a>
-                                    </li>
-
-                                    <li data-bs-toggle="tooltip" data-bs-placement="top"
-                                      title="Wishlist">
-                                      <a href="wishlist.html" className="notifi-wishlist">
-                                        <i data-feather="heart"></i>
-                                      </a>
-                                    </li>
-                                  </ul>
-                                </div>
-                                <div className="product-detail">
-                                  <a href="product-left-thumbnail.html">
-                                    <h6 className="name">{saveProduct?.[10]?.productName}
-                                    </h6>
-                                  </a>
-
-                                  <h5 className="sold text-content">
-                                    <span className="theme-color price">${saveProduct?.[10]?.salePrice != null ? saveProduct?.[10]?.salePrice.toFixed(2) : '0.00'}</span>
-                                    <del>${saveProduct?.[10]?.price}</del>
-                                  </h5>
-
-                                  <div className="product-rating mt-sm-2 mt-1">
-                                    <ul className="rating">
-                                      <li>
-                                        <i data-feather="star" className="fill"></i>
-                                      </li>
-                                      <li>
-                                        <i data-feather="star" className="fill"></i>
-                                      </li>
-                                      <li>
-                                        <i data-feather="star" className="fill"></i>
-                                      </li>
-                                      <li>
-                                        <i data-feather="star" className="fill"></i>
-                                      </li>
-                                      <li>
-                                        <i data-feather="star"></i>
-                                      </li>
-                                    </ul>
-
-                                    <h6 className="theme-color">In Stock</h6>
-                                  </div>
-
-                                  <div className="add-to-cart-box">
-                                    <button className="btn btn-add-cart addcart-button">Add
-                                      <span className="add-icon">
-                                        <i className="fa-solid fa-plus"></i>
-                                      </span>
-                                    </button>
-                                    <div className="cart_qty qty-box">
-                                      <div className="input-group">
-                                        <button type="button" className="qty-left-minus"
-                                          data-type="minus" data-field="">
-                                          <i className="fa fa-minus"></i>
-                                        </button>
-                                        <input className="form-control input-number qty-input"
-                                          type="text" name="quantity" value="0" />
-                                        <button type="button" className="qty-right-plus"
-                                          data-type="plus" data-field="">
-                                          <i className="fa fa-plus"></i>
-                                        </button>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-
-                            <div className="col-12 px-0">
-                              <div className="product-box">
-                                <div className="product-image">
-                                  <a href="product-left-thumbnail.html">
-                                    <img src={saveProduct?.[11]?.imageURL}
-                                      className="img-fluid blur-up lazyload" alt="" />
-                                  </a>
-                                  <ul className="product-option">
-                                    <li data-bs-toggle="tooltip" data-bs-placement="top"
-                                      title="View">
-                                      <a href="#" onClick={(e) => {
-                                        e.preventDefault();
-                                        handleViewProduct(saveProduct?.[11]);
-                                      }}>
-                                        <i data-feather="eye"></i>
-                                      </a>
-                                    </li>
-
-                                    <li data-bs-toggle="tooltip" data-bs-placement="top"
-                                      title="Compare">
-                                      <a href="compare.html">
-                                        <i data-feather="refresh-cw"></i>
-                                      </a>
-                                    </li>
-
-                                    <li data-bs-toggle="tooltip" data-bs-placement="top"
-                                      title="Wishlist">
-                                      <a href="wishlist.html" className="notifi-wishlist">
-                                        <i data-feather="heart"></i>
-                                      </a>
-                                    </li>
-                                  </ul>
-                                </div>
-                                <div className="product-detail">
-                                  <a href="product-left-thumbnail.html">
-                                    <h6 className="name">{saveProduct?.[11]?.productName}
-                                    </h6>
-                                  </a>
-
-                                  <h5 className="sold text-content">
-                                    <span className="theme-color price">${saveProduct?.[11]?.salePrice != null ? saveProduct?.[11]?.salePrice.toFixed(2) : '0.00'}</span>
-                                    <del>${saveProduct?.[11]?.price}</del>
-                                  </h5>
-
-                                  <div className="product-rating mt-sm-2 mt-1">
-                                    <ul className="rating">
-                                      <li>
-                                        <i data-feather="star" className="fill"></i>
-                                      </li>
-                                      <li>
-                                        <i data-feather="star" className="fill"></i>
-                                      </li>
-                                      <li>
-                                        <i data-feather="star" className="fill"></i>
-                                      </li>
-                                      <li>
-                                        <i data-feather="star" className="fill"></i>
-                                      </li>
-                                      <li>
-                                        <i data-feather="star"></i>
-                                      </li>
-                                    </ul>
-
-                                    <h6 className="theme-color">In Stock</h6>
-                                  </div>
-
-                                  <div className="add-to-cart-box">
-                                    <button className="btn btn-add-cart addcart-button">Add
-                                      <span className="add-icon">
-                                        <i className="fa-solid fa-plus"></i>
-                                      </span>
-                                    </button>
-                                    <div className="cart_qty qty-box">
-                                      <div className="input-group">
-                                        <button type="button" className="qty-left-minus"
-                                          data-type="minus" data-field="">
-                                          <i className="fa fa-minus"></i>
-                                        </button>
-                                        <input className="form-control input-number qty-input"
-                                          type="text" name="quantity" value="0" />
-                                        <button type="button" className="qty-right-plus"
-                                          data-type="plus" data-field="">
-                                          <i className="fa fa-plus"></i>
-                                        </button>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                    <ProductSlider
+                      products={saveProduct}
+                      handleViewProduct={handleViewProduct}
+                      toggleWishlist={toggleWishlist}
+                      wishlistMap={wishlistMap}
+                    />
                   </div>
 
                   <div className="title">
@@ -2788,7 +1721,7 @@ const HomePage = () => {
                       <div className="col-md-6">
                         <div className="banner-contain hover-effect">
                           <img
-                            src="../assets/images/vegetable/banner/9.jpg"
+                            src="9.jpg"
                             className="bg-img blur-up lazyload"
                             alt=""
                           />
@@ -2811,7 +1744,7 @@ const HomePage = () => {
                       <div className="col-md-6">
                         <div className="banner-contain hover-effect">
                           <img
-                            src="../assets/images/vegetable/banner/10.jpg"
+                            src="10.jpg"
                             className="bg-img blur-up lazyload"
                             alt=""
                           />
@@ -2861,11 +1794,11 @@ const HomePage = () => {
                                 <ul className="product-option">
                                   <li data-bs-toggle="tooltip" data-bs-placement="top" title="View">
                                     <a href="#" onClick={(e) => {
-                                        e.preventDefault();
-                                        handleViewProduct(saveProduct?.[12]);
-                                      }}>
-                                        <i data-feather="eye"></i>
-                                      </a>
+                                      e.preventDefault();
+                                      handleViewProduct(saveProduct?.[12]);
+                                    }}>
+                                      <i data-feather="eye"></i>
+                                    </a>
                                   </li>
 
                                   <li data-bs-toggle="tooltip" data-bs-placement="top" title="Compare">
@@ -3417,7 +2350,7 @@ const HomePage = () => {
 
                   <div className="section-t-space">
                     <div className="banner-contain">
-                      <img src="../assets/images/vegetable/banner/15.jpg" className="bg-img blur-up lazyload" alt="" />
+                      <img src="15.jpg" className="bg-img blur-up lazyload" alt="" />
                       <div className="banner-details p-center p-4 text-white text-center">
                         <div>
                           <h3 className="lh-base fw-bold offer-text">Get $3 Cashback! Min Order of $30</h3>
@@ -3432,7 +2365,7 @@ const HomePage = () => {
                       <div className="col-xxl-8 col-xl-12 col-md-7">
                         <div className="banner-contain hover-effect">
                           <img
-                            src="../assets/images/vegetable/banner/12.jpg"
+                            src="12.jpg"
                             className="bg-img blur-up lazyload"
                             alt=""
                           />
@@ -3460,7 +2393,7 @@ const HomePage = () => {
                       <div className="col-xxl-4 col-xl-12 col-md-5">
                         <a href="shop-left-sidebar.html" className="banner-contain hover-effect h-100">
                           <img
-                            src="../assets/images/vegetable/banner/13.jpg"
+                            src="13.jpg"
                             className="bg-img blur-up lazyload"
                             alt=""
                           />
@@ -3768,7 +2701,7 @@ const HomePage = () => {
 
                   <div className="section-t-space">
                     <div className="banner-contain hover-effect">
-                      <img src="../assets/images/vegetable/banner/14.jpg" className="bg-img blur-up lazyload" alt="" />
+                      <img src="14.jpg" className="bg-img blur-up lazyload" alt="" />
                       <div className="banner-details p-center banner-b-space w-100 text-center">
                         <div>
                           <h6 className="ls-expanded theme-color mb-sm-3 mb-1">SUMMER</h6>
@@ -4137,23 +3070,7 @@ const HomePage = () => {
               </div>
             </div>
           </div>
-          <div className="cookie-bar-box">
-            <div className="cookie-box">
-              <div className="cookie-image">
-                <img src="../assets/images/cookie-bar.png" className="blur-up lazyload" alt="" />
-                <h2>Cookies!</h2>
-              </div>
-
-              <div className="cookie-contain">
-                <h5 className="text-content">We use cookies to make your experience better</h5>
-              </div>
-            </div>
-
-            <div className="button-group">
-              <button className="btn privacy-button">Privacy Policy</button>
-              <button className="btn ok-button">OK</button>
-            </div>
-          </div>
+          <CookieConsent />
           <div className="modal fade theme-modal deal-modal" id="deal-box" tabIndex="-1">
             <div className="modal-dialog modal-dialog-centered modal-fullscreen-sm-down">
               <div className="modal-content">
@@ -4198,61 +3115,7 @@ const HomePage = () => {
             </div>
           </div>
           <div className="theme-option">
-            <div className="setting-box">
-              <button className="btn setting-button">
-                <i className="fa-solid fa-gear"></i>
-              </button>
-
-              <div className="theme-setting-2">
-                <div className="theme-box">
-                  <ul>
-                    <li>
-                      <div className="setting-name">
-                        <h4>Color</h4>
-                      </div>
-                      <div className="theme-setting-button color-picker">
-                        <form className="form-control">
-                          <label htmlFor="colorPick" className="form-label mb-0">
-                            Theme Color
-                          </label>
-                          <input
-                            type="color"
-                            className="form-control form-control-color"
-                            id="colorPick"
-                            defaultValue="#0da487"
-                            title="Choose your color"
-                          />
-                        </form>
-                      </div>
-                    </li>
-
-                    <li>
-                      <div className="setting-name">
-                        <h4>Dark</h4>
-                      </div>
-                      <div className="theme-setting-button">
-                        <button className="btn btn-2 outline" id="darkButton">
-                          Dark
-                        </button>
-                        <button className="btn btn-2 unline" id="lightButton">
-                          Light
-                        </button>
-                      </div>
-                    </li>
-
-                    <li>
-                      <div className="setting-name">
-                        <h4>RTL</h4>
-                      </div>
-                      <div className="theme-setting-button rtl">
-                        <button className="btn btn-2 rtl-unline">LTR</button>
-                        <button className="btn btn-2 rtl-outline">RTL</button>
-                      </div>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
+            <SettingsBox />
 
             <div className="back-to-top">
               <a id="back-to-top" href="#">

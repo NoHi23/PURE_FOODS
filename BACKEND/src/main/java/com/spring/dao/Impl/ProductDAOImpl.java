@@ -8,7 +8,9 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import jakarta.persistence.Query;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Repository;
+
 import java.util.List;
 
 
@@ -109,6 +111,72 @@ public class ProductDAOImpl implements ProductDAO {
                 .createQuery(hql, Products.class)
                 .setMaxResults(limit)
                 .getResultList();
+    }
+
+
+    @Override
+    public Page<Products> searchProducts(String keyword,
+                                         Integer categoryId,
+                                         Integer supplierId,
+                                         Integer minDiscount,
+                                         Pageable pageable) {
+        Session session = sessionFactory.getCurrentSession();
+
+        StringBuilder hql = new StringBuilder("FROM Products p WHERE 1=1 ");
+        StringBuilder countHql = new StringBuilder("SELECT COUNT(p) FROM Products p WHERE 1=1 ");
+
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            hql.append("AND LOWER(p.productName) LIKE :keyword ");
+            countHql.append("AND LOWER(p.productName) LIKE :keyword ");
+        }
+        if (categoryId != null) {
+            hql.append("AND p.categoryId = :categoryId ");
+            countHql.append("AND p.categoryId = :categoryId ");
+        }
+        if (supplierId != null) {
+            hql.append("AND p.supplierId = :supplierId ");
+            countHql.append("AND p.supplierId = :supplierId ");
+        }
+        if (minDiscount != null) {
+            hql.append("AND p.discountPercent >= :minDiscount ");
+            countHql.append("AND p.discountPercent >= :minDiscount ");
+        }
+
+        hql.append("ORDER BY p.discountPercent DESC, p.productId DESC");
+
+        // Query dữ liệu
+        Query query = session.createQuery(hql.toString(), Products.class);
+        // Query tổng số dòng
+        Query countQuery = session.createQuery(countHql.toString());
+
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            query.setParameter("keyword", "%" + keyword.toLowerCase() + "%");
+            countQuery.setParameter("keyword", "%" + keyword.toLowerCase() + "%");
+        }
+        if (categoryId != null) {
+            query.setParameter("categoryId", categoryId);
+            countQuery.setParameter("categoryId", categoryId);
+        }
+        if (supplierId != null) {
+            query.setParameter("supplierId", supplierId);
+            countQuery.setParameter("supplierId", supplierId);
+        }
+        if (minDiscount != null) {
+            query.setParameter("minDiscount", minDiscount);
+            countQuery.setParameter("minDiscount", minDiscount);
+        }
+
+        // Áp dụng phân trang từ Pageable
+        int page = pageable.getPageNumber();
+        int size = pageable.getPageSize();
+
+        query.setFirstResult(page * size);
+        query.setMaxResults(size);
+
+        List<Products> resultList = query.getResultList();
+        long total = (long) countQuery.getSingleResult(); // Tổng số kết quả
+
+        return new PageImpl<>(resultList, pageable, total);
     }
 
 

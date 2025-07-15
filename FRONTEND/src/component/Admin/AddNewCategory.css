@@ -1,0 +1,78 @@
+/* AddNewCategory.css */
+
+.page-wrapper {
+  background-color: #f4f6f9;
+  min-height: 100vh;
+}
+
+.card {
+  background-color: #ffffff;
+  border-radius: 8px;
+  border: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.card-header {
+  background-color: #009688;
+  color: white;
+  padding: 16px;
+  border-bottom: 1px solid #e0e0e0;
+  border-radius: 8px 8px 0 0;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.card-body {
+  padding: 24px;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.form-label {
+  font-weight: 600;
+  color: #333;
+}
+
+.form-control, .form-select {
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  padding: 10px;
+  transition: border-color 0.3s;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: #009688;
+  box-shadow: 0 0 0 2px rgba(0, 150, 136, 0.2);
+}
+
+.form-check-input {
+  cursor: pointer;
+}
+
+.btn-primary {
+  background-color: #009688;
+  border-color: #009688;
+  padding: 8px 20px;
+  font-weight: 600;
+  transition: background-color 0.2s ease;
+}
+
+.btn-primary:hover {
+  background-color: #00796b;
+  border-color: #00796b;
+}
+
+.btn-secondary {
+  padding: 8px 20px;
+}
+
+.footer {
+  margin-top: 40px;
+  padding: 10px 0;
+  text-align: center;
+  font-size: 14px;
+  color: #666;
+}
+
+.footer-copyright {
+  border-top: 1px solid #ddd;
+  padding-top: 10px;
+}

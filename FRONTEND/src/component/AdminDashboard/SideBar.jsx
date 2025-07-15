@@ -41,15 +41,15 @@ const SideBar = () => {
                 </Link>
               </li>
 
-              <li className="sidebar-list">
-                <a className="linear-icon-link sidebar-link sidebar-title" href="javascript:void(0)">
-                  <i className="ri-store-3-line"></i>
-                  <span>Product</span>
-                </a>
-                <ul className="sidebar-submenu">
-                  <li>
-                    <Link to={'/admin-product'}>Prodcts</Link>
-                  </li>
+                <li className="sidebar-list">
+                  <a className="linear-icon-link sidebar-link sidebar-title" href="javascript:void(0)">
+                    <i className="ri-store-3-line"></i>
+                    <span>Product</span>
+                  </a>
+                  <ul className="sidebar-submenu">
+                    <li>
+                      <Link to={'/admin-product'}>Products</Link>
+                    </li>
 
                   <li>
                     <Link to={'/admin-add-new-product'}>Add New Products</Link>
@@ -57,21 +57,37 @@ const SideBar = () => {
                 </ul>
               </li>
 
-              <li className="sidebar-list">
-                <a className="linear-icon-link sidebar-link sidebar-title" href="javascript:void(0)">
-                  <i className="ri-list-check-2"></i>
-                  <span>Category</span>
-                </a>
-                <ul className="sidebar-submenu">
-                  <li>
-                    <Link to={'/category'}>Category List</Link>
-                  </li>
+                <li className="sidebar-list">
+                  <a className="linear-icon-link sidebar-link sidebar-title" href="javascript:void(0)">
+                    <i className="ri-list-check-2"></i>
+                    <span>Category</span>
+                  </a>
+                  <ul className="sidebar-submenu">
+                    <li>
+                      <Link to={'/admin-category'}>Category List</Link>
+                    </li>
 
-                  <li>
-                    <a href="add-new-category.html">Add New Category</a>
-                  </li>
-                </ul>
-              </li>
+                    <li>
+                      <a href='/admin-add-new-category'>Add New Category</a>
+                    </li>
+                  </ul>
+                </li>
+
+                <li className="sidebar-list">
+                  <a className="linear-icon-link sidebar-link sidebar-title" href="javascript:void(0)">
+                    <i className="ri-list-check-2"></i>
+                    <span>Supplier</span>
+                  </a>
+                  <ul className="sidebar-submenu">
+                    <li>
+                      <Link to={'/admin-supplier'}>Supplier List</Link>
+                    </li>
+
+                    <li>
+                      <a href='/admin-add-new-supplier'>Add New Supplier</a>
+                    </li>
+                  </ul>
+                </li>
 
               <li className="sidebar-list">
                 <a className="sidebar-link sidebar-title" href="javascript:void(0)">

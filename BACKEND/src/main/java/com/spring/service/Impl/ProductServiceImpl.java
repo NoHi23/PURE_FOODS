@@ -7,11 +7,14 @@ import com.spring.entity.ProductDetails;
 import com.spring.entity.ProductImages;
 import com.spring.entity.Products;
 import com.spring.service.ProductService;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.springframework.data.domain.Pageable;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
@@ -25,6 +28,9 @@ public class ProductServiceImpl implements ProductService {
     private ProductDAO productDAO;
     @Autowired
     private ProductImageDAO productImageDAO;
+
+    @Autowired
+    private ModelMapper mapper;
 
     @Override
     public List<ProductDTO> getAllProduct() {
@@ -234,4 +240,20 @@ public class ProductServiceImpl implements ProductService {
         return result;
     }
 
+    @Override
+    public Page<ProductDTO> searchProducts(String keyword,
+                                           Integer categoryId,
+                                           Integer supplierId,
+                                           Integer minDiscount,
+                                           Pageable pageable) {
+
+        Page<Products> page = productDAO.searchProducts(
+                keyword.trim().toLowerCase(),
+                categoryId,
+                supplierId,
+                minDiscount,
+                pageable);
+
+        return page.map(p -> mapper.map(p, ProductDTO.class));
+    }
 }

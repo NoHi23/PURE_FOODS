@@ -124,6 +124,7 @@ public class OrderController {
             Map<String, Object> response = new HashMap<>();
             response.put("totalOrders", totalOrders);
             response.put("status", 200);
+            response.put("countOrder", count);
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
             Map<String, Object> errorResponse = new HashMap<>();

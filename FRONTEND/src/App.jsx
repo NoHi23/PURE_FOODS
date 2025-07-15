@@ -5,7 +5,7 @@ import LoginPage from './component/Login/LoginPage';
 import SignUp from './component/SignUp/SignUp';
 import AdminDashboard from './component/AdminDashboard/AdminDashboard';
 import ImporterDashboard from './component/Importer/ImporterDashboard';
-import TraderDashboard from './component/WholeSaler/TraderDashboard';
+import TraderDashboard from './component/Trader/TraderDashboard';
 import Product from './component/Admin/Product';
 import Forgot from './component/Login/Forgot';
 import { Bounce } from 'react-toastify';
@@ -16,6 +16,9 @@ import AddNewProduct from './component/Admin/AddNewProduct';
 import ResetPassword from './component/Login/ResetPassword';
 import VerifyOtp from './component/Login/VerifyOtp';
 import Category from './component/Admin/Category';
+import AddNewCategory from './component/Admin/AddNewCategory';
+import Supplier from './component/Admin/Supplier';
+import AddNewSupplier from './component/Admin/AddNewSupplier';
 import AllUser from './component/Admin/AllUser';
 import Footer from './layouts/Footer';
 import Header from './layouts/Header';
@@ -41,11 +44,15 @@ function AppContent() {
     '/admin-add-new-product', '/category', '/all-user', '/all-role', '/add-new-user', '/add-new-role',
     '/admin-order-list', '/admin-order-detail/:orderId', '/admin-order-tracking'
   ];
-  const backToTop = ['/login', '/signup', '/forgot', '/reset-password', '/verify-otp', '/'];
+  const backToTop = ['/login', '/signup', '/forgot', '/reset-password', '/verify-otp', '/', "/wishlist"];
 
   const shouldHideHeader = hideHeaderPaths.some(path => location.pathname.startsWith(path.split(':')[0]));
   const shouldHideFooter = hideFooterPaths.some(path => location.pathname.startsWith(path.split(':')[0]));
   const shouldHideBackToTop = backToTop.includes(location.pathname);
+
+  const showAIChatPaths = ['/', '/wishlist'];
+  const shouldShowAIChat = showAIChatPaths.includes(location.pathname);
+
 
   return (
     <>
@@ -74,9 +81,24 @@ function AppContent() {
             <AddNewProduct />
           </PrivateRoute>
         } />
-        <Route path="/category" element={
+        <Route path="/admin-category" element={
           <PrivateRoute allowedRoles={1}>
             <Category />
+          </PrivateRoute>
+        } />
+        <Route path="/admin-add-new-category" element={
+          <PrivateRoute allowedRoles={1}>
+            <AddNewCategory />
+          </PrivateRoute>
+        } />
+        <Route path="/admin-supplier" element={
+          <PrivateRoute allowedRoles={1}>
+            <Supplier />
+          </PrivateRoute>
+        } />
+        <Route path="/admin-add-new-supplier" element={
+          <PrivateRoute allowedRoles={1}>
+            <AddNewSupplier />
           </PrivateRoute>
         } />
         <Route path="/all-user" element={
@@ -138,6 +160,7 @@ function AppContent() {
       {/* Chỉ hiện Footer nếu không nằm trong blacklist và user tồn tại */}
       {!shouldHideFooter && <Footer />}
       {!shouldHideBackToTop && <BackToTopButton />}
+      {shouldShowAIChat && <AIChatWidget />}
     </>
   );
 }

@@ -17,6 +17,8 @@ const AdminDashboard = () => {
     const user = JSON.parse(localStorage.getItem('user'));
     const [totalProduct, setTotalProduct] = useState(0);
     const [totalUser, setTotalUser] = useState(0);
+    const [totalOrder, setTotalOrder] = useState(0);
+
     const navigate = useNavigate();
     useEffect(() => {
         axios.get('http://localhost:8082/PureFoods/api/product/count')
@@ -26,6 +28,11 @@ const AdminDashboard = () => {
     useEffect(() => {
         axios.get('http://localhost:8082/PureFoods/api/users/count')
             .then(res => { setTotalUser(res.data.totalUser) })
+    }, [])
+
+    useEffect(() => {
+        axios.get('http://localhost:8082/PureFoods/api/orders/count')
+            .then(res => { setTotalOrder(res.data.countOrder) })
     }, [])
 
 
@@ -60,7 +67,7 @@ const AdminDashboard = () => {
                 <span className="lnr lnr-chevron-up"></span>
             </div>
             <div className="page-wrapper compact-wrapper" id="pageWrapper">
-                <TopBar/>
+                <TopBar />
 
                 <div className="page-body-wrapper">
                     <SideBar />
@@ -92,7 +99,7 @@ const AdminDashboard = () => {
                                             <div className="media static-top-widget">
                                                 <div className="media-body p-0">
                                                     <span className="m-0">Total Orders</span>
-                                                    <h4 className="mb-0 counter">9856
+                                                    <h4 className="mb-0 counter">{totalOrder}
                                                         <span className="badge badge-light-danger grow">
                                                             <i data-feather="trending-down"></i>8.5%</span>
                                                     </h4>
@@ -172,7 +179,7 @@ const AdminDashboard = () => {
                                                 ].map((item, index) => (
                                                     <div className="dashboard-category-wrapper" key={index}>
                                                         <div className="dashboard-category">
-                                                            <a href="javascript:void(0)" className="category-image">
+                                                            <a href="#" className="category-image" onClick={(e)=> e.preventDefault()}>
                                                                 <img
                                                                     src={`../back-end/assets/svg/${item.src}`}
                                                                     className="img-fluid"
