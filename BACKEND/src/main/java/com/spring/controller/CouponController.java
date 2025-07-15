@@ -1,126 +1,128 @@
 package com.spring.controller;
 
-
 import com.spring.dto.CouponDTO;
 import com.spring.service.CouponService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-
-import java.util.*;
-
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @RestController
-@RequestMapping("/api/admin/coupons")
+@RequestMapping("/api/coupons")
 @CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 public class CouponController {
-
-
     @Autowired
     private CouponService couponService;
 
-
-    @PostMapping("/create")
-    public ResponseEntity<?> createCoupon(@RequestBody CouponDTO couponDTO) {
+    @PostMapping("/add")
+    public ResponseEntity<?> addCoupon(@RequestBody CouponDTO couponDTO) {
         try {
-            CouponDTO created = couponService.createCoupon(couponDTO);
-            return ResponseEntity.ok(Map.of(
-                    "message", "Coupon created successfully!",
-                    "status", 200,
-                    "coupon", created
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of(
-                    "message", e.getMessage(),
-                    "status", 400
-            ));
+            CouponDTO newCoupon = couponService.addCoupon(couponDTO);
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Coupon added successfully!");
+            response.put("status", 200);
+            response.put("coupon", newCoupon);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("message", e.getMessage());
+            errorResponse.put("status", 201);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
     }
-
 
     @GetMapping("/getAll")
     public ResponseEntity<?> getAllCoupons() {
         try {
-            List<CouponDTO> list = couponService.getAllCoupons();
-            return ResponseEntity.ok(Map.of(
-                    "status", 200,
-                    "coupons", list
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of(
-                    "message", e.getMessage(),
-                    "status", 400
-            ));
+            List<CouponDTO> couponDTOList = couponService.getAllCoupons();
+            Map<String, Object> response = new HashMap<>();
+            response.put("couponList", couponDTOList);
+            response.put("status", 200);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("message", e.getMessage());
+            errorResponse.put("status", 201);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
     }
 
-
-    @GetMapping("/{id}")
-    public ResponseEntity<?> getCouponById(@PathVariable Long id) {
+    @GetMapping("/count")
+    public ResponseEntity<?> getTotalCoupons() {
         try {
-            CouponDTO coupon = couponService.getCouponById(id);
-            return ResponseEntity.ok(Map.of(
-                    "status", 200,
-                    "coupon", coupon
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of(
-                    "message", e.getMessage(),
-                    "status", 400
-            ));
+            int totalCoupons = couponService.getTotalCoupons();
+            Map<String, Object> response = new HashMap<>();
+            response.put("totalCoupons", totalCoupons);
+            response.put("status", 200);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("message", e.getMessage());
+            errorResponse.put("status", 201);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
     }
-
 
     @PutMapping("/update")
     public ResponseEntity<?> updateCoupon(@RequestBody CouponDTO couponDTO) {
         try {
-            CouponDTO updated = couponService.updateCoupon(couponDTO.getCouponId(), couponDTO);
-            return ResponseEntity.ok(Map.of(
-                    "message", "Coupon updated successfully!",
-                    "status", 200,
-                    "coupon", updated
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of(
-                    "message", e.getMessage(),
-                    "status", 400
-            ));
+            CouponDTO updatedCoupon = couponService.updateCoupon(couponDTO);
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Coupon updated successfully!");
+            response.put("status", 200);
+            response.put("coupon", updatedCoupon);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("message", e.getMessage());
+            errorResponse.put("status", 201);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
     }
 
-
-    @DeleteMapping("/delete/{id}")
-    public ResponseEntity<?> deleteCoupon(@PathVariable Long id) {
+    @PutMapping("/delete")
+    public ResponseEntity<?> deleteCoupon(@RequestBody CouponDTO couponDTO) {
         try {
-            couponService.deleteCoupon(id);
-            return ResponseEntity.ok(Map.of(
-                    "message", "Coupon deleted successfully!",
-                    "status", 200
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of(
-                    "message", e.getMessage(),
-                    "status", 400
-            ));
+            CouponDTO deletedCoupon = couponService.deleteCoupon(couponDTO.getCouponId());
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Coupon deleted successfully!");
+            response.put("status", 200);
+            response.put("coupon", deletedCoupon);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("message", e.getMessage());
+            errorResponse.put("status", 201);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
     }
 
-
-    @GetMapping("/code/{code}")
-    public ResponseEntity<?> getCouponByCode(@PathVariable String code) {
+    @PostMapping("/findByCode")
+    public ResponseEntity<?> findCouponByCode(@RequestBody Map<String, String> payload) {
+        String couponCode = payload.get("couponCode");
         try {
-            CouponDTO coupon = couponService.findByCode(code);
-            return ResponseEntity.ok(Map.of(
-                    "status", 200,
-                    "coupon", coupon
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.status(404).body(Map.of(
-                    "message", "Coupon not found",
-                    "status", 404
-            ));
+            CouponDTO coupon = couponService.findByCode(couponCode);
+            if (coupon != null) {
+                Map<String, Object> response = new HashMap<>();
+                response.put("message", "Coupon found!");
+                response.put("status", 200);
+                response.put("coupon", coupon);
+                return ResponseEntity.ok(response);
+            } else {
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("message", "Coupon not found!");
+                errorResponse.put("status", 404);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+            }
+        } catch (RuntimeException e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("message", e.getMessage());
+            errorResponse.put("status", 201);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
     }
 }

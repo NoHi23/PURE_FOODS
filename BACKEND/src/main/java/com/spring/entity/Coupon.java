@@ -1,135 +1,126 @@
 package com.spring.entity;
 
-
 import jakarta.persistence.*;
-import java.util.Date;
+import org.hibernate.annotations.CreationTimestamp;
 
+import java.sql.Timestamp;
 
 @Entity
-@Table(name = "coupons")
+@Table(name = "Promotions")
 public class Coupon {
-
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "coupon_id")
-    private Long couponId;
+    @Column(name = "PromotionID")
+    private int couponId;
 
+    @Column(name = "PromotionCode", nullable = false, unique = true, length = 50)
+    private String couponCode;
 
-    @Column(name = "code", nullable = false, unique = true)
-    private String code;
-
-
-    @Column(name = "description")
+    @Column(name = "Description", columnDefinition = "NVARCHAR(MAX)")
     private String description;
 
+    @Column(name = "DiscountType", nullable = false, length = 50)
+    private String discountType;
 
-    @Column(name = "discount_value")
-    private Double discountValue;
+    @Column(name = "DiscountValue", nullable = false)
+    private double discountValue;
 
+    @Column(name = "StartDate", nullable = false)
+    private Timestamp startDate;
 
-    @Column(name = "start_date")
-    @Temporal(TemporalType.DATE)
-    private Date startDate;
+    @Column(name = "EndDate", nullable = false)
+    private Timestamp endDate;
 
+    @Column(name = "MinOrderAmount")
+    private double minOrderAmount;
 
-    @Column(name = "end_date")
-    @Temporal(TemporalType.DATE)
-    private Date endDate;
+    @CreationTimestamp
+    @Column(name = "CreatedAt")
+    private Timestamp createdAt;
 
-
-    @Column(name = "status")
+    @Column(name = "Status")
     private Integer status;
-
-
-    // ===== Constructors =====
-
 
     public Coupon() {}
 
-
-    public Coupon(Long couponId, String code, String description, Double discountValue,
-                  Date startDate, Date endDate, Integer status) {
-        this.couponId = couponId;
-        this.code = code;
-        this.description = description;
-        this.discountValue = discountValue;
-        this.startDate = startDate;
-        this.endDate = endDate;
-        this.status = status;
-    }
-
-
-    // ===== Getters and Setters =====
-
-
-    public Long getCouponId() {
+    // Getters & Setters
+    public int getCouponId() {
         return couponId;
     }
 
-
-    public void setCouponId(Long couponId) {
+    public void setCouponId(int couponId) {
         this.couponId = couponId;
     }
 
-
-    public String getCode() {
-        return code;
+    public String getCouponCode() {
+        return couponCode;
     }
 
-
-    public void setCode(String code) {
-        this.code = code;
+    public void setCouponCode(String couponCode) {
+        this.couponCode = couponCode;
     }
-
 
     public String getDescription() {
         return description;
     }
 
-
     public void setDescription(String description) {
         this.description = description;
     }
 
+    public String getDiscountType() {
+        return discountType;
+    }
 
-    public Double getDiscountValue() {
+    public void setDiscountType(String discountType) {
+        this.discountType = discountType;
+    }
+
+    public double getDiscountValue() {
         return discountValue;
     }
 
-
-    public void setDiscountValue(Double discountValue) {
+    public void setDiscountValue(double discountValue) {
         this.discountValue = discountValue;
     }
 
-
-    public Date getStartDate() {
+    public Timestamp getStartDate() {
         return startDate;
     }
 
-
-    public void setStartDate(Date startDate) {
+    public void setStartDate(Timestamp startDate) {
         this.startDate = startDate;
     }
 
-
-    public Date getEndDate() {
+    public Timestamp getEndDate() {
         return endDate;
     }
 
-
-    public void setEndDate(Date endDate) {
+    public void setEndDate(Timestamp endDate) {
         this.endDate = endDate;
     }
 
+    public double getMinOrderAmount() {
+        return minOrderAmount;
+    }
+
+    public void setMinOrderAmount(double minOrderAmount) {
+        this.minOrderAmount = minOrderAmount;
+    }
+
+    public Timestamp getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Timestamp createdAt) {
+        this.createdAt = createdAt;
+    }
 
     public Integer getStatus() {
         return status;
     }
 
-
     public void setStatus(Integer status) {
         this.status = status;
     }
 }
-

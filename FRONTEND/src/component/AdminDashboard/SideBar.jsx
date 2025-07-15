@@ -103,24 +103,23 @@ const SideBar = () => {
                 </ul>
               </li>
 
-              <li className="sidebar-list">
+               <li className="sidebar-list">
                 <a className="sidebar-link sidebar-title" href="javascript:void(0)">
-                  <i className="ri-archive-line"></i>
-                  <span>Orders</span>
+                  <i className="ri-user-3-line"></i>
+                  <span>Order</span>
                 </a>
                 <ul className="sidebar-submenu">
                   <li>
-                    <a href="order-list.html">Order List</a>
+                    <Link to={'/admin-order-list'}>Order List</Link>
                   </li>
                   <li>
-                    <a href="order-detail.html">Order Detail</a>
+                    <Link to={'/admin-order-detail'}>Order Detail</Link>
                   </li>
                   <li>
-                    <a href="order-tracking.html">Order Tracking</a>
+                    <Link to={'/admin-order-tracking'}>Order Tracking</Link>
                   </li>
                 </ul>
               </li>
-
 
               <li className="sidebar-list">
                 <a className="linear-icon-link sidebar-link sidebar-title" href="javascript:void(0)">

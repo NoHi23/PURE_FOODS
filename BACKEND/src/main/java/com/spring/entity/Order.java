@@ -1,180 +1,106 @@
 package com.spring.entity;
 
 import jakarta.persistence.*;
-
-import java.util.Date;
+import java.sql.Timestamp;
+import java.util.List;
 
 @Entity
 @Table(name = "Orders")
 public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer orderID;
+    @Column(name = "OrderID")
+    private int orderId;
 
-    private Integer customerID;
-    private Date orderDate;
-    private Double totalAmount;
-    private Integer statusID;
+    @Column(name = "CustomerID")
+    private int customerID;
+
+    @Column(name = "OrderDate", columnDefinition = "TIMESTAMP")
+    private Timestamp orderDate;
+
+    @Column(name = "TotalAmount")
+    private double totalAmount;
+
+    @Column(name = "StatusID")
+    private int statusID;
+
+    @Column(name = "ShippingAddress", length = 255)
     private String shippingAddress;
-    private Integer shippingMethodID;
-    private Double shippingCost;
-    private Double distance;
-    private Double discountAmount;
-    private String status;
+
+    @Column(name = "ShippingMethodID")
+    private int shippingMethodID;
+
+    @Column(name = "ShippingCost")
+    private double shippingCost;
+
+    @Column(name = "Distance")
+    private double distance;
+
+    @Column(name = "DiscountAmount")
+    private double discountAmount;
+
+    @Column(name = "Status")
+    private int status;
+
+    @Column(name = "CancelReason", length = 255)
     private String cancelReason;
-    private Date estimatedDeliveryDate;
+
+    @Column(name = "EstimatedDeliveryDate", columnDefinition = "TIMESTAMP")
+    private Timestamp estimatedDeliveryDate;
+
+    @Column(name = "DelayReason", length = 255)
     private String delayReason;
+
+    @Column(name = "DriverID")
     private Integer driverID;
+
+    @Column(name = "ReturnReason", length = 255)
     private String returnReason;
 
-    public Order() {
-    }
+    @ManyToOne
+    @JoinColumn(name = "CustomerID", insertable = false, updatable = false)
+    private User user;
 
-    public Order(Integer orderID, Integer customerID, Date orderDate, Double totalAmount, Integer statusID, String shippingAddress, Integer shippingMethodID, Double shippingCost, Double distance, Double discountAmount, String status, String cancelReason, Date estimatedDeliveryDate, String delayReason, Integer driverID, String returnReason) {
-        this.orderID = orderID;
-        this.customerID = customerID;
-        this.orderDate = orderDate;
-        this.totalAmount = totalAmount;
-        this.statusID = statusID;
-        this.shippingAddress = shippingAddress;
-        this.shippingMethodID = shippingMethodID;
-        this.shippingCost = shippingCost;
-        this.distance = distance;
-        this.discountAmount = discountAmount;
-        this.status = status;
-        this.cancelReason = cancelReason;
-        this.estimatedDeliveryDate = estimatedDeliveryDate;
-        this.delayReason = delayReason;
-        this.driverID = driverID;
-        this.returnReason = returnReason;
-    }
+    @OneToMany(mappedBy = "order")
+    private List<OrderDetails> orderDetails;
 
-    public Integer getOrderID() {
-        return orderID;
-    }
+    public Order() {}
 
-    public void setOrderID(Integer orderID) {
-        this.orderID = orderID;
-    }
-
-    public Integer getCustomerID() {
-        return customerID;
-    }
-
-    public void setCustomerID(Integer customerID) {
-        this.customerID = customerID;
-    }
-
-    public Date getOrderDate() {
-        return orderDate;
-    }
-
-    public void setOrderDate(Date orderDate) {
-        this.orderDate = orderDate;
-    }
-
-    public Double getTotalAmount() {
-        return totalAmount;
-    }
-
-    public void setTotalAmount(Double totalAmount) {
-        this.totalAmount = totalAmount;
-    }
-
-    public Integer getStatusID() {
-        return statusID;
-    }
-
-    public void setStatusID(Integer statusID) {
-        this.statusID = statusID;
-    }
-
-    public String getShippingAddress() {
-        return shippingAddress;
-    }
-
-    public void setShippingAddress(String shippingAddress) {
-        this.shippingAddress = shippingAddress;
-    }
-
-    public Integer getShippingMethodID() {
-        return shippingMethodID;
-    }
-
-    public void setShippingMethodID(Integer shippingMethodID) {
-        this.shippingMethodID = shippingMethodID;
-    }
-
-    public Double getShippingCost() {
-        return shippingCost;
-    }
-
-    public void setShippingCost(Double shippingCost) {
-        this.shippingCost = shippingCost;
-    }
-
-    public Double getDistance() {
-        return distance;
-    }
-
-    public void setDistance(Double distance) {
-        this.distance = distance;
-    }
-
-    public Double getDiscountAmount() {
-        return discountAmount;
-    }
-
-    public void setDiscountAmount(Double discountAmount) {
-        this.discountAmount = discountAmount;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public String getCancelReason() {
-        return cancelReason;
-    }
-
-    public void setCancelReason(String cancelReason) {
-        this.cancelReason = cancelReason;
-    }
-
-    public Date getEstimatedDeliveryDate() {
-        return estimatedDeliveryDate;
-    }
-
-    public void setEstimatedDeliveryDate(Date estimatedDeliveryDate) {
-        this.estimatedDeliveryDate = estimatedDeliveryDate;
-    }
-
-    public String getDelayReason() {
-        return delayReason;
-    }
-
-    public void setDelayReason(String delayReason) {
-        this.delayReason = delayReason;
-    }
-
-    public Integer getDriverID() {
-        return driverID;
-    }
-
-    public void setDriverID(Integer driverID) {
-        this.driverID = driverID;
-    }
-
-    public String getReturnReason() {
-        return returnReason;
-    }
-
-    public void setReturnReason(String returnReason) {
-        this.returnReason = returnReason;
-    }
+    // Getters & Setters (lược bớt để ngắn gọn)
+    public int getOrderId() { return orderId; }
+    public void setOrderId(int orderId) { this.orderId = orderId; }
+    public int getCustomerID() { return customerID; }
+    public void setCustomerID(int customerID) { this.customerID = customerID; }
+    public Timestamp getOrderDate() { return orderDate; }
+    public void setOrderDate(Timestamp orderDate) { this.orderDate = orderDate; }
+    public double getTotalAmount() { return totalAmount; }
+    public void setTotalAmount(double totalAmount) { this.totalAmount = totalAmount; }
+    public int getStatusID() { return statusID; }
+    public void setStatusID(int statusID) { this.statusID = statusID; }
+    public String getShippingAddress() { return shippingAddress; }
+    public void setShippingAddress(String shippingAddress) { this.shippingAddress = shippingAddress; }
+    public int getShippingMethodID() { return shippingMethodID; }
+    public void setShippingMethodID(int shippingMethodID) { this.shippingMethodID = shippingMethodID; }
+    public double getShippingCost() { return shippingCost; }
+    public void setShippingCost(double shippingCost) { this.shippingCost = shippingCost; }
+    public double getDistance() { return distance; }
+    public void setDistance(double distance) { this.distance = distance; }
+    public double getDiscountAmount() { return discountAmount; }
+    public void setDiscountAmount(double discountAmount) { this.discountAmount = discountAmount; }
+    public int getStatus() { return status; }
+    public void setStatus(int status) { this.status = status; }
+    public String getCancelReason() { return cancelReason; }
+    public void setCancelReason(String cancelReason) { this.cancelReason = cancelReason; }
+    public Timestamp getEstimatedDeliveryDate() { return estimatedDeliveryDate; }
+    public void setEstimatedDeliveryDate(Timestamp estimatedDeliveryDate) { this.estimatedDeliveryDate = estimatedDeliveryDate; }
+    public String getDelayReason() { return delayReason; }
+    public void setDelayReason(String delayReason) { this.delayReason = delayReason; }
+    public Integer getDriverID() { return driverID; }
+    public void setDriverID(Integer driverID) { this.driverID = driverID; }
+    public String getReturnReason() { return returnReason; }
+    public void setReturnReason(String returnReason) { this.returnReason = returnReason; }
+    public User getUser() { return user; }
+    public void setUser(User user) { this.user = user; }
+    public List<OrderDetails> getOrderDetails() { return orderDetails; }
+    public void setOrderDetails(List<OrderDetails> orderDetails) { this.orderDetails = orderDetails; }
 }
-

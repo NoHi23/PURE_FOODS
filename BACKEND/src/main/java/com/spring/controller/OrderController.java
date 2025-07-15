@@ -1,76 +1,43 @@
 package com.spring.controller;
-
 import com.spring.dto.OrderDTO;
 import com.spring.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.*;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/orders")
 @CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 public class OrderController {
-
     @Autowired
     private OrderService orderService;
 
     @PostMapping("/create")
     public ResponseEntity<?> createOrder(@RequestBody OrderDTO orderDTO) {
         try {
-            OrderDTO createdOrder = orderService.createOrder(orderDTO);
+            OrderDTO newOrder = orderService.createOrder(orderDTO);
             Map<String, Object> response = new HashMap<>();
             response.put("message", "Order created successfully!");
+            response.put("orderId", newOrder.getOrderId());
             response.put("status", 200);
-            response.put("order", createdOrder);
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("message", e.getMessage());
-            errorResponse.put("status", 201);
+            errorResponse.put("status", 400);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
     }
 
-    @PostMapping("/confirm")
-    public ResponseEntity<?> confirmOrder(@RequestBody OrderDTO orderDTO) {
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getOrderById(@PathVariable int id) {
         try {
-            OrderDTO confirmed = orderService.confirmOrder(orderDTO);
-            Map<String, Object> response = new HashMap<>();
-            response.put("message", "Order confirmed successfully!");
-            response.put("status", 200);
-            response.put("order", confirmed);
-            return ResponseEntity.ok(response);
-        } catch (RuntimeException e) {
-            Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("message", e.getMessage());
-            errorResponse.put("status", 201);
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
-        }
-    }
-
-    @GetMapping("/customer/{customerId}")
-    public ResponseEntity<?> getOrdersByCustomer(@PathVariable("customerId") int customerId) {
-        try {
-            List<OrderDTO> orders = orderService.getOrdersByCustomerId(customerId);
-            Map<String, Object> response = new HashMap<>();
-            response.put("message", "Orders retrieved successfully!");
-            response.put("status", 200);
-            response.put("orders", orders);
-            return ResponseEntity.ok(response);
-        } catch (RuntimeException e) {
-            Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("message", e.getMessage());
-            errorResponse.put("status", 201);
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
-        }
-    }
-
-    @GetMapping("/{orderId}")
-    public ResponseEntity<?> getOrderById(@PathVariable("orderId") int orderId) {
-        try {
-            OrderDTO order = orderService.getOrderById(orderId);
+            OrderDTO order = orderService.getOrderById(id);
             Map<String, Object> response = new HashMap<>();
             response.put("message", "Order retrieved successfully!");
             response.put("status", 200);
@@ -79,32 +46,65 @@ public class OrderController {
         } catch (RuntimeException e) {
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("message", e.getMessage());
-            errorResponse.put("status", 201);
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+            errorResponse.put("status", 404);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+        }
+    }
+    @GetMapping("/{id}/tracking")
+    public ResponseEntity<?> getOrderTracking(@PathVariable int id) {
+        try {
+            OrderDTO order = orderService.getOrderById(id); // Giả sử tracking lấy từ order
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Order tracking retrieved successfully!");
+            response.put("status", 200);
+            response.put("order", order);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("message", e.getMessage());
+            errorResponse.put("status", 404);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
         }
     }
 
-    @GetMapping("/getAll")
+    @GetMapping("/all")
     public ResponseEntity<?> getAllOrders() {
         try {
             List<OrderDTO> orders = orderService.getAllOrders();
             Map<String, Object> response = new HashMap<>();
-            response.put("message", "All orders retrieved successfully!");
+            response.put("message", "Orders retrieved successfully!");
             response.put("status", 200);
             response.put("orders", orders);
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("message", e.getMessage());
-            errorResponse.put("status", 201);
+            errorResponse.put("status", 400);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
     }
 
-    @DeleteMapping("/{orderId}")
-    public ResponseEntity<?> deleteOrder(@PathVariable("orderId") int orderId) {
+    @PutMapping("/update")
+    public ResponseEntity<?> updateOrder(@RequestBody OrderDTO orderDTO) {
         try {
-            orderService.deleteOrder(orderId);
+            OrderDTO updatedOrder = orderService.updateOrder(orderDTO);
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Order updated successfully!");
+            response.put("status", 200);
+            response.put("order", updatedOrder);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("message", e.getMessage());
+            errorResponse.put("status", 400);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteOrder(@PathVariable int id) {
+        try {
+            orderService.deleteOrder(id);
             Map<String, Object> response = new HashMap<>();
             response.put("message", "Order deleted successfully!");
             response.put("status", 200);
@@ -112,7 +112,23 @@ public class OrderController {
         } catch (RuntimeException e) {
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("message", e.getMessage());
-            errorResponse.put("status", 201);
+            errorResponse.put("status", 404);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+        }
+    }
+
+    @GetMapping("/count")
+    public ResponseEntity<?> getTotalOrders() {
+        try {
+            int totalOrders = orderService.getTotalOrders();
+            Map<String, Object> response = new HashMap<>();
+            response.put("totalOrders", totalOrders);
+            response.put("status", 200);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("message", e.getMessage());
+            errorResponse.put("status", 400);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
     }

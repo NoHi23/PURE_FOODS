@@ -23,21 +23,28 @@ import BackToTopButton from './layouts/BackToTopButton';
 import AllRole from './component/Admin/AllRole';
 import AddNewUser from './component/Admin/AddNewUser';
 import AddNewRole from './component/Admin/AddNewRole';
-import Order from './component/Admin/Order';
+import OrderList from './component/Admin/OrderList';
+import OrderDetail from './component/Admin/OrderDetail';
+import OrderTracking from './component/Admin/OrderTracking';
+import OrderCreate from './component/Admin/OrderCreate';
 
 function AppContent() {
   const location = useLocation();
   // Danh sách các path KHÔNG muốn hiện header và footer
-  const hideHeaderPaths = ['/login', '/signup', '/forgot', '/reset-password', '/verify-otp', '/admin-dashboard', '/admin-product', '/admin-add-new-product',
-    '/category', '/all-user', '/all-role', '/add-new-user',"/add-new-role", "/admin-order"
+  const hideHeaderPaths = [
+    '/login', '/signup', '/forgot', '/reset-password', '/verify-otp', '/admin-dashboard', '/admin-product',
+    '/admin-add-new-product', '/category', '/all-user', '/all-role', '/add-new-user', '/add-new-role',
+    '/admin-order-list', '/admin-order-detail/:orderId', '/admin-order-tracking'
   ];
-  const hideFooterPaths = ['/login', '/signup', '/forgot', '/reset-password', '/verify-otp', '/admin-dashboard', '/admin-product', '/admin-add-new-product',
-    '/category', '/all-user', '/all-role', '/add-new-user',"/add-new-role", "/admin-order"
+  const hideFooterPaths = [
+    '/login', '/signup', '/forgot', '/reset-password', '/verify-otp', '/admin-dashboard', '/admin-product',
+    '/admin-add-new-product', '/category', '/all-user', '/all-role', '/add-new-user', '/add-new-role',
+    '/admin-order-list', '/admin-order-detail/:orderId', '/admin-order-tracking'
   ];
   const backToTop = ['/login', '/signup', '/forgot', '/reset-password', '/verify-otp', '/'];
 
-  const shouldHideHeader = hideHeaderPaths.includes(location.pathname);
-  const shouldHideFooter = hideFooterPaths.includes(location.pathname);
+  const shouldHideHeader = hideHeaderPaths.some(path => location.pathname.startsWith(path.split(':')[0]));
+  const shouldHideFooter = hideFooterPaths.some(path => location.pathname.startsWith(path.split(':')[0]));
   const shouldHideBackToTop = backToTop.includes(location.pathname);
 
   return (
@@ -92,9 +99,26 @@ function AppContent() {
             <AddNewRole />
           </PrivateRoute>
         } />
-        <Route path="/admin-order" element={
+
+        {/* Các Order dành cho Admin */}
+        <Route path="/admin-order-list" element={
           <PrivateRoute allowedRoles={1}>
-            <Order />
+            <OrderList />
+          </PrivateRoute>
+        } />
+        <Route path="/admin-order-detail/:orderId" element={
+          <PrivateRoute allowedRoles={1}>
+            <OrderDetail />
+          </PrivateRoute>
+        } />
+        <Route path="/admin-order-tracking" element={
+          <PrivateRoute allowedRoles={1}>
+            <OrderTracking />
+          </PrivateRoute>
+        } />
+        <Route path="/admin-order-create" element={
+          <PrivateRoute allowedRoles={1}>
+            <OrderCreate />
           </PrivateRoute>
         } />
 
@@ -110,9 +134,8 @@ function AppContent() {
             <TraderDashboard />
           </PrivateRoute>
         } />
-
       </Routes>
-      {/* Chỉ hiện Footer nếu không nằm trong blacklist và user tồn tại*/}
+      {/* Chỉ hiện Footer nếu không nằm trong blacklist và user tồn tại */}
       {!shouldHideFooter && <Footer />}
       {!shouldHideBackToTop && <BackToTopButton />}
     </>

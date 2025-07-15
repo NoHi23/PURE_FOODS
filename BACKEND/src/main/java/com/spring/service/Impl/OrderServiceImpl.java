@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -16,15 +18,15 @@ import java.util.List;
 @Service
 @Transactional(propagation = Propagation.REQUIRED)
 public class OrderServiceImpl implements OrderService {
-
     @Autowired
     private OrderDAO orderDAO;
 
+    @Transactional(propagation = Propagation.REQUIRED)
     @Override
     public OrderDTO createOrder(OrderDTO orderDTO) {
         Order order = new Order();
         order.setCustomerID(orderDTO.getCustomerID());
-        order.setOrderDate(new Date());
+        order.setOrderDate(Timestamp.valueOf(LocalDateTime.now()));
         order.setTotalAmount(orderDTO.getTotalAmount());
         order.setStatusID(orderDTO.getStatusID());
         order.setShippingAddress(orderDTO.getShippingAddress());
@@ -32,82 +34,97 @@ public class OrderServiceImpl implements OrderService {
         order.setShippingCost(orderDTO.getShippingCost());
         order.setDistance(orderDTO.getDistance());
         order.setDiscountAmount(orderDTO.getDiscountAmount());
-        order.setStatus("Pending");
+        order.setStatus(1);
         order.setEstimatedDeliveryDate(orderDTO.getEstimatedDeliveryDate());
-        order.setDriverID(orderDTO.getDriverID());
-
-        orderDAO.saveOrder(order);
+        orderDAO.addOrder(order);
         return convertToDTO(order);
     }
 
+    @Transactional(propagation = Propagation.REQUIRED)
     @Override
-    public OrderDTO confirmOrder(OrderDTO orderDTO) {
-        Order order = orderDAO.getOrderById(orderDTO.getOrderID());
+    public OrderDTO getOrderById(int id) {
+        Order order = orderDAO.getOrderById(id);
         if (order == null) {
-            throw new IllegalArgumentException("Order not found!");
+            throw new RuntimeException("Order not found");
         }
-        order.setStatus("Confirmed");
-        order.setStatusID(2); // ví dụ: 2 = Đã xác nhận
+        return convertToDTO(order);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED)
+    @Override
+    public List<OrderDTO> getAllOrders() {
+        List<Order> orderList = orderDAO.getAllOrders();
+        if (orderList == null) {
+            throw new RuntimeException("Orders not found!");
+        }
+        List<OrderDTO> orderDTOList = new ArrayList<>();
+        for (Order order : orderList) {
+            orderDTOList.add(convertToDTO(order));
+        }
+        return orderDTOList;
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED)
+    @Override
+    public OrderDTO updateOrder(OrderDTO orderDTO) {
+        Order order = orderDAO.getOrderById(orderDTO.getOrderId());
+        if (order == null) {
+            throw new RuntimeException("Order not found!");
+        }
+        order.setCustomerID(orderDTO.getCustomerID());
+        order.setTotalAmount(orderDTO.getTotalAmount());
+        order.setStatusID(orderDTO.getStatusID());
+        order.setShippingAddress(orderDTO.getShippingAddress());
+        order.setShippingMethodID(orderDTO.getShippingMethodID());
+        order.setShippingCost(orderDTO.getShippingCost());
+        order.setDistance(orderDTO.getDistance());
+        order.setDiscountAmount(orderDTO.getDiscountAmount());
+        order.setStatus(orderDTO.getStatus());
+        order.setCancelReason(orderDTO.getCancelReason());
+        order.setEstimatedDeliveryDate(orderDTO.getEstimatedDeliveryDate());
+        order.setDelayReason(orderDTO.getDelayReason());
+        order.setDriverID(orderDTO.getDriverID());
+        order.setReturnReason(orderDTO.getReturnReason());
+        orderDAO.updateOrder(order);
+        return convertToDTO(order);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED)
+    @Override
+    public OrderDTO deleteOrder(int orderId) {
+        Order order = orderDAO.getOrderById(orderId);
+        if (order == null) {
+            throw new RuntimeException("Order not found!");
+        }
+        order.setStatus(0);
         orderDAO.updateOrder(order);
         return convertToDTO(order);
     }
 
     @Override
-    public void deleteOrder(int orderId) {
-        Order order = orderDAO.getOrderById(orderId);
-        if (order == null) {
-            throw new IllegalArgumentException("Order not found!");
-        }
-        orderDAO.deleteOrder(orderId);
-    }
-
-    @Override
-    public OrderDTO getOrderById(int orderId) {
-        Order order = orderDAO.getOrderById(orderId);
-        if (order == null) {
-            throw new IllegalArgumentException("Order not found!");
-        }
-        return convertToDTO(order);
-    }
-
-    @Override
-    public List<OrderDTO> getOrdersByCustomerId(int customerId) {
-        List<Order> orders = orderDAO.getOrdersByCustomerId(customerId);
-        List<OrderDTO> dtoList = new ArrayList<>();
-        for (Order order : orders) {
-            dtoList.add(convertToDTO(order));
-        }
-        return dtoList;
-    }
-
-    @Override
-    public List<OrderDTO> getAllOrders() {
-        List<Order> orders = orderDAO.getAllOrders();
-        List<OrderDTO> dtoList = new ArrayList<>();
-        for (Order order : orders) {
-            dtoList.add(convertToDTO(order));
-        }
-        return dtoList;
+    public int getTotalOrders() {
+        return orderDAO.countOrders();
     }
 
     private OrderDTO convertToDTO(Order order) {
-        OrderDTO dto = new OrderDTO();
-        dto.setOrderID(order.getOrderID());
-        dto.setCustomerID(order.getCustomerID());
-        dto.setOrderDate(order.getOrderDate());
-        dto.setTotalAmount(order.getTotalAmount());
-        dto.setStatusID(order.getStatusID());
-        dto.setShippingAddress(order.getShippingAddress());
-        dto.setShippingMethodID(order.getShippingMethodID());
-        dto.setShippingCost(order.getShippingCost());
-        dto.setDistance(order.getDistance());
-        dto.setDiscountAmount(order.getDiscountAmount());
-        dto.setStatus(order.getStatus());
-        dto.setCancelReason(order.getCancelReason());
-        dto.setEstimatedDeliveryDate(order.getEstimatedDeliveryDate());
-        dto.setDelayReason(order.getDelayReason());
-        dto.setDriverID(order.getDriverID());
-        dto.setReturnReason(order.getReturnReason());
-        return dto;
+        return new OrderDTO(
+                order.getOrderId(),
+                order.getCustomerID(),
+                order.getOrderDate(),
+                order.getTotalAmount(),
+                order.getStatusID(),
+                order.getShippingAddress(),
+                order.getShippingMethodID(),
+                order.getShippingCost(),
+                order.getDistance(),
+                order.getDiscountAmount(),
+                order.getStatus(),
+                order.getCancelReason(),
+                order.getEstimatedDeliveryDate(),
+                order.getDelayReason(),
+                order.getDriverID(),
+                order.getReturnReason(),
+                null
+        );
     }
 }
