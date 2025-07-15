@@ -37,8 +37,19 @@ const ImporterInventoryLog = ({ currentPage, setCurrentPage, setLogs }) => {
         ]);
 
         const logData = logsRes.data.logs || [];
-        setLocalLogs(logData);
-        if (setLogs) setLogs(logData);
+        const sortedLogs = [...logData].sort((a, b) => {
+          // Ưu tiên status: 0 -> 1 -> 2
+          if (a.status !== b.status) {
+            return a.status - b.status;
+          }
+          // Nếu cùng status thì sắp theo thời gian mới nhất trước
+          const timeA = new Date(a.createdAt).getTime();
+          const timeB = new Date(b.createdAt).getTime();
+          return timeB - timeA;
+        });
+
+        setLocalLogs(sortedLogs);
+        if (setLogs) setLogs(sortedLogs);
 
         const productData = productsRes.data.listProduct || [];
         const productMap = {};
