@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
-import { FiSearch } from "react-icons/fi";
+import { FiSearch, FiRefreshCw } from "react-icons/fi";
 import Pagination from "../../layouts/Pagination";
 import ImporterEditProduct from "./ImporterEditProduct";
-import * as bootstrap from "bootstrap"; // Nhập bootstrap để điều khiển modal
+import * as bootstrap from "bootstrap";
 
 const ImporterProduct = ({ setProducts, currentPage, setCurrentPage }) => {
   const [products, setLocalProducts] = useState([]);
@@ -143,6 +143,19 @@ const ImporterProduct = ({ setProducts, currentPage, setCurrentPage }) => {
     }
   };
 
+  const handleRefresh = async () => {
+    setIsLoading(true);
+    try {
+      await fetchProducts();
+      toast.success("Danh sách sản phẩm đã được làm mới!");
+    } catch (err) {
+      console.error("Lỗi khi làm mới:", err);
+      toast.error("Làm mới thất bại. Vui lòng thử lại!");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="product-tab">
       <div className="title">
@@ -181,20 +194,44 @@ const ImporterProduct = ({ setProducts, currentPage, setCurrentPage }) => {
           size={18}
         />
       </div>
-      <button
-        className="btn theme-bg-color btn-md fw-bold text-white mb-4"
-        data-bs-toggle="modal"
-        data-bs-target="#importProductModal"
-        onClick={() => {
-          setNewProduct({
-            productId: "",
-            quantityChange: "",
-            reason: "",
-          });
-        }}
-      >
-        Nhập thêm
-      </button>
+      <div className="d-flex justify-content-between mb-4">
+        <button
+          className="btn theme-bg-color btn-md fw-bold text-white"
+          data-bs-toggle="modal"
+          data-bs-target="#importProductModal"
+          onClick={() => {
+            setNewProduct({
+              productId: "",
+              quantityChange: "",
+              reason: "",
+            });
+          }}
+        >
+          Nhập thêm
+        </button>
+
+        <button
+          className="btn btn-md fw-bold text-white d-flex align-items-center"
+          onClick={handleRefresh}
+          disabled={isLoading}
+          style={{
+            backgroundColor: "#007bff", // Màu blue chính
+            border: "1px solid #007bff",
+            transition: "all 0.3s ease",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = "#0056b3"; // Hover blue đậm hơn
+            e.currentTarget.style.borderColor = "#0056b3";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = "#007bff";
+            e.currentTarget.style.borderColor = "#007bff";
+          }}
+        >
+          <FiRefreshCw className={`me-1 ${isLoading ? "fa-spin" : ""}`} style={{ transition: "transform 0.3s" }} />
+          {isLoading ? "Đang làm mới..." : "Làm mới"}
+        </button>
+      </div>
 
       <div
         className="modal fade"
