@@ -1642,7 +1642,7 @@ const HomePage = () => {
                     <ProductSlider
                       products={saveProduct}
                       handleViewProduct={handleViewProduct}
-                     userId={userId}
+                      userId={userId}
                     />
                   </div>
 
