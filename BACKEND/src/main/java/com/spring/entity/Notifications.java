@@ -17,6 +17,7 @@ public class Notifications {
     @Column(name = "user_id" , nullable = false)
     private int userId;
 
+
     @Column(name = "title", length = 100)
     private String title;
 

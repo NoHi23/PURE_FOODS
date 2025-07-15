@@ -45,7 +45,8 @@ const LoginPage = () => {
       const { message, user, status } = response.data;
 
       if (status === 200) {
-        toast.success(message);
+        toast.success("Welcome " + user.fullName);
+
         localStorage.setItem("user", JSON.stringify(user));
         if (remember) {
           Cookies.set("user", JSON.stringify(user), { expires: 1 / 144 }); // expires sau 10 phút
