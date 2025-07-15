@@ -11,6 +11,6 @@ public interface UserDAO {
     User updateUser(User user);
     void deleteUser(int id);
     int countUsers();
-
+    List<User> findByRoleId(int roleId);
     User findByResetToken(String token);
 }

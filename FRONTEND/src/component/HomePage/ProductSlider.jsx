@@ -85,7 +85,7 @@ const ProductSlider = ({ products, handleViewProduct, userId }) => {
 
 
 
-  
+
   return (
     <div className="section-b-space">
       <Slider {...settings} className="product-box-slider">
@@ -110,7 +110,7 @@ const ProductSlider = ({ products, handleViewProduct, userId }) => {
                         <i data-feather="eye"></i>
                       </a>
                     </li>
-                   
+                    
                     <li data-bs-toggle="tooltip" title={tooltipText}>
                       <a href="#" onClick={(e) => {
                         e.preventDefault();
