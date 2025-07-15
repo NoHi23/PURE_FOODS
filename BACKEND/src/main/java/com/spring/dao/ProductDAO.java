@@ -2,6 +2,8 @@ package com.spring.dao;
 
 import com.spring.entity.ProductDetails;
 import com.spring.entity.Products;
+import org.springframework.data.domain.*;
+
 import java.util.List;
 
 public interface ProductDAO   {
@@ -21,5 +23,9 @@ public interface ProductDAO   {
 
     List<Products> getProductByStatus(int status);
     List<Products> getTopDiscountProducts(int limit);
-
+    Page<Products> searchProducts(String keyword,
+                                         Integer categoryId,
+                                         Integer supplierId,
+                                         Integer minDiscount,
+                                         Pageable pageable) ;
 }
