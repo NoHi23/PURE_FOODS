@@ -387,39 +387,6 @@ export default function Header() {
                             <Link to={'/wishlist'} className="btn btn-sm cart-button theme-bg-color text-white">
                               Detail Wishlist
                             </Link>
-                              </div>
-                            </li>
-
-                            <li className="product-box-contain">
-                              <div className="drop-cart">
-                                <a href="product-left-thumbnail.html" className="drop-image">
-                                  <img src="../assets/images/vegetable/product/2.png"
-                                    className="blur-up lazyload" alt="" />
-                                </a>
-
-                                <div className="drop-contain">
-                                  <a href="product-left-thumbnail.html">
-                                    <h5>Peanut Butter Bite Premium Butter Cookies 600 g
-                                    </h5>
-                                  </a>
-                                  <h6><span>1 x</span> $25.68</h6>
-                                  <button className="close-button close_button">
-                                    <i className="fa-solid fa-xmark"></i>
-                                  </button>
-                                </div>
-                              </div>
-                            </li>
-                          </ul>
-
-                          <div className="price-box">
-                            <h5>Total :</h5>
-                            <h4 className="theme-color fw-bold">$106.58</h4>
-                          </div>
-
-                          <div className="button-group">
-                            <a href="/cart-detail" className="btn btn-sm cart-button">View Cart</a>
-                            <a href="checkout.html" className="btn btn-sm cart-button theme-bg-color
-                                                    text-white">Checkout</a>
                           </div>
                         </div>
 
@@ -490,10 +457,6 @@ export default function Header() {
                         <ul className="user-box-name">
                           {user ? (
                             <>
-                              <li className="product-box-contain">
-                                <a href="/customer-profile-update">Profile Setting</a>
-                              </li>
-
                               <li className="product-box-contain">
                                 <a href="#" onClick={handleLogout}>
                                   Logout
