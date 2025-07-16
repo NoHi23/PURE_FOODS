@@ -166,9 +166,8 @@ const ImporterProduct = ({ setProducts, currentPage, setCurrentPage }) => {
           </svg>
         </span>
         <p style={{ color: "#f98050", marginTop: "5px", fontFamily: "Inconsolata, monospace" }}>
-          (*)Hàng vừa nhập về cần được kiểm tra kỹ càng và cập nhật ngay số lượng tồn kho. Đảm bảo mọi thứ còn nguyên
-          vẹn trước khi lưu kho, mọi sai lệch sẽ ảnh hưởng đến quá trình xử lý sau này! Kiểm tra kỹ để tránh thất thoát,
-          sai sót nhỏ có thể gây ảnh hưởng lớn.
+          (*)Đảm bảo mọi thứ còn nguyên vẹn trước khi lưu kho, mọi sai lệch sẽ ảnh hưởng đến quá trình xử
+           lý sau này! Kiểm tra kỹ nếu có vấn đề thì trả hàng lại cho nhà cung cấp.
         </p>
       </div>
       <div className="position-relative mb-4">
