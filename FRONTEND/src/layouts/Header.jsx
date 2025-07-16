@@ -458,6 +458,9 @@ export default function Header() {
                           {user ? (
                             <>
                               <li className="product-box-contain">
+                                <a href="/customer-profile-update">Profile Setting</a>
+                              </li>
+                              <li className="product-box-contain">
                                 <a href="#" onClick={handleLogout}>
                                   Logout
                                 </a>
