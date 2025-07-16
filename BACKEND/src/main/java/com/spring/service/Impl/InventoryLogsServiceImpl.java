@@ -91,4 +91,16 @@ public class InventoryLogsServiceImpl implements InventoryLogsService {
                 log.getStatus()
         );
     }
+
+    @Override
+    public InventoryLogsDTO archiveLog(int logId) {
+        InventoryLogs log = inventoryLogsDAO.getLogById(logId);
+        if (log == null) {
+            throw new RuntimeException("Không tìm thấy log cần lưu trữ!");
+        }
+        log.setStatus(3); // đánh dấu là lưu trữ
+        inventoryLogsDAO.updateInventoryLog(log);
+        return convertToDTO(log);
+    }
+
 }

@@ -91,4 +91,22 @@ public class InventoryLogsController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
     }
+
+    @PostMapping("/archive")
+    public ResponseEntity<?> archiveLog(@RequestBody InventoryLogsDTO dto) {
+        try {
+            InventoryLogsDTO updated = inventoryLogsService.archiveLog(dto.getLogId());
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Đã lưu trữ đơn hàng!");
+            response.put("status", 200);
+            response.put("log", updated);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> error = new HashMap<>();
+            error.put("message", e.getMessage());
+            error.put("status", 500);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+        }
+    }
+
 }
