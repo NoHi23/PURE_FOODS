@@ -995,7 +995,7 @@ const HomePage = () => {
                                     </a>
                                   </li>
                                   <li>
-                                    <a className="dropdown-item" href="cart.html">
+                                    <a className="dropdown-item" href="/cart-detail">
                                       Cart
                                     </a>
                                   </li>
@@ -1146,7 +1146,7 @@ const HomePage = () => {
               </li>
 
               <li>
-                <a href="cart.html">
+                <a href="/cart-detail">
                   <i className="iconly-Bag-2 icli fly-cate"></i>
                   <span>Cart</span>
                 </a>
