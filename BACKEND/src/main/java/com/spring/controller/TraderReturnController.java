@@ -17,8 +17,8 @@ public class TraderReturnController {
     private InventoryLogsService inventoryLogsService;
 
     @GetMapping("/pending")
-    public ResponseEntity<?> getPendingReturns() {
-        List<InventoryLogsDTO> list = inventoryLogsService.getPendingReturnsForTrader(0); // traderId not used now
+    public ResponseEntity<?> getPendingReturns(@RequestParam("traderId") int traderId) {
+        List<InventoryLogsDTO> list = inventoryLogsService.getPendingReturnsForTrader(traderId);
         Map<String, Object> res = new HashMap<>();
         res.put("message", "Danh sách đơn trả hàng đang chờ");
         res.put("logs", list);

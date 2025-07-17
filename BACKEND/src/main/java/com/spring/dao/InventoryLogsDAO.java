@@ -15,4 +15,6 @@ public interface InventoryLogsDAO {
     List<InventoryLogs> getLogsByReasonAndStatus(String reason, int status);
     List<InventoryLogs> getLogsByUserId(int userId);
     List<InventoryLogs> getLogsByReason(String reason);
+    List<InventoryLogs> getLogsByReasons(List<String> reasons);
+
 }

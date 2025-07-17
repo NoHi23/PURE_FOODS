@@ -17,6 +17,10 @@ const TraderImportRequests = ({ traderId }) => {
     fetchProcessedLogs();
     fetchProducts();
   }, []);
+  useEffect(() => {
+  setCurrentPage(1);
+}, [activeTab]);
+
 
   const fetchPendingLogs = async () => {
     try {

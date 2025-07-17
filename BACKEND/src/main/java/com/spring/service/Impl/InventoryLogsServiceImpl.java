@@ -88,15 +88,20 @@ public class InventoryLogsServiceImpl implements InventoryLogsService {
 
     @Override
     public List<InventoryLogsDTO> getProcessedRequestsForTrader() {
-        List<InventoryLogs> logs = inventoryLogsDAO.getLogsByReason("Importer Request");
+        // Lọc theo 2 lý do mới
+        List<String> reasons = List.of("Shipped by Trader", "Rejected by Trader");
+
+        // Gọi DAO mới để lấy log theo danh sách lý do
+        List<InventoryLogs> logs = inventoryLogsDAO.getLogsByReasons(reasons);
         List<InventoryLogsDTO> result = new ArrayList<>();
+
         for (InventoryLogs log : logs) {
-            if (log.getStatus() != null && (log.getStatus() == 1 || log.getStatus() == 2)) {
-                result.add(convertToDTO(log));
-            }
+            result.add(convertToDTO(log));
         }
+
         return result;
     }
+
 
     @Override
     public InventoryLogsDTO confirmShippingToImporter(InventoryLogsDTO dto) {
@@ -195,7 +200,7 @@ public class InventoryLogsServiceImpl implements InventoryLogsService {
             int quantity = log.getQuantityChange();
 
             if (List.of("Importer Request", "Shipped by Trader", "Rejected by Trader").contains(reason)) {
-                totalOrders++; // ✅ cộng cả đơn bị từ chối vào
+                totalOrders++;
 
                 if ("Shipped by Trader".equals(reason) && status == 1) {
                     confirmed++;
@@ -227,7 +232,6 @@ public class InventoryLogsServiceImpl implements InventoryLogsService {
     }
 
 
-
     @Override
     public Map<String, Object> getTraderReportSummary(int traderId) {
         List<InventoryLogs> logs = inventoryLogsDAO.getLogsByUserId(traderId);
@@ -247,7 +251,7 @@ public class InventoryLogsServiceImpl implements InventoryLogsService {
             int quantity = log.getQuantityChange();
 
             if (List.of("Importer Request", "Shipped by Trader", "Rejected by Trader").contains(reason)) {
-                totalOrders++; // ✅ cộng luôn cả Rejected
+                totalOrders++;
 
                 if ("Shipped by Trader".equals(reason) && status == 1) {
                     confirmedOrders++;
@@ -277,7 +281,6 @@ public class InventoryLogsServiceImpl implements InventoryLogsService {
         res.put("currentStock", currentStock);
         return res;
     }
-
 
 
 

@@ -66,6 +66,14 @@ public class InventoryLogsDAOImpl implements InventoryLogsDAO {
                 .list();
     }
     @Override
+    public List<InventoryLogs> getLogsByReasons(List<String> reasons) {
+        Session session = sessionFactory.getCurrentSession();
+        return session.createQuery("FROM InventoryLogs WHERE reason IN (:reasons)", InventoryLogs.class)
+                .setParameterList("reasons", reasons)
+                .list();
+    }
+
+    @Override
     public List<InventoryLogs> getLogsByUserId(int userId) {
         Session session = sessionFactory.getCurrentSession();
         return session.createQuery("FROM InventoryLogs WHERE userId = :userId", InventoryLogs.class)
