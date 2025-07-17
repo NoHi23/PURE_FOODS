@@ -11,4 +11,5 @@ public interface InventoryLogsService {
     InventoryLogsDTO confirmOrder(InventoryLogsDTO orderDTO);
     InventoryLogsDTO archiveLog(int logId);
 
+    InventoryLogsDTO createReturnOrder(InventoryLogsDTO dto);
 }

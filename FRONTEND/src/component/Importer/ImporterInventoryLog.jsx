@@ -3,6 +3,7 @@ import axios from "axios";
 import { FiSearch } from "react-icons/fi";
 import { Modal, Button } from "react-bootstrap";
 import Pagination from "../../layouts/Pagination";
+import Swal from "sweetalert2";
 
 const ImporterInventoryLog = ({ currentPage, setCurrentPage, setLogs }) => {
   const [logs, setLocalLogs] = useState([]);
@@ -11,6 +12,9 @@ const ImporterInventoryLog = ({ currentPage, setCurrentPage, setLogs }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [archivedPage, setArchivedPage] = useState(1);
   const [showArchivedModal, setShowArchivedModal] = useState(false);
+
+  const [showReturnModal, setShowReturnModal] = useState(false);
+  const [selectedReturnLogs, setSelectedReturnLogs] = useState([]);
 
   const archivedLogs = logs.filter((log) => log.status === 3);
 
@@ -140,10 +144,7 @@ const ImporterInventoryLog = ({ currentPage, setCurrentPage, setLogs }) => {
           onMouseLeave={(e) => {
             e.target.style.backgroundColor = "#d63031";
           }}
-          onClick={() => {
-            // TODO: mở modal hoặc xử lý khi backend xong
-            alert("Tính năng Yêu cầu trả hàng đang phát triển 🛠️");
-          }}
+          onClick={() => setShowReturnModal(true)}
         >
           🔁 Yêu cầu trả hàng
         </button>
@@ -282,6 +283,7 @@ const ImporterInventoryLog = ({ currentPage, setCurrentPage, setLogs }) => {
         <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
       </div>
 
+      {/* Modal kho lưu trữ */}
       <Modal show={showArchivedModal} onHide={() => setShowArchivedModal(false)} size="xl" centered>
         <Modal.Header closeButton>
           <Modal.Title>🗃️ Danh sách các đơn đã lưu trữ</Modal.Title>
@@ -357,6 +359,112 @@ const ImporterInventoryLog = ({ currentPage, setCurrentPage, setLogs }) => {
           totalPages={archivedTotalPages}
           onPageChange={(page) => setArchivedPage(page)}
         />
+      </Modal>
+
+      {/* Modal yêu cầu trả hàng */}
+      <Modal show={showReturnModal} onHide={() => setShowReturnModal(false)} size="xl" centered>
+        <Modal.Header closeButton>
+          <Modal.Title>🔁 Yêu cầu trả hàng</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <p className="text-primary fw-bold mb-3">Tích chọn các đơn hàng cần trả. Chỉ có thể trả các đơn hàng có trạng thái **đã hoàn thành**.</p>
+          <div className="table-responsive">
+            <table className="table table-bordered">
+              <thead>
+                <tr>
+                  <th>Chọn</th>
+                  <th>Ảnh</th>
+                  <th>Sản phẩm</th>
+                  <th>Người nhập</th>
+                  <th>Số lượng</th>
+                  <th>Lý do</th>
+                  <th>Thời gian</th>
+                </tr>
+              </thead>
+              <tbody>
+                {logs
+                  .filter((log) => log.status === 1)
+                  .map((log) => (
+                    <tr key={log.logId}>
+                      <td>
+                        <input
+                          type="checkbox"
+                          style={{ width: "20px", height: "20px" }}
+                          checked={selectedReturnLogs.includes(log.logId)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedReturnLogs([...selectedReturnLogs, log.logId]);
+                            } else {
+                              setSelectedReturnLogs(selectedReturnLogs.filter((id) => id !== log.logId));
+                            }
+                          }}
+                        />
+                      </td>
+                      <td>
+                        <img
+                          src={
+                            products[log.productId]?.imageURL ||
+                            "https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg"
+                          }
+                          alt="Ảnh"
+                          style={{ width: "60px", height: "60px", objectFit: "cover", border: "1px solid #ccc" }}
+                        />
+                      </td>
+                      <td>{products[log.productId]?.name || "Không rõ"}</td>
+                      <td>{users[log.userId] || log.userId}</td>
+                      <td>{log.quantityChange}</td>
+                      <td>{log.reason || "Không có lý do"}</td>
+                      <td>
+                        {new Date(log.createdAt).toLocaleString("vi-VN", {
+                          year: "numeric",
+                          month: "2-digit",
+                          day: "2-digit",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          </div>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="warning" onClick={() => setShowReturnModal(false)}>
+            Đóng
+          </Button>
+          <Button
+            variant="primary"
+            onClick={async () => {
+              for (let logId of selectedReturnLogs) {
+                const log = logs.find((l) => l.logId === logId);
+                if (log) {
+                  try {
+                    await axios.post("http://localhost:8082/PureFoods/api/inventory-logs/return-order", {
+                      productId: log.productId,
+                      userId: log.userId,
+                      quantityChange: log.quantityChange,
+                    });
+                  } catch (err) {
+                    console.error("Lỗi khi gửi yêu cầu trả hàng:", err);
+                  }
+                }
+              }
+              Swal.fire({
+                icon: "success",
+                title: "Đã gửi yêu cầu trả hàng",
+                text: "Các đơn được chọn đã được gửi thành công!",
+                confirmButtonColor: "#3085d6",
+                confirmButtonText: "OK",
+              });
+
+              setSelectedReturnLogs([]);
+              setShowReturnModal(false);
+            }}
+          >
+            ✅ Xác nhận trả hàng
+          </Button>
+        </Modal.Footer>
       </Modal>
     </div>
   );
