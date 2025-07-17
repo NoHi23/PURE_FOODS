@@ -44,3 +44,11 @@ CREATE TABLE Notifications (
     created_at    DATETIME DEFAULT GETDATE(),
     FOREIGN KEY (user_id) REFERENCES Users(UserID)
 );
+
+
+--update 17/7/2025
+
+ALTER TABLE [Orders]
+ADD 
+    PaymentMethod NVARCHAR(50),         -- 'COD', 'VNPAY', 'Stripe', 'PayPal'
+    PaymentStatus NVARCHAR(50);     

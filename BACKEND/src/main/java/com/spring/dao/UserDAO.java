@@ -13,4 +13,6 @@ public interface UserDAO {
     int countUsers();
     List<User> findByRoleId(int roleId);
     User findByResetToken(String token);
-}
+    User findById(int id) ;
+
+    }
