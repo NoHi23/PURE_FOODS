@@ -11,4 +11,8 @@ public interface InventoryLogsDAO {
     InventoryLogs getLatestLog();
     List<InventoryLogs> getAllLogs();
     InventoryLogs getLogById(int id);
+
+    List<InventoryLogs> getLogsByReasonAndStatus(String reason, int status);
+    List<InventoryLogs> getLogsByUserId(int userId);
+    List<InventoryLogs> getLogsByReason(String reason);
 }

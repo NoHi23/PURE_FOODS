@@ -5,7 +5,7 @@ import LoginPage from './component/Login/LoginPage';
 import SignUp from './component/SignUp/SignUp';
 import AdminDashboard from './component/AdminDashboard/AdminDashboard';
 import ImporterDashboard from './component/Importer/ImporterDashboard';
-import TraderDashboard from './component/WholeSaler/TraderDashboard';
+import TraderDashboard from './component/Trader/TraderDashboard';
 import Product from './component/Admin/Product';
 import Forgot from './component/Login/Forgot';
 import { Bounce } from 'react-toastify';

@@ -91,4 +91,34 @@ public class InventoryLogsController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
     }
+
+    @PostMapping("/return-order")
+    public ResponseEntity<?> returnOrder(@RequestBody InventoryLogsDTO dto) {
+        try {
+            InventoryLogsDTO created = inventoryLogsService.createReturnOrder(dto);
+            Map<String, Object> res = new HashMap<>();
+            res.put("message", "Đã tạo đơn trả hàng thành công");
+            res.put("log", created);
+            return ResponseEntity.ok(res);
+        } catch (RuntimeException e) {
+            Map<String, Object> err = new HashMap<>();
+            err.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(err);
+        }
+    }
+    @PostMapping("/trader-import")
+    public ResponseEntity<?> traderImport(@RequestBody InventoryLogsDTO dto) {
+        try {
+            InventoryLogsDTO created = inventoryLogsService.traderCreateInventoryImport(dto);
+            Map<String, Object> res = new HashMap<>();
+            res.put("message", "Trader nhập kho thành công");
+            res.put("log", created);
+            return ResponseEntity.ok(res);
+        } catch (RuntimeException e) {
+            Map<String, Object> err = new HashMap<>();
+            err.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(err);
+        }
+    }
+
 }
