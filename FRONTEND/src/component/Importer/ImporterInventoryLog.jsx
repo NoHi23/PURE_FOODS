@@ -3,6 +3,7 @@ import axios from "axios";
 import { FiSearch } from "react-icons/fi";
 import { Modal, Button } from "react-bootstrap";
 import Pagination from "../../layouts/Pagination";
+import FilterStatus from "./FilterStatus";
 import Swal from "sweetalert2";
 
 const ImporterInventoryLog = ({ currentPage, setCurrentPage, setLogs }) => {
@@ -12,7 +13,7 @@ const ImporterInventoryLog = ({ currentPage, setCurrentPage, setLogs }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [archivedPage, setArchivedPage] = useState(1);
   const [showArchivedModal, setShowArchivedModal] = useState(false);
-
+  const [selectedStatus, setSelectedStatus] = useState("all");
   const [showReturnModal, setShowReturnModal] = useState(false);
   const [selectedReturnLogs, setSelectedReturnLogs] = useState([]);
 
@@ -20,8 +21,11 @@ const ImporterInventoryLog = ({ currentPage, setCurrentPage, setLogs }) => {
 
   // Lọc dữ liệu real-time
   const filteredLogs = logs
-    .filter((log) => log.status !== 3) // 👈 bỏ log đã lưu trữ
+    .filter((log) => log.status !== 3) // vẫn loại bỏ đơn đã lưu trữ
     .filter((log) => {
+      // 👉 Lọc theo trạng thái nếu có chọn
+      const matchStatus = selectedStatus === "all" ? true : log.status === selectedStatus;
+
       const productName = products[log.productId]?.name?.toLowerCase() || "";
       const userName = users[log.userId]?.toLowerCase() || "";
       const quantity = log.quantityChange?.toString() || "";
@@ -29,14 +33,15 @@ const ImporterInventoryLog = ({ currentPage, setCurrentPage, setLogs }) => {
       const createdAt = log.createdAt ? new Date(log.createdAt).toLocaleString("vi-VN").toLowerCase() : "";
       const statusText = log.status === 0 ? "đang xử lý" : log.status === 1 ? "hoàn thành" : "từ chối";
 
-      return (
+      const matchSearch =
         productName.includes(searchTerm.toLowerCase()) ||
         userName.includes(searchTerm.toLowerCase()) ||
         quantity.includes(searchTerm) ||
         reason.includes(searchTerm.toLowerCase()) ||
         createdAt.includes(searchTerm.toLowerCase()) ||
-        statusText.includes(searchTerm.toLowerCase())
-      );
+        statusText.includes(searchTerm.toLowerCase());
+
+      return matchStatus && matchSearch;
     });
 
   useEffect(() => {
@@ -170,7 +175,12 @@ const ImporterInventoryLog = ({ currentPage, setCurrentPage, setLogs }) => {
           🗃️ Xem các đơn đã lưu trữ
         </button>
       </div>
-
+      <div className="mt-4 mb-4 border p-3 rounded" style={{ backgroundColor: "#c9daebff" }}>
+        <p className="mb-4 fw-bold" style={{ fontSize: "19px", color: "blue" }}>
+          📦 Lọc trạng thái:
+        </p>
+        <FilterStatus selectedStatus={selectedStatus} setSelectedStatus={setSelectedStatus} />
+      </div>
       <div className="order-tab dashboard-bg-box">
         <div className="table-responsive">
           <table className="table order-table">
@@ -367,7 +377,9 @@ const ImporterInventoryLog = ({ currentPage, setCurrentPage, setLogs }) => {
           <Modal.Title>🔁 Yêu cầu trả hàng</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <p className="text-primary fw-bold mb-3">Tích chọn các đơn hàng cần trả. Chỉ có thể trả các đơn hàng có trạng thái **đã hoàn thành**.</p>
+          <p className="text-primary fw-bold mb-3">
+            Tích chọn các đơn hàng cần trả. Chỉ có thể trả các đơn hàng có trạng thái **đã hoàn thành**.
+          </p>
           <div className="table-responsive">
             <table className="table table-bordered">
               <thead>
