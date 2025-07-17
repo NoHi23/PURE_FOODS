@@ -5,35 +5,38 @@ import { toast } from "react-toastify";
 const CreateOrder = ({ setOrders }) => {
   const user = JSON.parse(localStorage.getItem("user"));
   const [newOrder, setNewOrder] = useState({
-    customerID: user?.userID || "", // Giữ nguyên, required
-    shippingAddress: user?.address || "", // Sửa từ address thành shippingAddress để khớp entity Orders
-    totalAmount: 0, // Thêm field required, giả sử entity có
-    orderDetails: [{ productID: "", quantity: 0, unitPrice: 0 }], // Thêm để handle products, vì order có nhiều product
+    customerID: "",
+    customerName: "",
+    phone: "",
+    email: "",
+    shippingAddress: "",
+    items: [{ productId: "", quantity: 0, unitPrice: 0, imageUrl: "" }],
   });
   const [orders, setLocalOrders] = useState([]);
   const [products, setProducts] = useState([]);
+  const [customers, setCustomers] = useState([]);
   const [productMap, setProductMap] = useState({});
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [orderToDelete, setOrderToDelete] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [ordersRes, productsRes] = await Promise.all([
+        const [ordersRes, productsRes, customersRes] = await Promise.all([
           axios.get(`http://localhost:8082/PureFoods/api/exporter/orders/${user?.userID || 1}?page=0&size=10`),
           axios.get(`http://localhost:8082/PureFoods/api/product/getAll`),
+          axios.get(`http://localhost:8082/PureFoods/api/users/getAll`),
         ]);
-        setLocalOrders(ordersRes.data || []); // Handle empty array
-        setProducts(productsRes.data.listProduct || []); // Handle empty
+        setLocalOrders(ordersRes.data || []);
+        setProducts(productsRes.data.listProduct || []);
+        setCustomers(customersRes.data.userList?.filter(u => u.roleID !== 5) || []);
 
-        // Build productMap
         const productMapTemp = {};
         productsRes.data.listProduct?.forEach((p) => {
-          productMapTemp[p.productId] = { name: p.productName, price: p.price || 0 }; // Thêm price để tính totalAmount
+          productMapTemp[p.productId] = { name: p.productName, price: p.price || 0, imageUrl: p.imageURL || "" };
         });
         setProductMap(productMapTemp);
       } catch (err) {
         toast.error("Lỗi khi lấy dữ liệu: " + (err.response?.data?.message || err.message));
+        console.error("Fetch error:", err);
       }
     };
     fetchData();
@@ -42,39 +45,80 @@ const CreateOrder = ({ setOrders }) => {
   const handleAddProduct = () => {
     setNewOrder({
       ...newOrder,
-      orderDetails: [...newOrder.orderDetails, { productID: "", quantity: 0, unitPrice: 0 }],
+      items: [...newOrder.items, { productId: "", quantity: 0, unitPrice: 0, imageUrl: "" }],
     });
   };
 
   const handleProductChange = (index, field, value) => {
-    const updatedDetails = [...newOrder.orderDetails];
-    updatedDetails[index][field] = value;
-    if (field === "productID") {
+    const updatedItems = [...newOrder.items];
+    updatedItems[index][field] = field === "quantity" ? parseInt(value) || 0 : value;
+    if (field === "productId") {
       const product = productMap[value];
-      updatedDetails[index].unitPrice = product?.price || 0;
+      updatedItems[index].unitPrice = product?.price || 0;
+      updatedItems[index].imageUrl = product?.imageUrl || "";
     }
-    const total = updatedDetails.reduce((sum, d) => sum + d.quantity * d.unitPrice, 0);
-    setNewOrder({ ...newOrder, orderDetails: updatedDetails, totalAmount: total });
+    const total = updatedItems.reduce((sum, item) => sum + (item.quantity * item.unitPrice || 0), 0);
+    setNewOrder({ ...newOrder, items: updatedItems, totalAmount: total });
+  };
+
+  const handleInputChange = (e) => {
+    setNewOrder({ ...newOrder, [e.target.name]: e.target.value });
+  };
+
+  const handleCustomerChange = (e) => {
+    const customerId = parseInt(e.target.value);
+    const customer = customers.find(c => c.userId === customerId);
+    setNewOrder({
+      ...newOrder,
+      customerID: customerId,
+      customerName: customer?.fullName || "",
+      phone: customer?.phone || "",
+      email: customer?.email || "",
+      shippingAddress: customer?.address || "",
+    });
   };
 
   const handleCreateOrder = async (e) => {
     e.preventDefault();
-    if (newOrder.totalAmount <= 0) {
-      toast.error("Vui lòng thêm sản phẩm và số lượng hợp lệ!");
+    if (!newOrder.customerID || !newOrder.customerName || !newOrder.phone || !newOrder.email || !newOrder.shippingAddress) {
+      toast.error("Vui lòng nhập đầy đủ thông tin khách hàng!");
+      return;
+    }
+    if (newOrder.items.some(item => !item.productId || item.quantity <= 0 || item.unitPrice <= 0)) {
+      toast.error("Vui lòng chọn sản phẩm và số lượng hợp lệ!");
       return;
     }
     try {
-      const res = await axios.post(`http://localhost:8082/PureFoods/api/exporter/order`, newOrder); // Gửi JSON thay vì FormData, vì không có image nữa hoặc điều chỉnh nếu cần
+      console.log("Sending order:", newOrder); // Debug log
+      const res = await axios.post(`http://localhost:8082/PureFoods/api/exporter/order`, {
+        customerID: parseInt(newOrder.customerID),
+        customerName: newOrder.customerName,
+        phone: newOrder.phone,
+        email: newOrder.email,
+        shippingAddress: newOrder.shippingAddress,
+        items: newOrder.items.map(item => ({
+          productId: parseInt(item.productId),
+          imageUrl: item.imageUrl,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+        })),
+      }, {
+        headers: { "Content-Type": "application/json" },
+      });
+      console.log("Response:", res.data); // Debug log
       setLocalOrders([...orders, res.data]);
       setOrders((prev) => [...prev, res.data]);
       setNewOrder({
-        customerID: user?.userID || "",
-        shippingAddress: user?.address || "",
-        totalAmount: 0,
-        orderDetails: [{ productID: "", quantity: 0, unitPrice: 0 }],
+        customerID: "",
+        customerName: "",
+        phone: "",
+        email: "",
+        shippingAddress: "",
+        items: [{ productId: "", quantity: 0, unitPrice: 0, imageUrl: "" }],
       });
-      toast.success("Đơn hàng đã được tạo!");
+      toast.success("Đơn hàng đã được tạo thành công!");
     } catch (err) {
+      console.error("Create order error:", err.response?.data || err); // Debug log
       toast.error("Tạo đơn hàng thất bại: " + (err.response?.data?.message || err.message));
     }
   };
@@ -84,22 +128,34 @@ const CreateOrder = ({ setOrders }) => {
     if (orderToEdit) {
       try {
         const updatedOrder = {
-          ...orderToEdit,
+          customerID: parseInt(newOrder.customerID) || orderToEdit.customerID,
+          customerName: newOrder.customerName || orderToEdit.customerName || "",
+          phone: newOrder.phone || orderToEdit.phone || "",
+          email: newOrder.email || orderToEdit.email || "",
           shippingAddress: newOrder.shippingAddress || orderToEdit.shippingAddress,
-          totalAmount: newOrder.totalAmount || orderToEdit.totalAmount,
-          orderDetails: newOrder.orderDetails.length > 0 ? newOrder.orderDetails : orderToEdit.orderDetails, // Giả sử có orderDetails
+          items: newOrder.items.length > 0 ? newOrder.items.map(item => ({
+            productId: parseInt(item.productId),
+            imageUrl: item.imageUrl,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice,
+          })) : orderToEdit.orderDetails || [],
         };
-        await axios.put(`http://localhost:8082/PureFoods/api/exporter/order/${orderId}`, updatedOrder);
-        setLocalOrders(orders.map((o) => (o.orderID === orderId ? updatedOrder : o)));
-        setOrders((prev) => prev.map((o) => (o.orderID === orderId ? updatedOrder : o)));
+        await axios.put(`http://localhost:8082/PureFoods/api/exporter/order/${orderId}`, updatedOrder, {
+          headers: { "Content-Type": "application/json" },
+        });
+        setLocalOrders(orders.map((o) => (o.orderID === orderId ? { ...o, ...updatedOrder } : o)));
+        setOrders((prev) => prev.map((o) => (o.orderID === orderId ? { ...o, ...updatedOrder } : o)));
         setNewOrder({
-          customerID: user?.userID || "",
-          shippingAddress: user?.address || "",
-          totalAmount: 0,
-          orderDetails: [{ productID: "", quantity: 0, unitPrice: 0 }],
+          customerID: "",
+          customerName: "",
+          phone: "",
+          email: "",
+          shippingAddress: "",
+          items: [{ productId: "", quantity: 0, unitPrice: 0, imageUrl: "" }],
         });
         toast.success("Đơn hàng đã được cập nhật!");
       } catch (err) {
+        console.error("Edit order error:", err.response?.data || err); // Debug log
         toast.error("Cập nhật đơn hàng thất bại: " + (err.response?.data?.message || err.message));
       }
     }
@@ -121,6 +177,7 @@ const CreateOrder = ({ setOrders }) => {
         setOrderToDelete(null);
         toast.success("Đơn hàng đã được xóa!");
       } catch (err) {
+        console.error("Delete order error:", err.response?.data || err); // Debug log
         toast.error("Xóa đơn hàng thất bại: " + (err.response?.data?.message || err.message));
       }
     }
@@ -130,6 +187,9 @@ const CreateOrder = ({ setOrders }) => {
     setShowDeleteConfirm(false);
     setOrderToDelete(null);
   };
+
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [orderToDelete, setOrderToDelete] = useState(null);
 
   return (
     <div className="create-order-tab">
@@ -145,23 +205,104 @@ const CreateOrder = ({ setOrders }) => {
         <h3>Tạo đơn hàng mới</h3>
         <form onSubmit={handleCreateOrder}>
           <div className="mb-3">
-            <input type="text" className="form-control" placeholder="Địa chỉ giao hàng" value={newOrder.shippingAddress} onChange={(e) => setNewOrder({ ...newOrder, shippingAddress: e.target.value })} required />
+            <select
+              className="form-control"
+              name="customerID"
+              value={newOrder.customerID}
+              onChange={handleCustomerChange}
+              required
+            >
+              <option value="">Chọn khách hàng</option>
+              {customers.map((c) => (
+                <option key={c.userId} value={c.userId}>
+                  {c.fullName} ({c.email})
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="mb-3">
+            <input
+              type="text"
+              className="form-control"
+              name="customerName"
+              placeholder="Tên khách hàng"
+              value={newOrder.customerName}
+              onChange={handleInputChange}
+              required
+              readOnly
+            />
+          </div>
+          <div className="mb-3">
+            <input
+              type="tel"
+              className="form-control"
+              name="phone"
+              placeholder="Số điện thoại"
+              value={newOrder.phone}
+              onChange={handleInputChange}
+              required
+              readOnly
+            />
+          </div>
+          <div className="mb-3">
+            <input
+              type="email"
+              className="form-control"
+              name="email"
+              placeholder="Email"
+              value={newOrder.email}
+              onChange={handleInputChange}
+              required
+              readOnly
+            />
+          </div>
+          <div className="mb-3">
+            <input
+              type="text"
+              className="form-control"
+              name="shippingAddress"
+              placeholder="Địa chỉ giao hàng"
+              value={newOrder.shippingAddress}
+              onChange={handleInputChange}
+              required
+            />
           </div>
           <div className="mb-3">
             <h5>Sản phẩm:</h5>
-            {newOrder.orderDetails.map((detail, index) => (
+            {newOrder.items.map((item, index) => (
               <div key={index} className="d-flex mb-2">
-                <select className="form-control me-2" value={detail.productID} onChange={(e) => handleProductChange(index, "productID", e.target.value)} required>
+                <select
+                  className="form-control me-2"
+                  value={item.productId || ""}
+                  onChange={(e) => handleProductChange(index, "productId", e.target.value)}
+                  required
+                >
                   <option value="">Chọn sản phẩm</option>
-                  {products.map((p) => <option key={p.productId} value={p.productId}>{p.productName}</option>)}
+                  {products.map((p) => (
+                    <option key={p.productId} value={p.productId}>{p.productName}</option>
+                  ))}
                 </select>
-                <input type="number" className="form-control" placeholder="Số lượng" value={detail.quantity} onChange={(e) => handleProductChange(index, "quantity", parseInt(e.target.value))} required />
+                <input
+                  type="number"
+                  className="form-control"
+                  placeholder="Số lượng"
+                  value={item.quantity || 0}
+                  onChange={(e) => handleProductChange(index, "quantity", parseInt(e.target.value) || 0)}
+                  min="1"
+                  required
+                />
               </div>
             ))}
             <button type="button" onClick={handleAddProduct} className="btn btn-sm btn-secondary">Thêm sản phẩm</button>
           </div>
           <div className="mb-3">
-            <input type="number" className="form-control" placeholder="Tổng tiền" value={newOrder.totalAmount} readOnly />
+            <input
+              type="number"
+              className="form-control"
+              placeholder="Tổng tiền"
+              value={newOrder.totalAmount || 0}
+              readOnly
+            />
           </div>
           <button type="submit" className="btn theme-bg-color btn-md fw-bold text-white">Tạo đơn</button>
         </form>
@@ -185,16 +326,33 @@ const CreateOrder = ({ setOrders }) => {
                     <td><h6>{o.shippingAddress}</h6></td>
                     <td><h6>{o.totalAmount}</h6></td>
                     <td>
-                      <button onClick={() => {
-                        setNewOrder({
-                          customerID: o.customerID,
-                          shippingAddress: o.shippingAddress,
-                          totalAmount: o.totalAmount,
-                          orderDetails: o.orderDetails || [{ productID: "", quantity: 0, unitPrice: 0 }],
-                        });
-                        handleEditOrder(o.orderID);
-                      }} className="btn btn-sm btn-warning me-2">Sửa</button>
-                      <button onClick={() => handleDeleteOrder(o.orderID)} className="btn btn-sm btn-danger">Xóa</button>
+                      <button
+                        onClick={() => {
+                          setNewOrder({
+                            customerID: o.customerID?.toString() || "",
+                            customerName: o.customerName || "",
+                            phone: o.phone || "",
+                            email: o.email || "",
+                            shippingAddress: o.shippingAddress || "",
+                            items: o.orderDetails?.map(d => ({
+                              productId: d.productID?.toString() || "",
+                              quantity: d.quantity || 0,
+                              unitPrice: d.unitPrice?.doubleValue() || 0,
+                              imageUrl: productMap[d.productID]?.imageUrl || "",
+                            })) || [{ productId: "", quantity: 0, unitPrice: 0, imageUrl: "" }],
+                          });
+                          handleEditOrder(o.orderID);
+                        }}
+                        className="btn btn-sm btn-warning me-2"
+                      >
+                        Sửa
+                      </button>
+                      <button
+                        onClick={() => handleDeleteOrder(o.orderID)}
+                        className="btn btn-sm btn-danger"
+                      >
+                        Xóa
+                      </button>
                     </td>
                   </tr>
                 ))

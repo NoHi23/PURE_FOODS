@@ -8,13 +8,14 @@ const ExporterInventoryLog = ({ currentPage, setCurrentPage }) => {
   const [transactions, setTransactions] = useState([]);
   const [productMap, setProductMap] = useState({});
   const [userMap, setUserMap] = useState({});
+  const [orderMap, setOrderMap] = useState({});
   const [searchTerm, setSearchTerm] = useState("");
 
   const filteredTransactions = transactions.filter((t) =>
-    (productMap[t.productId]?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
+    (productMap[t.productID]?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
     (userMap[t.userId]?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
     t.quantity?.toString().includes(searchTerm) ||
-    t.transactionDate?.toLocaleString("vi-VN").toLowerCase().includes(searchTerm.toLowerCase())
+    (orderMap[t.orderID] ? new Date(orderMap[t.orderID]).toLocaleString("vi-VN").toLowerCase() : "").includes(searchTerm.toLowerCase())
   );
 
   const transactionsPerPage = 7;
@@ -27,12 +28,13 @@ const ExporterInventoryLog = ({ currentPage, setCurrentPage }) => {
     const fetchData = async () => {
       const exporterId = JSON.parse(localStorage.getItem("user"))?.userID || 1;
       try {
-        const [transactionsRes, productsRes, usersRes] = await Promise.all([
+        const [transactionsRes, productsRes, usersRes, ordersRes] = await Promise.all([
           axios.get(`http://localhost:8082/PureFoods/api/exporter/transactions/${exporterId}?page=0&size=10`),
           axios.get(`http://localhost:8082/PureFoods/api/product/getAll`),
           axios.get(`http://localhost:8082/PureFoods/api/users/getAll`),
+          axios.get(`http://localhost:8082/PureFoods/api/exporter/orders/${exporterId}?page=0&size=10`),
         ]);
-        setTransactions(transactionsRes.data || []); // Handle empty
+        setTransactions(transactionsRes.data || []);
         const productMapTemp = {};
         productsRes.data.listProduct?.forEach((p) => {
           productMapTemp[p.productId] = p.productName;
@@ -43,6 +45,11 @@ const ExporterInventoryLog = ({ currentPage, setCurrentPage }) => {
           userMapTemp[u.userId] = u.fullName;
         });
         setUserMap(userMapTemp);
+        const orderMapTemp = {};
+        ordersRes.data?.forEach((o) => {
+          orderMapTemp[o.orderID] = o.orderDate;
+        });
+        setOrderMap(orderMapTemp);
       } catch (err) {
         toast.error("Lỗi khi lấy dữ liệu: " + (err.response?.data?.message || err.message));
       }
@@ -84,11 +91,11 @@ const ExporterInventoryLog = ({ currentPage, setCurrentPage }) => {
             <tbody>
               {currentTransactions.length > 0 ? (
                 currentTransactions.map((t) => (
-                  <tr key={t.transactionId}>
-                    <td><h6>{productMap[t.productId] || "Không rõ"}</h6></td>
+                  <tr key={t.orderDetailID}>
+                    <td><h6>{productMap[t.productID] || "Không rõ"}</h6></td>
                     <td><h6>{userMap[t.userId] || "Không rõ"}</h6></td>
                     <td><h6>{t.quantity}</h6></td>
-                    <td><h6>{new Date(t.transactionDate).toLocaleString("vi-VN")}</h6></td>
+                    <td><h6>{orderMap[t.orderID] ? new Date(orderMap[t.orderID]).toLocaleString("vi-VN") : "Không rõ"}</h6></td>
                   </tr>
                 ))
               ) : (

@@ -2,18 +2,16 @@ package com.spring.service.Impl;
 
 import com.spring.dao.ExporterDAO;
 import com.spring.dto.ExporterDTO;
-import com.spring.dto.TraderTransactionDTO;
-import com.spring.entity.Exporter;
+import com.spring.dto.OrderRequestDTO;
 import com.spring.entity.Order;
+import com.spring.entity.OrderDetails;
 import com.spring.entity.Products;
+import com.spring.entity.User;
 import com.spring.service.ExporterService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 @Service
@@ -24,82 +22,136 @@ public class ExporterServiceImpl implements ExporterService {
 
     @Override
     public ExporterDTO getExporterById(int id) {
-        Exporter exporter = exporterDAO.getExporterById(id);
-        if (exporter == null) return new ExporterDTO(0, "", "", null, "", "", null, null);
-        return new ExporterDTO(
-                exporter.getUserID(), exporter.getFullName(), exporter.getEmail(),
-                exporter.getRoleID(), exporter.getPhone(), exporter.getAddress(),
-                exporter.getStatus(), exporter.getCreatedAt()
-        );
+        try {
+            User exporter = exporterDAO.getExporterById(id);
+            if (exporter == null) return null;
+            return new ExporterDTO(
+                    exporter.getUserId(), exporter.getFullName(), exporter.getEmail(),
+                    exporter.getRoleID(), exporter.getPhone(), exporter.getAddress(),
+                    exporter.getStatus(), exporter.getCreatedAt()
+            );
+        } catch (Exception e) {
+            System.err.println("Error fetching exporter with ID " + id + ": " + e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
     }
 
     @Override
-    public Order createOrder(Order order) {
-        if (order.getCustomerID() == null) {
-            throw new IllegalArgumentException("Customer ID cannot be null");
+    public Order createOrder(OrderRequestDTO orderRequest) {
+        try {
+            return exporterDAO.createOrder(orderRequest);
+        } catch (Exception e) {
+            System.err.println("Error creating order: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
         }
-        order.setOrderDate(Date.from(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant()));
-        order.setStatusID(1); // Pending
-        order.setTotalAmount(0.0); // Default totalAmount
-        return exporterDAO.createOrder(order);
     }
 
     @Override
     public List<Order> getOrdersByExporterId(int exporterId, int page, int size) {
-        List<Order> orders = exporterDAO.getOrdersByExporterId(exporterId, page, size);
-        return orders != null ? orders : new ArrayList<>();
+        try {
+            List<Order> orders = exporterDAO.getOrdersByExporterId(exporterId, page, size);
+            return orders != null ? orders : new ArrayList<>();
+        } catch (Exception e) {
+            System.err.println("Error fetching orders for exporter ID " + exporterId + ": " + e.getMessage());
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
     }
 
     @Override
     public void manageInventory(int exporterId, int productId, int quantity, String action) {
-        Products product = exporterDAO.getProductById(productId);
-        if (product == null) throw new IllegalArgumentException("Product not found");
+        try {
+            Products product = exporterDAO.getProductById(productId);
+            if (product == null) throw new IllegalArgumentException("Product not found");
 
-        if ("export".equalsIgnoreCase(action)) {
-            exporterDAO.exportFromInventory(exporterId, 0, productId, quantity);
-        } else if ("update".equalsIgnoreCase(action)) {
-            product.setStockQuantity(quantity);
-            exporterDAO.updateProduct(product);
-        } else if ("delete".equalsIgnoreCase(action)) {
-            exporterDAO.deleteProduct(productId);
+            if ("export".equalsIgnoreCase(action)) {
+                exporterDAO.exportFromInventory(exporterId, 0, productId, quantity);
+            } else if ("update".equalsIgnoreCase(action)) {
+                product.setStockQuantity(quantity);
+                exporterDAO.updateProduct(product);
+            } else if ("delete".equalsIgnoreCase(action)) {
+                exporterDAO.deleteProduct(productId);
+            }
+        } catch (Exception e) {
+            System.err.println("Error managing inventory: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
         }
     }
 
     @Override
     public void exportFromInventory(int exporterId, int orderId, int productId, int quantity) {
-        exporterDAO.exportFromInventory(exporterId, orderId, productId, quantity);
+        try {
+            exporterDAO.exportFromInventory(exporterId, orderId, productId, quantity);
+        } catch (Exception e) {
+            System.err.println("Error exporting from inventory: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
+        }
     }
 
     @Override
-    public List<TraderTransactionDTO> getTransactions(int exporterId, int page, int size) {
-        List<TraderTransactionDTO> transactions = exporterDAO.getTransactionsByExporterId(exporterId, page, size);
-        return transactions != null ? transactions : new ArrayList<>();
+    public List<OrderDetails> getTransactions(int exporterId, int page, int size) {
+        try {
+            List<OrderDetails> transactions = exporterDAO.getTransactionsByExporterId(exporterId, page, size);
+            return transactions != null ? transactions : new ArrayList<>();
+        } catch (Exception e) {
+            System.err.println("Error fetching transactions for exporter ID " + exporterId + ": " + e.getMessage());
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
     }
 
     @Override
     public ExporterDTO updateProfile(int id, ExporterDTO exporterDTO) {
-        Exporter exporter = exporterDAO.getExporterById(id);
-        if (exporter == null) return new ExporterDTO(0, "", "", null, "", "", null, null);
-        exporter.setFullName(exporterDTO.getFullName());
-        exporter.setEmail(exporterDTO.getEmail());
-        exporter.setPhone(exporterDTO.getPhone());
-        exporter.setAddress(exporterDTO.getAddress());
-        exporter.setStatus(exporterDTO.getStatus());
-        exporter = exporterDAO.updateExporter(exporter);
-        return new ExporterDTO(
-                exporter.getUserID(), exporter.getFullName(), exporter.getEmail(),
-                exporter.getRoleID(), exporter.getPhone(), exporter.getAddress(),
-                exporter.getStatus(), exporter.getCreatedAt()
-        );
+        try {
+            User exporter = exporterDAO.getExporterById(id);
+            if (exporter == null) return null;
+            exporter.setFullName(exporterDTO.getFullName());
+            exporter.setEmail(exporterDTO.getEmail());
+            exporter.setPhone(exporterDTO.getPhone());
+            exporter.setAddress(exporterDTO.getAddress());
+            exporter.setStatus(exporterDTO.getStatus());
+            exporter = exporterDAO.updateExporter(exporter);
+            return new ExporterDTO(
+                    exporter.getUserId(), exporter.getFullName(), exporter.getEmail(),
+                    exporter.getRoleID(), exporter.getPhone(), exporter.getAddress(),
+                    exporter.getStatus(), exporter.getCreatedAt()
+            );
+        } catch (Exception e) {
+            System.err.println("Error updating profile for ID " + id + ": " + e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
     }
 
     @Override
     public List<Order> searchOrders(String keyword, int page, int size) {
-        return exporterDAO.searchOrdersByKeyword(keyword, page, size);
+        try {
+            return exporterDAO.searchOrdersByKeyword(keyword, page, size);
+        } catch (Exception e) {
+            System.err.println("Error searching orders with keyword " + keyword + ": " + e.getMessage());
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
     }
 
     @Override
-    public void deleteOrder(int orderId) {
-        exporterDAO.deleteOrder(orderId);
+    public ExporterDTO authenticate(String email, String password) {
+        try {
+            User exporter = exporterDAO.authenticate(email, password);
+            if (exporter == null) return null;
+            return new ExporterDTO(
+                    exporter.getUserId(), exporter.getFullName(), exporter.getEmail(),
+                    exporter.getRoleID(), exporter.getPhone(), exporter.getAddress(),
+                    exporter.getStatus(), exporter.getCreatedAt()
+            );
+        } catch (Exception e) {
+            System.err.println("Error authenticating exporter with email " + email + ": " + e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
     }
 }

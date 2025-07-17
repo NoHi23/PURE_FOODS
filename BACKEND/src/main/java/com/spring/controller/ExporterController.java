@@ -1,18 +1,18 @@
 package com.spring.controller;
 
 import com.spring.dto.ExporterDTO;
-import com.spring.dto.OrderDTO;
-import com.spring.dto.TraderTransactionDTO;
-import com.spring.entity.Exporter;
+import com.spring.dto.OrderRequestDTO;
 import com.spring.entity.Order;
+import com.spring.entity.OrderDetails;
 import com.spring.service.ExporterService;
-import com.spring.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Map;
 
 @RestController
 @RequestMapping(value = "/api/exporter")
@@ -21,43 +21,84 @@ public class ExporterController {
 
     @Autowired
     private ExporterService exporterService;
-    @Autowired
-    private OrderService orderService;
+
+    @PostMapping("/login")
+    public ResponseEntity<ExporterDTO> login(@RequestBody Map<String, String> loginData) {
+        try {
+            String email = loginData.get("email");
+            String password = loginData.get("password");
+            if (email == null || password == null) {
+                return ResponseEntity.status(400).build();
+            }
+            ExporterDTO exporter = exporterService.authenticate(email, password);
+            if (exporter == null) {
+                return ResponseEntity.status(401).build();
+            }
+            return ResponseEntity.ok(exporter);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(401).build();
+        }
+    }
 
     @GetMapping("/{id}")
     public ResponseEntity<ExporterDTO> getExporterById(@PathVariable("id") int id) {
         try {
+            if (id <= 0) {
+                return ResponseEntity.status(400).build();
+            }
             ExporterDTO exporterDTO = exporterService.getExporterById(id);
             if (exporterDTO == null) {
-                return ResponseEntity.ok(new ExporterDTO(0, "", "", null, "", "", null, null));
+                return ResponseEntity.notFound().build();
             }
             return ResponseEntity.ok(exporterDTO);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new ExporterDTO(0, "", e.getMessage(), null, "", "", null, null));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
         }
     }
 
     @PostMapping("/order")
-    public ResponseEntity<OrderDTO> createOrder(@RequestBody OrderDTO orderDTO) {
+    public ResponseEntity<?> createOrder(@RequestBody OrderRequestDTO orderRequestDTO) {
         try {
-            OrderDTO createdOrder = orderService.createOrder(orderDTO);
-            return ResponseEntity.ok(createdOrder);
-        } catch (Exception e) {
-            OrderDTO errorOrder = new OrderDTO();
-            return ResponseEntity.badRequest().body(errorOrder);
+            if (orderRequestDTO == null) {
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("message", "Order request data is null");
+                errorResponse.put("status", 400);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+            }
+
+            Order savedOrder = exporterService.createOrder(orderRequestDTO);
+            if (savedOrder == null) {
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("message", "Failed to create order");
+                errorResponse.put("status", 500);
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+            }
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Order created successfully!");
+            response.put("status", 200);
+            response.put("order", savedOrder);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("message", "Error creating order: " + e.getMessage());
+            errorResponse.put("status", 400);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
     }
 
     @GetMapping("/orders/{exporterId}")
-    public ResponseEntity<List<OrderDTO>> getOrdersByExporterId(@PathVariable("exporterId") int exporterId,
-                                                                @RequestParam(defaultValue = "0") int page,
-                                                                @RequestParam(defaultValue = "10") int size) {
+    public ResponseEntity<List<Order>> getOrdersByExporterId(@PathVariable("exporterId") int exporterId,
+                                                             @RequestParam(defaultValue = "0") int page,
+                                                             @RequestParam(defaultValue = "10") int size) {
         try {
-            // Giả sử exporterId là customerId trong Order
-            List<OrderDTO> orders = orderService.getOrdersByCustomerId(exporterId);
-            return ResponseEntity.ok(orders.stream().skip(page * size).limit(size).collect(Collectors.toList()));
-        } catch (Exception e) {
-            return ResponseEntity.ok(List.of());
+            if (exporterId <= 0 || page < 0 || size <= 0) {
+                return ResponseEntity.status(400).build();
+            }
+            List<Order> orders = exporterService.getOrdersByExporterId(exporterId, page, size);
+            return ResponseEntity.ok(orders);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(500).build();
         }
     }
 
@@ -68,10 +109,13 @@ public class ExporterController {
             @RequestParam int quantity,
             @RequestParam String action) {
         try {
-            // Logic quản lý inventory (cần implement trong service/DAO nếu cần)
+            if (exporterId <= 0 || productId <= 0 || quantity < 0 || action == null || action.isEmpty()) {
+                return ResponseEntity.status(400).build();
+            }
+            exporterService.manageInventory(exporterId, productId, quantity, action);
             return ResponseEntity.ok().build();
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(500).build();
         }
     }
 
@@ -82,66 +126,59 @@ public class ExporterController {
             @RequestParam int productId,
             @RequestParam int quantity) {
         try {
-            // Logic xuất kho (cần implement trong service/DAO)
+            if (exporterId <= 0 || orderId <= 0 || productId <= 0 || quantity <= 0) {
+                return ResponseEntity.status(400).build();
+            }
+            exporterService.exportFromInventory(exporterId, orderId, productId, quantity);
             return ResponseEntity.ok().build();
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(500).build();
         }
     }
 
     @GetMapping("/transactions/{exporterId}")
-    public ResponseEntity<List<TraderTransactionDTO>> getTransactions(@PathVariable("exporterId") int exporterId,
-                                                                      @RequestParam(defaultValue = "0") int page,
-                                                                      @RequestParam(defaultValue = "10") int size) {
+    public ResponseEntity<List<OrderDetails>> getTransactions(@PathVariable("exporterId") int exporterId,
+                                                              @RequestParam(defaultValue = "0") int page,
+                                                              @RequestParam(defaultValue = "10") int size) {
         try {
-            List<TraderTransactionDTO> transactions = exporterService.getTransactions(exporterId, page, size);
-            return ResponseEntity.ok(transactions != null ? transactions : List.of());
-        } catch (Exception e) {
-            return ResponseEntity.ok(List.of());
+            if (exporterId <= 0 || page < 0 || size <= 0) {
+                return ResponseEntity.status(400).build();
+            }
+            List<OrderDetails> transactions = exporterService.getTransactions(exporterId, page, size);
+            return ResponseEntity.ok(transactions);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(500).build();
         }
     }
 
     @PutMapping("/profile/{id}")
     public ResponseEntity<ExporterDTO> updateProfile(@PathVariable("id") int id, @RequestBody ExporterDTO exporterDTO) {
         try {
+            if (id <= 0 || exporterDTO == null) {
+                return ResponseEntity.status(400).build();
+            }
             ExporterDTO updatedExporter = exporterService.updateProfile(id, exporterDTO);
             if (updatedExporter == null) {
-                return ResponseEntity.ok(new ExporterDTO(0, "", "", null, "", "", null, null));
+                return ResponseEntity.notFound().build();
             }
             return ResponseEntity.ok(updatedExporter);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new ExporterDTO(0, "", e.getMessage(), null, "", "", null, null));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
         }
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<OrderDTO>> searchOrders(@RequestParam String keyword,
-                                                       @RequestParam(defaultValue = "0") int page,
-                                                       @RequestParam(defaultValue = "10") int size) {
+    public ResponseEntity<List<Order>> searchOrders(@RequestParam String keyword,
+                                                    @RequestParam(defaultValue = "0") int page,
+                                                    @RequestParam(defaultValue = "10") int size) {
         try {
-            List<OrderDTO> orders = orderService.getAllOrders().stream()
-                    .filter(o -> o.getShippingAddress() != null && o.getShippingAddress().contains(keyword))
-                    .skip(page * size).limit(size)
-                    .collect(Collectors.toList());
+            if (keyword == null || keyword.trim().isEmpty() || page < 0 || size <= 0) {
+                return ResponseEntity.status(400).build();
+            }
+            List<Order> orders = exporterService.searchOrders(keyword, page, size);
             return ResponseEntity.ok(orders);
-        } catch (Exception e) {
-            return ResponseEntity.ok(List.of());
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(500).build();
         }
-    }
-
-    @DeleteMapping("/order/{orderId}")
-    public ResponseEntity<Void> deleteOrder(@PathVariable("orderId") int orderId) {
-        try {
-            orderService.deleteOrder(orderId);
-            return ResponseEntity.ok().build();
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
-        }
-    }
-
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<String> handleException(Exception e) {
-        e.printStackTrace();
-        return ResponseEntity.status(500).body("Server error: " + e.getMessage());
     }
 }
