@@ -29,6 +29,8 @@ import AddNewRole from './component/Admin/AddNewRole';
 import Order from './component/Admin/Order';
 import Wishlist from './component/Wishlist/Wishlist';
 import AIChatWidget from './component/GeminiAISetup/AIChatWidget';
+import CartDetail from './component/Cart/CartDetail';
+import CustomerProfileUpdate from './component/Customer/CustomerProfileUpdate';
 import { WishlistProvider } from './layouts/WishlistContext';
 import ProductDetail from './component/ProductDetail/ProductDetail';
 import ExporterDashboard from './component/Exporter/ExporterDashboard';
@@ -135,6 +137,17 @@ function AppContent() {
           </PrivateRoute>
         } />
 
+        <Route path="/cart-detail" element={
+          <PrivateRoute allowedRoles={2}>
+            <CartDetail />
+          </PrivateRoute>
+        } />
+        <Route path="/customer-profile-update" element={
+          <PrivateRoute allowedRoles={2}>
+            <CustomerProfileUpdate />
+          </PrivateRoute>
+        } />
+      
         <Route path="/wishlist" element={
           <PrivateRoute allowedRoles={2}>
             <Wishlist />
