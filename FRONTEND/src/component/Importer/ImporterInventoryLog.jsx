@@ -179,7 +179,13 @@ const ImporterInventoryLog = ({ currentPage, setCurrentPage, setLogs }) => {
         <p className="mb-4 fw-bold" style={{ fontSize: "19px", color: "blue" }}>
           📦 Lọc trạng thái:
         </p>
-        <FilterStatus selectedStatus={selectedStatus} setSelectedStatus={setSelectedStatus} />
+        <FilterStatus
+          selectedStatus={selectedStatus}
+          setSelectedStatus={(value) => {
+            setSelectedStatus(value);
+            setCurrentPage(1);
+          }}
+        />
       </div>
       <div className="order-tab dashboard-bg-box">
         <div className="table-responsive">
