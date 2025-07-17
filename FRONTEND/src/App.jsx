@@ -31,6 +31,7 @@ import Wishlist from './component/Wishlist/Wishlist';
 import AIChatWidget from './component/GeminiAISetup/AIChatWidget';
 import { WishlistProvider } from './layouts/WishlistContext';
 import ProductDetail from './component/ProductDetail/ProductDetail';
+import ExporterDashboard from './component/Exporter/ExporterDashboard';
 
 function AppContent() {
   const location = useLocation();
@@ -155,11 +156,11 @@ function AppContent() {
           </PrivateRoute>
         } />
         {/* Các route dành cho người xuất hàng (exporter) */}
-        <Route path="/exporter" element={
+         <Route path="/exporter" element={
           <PrivateRoute allowedRoles={5}>
             <ExporterDashboard />
           </PrivateRoute>
-        } />
+        } /> 
 
       </Routes>
       {/* Chỉ hiện Footer nếu không nằm trong blacklist và user tồn tại*/}

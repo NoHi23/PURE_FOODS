@@ -18,6 +18,7 @@ const ExporterDashboard = () => {
   const [completedCount, setCompletedCount] = useState(0);
   const [productMap, setProductMap] = useState({});
   const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1); // Thêm state cho pagination nếu cần
 
   useEffect(() => {
     if (!user) {
@@ -34,8 +35,8 @@ const ExporterDashboard = () => {
         ]);
         setOrders(ordersRes.data || []);
         setTransactions(transactionsRes.data || []);
-        const pending = ordersRes.data.filter((o) => o.statusID === 6 || o.statusID === 7).length;
-        const completed = ordersRes.data.filter((o) => o.statusID === 3).length;
+        const pending = (ordersRes.data || []).filter((o) => o.statusID === 6 || o.statusID === 7).length;
+        const completed = (ordersRes.data || []).filter((o) => o.statusID === 3).length;
         setPendingCount(pending);
         setCompletedCount(completed);
         const productMapTemp = {};
@@ -44,7 +45,7 @@ const ExporterDashboard = () => {
         });
         setProductMap(productMapTemp);
       } catch (err) {
-        toast.error("Lỗi khi lấy dữ liệu: " + err.response?.data?.message || err.message);
+        toast.error("Lỗi khi lấy dữ liệu: " + (err.response?.data?.message || err.message));
       }
     };
     fetchData();
@@ -56,7 +57,7 @@ const ExporterDashboard = () => {
       setOrders(res.data || []);
       toast.success("Tìm kiếm đơn hàng thành công!");
     } catch (err) {
-      toast.error("Lỗi tìm kiếm: " + err.response?.data?.message || err.message);
+      toast.error("Lỗi tìm kiếm: " + (err.response?.data?.message || err.message));
     }
   };
 
@@ -178,10 +179,10 @@ const ExporterDashboard = () => {
                     </div>
                   </div>
                   <div className="tab-pane fade" id="pills-product" role="tabpanel" aria-labelledby="pills-product-tab">
-                    <ExporterProduct productMap={productMap} />
+                    <ExporterProduct currentPage={currentPage} setCurrentPage={setCurrentPage} productMap={productMap} />
                   </div>
                   <div className="tab-pane fade" id="pills-order" role="tabpanel" aria-labelledby="pills-order-tab">
-                    <ExporterInventoryLog productMap={productMap} />
+                    <ExporterInventoryLog currentPage={currentPage} setCurrentPage={setCurrentPage} />
                   </div>
                   <div className="tab-pane fade" id="pills-profile" role="tabpanel" aria-labelledby="pills-profile-tab">
                     <ExporterProfile user={user} />

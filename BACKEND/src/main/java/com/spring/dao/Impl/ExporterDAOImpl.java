@@ -2,9 +2,9 @@ package com.spring.dao.Impl;
 
 import com.spring.dao.ExporterDAO;
 import com.spring.dto.TraderTransactionDTO;
-import com.spring.entity.Orders;
-import com.spring.entity.Products;
 import com.spring.entity.Exporter;
+import com.spring.entity.Order;
+import com.spring.entity.Products;
 import com.spring.entity.InventoryLogs;
 import com.spring.entity.OrderDetails;
 import jakarta.persistence.EntityManager;
@@ -33,17 +33,23 @@ public class ExporterDAOImpl implements ExporterDAO {
     }
 
     @Override
-    public Orders createOrder(Orders order) {
+    public Order createOrder(Order order) {
         if (order.getCustomerID() == null) {
             throw new IllegalArgumentException("Customer ID cannot be null");
         }
-        entityManager.persist(order);
-        return order;
+        try {
+            entityManager.persist(order);
+            entityManager.flush();
+            return order;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to create order: " + e.getMessage(), e);
+        }
     }
 
     @Override
-    public List<Orders> getOrdersByExporterId(int exporterId, int page, int size) {
-        Query query = entityManager.createQuery("SELECT o FROM Orders o WHERE o.statusID IN (6, 7)");
+    public List<Order> getOrdersByExporterId(int exporterId, int page, int size) {
+        Query query = entityManager.createQuery("SELECT o FROM Order o WHERE o.customerID = :customerId AND o.statusID IN (6, 7)");
+        query.setParameter("customerId", exporterId);
         query.setFirstResult(page * size);
         query.setMaxResults(size);
         return query.getResultList();
@@ -72,7 +78,7 @@ public class ExporterDAOImpl implements ExporterDAO {
 
     @Override
     public void exportFromInventory(int exporterId, int orderId, int productId, int quantity) {
-        Orders order = entityManager.find(Orders.class, orderId);
+        Order order = entityManager.find(Order.class, orderId);
         if (order != null && order.getStatusID() != null && (order.getStatusID() == 6 || order.getStatusID() == 7)) {
             Products product = entityManager.find(Products.class, productId);
             if (product != null && product.getStockQuantity() >= quantity) {
@@ -95,11 +101,11 @@ public class ExporterDAOImpl implements ExporterDAO {
     public List<TraderTransactionDTO> getTransactionsByExporterId(int exporterId, int page, int size) {
         List<TraderTransactionDTO> transactions = new ArrayList<>();
 
-        Query orderQuery = entityManager.createQuery("SELECT o FROM Orders o WHERE o.statusID = 3");
+        Query orderQuery = entityManager.createQuery("SELECT o FROM Order o WHERE o.statusID = 3");
         orderQuery.setFirstResult(page * size);
         orderQuery.setMaxResults(size);
-        List<Orders> orders = orderQuery.getResultList();
-        for (Orders order : orders) {
+        List<Order> orders = orderQuery.getResultList();
+        for (Order order : orders) {
             List<OrderDetails> details = entityManager.createQuery("SELECT od FROM OrderDetails od WHERE od.orderID = :orderId", OrderDetails.class)
                     .setParameter("orderId", order.getOrderID())
                     .getResultList();
@@ -156,12 +162,20 @@ public class ExporterDAOImpl implements ExporterDAO {
     }
 
     @Override
-    public List<Orders> searchOrdersByKeyword(String keyword, int page, int size) {
+    public List<Order> searchOrdersByKeyword(String keyword, int page, int size) {
         Query query = entityManager.createQuery(
-                "SELECT o FROM Orders o WHERE o.shippingAddress LIKE :keyword AND o.statusID IN (6, 7)");
+                "SELECT o FROM Order o WHERE o.shippingAddress LIKE :keyword AND o.statusID IN (6, 7)");
         query.setParameter("keyword", "%" + keyword + "%");
         query.setFirstResult(page * size);
         query.setMaxResults(size);
         return query.getResultList();
+    }
+
+    @Override
+    public void deleteOrder(int orderId) {
+        Order order = entityManager.find(Order.class, orderId);
+        if (order != null) {
+            entityManager.remove(order);
+        }
     }
 }

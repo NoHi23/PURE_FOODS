@@ -24,7 +24,6 @@ const ExporterInventoryLog = ({ currentPage, setCurrentPage }) => {
   const currentTransactions = filteredTransactions.slice(indexOfFirst, indexOfLast);
 
   useEffect(() => {
-    console.log("ExporterInventoryLog mounted");
     const fetchData = async () => {
       const exporterId = JSON.parse(localStorage.getItem("user"))?.userID || 1;
       try {
@@ -33,24 +32,19 @@ const ExporterInventoryLog = ({ currentPage, setCurrentPage }) => {
           axios.get(`http://localhost:8082/PureFoods/api/product/getAll`),
           axios.get(`http://localhost:8082/PureFoods/api/users/getAll`),
         ]);
-        console.log("Transactions:", transactionsRes.data);
-        console.log("Products:", productsRes.data);
-        console.log("Users:", usersRes.data);
-        setTransactions(transactionsRes.data || []);
-
+        setTransactions(transactionsRes.data || []); // Handle empty
         const productMapTemp = {};
         productsRes.data.listProduct?.forEach((p) => {
           productMapTemp[p.productId] = p.productName;
         });
         setProductMap(productMapTemp);
-
         const userMapTemp = {};
         usersRes.data.userList?.forEach((u) => {
           userMapTemp[u.userId] = u.fullName;
         });
         setUserMap(userMapTemp);
       } catch (err) {
-        toast.error("Lỗi khi lấy dữ liệu: " + err.response?.data?.message || err.message);
+        toast.error("Lỗi khi lấy dữ liệu: " + (err.response?.data?.message || err.message));
       }
     };
     fetchData();

@@ -3,15 +3,17 @@ package com.spring.service.Impl;
 import com.spring.dao.ExporterDAO;
 import com.spring.dto.ExporterDTO;
 import com.spring.dto.TraderTransactionDTO;
-import com.spring.entity.Orders;
-import com.spring.entity.Products;
 import com.spring.entity.Exporter;
+import com.spring.entity.Order;
+import com.spring.entity.Products;
 import com.spring.service.ExporterService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -23,7 +25,7 @@ public class ExporterServiceImpl implements ExporterService {
     @Override
     public ExporterDTO getExporterById(int id) {
         Exporter exporter = exporterDAO.getExporterById(id);
-        if (exporter == null) return null;
+        if (exporter == null) return new ExporterDTO(0, "", "", null, "", "", null, null);
         return new ExporterDTO(
                 exporter.getUserID(), exporter.getFullName(), exporter.getEmail(),
                 exporter.getRoleID(), exporter.getPhone(), exporter.getAddress(),
@@ -32,20 +34,20 @@ public class ExporterServiceImpl implements ExporterService {
     }
 
     @Override
-    public Orders createOrder(Orders order) {
+    public Order createOrder(Order order) {
         if (order.getCustomerID() == null) {
             throw new IllegalArgumentException("Customer ID cannot be null");
         }
-        order.setOrderDate(LocalDateTime.now());
-        order.setStatus(1); // Pending
+        order.setOrderDate(Date.from(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant()));
+        order.setStatusID(1); // Pending
+        order.setTotalAmount(0.0); // Default totalAmount
         return exporterDAO.createOrder(order);
     }
 
     @Override
-    public List<Orders> getOrdersByExporterId(int exporterId, int page, int size) {
-        List<Orders> orders = exporterDAO.getOrdersByExporterId(exporterId, page, size);
-        if (orders == null) return new ArrayList<>();
-        return orders;
+    public List<Order> getOrdersByExporterId(int exporterId, int page, int size) {
+        List<Order> orders = exporterDAO.getOrdersByExporterId(exporterId, page, size);
+        return orders != null ? orders : new ArrayList<>();
     }
 
     @Override
@@ -71,14 +73,13 @@ public class ExporterServiceImpl implements ExporterService {
     @Override
     public List<TraderTransactionDTO> getTransactions(int exporterId, int page, int size) {
         List<TraderTransactionDTO> transactions = exporterDAO.getTransactionsByExporterId(exporterId, page, size);
-        if (transactions == null) return new ArrayList<>();
-        return transactions;
+        return transactions != null ? transactions : new ArrayList<>();
     }
 
     @Override
     public ExporterDTO updateProfile(int id, ExporterDTO exporterDTO) {
         Exporter exporter = exporterDAO.getExporterById(id);
-        if (exporter == null) return null;
+        if (exporter == null) return new ExporterDTO(0, "", "", null, "", "", null, null);
         exporter.setFullName(exporterDTO.getFullName());
         exporter.setEmail(exporterDTO.getEmail());
         exporter.setPhone(exporterDTO.getPhone());
@@ -93,7 +94,12 @@ public class ExporterServiceImpl implements ExporterService {
     }
 
     @Override
-    public List<Orders> searchOrders(String keyword, int page, int size) {
+    public List<Order> searchOrders(String keyword, int page, int size) {
         return exporterDAO.searchOrdersByKeyword(keyword, page, size);
+    }
+
+    @Override
+    public void deleteOrder(int orderId) {
+        exporterDAO.deleteOrder(orderId);
     }
 }

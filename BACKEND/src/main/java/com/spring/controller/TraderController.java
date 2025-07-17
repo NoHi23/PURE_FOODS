@@ -2,7 +2,7 @@ package com.spring.controller;
 
 import com.spring.dto.TraderDTO;
 import com.spring.dto.TraderTransactionDTO;
-import com.spring.entity.Orders;
+import com.spring.entity.Order;
 import com.spring.service.TraderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -29,9 +29,9 @@ public class TraderController {
     }
 
     @PostMapping("/order")
-    public ResponseEntity<Orders> createOrder(@RequestBody Orders order) {
+    public ResponseEntity<Order> createOrder(@RequestBody Order order) {
         try {
-            Orders savedOrder = traderService.createOrder(order);
+            Order savedOrder = traderService.createOrder(order);
             return ResponseEntity.ok(savedOrder);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().build();
@@ -39,10 +39,10 @@ public class TraderController {
     }
 
     @GetMapping("/orders/{traderId}")
-    public ResponseEntity<List<Orders>> trackOrders(@PathVariable("traderId") int traderId) {
+    public ResponseEntity<List<Order>> trackOrders(@PathVariable("traderId") int traderId) {
         try {
-            List<Orders> orders = traderService.trackOrders(traderId);
-            return ResponseEntity.ok(orders);
+            List<Order> order = traderService.trackOrders(traderId);
+            return ResponseEntity.ok(order);
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
         }

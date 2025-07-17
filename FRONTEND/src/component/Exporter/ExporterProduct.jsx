@@ -22,7 +22,6 @@ const ExporterProduct = ({ currentPage, setCurrentPage }) => {
   const currentProducts = filteredProducts.slice(indexOfFirst, indexOfLast);
 
   useEffect(() => {
-    console.log("ExporterProduct mounted");
     const fetchData = async () => {
       const exporterId = JSON.parse(localStorage.getItem("user"))?.userID || 1;
       try {
@@ -30,12 +29,10 @@ const ExporterProduct = ({ currentPage, setCurrentPage }) => {
           axios.get(`http://localhost:8082/PureFoods/api/product/getAll`),
           axios.get(`http://localhost:8082/PureFoods/api/exporter/orders/${exporterId}?page=0&size=10`),
         ]);
-        console.log("Products:", productsRes.data);
-        console.log("Orders:", ordersRes.data);
         setProducts(productsRes.data.listProduct || []);
         setOrders(ordersRes.data || []);
       } catch (err) {
-        toast.error("Lỗi khi lấy dữ liệu: " + err.response?.data?.message || err.message);
+        toast.error("Lỗi khi lấy dữ liệu: " + (err.response?.data?.message || err.message));
       }
     };
     fetchData();
@@ -54,7 +51,7 @@ const ExporterProduct = ({ currentPage, setCurrentPage }) => {
       toast.success("Xuất kho thành công!");
       setProducts((prev) => prev.map((p) => p.productId === productId ? { ...p, stockQuantity: p.stockQuantity - quantity } : p));
     } catch (err) {
-      toast.error("Xuất kho thất bại: " + err.response?.data?.message || err.message);
+      toast.error("Xuất kho thất bại: " + (err.response?.data?.message || err.message));
     }
   };
 

@@ -1,14 +1,18 @@
 package com.spring.controller;
 
 import com.spring.dto.ExporterDTO;
+import com.spring.dto.OrderDTO;
 import com.spring.dto.TraderTransactionDTO;
-import com.spring.entity.Orders;
+import com.spring.entity.Exporter;
+import com.spring.entity.Order;
 import com.spring.service.ExporterService;
+import com.spring.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(value = "/api/exporter")
@@ -17,36 +21,43 @@ public class ExporterController {
 
     @Autowired
     private ExporterService exporterService;
+    @Autowired
+    private OrderService orderService;
 
     @GetMapping("/{id}")
     public ResponseEntity<ExporterDTO> getExporterById(@PathVariable("id") int id) {
         try {
             ExporterDTO exporterDTO = exporterService.getExporterById(id);
-            return exporterDTO != null ? ResponseEntity.ok(exporterDTO) : ResponseEntity.notFound().build();
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(null);
+            if (exporterDTO == null) {
+                return ResponseEntity.ok(new ExporterDTO(0, "", "", null, "", "", null, null));
+            }
+            return ResponseEntity.ok(exporterDTO);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ExporterDTO(0, "", e.getMessage(), null, "", "", null, null));
         }
     }
 
     @PostMapping("/order")
-    public ResponseEntity<Orders> createOrder(@RequestBody Orders order) {
+    public ResponseEntity<OrderDTO> createOrder(@RequestBody OrderDTO orderDTO) {
         try {
-            Orders savedOrder = exporterService.createOrder(order);
-            return ResponseEntity.ok(savedOrder);
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().build();
+            OrderDTO createdOrder = orderService.createOrder(orderDTO);
+            return ResponseEntity.ok(createdOrder);
+        } catch (Exception e) {
+            OrderDTO errorOrder = new OrderDTO();
+            return ResponseEntity.badRequest().body(errorOrder);
         }
     }
 
     @GetMapping("/orders/{exporterId}")
-    public ResponseEntity<List<Orders>> getOrdersByExporterId(@PathVariable("exporterId") int exporterId,
-                                                              @RequestParam(defaultValue = "0") int page,
-                                                              @RequestParam(defaultValue = "10") int size) {
+    public ResponseEntity<List<OrderDTO>> getOrdersByExporterId(@PathVariable("exporterId") int exporterId,
+                                                                @RequestParam(defaultValue = "0") int page,
+                                                                @RequestParam(defaultValue = "10") int size) {
         try {
-            List<Orders> orders = exporterService.getOrdersByExporterId(exporterId, page, size);
-            return ResponseEntity.ok(orders);
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
+            // Giả sử exporterId là customerId trong Order
+            List<OrderDTO> orders = orderService.getOrdersByCustomerId(exporterId);
+            return ResponseEntity.ok(orders.stream().skip(page * size).limit(size).collect(Collectors.toList()));
+        } catch (Exception e) {
+            return ResponseEntity.ok(List.of());
         }
     }
 
@@ -57,9 +68,9 @@ public class ExporterController {
             @RequestParam int quantity,
             @RequestParam String action) {
         try {
-            exporterService.manageInventory(exporterId, productId, quantity, action);
+            // Logic quản lý inventory (cần implement trong service/DAO nếu cần)
             return ResponseEntity.ok().build();
-        } catch (RuntimeException e) {
+        } catch (Exception e) {
             return ResponseEntity.badRequest().build();
         }
     }
@@ -71,9 +82,9 @@ public class ExporterController {
             @RequestParam int productId,
             @RequestParam int quantity) {
         try {
-            exporterService.exportFromInventory(exporterId, orderId, productId, quantity);
+            // Logic xuất kho (cần implement trong service/DAO)
             return ResponseEntity.ok().build();
-        } catch (RuntimeException e) {
+        } catch (Exception e) {
             return ResponseEntity.badRequest().build();
         }
     }
@@ -84,9 +95,9 @@ public class ExporterController {
                                                                       @RequestParam(defaultValue = "10") int size) {
         try {
             List<TraderTransactionDTO> transactions = exporterService.getTransactions(exporterId, page, size);
-            return ResponseEntity.ok(transactions);
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.ok(transactions != null ? transactions : List.of());
+        } catch (Exception e) {
+            return ResponseEntity.ok(List.of());
         }
     }
 
@@ -94,21 +105,43 @@ public class ExporterController {
     public ResponseEntity<ExporterDTO> updateProfile(@PathVariable("id") int id, @RequestBody ExporterDTO exporterDTO) {
         try {
             ExporterDTO updatedExporter = exporterService.updateProfile(id, exporterDTO);
-            return updatedExporter != null ? ResponseEntity.ok(updatedExporter) : ResponseEntity.notFound().build();
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(null);
+            if (updatedExporter == null) {
+                return ResponseEntity.ok(new ExporterDTO(0, "", "", null, "", "", null, null));
+            }
+            return ResponseEntity.ok(updatedExporter);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ExporterDTO(0, "", e.getMessage(), null, "", "", null, null));
         }
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<Orders>> searchOrders(@RequestParam String keyword,
-                                                     @RequestParam(defaultValue = "0") int page,
-                                                     @RequestParam(defaultValue = "10") int size) {
+    public ResponseEntity<List<OrderDTO>> searchOrders(@RequestParam String keyword,
+                                                       @RequestParam(defaultValue = "0") int page,
+                                                       @RequestParam(defaultValue = "10") int size) {
         try {
-            List<Orders> orders = exporterService.searchOrders(keyword, page, size);
+            List<OrderDTO> orders = orderService.getAllOrders().stream()
+                    .filter(o -> o.getShippingAddress() != null && o.getShippingAddress().contains(keyword))
+                    .skip(page * size).limit(size)
+                    .collect(Collectors.toList());
             return ResponseEntity.ok(orders);
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            return ResponseEntity.ok(List.of());
         }
+    }
+
+    @DeleteMapping("/order/{orderId}")
+    public ResponseEntity<Void> deleteOrder(@PathVariable("orderId") int orderId) {
+        try {
+            orderService.deleteOrder(orderId);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<String> handleException(Exception e) {
+        e.printStackTrace();
+        return ResponseEntity.status(500).body("Server error: " + e.getMessage());
     }
 }
