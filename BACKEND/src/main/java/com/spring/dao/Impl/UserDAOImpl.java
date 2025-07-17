@@ -92,4 +92,7 @@ public class UserDAOImpl implements UserDAO {
                 .getResultList();
     }
 
+    public User findById(int id) {
+        return sessionFactory.getCurrentSession().get(User.class, id);
+    }
 }
