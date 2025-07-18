@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import TraderLayout from "../TraderLayout/TraderLayout";
 import TraderTab from "./TraderTab";
-import TraderOverview from "./TraderOverview";
+import TraderInventoryManager from "./TraderInventoryManager";
 import TraderImportRequests from "./TraderImportRequests";
 import TraderReturnRequests from "./TraderReturnRequests";
 import TraderInventoryLog from "./TraderInventoryLog"; // ✅ sửa đúng
@@ -32,7 +32,7 @@ const TraderDashboard = () => {
 
                   {/* Tổng quan */}
                   <div className="tab-pane fade show active" id="trader-overview" role="tabpanel">
-                    <TraderOverview user={user} />
+                    <TraderInventoryManager user={user} />
                   </div>
 
                   {/* Tồn kho */}

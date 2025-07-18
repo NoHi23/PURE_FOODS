@@ -10,15 +10,15 @@ const TraderInventoryCreate = ({ traderId, onInventoryChange }) => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res = await axios.get("http://localhost:8082/PureFoods/api/product/getAll");
-        setProducts(res.data.listProduct || []); // ✅ fix đúng key
+        const res = await axios.get(`http://localhost:8082/PureFoods/api/trader/inventory?userId=${traderId}`);
+        setProducts(res.data.data || []); // Sử dụng data từ getCurrentStock
       } catch (error) {
         toast.error("Lỗi khi tải sản phẩm");
       }
     };
 
     fetchProducts();
-  }, []);
+  }, [traderId]);
 
   const handleCreate = async () => {
     if (!selectedProductId || !quantity || quantity <= 0) {
@@ -26,20 +26,12 @@ const TraderInventoryCreate = ({ traderId, onInventoryChange }) => {
       return;
     }
 
-    const log = {
-      productId: parseInt(selectedProductId),
-      userId: traderId,
-      quantityChange: parseInt(quantity),
-      reason: "Inventory Import",
-      status: 1 // ✅ đã xác nhận luôn
-    };
-
     try {
-      await axios.post("http://localhost:8082/PureFoods/api/inventory-logs/trader-import", log);
+      await axios.post(`http://localhost:8082/PureFoods/api/trader/inventory/import?userId=${traderId}&productId=${selectedProductId}&quantityChange=${quantity}`);
       toast.success("Nhập kho thành công!");
       setSelectedProductId("");
       setQuantity("");
-      if (onInventoryChange) onInventoryChange(); // 👉 callback cập nhật bảng tồn kho
+      if (onInventoryChange) onInventoryChange(); // Callback cập nhật bảng tồn kho
     } catch (error) {
       toast.error("Lỗi khi nhập kho");
     }
@@ -59,7 +51,7 @@ const TraderInventoryCreate = ({ traderId, onInventoryChange }) => {
           >
             <option value="" disabled>-- Chọn sản phẩm --</option>
             {products.map((p) => (
-              <option key={p.productId} value={p.productId}>
+              <option key={p.traderProductId} value={p.traderProductId}>
                 {p.productName}
               </option>
             ))}

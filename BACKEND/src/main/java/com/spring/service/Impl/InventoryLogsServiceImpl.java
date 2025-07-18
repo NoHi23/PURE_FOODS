@@ -1,10 +1,9 @@
+// Giữ nguyên phần package, import, annotation @Service, @Transactional
 package com.spring.service.Impl;
 
 import com.spring.dao.InventoryLogsDAO;
 import com.spring.dao.ProductDAO;
 import com.spring.dto.InventoryLogsDTO;
-import com.spring.dto.ProductExportSummaryDTO;
-import com.spring.dto.TraderStockDTO;
 import com.spring.entity.InventoryLogs;
 import com.spring.entity.Products;
 import com.spring.service.InventoryLogsService;
@@ -13,8 +12,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Date;
 
+// Bắt đầu thay đổi phương thức recordImport
 @Service
 @Transactional(propagation = Propagation.REQUIRED)
 public class InventoryLogsServiceImpl implements InventoryLogsService {
@@ -24,8 +26,6 @@ public class InventoryLogsServiceImpl implements InventoryLogsService {
 
     @Autowired
     private ProductDAO productDAO;
-
-    // ===== NHÓM 1: CRUD cơ bản cho Logs =====
 
     @Override
     public InventoryLogsDTO createOrder(InventoryLogsDTO orderDTO) {
@@ -60,7 +60,25 @@ public class InventoryLogsServiceImpl implements InventoryLogsService {
         return convertToDTO(log);
     }
 
+    @Override
+    public List<InventoryLogsDTO> getLogsByProductId(int productId) {
+        List<InventoryLogs> logs = inventoryLogsDAO.getLogsByProductId(productId);
+        List<InventoryLogsDTO> dtoList = new ArrayList<>();
+        for (InventoryLogs log : logs) {
+            dtoList.add(convertToDTO(log));
+        }
+        return dtoList;
+    }
 
+    @Override
+    public List<InventoryLogsDTO> getAllLogs() {
+        List<InventoryLogs> logs = inventoryLogsDAO.getAllLogs();
+        List<InventoryLogsDTO> dtoList = new ArrayList<>();
+        for (InventoryLogs log : logs) {
+            dtoList.add(convertToDTO(log));
+        }
+        return dtoList;
+    }
 
     private InventoryLogsDTO convertToDTO(InventoryLogs log) {
         return new InventoryLogsDTO(
@@ -73,76 +91,6 @@ public class InventoryLogsServiceImpl implements InventoryLogsService {
                 log.getStatus()
         );
     }
-
-    // ===== NHÓM 2: Xử lý yêu cầu nhập hàng từ Importer =====
-
-    @Override
-    public List<InventoryLogsDTO> getPendingRequestsForTrader() {
-        List<InventoryLogs> logs = inventoryLogsDAO.getLogsByReasonAndStatus("Importer Request", 0);
-        List<InventoryLogsDTO> result = new ArrayList<>();
-        for (InventoryLogs log : logs) {
-            result.add(convertToDTO(log));
-        }
-        return result;
-    }
-
-    @Override
-    public List<InventoryLogsDTO> getProcessedRequestsForTrader() {
-        // Lọc theo 2 lý do mới
-        List<String> reasons = List.of("Shipped by Trader", "Rejected by Trader");
-
-        // Gọi DAO mới để lấy log theo danh sách lý do
-        List<InventoryLogs> logs = inventoryLogsDAO.getLogsByReasons(reasons);
-        List<InventoryLogsDTO> result = new ArrayList<>();
-
-        for (InventoryLogs log : logs) {
-            result.add(convertToDTO(log));
-        }
-
-        return result;
-    }
-
-
-    @Override
-    public InventoryLogsDTO confirmShippingToImporter(InventoryLogsDTO dto) {
-        InventoryLogs originalLog = inventoryLogsDAO.getLogById(dto.getLogId());
-        if (originalLog == null || originalLog.getStatus() != 0)
-            throw new RuntimeException("Log không tồn tại hoặc đã xử lý");
-
-        originalLog.setStatus(1);
-        inventoryLogsDAO.updateInventoryLog(originalLog);
-
-        int traderStock = getCurrentStockForProductAndTrader(dto.getUserId(), originalLog.getProductId());
-        if (traderStock < originalLog.getQuantityChange()) {
-            throw new RuntimeException("Không đủ hàng trong kho của Trader để giao");
-        }
-
-        InventoryLogs shippingLog = new InventoryLogs();
-        shippingLog.setProductId(originalLog.getProductId());
-        shippingLog.setUserId(dto.getUserId());
-        shippingLog.setQuantityChange(originalLog.getQuantityChange());
-        shippingLog.setReason("Shipped by Trader");
-        shippingLog.setStatus(1);
-        shippingLog.setCreatedAt(new Date());
-
-        inventoryLogsDAO.addInventoryLog(shippingLog);
-
-        return convertToDTO(originalLog);
-    }
-
-    @Override
-    public InventoryLogsDTO rejectShippingRequest(InventoryLogsDTO dto) {
-        InventoryLogs log = inventoryLogsDAO.getLogById(dto.getLogId());
-        if (log == null || log.getStatus() != 0)
-            throw new RuntimeException("Không thể từ chối đơn này (đã xử lý hoặc không tồn tại)");
-
-        log.setStatus(2);
-        log.setReason("Rejected by Trader");
-        inventoryLogsDAO.updateInventoryLog(log);
-        return convertToDTO(log);
-    }
-
-    // ===== NHÓM 3: Đơn trả hàng từ Importer =====
 
     @Override
     public InventoryLogsDTO createReturnOrder(InventoryLogsDTO dto) {
@@ -158,281 +106,14 @@ public class InventoryLogsServiceImpl implements InventoryLogsService {
     }
 
     @Override
-    public List<InventoryLogsDTO> getPendingReturnsForTrader(int traderId) {
-        List<InventoryLogs> logs = inventoryLogsDAO.getLogsByReasonAndStatus("Returned from Importer", 0);
-        List<InventoryLogsDTO> result = new ArrayList<>();
-        for (InventoryLogs log : logs) {
-            result.add(convertToDTO(log));
+    public InventoryLogsDTO archiveLog(int logId) {
+        InventoryLogs log = inventoryLogsDAO.getLogById(logId);
+        if (log == null) {
+            throw new RuntimeException("Không tìm thấy log cần lưu trữ!");
         }
-        return result;
-    }
-
-    @Override
-    public InventoryLogsDTO confirmReturnByTrader(InventoryLogsDTO dto) {
-        InventoryLogs log = inventoryLogsDAO.getLogById(dto.getLogId());
-        if (log == null || log.getStatus() != 0)
-            throw new RuntimeException("Đơn trả không tồn tại hoặc đã xử lý");
-
-        log.setStatus(1);
-
-        Products product = productDAO.getProductById(log.getProductId());
-        if (product != null) {
-            product.setStockQuantity(product.getStockQuantity() + log.getQuantityChange());
-            productDAO.updateProduct(product);
-        }
-
+        log.setStatus(3); // đánh dấu là lưu trữ
         inventoryLogsDAO.updateInventoryLog(log);
         return convertToDTO(log);
     }
 
-    // ===== NHÓM 4: Thống kê & Dashboard =====
-
-    @Override
-    public Map<String, Object> getTraderDashboard(int traderId) {
-        List<InventoryLogs> logs = inventoryLogsDAO.getLogsByUserId(traderId);
-        int totalOrders = 0, confirmed = 0, rejected = 0, returned = 0, supplied = 0, stock = 0;
-
-        for (InventoryLogs log : logs) {
-            if (log.getReason() == null || log.getStatus() == null) continue;
-
-            String reason = log.getReason();
-            int status = log.getStatus();
-            int quantity = log.getQuantityChange();
-
-            if (List.of("Importer Request", "Shipped by Trader", "Rejected by Trader").contains(reason)) {
-                totalOrders++;
-
-                if ("Shipped by Trader".equals(reason) && status == 1) {
-                    confirmed++;
-                    supplied += quantity;
-                    stock -= quantity;
-                } else if ("Rejected by Trader".equals(reason) && status == 2) {
-                    rejected++;
-                }
-            }
-
-            if ("Returned from Importer".equals(reason) && status == 1) {
-                returned++;
-                stock += quantity;
-            }
-
-            if ("Inventory Import".equals(reason) && status == 1) {
-                stock += quantity;
-            }
-        }
-
-        Map<String, Object> result = new HashMap<>();
-        result.put("totalOrders", totalOrders);
-        result.put("confirmedOrders", confirmed);
-        result.put("rejectedOrders", rejected);
-        result.put("returnedOrders", returned);
-        result.put("totalQuantitySupplied", supplied);
-        result.put("currentStock", stock);
-        return result;
-    }
-
-
-    @Override
-    public Map<String, Object> getTraderReportSummary(int traderId) {
-        List<InventoryLogs> logs = inventoryLogsDAO.getLogsByUserId(traderId);
-
-        int totalOrders = 0;
-        int confirmedOrders = 0;
-        int rejectedOrders = 0;
-        int returnedOrders = 0;
-        int totalQuantitySupplied = 0;
-        int currentStock = 0;
-
-        for (InventoryLogs log : logs) {
-            if (log.getStatus() == null || log.getReason() == null) continue;
-
-            String reason = log.getReason();
-            int status = log.getStatus();
-            int quantity = log.getQuantityChange();
-
-            if (List.of("Importer Request", "Shipped by Trader", "Rejected by Trader").contains(reason)) {
-                totalOrders++;
-
-                if ("Shipped by Trader".equals(reason) && status == 1) {
-                    confirmedOrders++;
-                    totalQuantitySupplied += quantity;
-                    currentStock -= quantity;
-                } else if ("Rejected by Trader".equals(reason) && status == 2) {
-                    rejectedOrders++;
-                }
-            }
-
-            if ("Returned from Importer".equals(reason) && status == 1) {
-                returnedOrders++;
-                currentStock += quantity;
-            }
-
-            if ("Inventory Import".equals(reason) && status == 1) {
-                currentStock += quantity;
-            }
-        }
-
-        Map<String, Object> res = new HashMap<>();
-        res.put("totalOrders", totalOrders);
-        res.put("confirmedOrders", confirmedOrders);
-        res.put("rejectedOrders", rejectedOrders);
-        res.put("returnedOrders", returnedOrders);
-        res.put("totalQuantitySupplied", totalQuantitySupplied);
-        res.put("currentStock", currentStock);
-        return res;
-    }
-
-
-
-
-
-    @Override
-    public List<ProductExportSummaryDTO> getTotalSuppliedPerProduct(int traderId) {
-        List<InventoryLogs> logs = inventoryLogsDAO.getLogsByUserId(traderId);
-        Map<Integer, Integer> quantityMap = new HashMap<>();
-
-        for (InventoryLogs log : logs) {
-            if ("Shipped by Trader".equalsIgnoreCase(log.getReason()) && log.getStatus() == 1) {
-                quantityMap.put(log.getProductId(), quantityMap.getOrDefault(log.getProductId(), 0) + log.getQuantityChange());
-            }
-        }
-
-        List<ProductExportSummaryDTO> result = new ArrayList<>();
-        for (Map.Entry<Integer, Integer> entry : quantityMap.entrySet()) {
-            Products product = productDAO.getProductById(entry.getKey());
-            result.add(new ProductExportSummaryDTO(entry.getKey(), (product != null) ? product.getProductName() : "Unknown", entry.getValue()));
-        }
-        return result;
-    }
-
-    @Override
-    public Map<String, Integer> getMonthlyExportSummary(int traderId) {
-        List<InventoryLogs> logs = inventoryLogsDAO.getLogsByUserId(traderId);
-        Map<String, Integer> monthlyTotals = new TreeMap<>();
-
-        for (InventoryLogs log : logs) {
-            if ("Shipped by Trader".equalsIgnoreCase(log.getReason()) && log.getStatus() == 1) {
-                Calendar cal = Calendar.getInstance();
-                cal.setTime(log.getCreatedAt());
-                String key = String.format("%d-%02d", cal.get(Calendar.YEAR), cal.get(Calendar.MONTH) + 1);
-                monthlyTotals.put(key, monthlyTotals.getOrDefault(key, 0) + log.getQuantityChange());
-            }
-        }
-        return monthlyTotals;
-    }
-
-    // ===== NHÓM 5: Tồn kho hiện tại của Trader =====
-
-    @Override
-    public List<TraderStockDTO> getCurrentStockOfTrader(int traderId) {
-        List<InventoryLogs> logs = inventoryLogsDAO.getLogsByUserId(traderId);
-        Map<Integer, Integer> stockMap = new HashMap<>();
-
-        for (InventoryLogs log : logs) {
-            if (log.getStatus() == null) continue;
-            int pid = log.getProductId(), qty = log.getQuantityChange();
-            switch (log.getReason()) {
-                case "Inventory Import", "Returned from Importer" -> {
-                    if (log.getStatus() == 1) stockMap.put(pid, stockMap.getOrDefault(pid, 0) + qty);
-                }
-                case "Shipped by Trader" -> {
-                    if (log.getStatus() == 1) stockMap.put(pid, stockMap.getOrDefault(pid, 0) - qty);
-                }
-            }
-        }
-
-        List<TraderStockDTO> result = new ArrayList<>();
-        for (Map.Entry<Integer, Integer> entry : stockMap.entrySet()) {
-            Products product = productDAO.getProductById(entry.getKey());
-            result.add(new TraderStockDTO(entry.getKey(), (product != null) ? product.getProductName() : "Unknown", entry.getValue()));
-        }
-        return result;
-    }
-
-    private int getCurrentStockForProductAndTrader(int traderId, int productId) {
-        List<InventoryLogs> logs = inventoryLogsDAO.getLogsByUserId(traderId);
-        int total = 0;
-        for (InventoryLogs log : logs) {
-            if (log.getProductId() != productId || log.getStatus() == null) continue;
-            switch (log.getReason()) {
-                case "Inventory Import", "Returned from Importer" -> {
-                    if (log.getStatus() == 1) total += log.getQuantityChange();
-                }
-                case "Shipped by Trader" -> {
-                    if (log.getStatus() == 1) total -= log.getQuantityChange();
-                }
-            }
-        }
-        return total;
-    }
-
-    // ===== NHÓM 6: Lịch sử giao hàng & logs =====
-
-    @Override
-    public List<InventoryLogsDTO> getShippingHistoryByTrader(int traderId) {
-        List<InventoryLogs> logs = inventoryLogsDAO.getLogsByUserId(traderId);
-        List<InventoryLogsDTO> dtoList = new ArrayList<>();
-        for (InventoryLogs log : logs) {
-            if (List.of("Shipped by Trader", "Rejected by Trader").contains(log.getReason())) {
-                dtoList.add(convertToDTO(log));
-            }
-        }
-        return dtoList;
-    }
-
-
-    @Override
-    public List<InventoryLogsDTO> getLogsByProductId(int productId) {
-        List<InventoryLogs> logs = inventoryLogsDAO.getLogsByProductId(productId);
-        List<InventoryLogsDTO> dtoList = new ArrayList<>();
-        for (InventoryLogs log : logs) {
-            dtoList.add(convertToDTO(log));
-        }
-        return dtoList;
-    }
-
-    @Override
-    public List<InventoryLogsDTO> getAllLogs() {
-        List<InventoryLogs> logs = inventoryLogsDAO.getAllLogs(); // Giả định DAO có phương thức này
-        List<InventoryLogsDTO> dtoList = new ArrayList<>();
-        for (InventoryLogs log : logs) {
-            dtoList.add(convertToDTO(log));
-        }
-        return dtoList;
-    }
-
-    @Override
-    public List<InventoryLogsDTO> getAllImportRequestsForTrader() {
-        List<InventoryLogs> logs = inventoryLogsDAO.getLogsByReason("Importer Request");
-        List<InventoryLogsDTO> result = new ArrayList<>();
-        for (InventoryLogs log : logs) result.add(convertToDTO(log));
-        return result;
-    }
-
-    @Override
-    public InventoryLogsDTO traderCreateInventoryImport(InventoryLogsDTO dto) {
-        InventoryLogs log = new InventoryLogs();
-        log.setProductId(dto.getProductId());
-        log.setUserId(dto.getUserId());
-        log.setQuantityChange(dto.getQuantityChange());
-        log.setReason("Inventory Import");
-        log.setCreatedAt(new Date());
-        log.setStatus(1); // ✅ Xác nhận ngay, không cần duyệt
-
-        inventoryLogsDAO.addInventoryLog(log);
-
-        // Cộng tồn kho vào bảng Products
-        Products product = productDAO.getProductById(dto.getProductId());
-        if (product != null) {
-            product.setStockQuantity(product.getStockQuantity() + dto.getQuantityChange());
-            productDAO.updateProduct(product);
-        }
-
-        return convertToDTO(inventoryLogsDAO.getLatestLog());
-    }
-
 }
-
-
-
-

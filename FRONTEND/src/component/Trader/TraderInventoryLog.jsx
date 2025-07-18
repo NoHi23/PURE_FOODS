@@ -10,17 +10,15 @@ const TraderInventoryLog = ({ traderId, refreshKey }) => {
 
     const fetchLogs = async () => {
       try {
-        const res = await axios.get(
-          `http://localhost:8082/PureFoods/api/trader/inventory/${traderId}`
-        );
-        setLogs(res.data?.data || []);
+        const res = await axios.get(`http://localhost:8082/PureFoods/api/trader/inventory?userId=${traderId}`);
+        setLogs(res.data.data || []);
       } catch (error) {
         toast.error("Lỗi khi tải log tồn kho");
       }
     };
 
     fetchLogs();
-  }, [traderId, refreshKey]); // 👈 Bổ sung refreshKey vào dependency array
+  }, [traderId, refreshKey]); // Bổ sung refreshKey vào dependency array
 
   return (
     <div>
@@ -39,10 +37,10 @@ const TraderInventoryLog = ({ traderId, refreshKey }) => {
             </thead>
             <tbody>
               {logs.map((item) => (
-                <tr key={item.productId}>
-                  <td>{item.productId}</td>
+                <tr key={item.traderProductId}>
+                  <td>{item.traderProductId}</td>
                   <td>{item.productName}</td>
-                  <td>{item.quantityInStock}</td>
+                  <td>{item.currentStockQuantity}</td> {/* Sửa key thành currentStockQuantity */}
                 </tr>
               ))}
             </tbody>

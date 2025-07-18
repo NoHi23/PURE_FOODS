@@ -1,25 +1,24 @@
 package com.spring.dto;
 
 public class TraderStockDTO {
-    private int productId;
+    private int traderProductId;
     private String productName;
-    private int quantityInStock;
+    private int currentStockQuantity;
 
-    public TraderStockDTO(int productId, String productName, int quantityInStock) {
-        this.productId = productId;
+    // Constructors
+    public TraderStockDTO() {}
+
+    public TraderStockDTO(int traderProductId, String productName, int currentStockQuantity) {
+        this.traderProductId = traderProductId;
         this.productName = productName;
-        this.quantityInStock = quantityInStock;
+        this.currentStockQuantity = currentStockQuantity;
     }
 
-    public int getProductId() {
-        return productId;
-    }
-
-    public String getProductName() {
-        return productName;
-    }
-
-    public int getQuantityInStock() {
-        return quantityInStock;
-    }
+    // Getters and Setters
+    public int getTraderProductId() { return traderProductId; }
+    public void setTraderProductId(int traderProductId) { this.traderProductId = traderProductId; }
+    public String getProductName() { return productName; }
+    public void setProductName(String productName) { this.productName = productName; }
+    public int getCurrentStockQuantity() { return currentStockQuantity; }
+    public void setCurrentStockQuantity(int currentStockQuantity) { this.currentStockQuantity = currentStockQuantity; }
 }

@@ -58,6 +58,23 @@ public class InventoryLogsDAOImpl implements InventoryLogsDAO {
     }
 
     @Override
+    public List<InventoryLogs> findPendingRequestsByStatus(int status) {
+        Session session = sessionFactory.getCurrentSession();
+        return session.createQuery("FROM InventoryLogs WHERE status = :status", InventoryLogs.class)
+                .setParameter("status", status)
+                .list();
+    }
+
+    @Override
+    public List<InventoryLogs> findByUserIdAndStatus(int userId, int status) {
+        Session session = sessionFactory.getCurrentSession();
+        return session.createQuery("FROM InventoryLogs WHERE userId = :userId AND status = :status", InventoryLogs.class)
+                .setParameter("userId", userId)
+                .setParameter("status", status)
+                .list();
+    }
+
+    @Override
     public List<InventoryLogs> getLogsByReasonAndStatus(String reason, int status) {
         Session session = sessionFactory.getCurrentSession();
         return session.createQuery("FROM InventoryLogs WHERE reason = :reason AND status = :status", InventoryLogs.class)
@@ -65,13 +82,7 @@ public class InventoryLogsDAOImpl implements InventoryLogsDAO {
                 .setParameter("status", status)
                 .list();
     }
-    @Override
-    public List<InventoryLogs> getLogsByReasons(List<String> reasons) {
-        Session session = sessionFactory.getCurrentSession();
-        return session.createQuery("FROM InventoryLogs WHERE reason IN (:reasons)", InventoryLogs.class)
-                .setParameterList("reasons", reasons)
-                .list();
-    }
+
 
     @Override
     public List<InventoryLogs> getLogsByUserId(int userId) {
