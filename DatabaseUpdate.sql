@@ -52,3 +52,7 @@ ALTER TABLE [Orders]
 ADD 
     PaymentMethod NVARCHAR(50),         -- 'COD', 'VNPAY', 'Stripe', 'PayPal'
     PaymentStatus NVARCHAR(50);     
+
+-- Đổi kiểu dữ liệu cho cột Status trong bảng Ordrers: 18/07/2025
+	ALTER TABLE dbo.Orders
+	ALTER COLUMN Status NVarchar(50);
