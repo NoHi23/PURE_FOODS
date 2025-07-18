@@ -30,5 +30,6 @@ public interface UserService {
 
     UserDTO addUser(UserDTO user);
 
+    UserDTO getUserById(int userId);
 
 }

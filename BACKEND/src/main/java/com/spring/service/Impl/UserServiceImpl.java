@@ -339,5 +339,23 @@ public class UserServiceImpl implements UserService {
         userDAO.addUser(u);
         return convertToDTO(u);
     }
-
+    @Override
+    public UserDTO getUserById(int userId) {
+        User user = userDAO.findById(userId);
+        if (user == null) return null;
+        UserDTO dto = new UserDTO();
+        dto.setUserId(user.getUserId());
+        dto.setFullName(user.getFullName());
+        dto.setEmail(user.getEmail());
+        dto.setPassword(user.getPassword());
+        dto.setRoleID(user.getRoleID());
+        dto.setPhone(user.getPhone());
+        dto.setAddress(user.getAddress());
+        dto.setStatus(user.getStatus());
+        dto.setCreatedAt(user.getCreatedAt());
+        dto.setResetToken(user.getResetToken());
+        dto.setTokenExpiry(user.getTokenExpiry());
+        dto.setLastLogin(user.getLastLogin());
+        return dto;
+    }
 }
