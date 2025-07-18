@@ -357,4 +357,16 @@ public class UserController {
         }
     }
 
+    @PostMapping("/verify-password")
+    public ResponseEntity<?> verifyPassword(@RequestBody Map<String, String> payload) {
+        int userId = Integer.parseInt(payload.get("userId")); // đổi từ Long -> int
+        String password = payload.get("password");
+
+        boolean verified = userService.verifyPassword(userId, password);
+
+        return ResponseEntity.ok(Map.of("verified", verified));
+    }
+
+
+
 }

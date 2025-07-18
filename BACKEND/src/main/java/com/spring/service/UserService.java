@@ -30,5 +30,6 @@ public interface UserService {
 
     UserDTO addUser(UserDTO user);
 
+    boolean verifyPassword(int userId, String inputPassword);
 
 }
