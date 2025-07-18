@@ -44,3 +44,15 @@ CREATE TABLE Notifications (
     created_at    DATETIME DEFAULT GETDATE(),
     FOREIGN KEY (user_id) REFERENCES Users(UserID)
 );
+
+
+--update 17/7/2025
+
+ALTER TABLE [Orders]
+ADD 
+    PaymentMethod NVARCHAR(50),         -- 'COD', 'VNPAY', 'Stripe', 'PayPal'
+    PaymentStatus NVARCHAR(50);     
+
+-- Đổi kiểu dữ liệu cho cột Status trong bảng Ordrers: 18/07/2025
+	ALTER TABLE dbo.Orders
+	ALTER COLUMN Status NVarchar(50);

@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
-import { FiSearch } from "react-icons/fi";
+import { FiSearch, FiRefreshCw } from "react-icons/fi";
 import Pagination from "../../layouts/Pagination";
 import ImporterEditProduct from "./ImporterEditProduct";
+import * as bootstrap from "bootstrap";
 
 const ImporterProduct = ({ setProducts, currentPage, setCurrentPage }) => {
   const [products, setLocalProducts] = useState([]);
@@ -12,21 +13,13 @@ const ImporterProduct = ({ setProducts, currentPage, setCurrentPage }) => {
   const [categories, setCategories] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
   const [newProduct, setNewProduct] = useState({
-    productId: null,
-    productName: "",
-    categoryId: 1,
-    supplierId: 1,
-    price: "",
-    stockQuantity: "",
-    description: "",
-    imageURL: "",
-    harvestDate: "",
-    expirationDate: "",
-    nutritionalInfo: "",
-    status: 1,
+    productId: "",
+    quantityChange: "",
+    reason: "",
   });
-  const [showModal, setShowModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(false); // Thêm trạng thái loading
   const [searchTerm, setSearchTerm] = useState("");
+  const modalRef = useRef(null); // Ref để điều khiển modal
 
   const filteredProducts = products.filter((p) => {
     const productName = p.productName?.toLowerCase() || "";
@@ -64,7 +57,7 @@ const ImporterProduct = ({ setProducts, currentPage, setCurrentPage }) => {
       setLocalProducts(productsRes.data.listProduct || []);
       setProducts(productsRes.data.listProduct || []);
       setSuppliers(suppliersRes.data.suppliers || []);
-      setCategories(categoriesRes.data || []); // Sử dụng res.data trực tiếp vì API trả về mảng
+      setCategories(categoriesRes.data || []);
     } catch (err) {
       console.error("Lỗi khi lấy dữ liệu:", err);
       setLocalProducts([]);
@@ -79,34 +72,50 @@ const ImporterProduct = ({ setProducts, currentPage, setCurrentPage }) => {
 
   const handleCreateOrder = async (e) => {
     e.preventDefault();
+    setIsLoading(true); // Bật trạng thái loading
     try {
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
+      const userId = user.userId || null;
+
+      if (!userId) {
+        toast.error("Không tìm thấy userId trong localStorage!");
+        setIsLoading(false);
+        return;
+      }
+
+      if (!newProduct.productId || !newProduct.quantityChange || !newProduct.reason) {
+        toast.error("Vui lòng điền đầy đủ thông tin bắt buộc!");
+        setIsLoading(false);
+        return;
+      }
+
       const response = await axios.post("http://localhost:8082/PureFoods/api/inventory-logs/create-order", {
-        ...newProduct,
-        userId: 1,
-        status: 0,
+        productId: parseInt(newProduct.productId),
+        userId: userId,
+        quantityChange: parseInt(newProduct.quantityChange),
+        reason: newProduct.reason,
       });
+
       const createdOrder = response.data.log;
-      setLocalProducts((prev) => [...prev, { ...newProduct, productId: createdOrder.productId }]);
-      setProducts((prev) => [...prev, { ...newProduct, productId: createdOrder.productId }]);
-      setShowModal(false);
+      // Gọi lại API để làm mới danh sách sản phẩm
+      await fetchProducts();
+      // Đóng modal bằng bootstrap.Modal
+      const modal = bootstrap.Modal.getInstance(modalRef.current);
+      modal.hide();
       setNewProduct({
-        productId: null,
-        productName: "",
-        categoryId: 1,
-        supplierId: 1,
-        price: "",
-        stockQuantity: "",
-        description: "",
-        imageURL: "",
-        harvestDate: "",
-        expirationDate: "",
-        nutritionalInfo: "",
-        status: 1,
+        productId: "",
+        quantityChange: "",
+        reason: "",
       });
       toast.success("Đơn nhập đã được tạo thành công!");
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
     } catch (err) {
-      console.error("Lỗi khi tạo đơn nhập:", err);
+      console.error("Lỗi chi tiết:", err.response?.data);
       toast.error("Tạo đơn nhập thất bại. Vui lòng kiểm tra lại!");
+    } finally {
+      setIsLoading(false); // Tắt trạng thái loading
     }
   };
 
@@ -116,35 +125,6 @@ const ImporterProduct = ({ setProducts, currentPage, setCurrentPage }) => {
       ...prev,
       [name]: value,
     }));
-  };
-
-  const handleUpdateProduct = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await axios.put("http://localhost:8082/PureFoods/api/product/update", newProduct);
-      const updatedProduct = response.data.product;
-      setLocalProducts((prev) => prev.map((p) => (p.productId === updatedProduct.productId ? updatedProduct : p)));
-      setProducts((prev) => prev.map((p) => (p.productId === updatedProduct.productId ? updatedProduct : p)));
-      setShowModal(false);
-      setNewProduct({
-        productId: null,
-        productName: "",
-        categoryId: 1,
-        supplierId: 1,
-        price: "",
-        stockQuantity: "",
-        description: "",
-        imageURL: "",
-        harvestDate: "",
-        expirationDate: "",
-        nutritionalInfo: "",
-        status: 1,
-      });
-      toast.success("Cập nhật sản phẩm thành công!");
-    } catch (err) {
-      console.error("Lỗi khi cập nhật sản phẩm:", err);
-      toast.error("Cập nhật sản phẩm thất bại. Vui lòng kiểm tra lại!");
-    }
   };
 
   const handleDeleteProduct = async (productId) => {
@@ -163,6 +143,19 @@ const ImporterProduct = ({ setProducts, currentPage, setCurrentPage }) => {
     }
   };
 
+  const handleRefresh = async () => {
+    setIsLoading(true);
+    try {
+      await fetchProducts();
+      toast.success("Danh sách sản phẩm đã được làm mới!");
+    } catch (err) {
+      console.error("Lỗi khi làm mới:", err);
+      toast.error("Làm mới thất bại. Vui lòng thử lại!");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="product-tab">
       <div className="title">
@@ -173,20 +166,19 @@ const ImporterProduct = ({ setProducts, currentPage, setCurrentPage }) => {
           </svg>
         </span>
         <p style={{ color: "#f98050", marginTop: "5px", fontFamily: "Inconsolata, monospace" }}>
-          (*)Hàng vừa nhập về cần được kiểm tra kỹ càng và cập nhật ngay số lượng tồn kho. Đảm bảo mọi thứ còn nguyên
-          vẹn trước khi lưu kho, mọi sai lệch sẽ ảnh hưởng đến quá trình xử lý sau này! Kiểm tra kỹ để tránh thất thoát,
-          sai sót nhỏ có thể gây ảnh hưởng lớn.
+          (*)Đảm bảo mọi thứ còn nguyên vẹn trước khi lưu kho, mọi sai lệch sẽ ảnh hưởng đến quá trình xử
+           lý sau này! Kiểm tra kỹ nếu có vấn đề thì trả hàng lại cho nhà cung cấp.
         </p>
       </div>
       <div className="position-relative mb-4">
         <input
           type="text"
-          className="form-control pe-5" // padding right để tránh icon đè chữ
+          className="form-control pe-5"
           placeholder="Nhập bất cứ thứ gì để tìm kiếm..."
           value={searchTerm}
           onChange={(e) => {
             setSearchTerm(e.target.value);
-            setCurrentPage(1); // Reset về trang đầu khi tìm
+            setCurrentPage(1);
           }}
         />
         <FiSearch
@@ -196,34 +188,49 @@ const ImporterProduct = ({ setProducts, currentPage, setCurrentPage }) => {
             top: "50%",
             transform: "translateY(-50%)",
             color: "#aaa",
-            pointerEvents: "none", // để icon không ảnh hưởng đến việc gõ
+            pointerEvents: "none",
           }}
           size={18}
         />
       </div>
-      <button
-        className="btn theme-bg-color btn-md fw-bold text-white mb-4"
-        data-bs-toggle="modal"
-        data-bs-target="#importProductModal"
-        onClick={() => {
-          setNewProduct({
-            productId: null,
-            productName: "",
-            categoryId: 1,
-            supplierId: 1,
-            price: "",
-            stockQuantity: "",
-            description: "",
-            imageURL: "",
-            harvestDate: "",
-            expirationDate: "",
-            nutritionalInfo: "",
-            status: 1,
-          });
-        }}
-      >
-        Nhập thêm
-      </button>
+      <div className="d-flex justify-content-between mb-4">
+        <button
+          className="btn theme-bg-color btn-md fw-bold text-white"
+          data-bs-toggle="modal"
+          data-bs-target="#importProductModal"
+          onClick={() => {
+            setNewProduct({
+              productId: "",
+              quantityChange: "",
+              reason: "",
+            });
+          }}
+        >
+          Nhập thêm
+        </button>
+
+        <button
+          className="btn btn-md fw-bold text-white d-flex align-items-center"
+          onClick={handleRefresh}
+          disabled={isLoading}
+          style={{
+            backgroundColor: "#007bff", // Màu blue chính
+            border: "1px solid #007bff",
+            transition: "all 0.3s ease",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = "#0056b3"; // Hover blue đậm hơn
+            e.currentTarget.style.borderColor = "#0056b3";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = "#007bff";
+            e.currentTarget.style.borderColor = "#007bff";
+          }}
+        >
+          <FiRefreshCw className={`me-1 ${isLoading ? "fa-spin" : ""}`} style={{ transition: "transform 0.3s" }} />
+          {isLoading ? "Đang làm mới..." : "Làm mới"}
+        </button>
+      </div>
 
       <div
         className="modal fade"
@@ -231,160 +238,92 @@ const ImporterProduct = ({ setProducts, currentPage, setCurrentPage }) => {
         tabIndex="-1"
         aria-labelledby="importProductModalLabel"
         aria-hidden="true"
+        ref={modalRef} // Gắn ref vào modal
       >
         <div className="modal-dialog modal-dialog-centered modal-lg">
           <div className="modal-content">
             <div className="modal-header">
               <h5 className="modal-title" id="importProductModalLabel">
-                {newProduct.productId ? "Cập nhật sản phẩm" : "Nhập sản phẩm mới"}
+                Nhập sản phẩm mới
               </h5>
               <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div className="modal-body">
-              <form onSubmit={newProduct.productId ? handleUpdateProduct : handleCreateOrder}>
+              <form onSubmit={handleCreateOrder}>
                 <div className="mb-3">
-                  <label className="form-label">Tên sản phẩm</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    name="productName"
-                    value={newProduct.productName}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
-                <div className="mb-3">
-                  <label className="form-label">Thể loại</label>
+                  <label className="form-label">Sản phẩm</label>
                   <select
-                    name="categoryId"
-                    value={newProduct.categoryId}
+                    name="productId"
+                    value={newProduct.productId}
                     onChange={handleInputChange}
                     required
                     className="form-control"
+                    disabled={isLoading} // Vô hiệu hóa khi đang loading
                   >
-                    <option value="">--Chọn thể loại--</option>
-                    {categories.length > 0 ? (
-                      categories.map((c) => (
-                        <option key={c.categoryID} value={c.categoryID}>
-                          {c.categoryName}
+                    <option value="">--Chọn sản phẩm--</option>
+                    {products.length > 0 ? (
+                      products.map((p) => (
+                        <option key={p.productId} value={p.productId}>
+                          {p.productName} (ID: {p.productId})
                         </option>
                       ))
                     ) : (
                       <option value="" disabled>
-                        Đang tải danh mục...
+                        Đang tải sản phẩm...
                       </option>
                     )}
                   </select>
                 </div>
-
                 <div className="mb-3">
-                  <label className="form-label">Nhà cung cấp</label>
-                  <select
-                    name="supplierId"
-                    value={newProduct.supplierId}
-                    onChange={handleInputChange}
-                    required
-                    className="form-control"
-                  >
-                    <option value="">--Chọn nhà cung cấp--</option>
-                    {suppliers.map((s) => (
-                      <option key={s.supplierId} value={s.supplierId}>
-                        {s.supplierName}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="mb-3">
-                  <label className="form-label">Giá</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    className="form-control"
-                    name="price"
-                    value={newProduct.price}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
-                <div className="mb-3">
-                  <label className="form-label">Số lượng</label>
-                  <input
-                    type="number"
-                    className="form-control"
-                    name="stockQuantity"
-                    value={newProduct.stockQuantity}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
-                <div className="mb-3">
-                  <label className="form-label">Mô tả</label>
-                  <textarea
-                    className="form-control"
-                    name="description"
-                    value={newProduct.description}
-                    onChange={handleInputChange}
-                  />
-                </div>
-                <div className="mb-3">
-                  <label className="form-label">URL ảnh</label>
+                  <label className="form-label">Người nhập</label>
                   <input
                     type="text"
                     className="form-control"
-                    name="imageURL"
-                    value={newProduct.imageURL}
-                    onChange={handleInputChange}
+                    value={
+                      JSON.parse(localStorage.getItem("user") || "{}").fullName
+                        ? `${JSON.parse(localStorage.getItem("user") || "{}").fullName} (ID: ${
+                            JSON.parse(localStorage.getItem("user") || "{}").userId
+                          })`
+                        : ""
+                    }
+                    disabled
                   />
                 </div>
+
                 <div className="mb-3">
-                  <label className="form-label">Ngày thu hoạch</label>
+                  <label className="form-label">Số lượng nhập</label>
                   <input
-                    type="date"
+                    type="number"
                     className="form-control"
-                    name="harvestDate"
-                    value={newProduct.harvestDate}
+                    name="quantityChange"
+                    value={newProduct.quantityChange}
                     onChange={handleInputChange}
                     required
+                    disabled={isLoading} // Vô hiệu hóa khi đang loading
                   />
                 </div>
                 <div className="mb-3">
-                  <label className="form-label">Ngày hết hạn</label>
+                  <label className="form-label">Lý do nhập kho</label>
                   <input
-                    type="date"
+                    type="text"
                     className="form-control"
-                    name="expirationDate"
-                    value={newProduct.expirationDate}
+                    name="reason"
+                    value={newProduct.reason}
                     onChange={handleInputChange}
                     required
+                    disabled={isLoading} // Vô hiệu hóa khi đang loading
                   />
-                </div>
-                <div className="mb-3">
-                  <label className="form-label">Thông tin dinh dưỡng</label>
-                  <textarea
-                    className="form-control"
-                    name="nutritionalInfo"
-                    value={newProduct.nutritionalInfo}
-                    onChange={handleInputChange}
-                  />
-                </div>
-                <div className="mb-3">
-                  <label className="form-label">Trạng thái</label>
-                  <select
-                    className="form-control"
-                    name="status"
-                    value={newProduct.status}
-                    onChange={handleInputChange}
-                    required
-                  >
-                    <option value={1}>Hoạt động</option>
-                    <option value={0}>Không hoạt động</option>
-                  </select>
                 </div>
                 <div className="d-flex justify-content-end gap-2 mt-3">
-                  <button type="submit" className="btn theme-bg-color btn-md fw-bold text-white">
-                    {newProduct.productId ? "Cập nhật" : "Tạo đơn nhập"}
+                  <button type="submit" className="btn theme-bg-color btn-md fw-bold text-white" disabled={isLoading}>
+                    {isLoading ? "Đang xử lý..." : "Tạo đơn nhập"}
                   </button>
-                  <button type="button" className="btn btn-secondary btn-md fw-bold" data-bs-dismiss="modal">
+                  <button
+                    type="button"
+                    className="btn btn-secondary btn-md fw-bold"
+                    data-bs-dismiss="modal"
+                    disabled={isLoading}
+                  >
                     Hủy
                   </button>
                 </div>

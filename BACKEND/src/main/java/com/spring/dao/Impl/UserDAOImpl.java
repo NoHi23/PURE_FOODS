@@ -83,4 +83,16 @@ public class UserDAOImpl implements UserDAO {
         }
     }
 
+    @Override
+    public List<User> findByRoleId(int roleID) {
+        Session session = sessionFactory.getCurrentSession();
+        String hql = "FROM User WHERE roleID = :roleID";
+        return session.createQuery(hql, User.class)
+                .setParameter("roleID", roleID)
+                .getResultList();
+    }
+
+    public User findById(int id) {
+        return sessionFactory.getCurrentSession().get(User.class, id);
+    }
 }

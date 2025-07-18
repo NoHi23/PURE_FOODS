@@ -29,12 +29,16 @@ import AddNewRole from './component/Admin/AddNewRole';
 import Order from './component/Admin/Order';
 import Wishlist from './component/Wishlist/Wishlist';
 import AIChatWidget from './component/GeminiAISetup/AIChatWidget';
+import CartDetail from './component/Cart/CartDetail';
+import CustomerProfileUpdate from './component/Customer/CustomerProfileUpdate';
 import { WishlistProvider } from './layouts/WishlistContext';
 import ProductDetail from './component/ProductDetail/ProductDetail';
+import Checkout from './component/Checkout/Checkout';
 
 function AppContent() {
   const location = useLocation();
   const isProductDetail = location.pathname.startsWith('/product/');
+  const isCheckout = location.pathname.startsWith('/checkout/');
 
   const hideHeaderPaths = [
     '/login', '/signup', '/forgot', '/reset-password', '/verify-otp',
@@ -54,8 +58,8 @@ function AppContent() {
 
   const shouldHideHeader = hideHeaderPaths.includes(location.pathname);
   const shouldHideFooter = hideFooterPaths.includes(location.pathname);
-  const shouldHideBackToTop = backToTopPaths.includes(location.pathname) || isProductDetail;
-  const shouldShowAIChat = aiChatPaths.includes(location.pathname) || isProductDetail;
+  const shouldHideBackToTop = backToTopPaths.includes(location.pathname) || isProductDetail || isCheckout;
+  const shouldShowAIChat = aiChatPaths.includes(location.pathname) || isProductDetail || isCheckout;
 
 
   return (
@@ -134,11 +138,30 @@ function AppContent() {
           </PrivateRoute>
         } />
 
+        <Route path="/cart-detail" element={
+          <PrivateRoute allowedRoles={2}>
+            <CartDetail />
+          </PrivateRoute>
+        } />
+        <Route path="/customer-profile-update" element={
+          <PrivateRoute allowedRoles={2}>
+            <CustomerProfileUpdate />
+          </PrivateRoute>
+        } />
+
         <Route path="/wishlist" element={
           <PrivateRoute allowedRoles={2}>
             <Wishlist />
           </PrivateRoute>
         } />
+
+
+        <Route path="/checkout/:id" element={
+          <PrivateRoute allowedRoles={2}>
+            <Checkout />
+          </PrivateRoute>
+        } />
+
 
 
 

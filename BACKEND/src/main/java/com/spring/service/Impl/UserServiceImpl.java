@@ -114,7 +114,11 @@ public class UserServiceImpl implements UserService {
         System.out.println(">> autoRegisterIfNotExists bắt đầu với name=" + name + ", email=" + email);
 
         User user = userDAO.findUserByEmail(email);
+        boolean isNew = false;
+
         if (user == null) {
+            isNew = true;
+
             user = new User();
             user.setFullName(name);
             user.setEmail(email);
@@ -128,6 +132,18 @@ public class UserServiceImpl implements UserService {
             user = userDAO.findUserByEmail(email);
 
         }
+
+        if (isNew || user.getLastLogin() == null) {
+            Notifications first = new Notifications();
+            first.setUserId(user.getUserId());
+            first.setTitle("Chào mừng!");
+            first.setContent("Bạn đã đăng nhập bằng Gmail lần đầu.");
+            notificationDAO.save(first);
+        }
+
+        Timestamp loginTime = Timestamp.valueOf(LocalDateTime.now());
+        user.setLastLogin(loginTime);
+        userDAO.updateUser(user);
         return convertToDTO(user);
     }
 
@@ -136,7 +152,11 @@ public class UserServiceImpl implements UserService {
     public UserDTO autoRegisterFacebookAccountIfNotExists(String name, String email) {
 
         User user = userDAO.findUserByEmail(email);
+        boolean isNew = false;
+
         if (user == null) {
+            isNew = true;
+
             user = new User();
             user.setFullName(name);
             user.setEmail(email);
@@ -150,6 +170,18 @@ public class UserServiceImpl implements UserService {
             user = userDAO.findUserByEmail(email);
 
         }
+
+        if (isNew || user.getLastLogin() == null) {
+            Notifications first = new Notifications();
+            first.setUserId(user.getUserId());
+            first.setTitle("Chào mừng!");
+            first.setContent("Bạn đã đăng nhập bằng Facebook lần đầu.");
+            notificationDAO.save(first);
+        }
+
+        Timestamp loginTime = Timestamp.valueOf(LocalDateTime.now());
+        user.setLastLogin(loginTime);
+        userDAO.updateUser(user);
         return convertToDTO(user);
     }
 
@@ -307,5 +339,23 @@ public class UserServiceImpl implements UserService {
         userDAO.addUser(u);
         return convertToDTO(u);
     }
-
+    @Override
+    public UserDTO getUserById(int userId) {
+        User user = userDAO.findById(userId);
+        if (user == null) return null;
+        UserDTO dto = new UserDTO();
+        dto.setUserId(user.getUserId());
+        dto.setFullName(user.getFullName());
+        dto.setEmail(user.getEmail());
+        dto.setPassword(user.getPassword());
+        dto.setRoleID(user.getRoleID());
+        dto.setPhone(user.getPhone());
+        dto.setAddress(user.getAddress());
+        dto.setStatus(user.getStatus());
+        dto.setCreatedAt(user.getCreatedAt());
+        dto.setResetToken(user.getResetToken());
+        dto.setTokenExpiry(user.getTokenExpiry());
+        dto.setLastLogin(user.getLastLogin());
+        return dto;
+    }
 }
