@@ -357,6 +357,21 @@ public class UserController {
         }
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getUserById(@PathVariable("id") int userId) {
+        try {
+            UserDTO user = userService.getUserById(userId);
+            if (user == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("message", "User not found", "status", 404));
+            }
+            return ResponseEntity.ok(Map.of("user", user, "status", 200));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "Error: " + e.getMessage(), "status", 500));
+        }
+    }
+
     @PostMapping("/verify-password")
     public ResponseEntity<?> verifyPassword(@RequestBody Map<String, String> payload) {
         int userId = Integer.parseInt(payload.get("userId")); // đổi từ Long -> int

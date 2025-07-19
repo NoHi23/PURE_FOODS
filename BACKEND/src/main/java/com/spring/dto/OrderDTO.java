@@ -20,6 +20,8 @@ public class OrderDTO {
     private String delayReason;
     private Integer driverID;
     private String returnReason;
+    private String paymentMethod;
+    private String paymentStatus;
 
     public OrderDTO() {}
 
@@ -177,4 +179,18 @@ public class OrderDTO {
     public void setReturnReason(String returnReason) {
         this.returnReason = returnReason;
     }
+
+    public String getPaymentMethod() {
+        return paymentMethod;
+    }
+    public void setPaymentMethod(String paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+    public String getPaymentStatus(){
+        return paymentStatus;
+    }
+    public void setPaymentStatus(String paymentStatus){
+        this.paymentStatus = paymentStatus;
+    }
+
 }
