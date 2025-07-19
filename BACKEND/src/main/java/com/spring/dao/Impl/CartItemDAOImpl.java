@@ -22,10 +22,10 @@ public class CartItemDAOImpl implements CartItemDAO {
     }
 
     @Override
-    public List<CartItem> getCartItemsByUserId(Long userId) {
+    public List<CartItem> getCartItemsByUserId(Long userID) {
         Session session = sessionFactory.getCurrentSession();
-        Query<CartItem> query = session.createQuery("FROM CartItem WHERE userID = :userId", CartItem.class);
-        query.setParameter("userId", userId);
+        Query<CartItem> query = session.createQuery("FROM CartItem WHERE userID = :userID", CartItem.class);
+        query.setParameter("userID", userID);
         return query.getResultList();
     }
 
@@ -51,4 +51,17 @@ public class CartItemDAOImpl implements CartItemDAO {
             session.delete(item);
         }
     }
+
+    @Override
+    public CartItem findByUserAndProduct(Long userId, Long productId) {
+        Session session = sessionFactory.getCurrentSession();
+        Query<CartItem> query = session.createQuery(
+                "FROM CartItem WHERE userID = :userId AND productID = :productId AND status = 0", CartItem.class);
+        query.setParameter("userId", userId);
+        query.setParameter("productId", productId);
+
+        List<CartItem> results = query.getResultList();
+        return results.isEmpty() ? null : results.get(0);
+    }
+
 }
