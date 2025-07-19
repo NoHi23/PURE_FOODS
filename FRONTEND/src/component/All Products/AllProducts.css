@@ -1,0 +1,85 @@
+/* Filter Sidebar */
+.filter-section {
+  background-color: #ffffff;
+  border: 1px solid #eaeaea;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 0 5px rgba(0,0,0,0.05);
+}
+
+.filter-section h5 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.filter-section select.form-select {
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #ced4da;
+  margin-bottom: 15px;
+  font-size: 14px;
+}
+
+/* Product Box Custom */
+.product-box-3 {
+  transition: all 0.3s ease;
+  border: 1px solid #f0f0f0;
+  border-radius: 8px;
+  background-color: #fff;
+  overflow: hidden;
+}
+
+.product-box-3:hover {
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+}
+
+.product-box-3 .product-image img {
+  object-fit: cover;
+  max-height: 220px;
+  width: 100%;
+  border-bottom: 1px solid #eee;
+}
+
+.product-box-3 .product-option {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.product-box-3 .product-option li .btn {
+  background-color: #f8f9fa;
+  color: #333;
+  padding: 6px;
+  border-radius: 50%;
+  font-size: 14px;
+  border: 1px solid #ddd;
+}
+
+.product-box-3 .product-option li .btn:hover {
+  background-color: #e0e0e0;
+}
+
+/* Price formatting */
+.product-detail .price {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.product-detail .price del {
+  color: #999;
+  font-size: 14px;
+  margin-left: 5px;
+}
+
+/* Responsive fix */
+@media screen and (max-width: 768px) {
+  .filter-section {
+    margin-bottom: 20px;
+  }
+}
