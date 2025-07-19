@@ -33,6 +33,7 @@ import CartDetail from './component/Cart/CartDetail';
 import CustomerProfileUpdate from './component/Customer/CustomerProfileUpdate';
 import { WishlistProvider } from './layouts/WishlistContext';
 import ProductDetail from './component/ProductDetail/ProductDetail';
+import AllProducts from './component/All Products/AllProducts';
 
 function AppContent() {
   const location = useLocation();
@@ -150,6 +151,12 @@ function AppContent() {
         <Route path="/wishlist" element={
           <PrivateRoute allowedRoles={2}>
             <Wishlist />
+          </PrivateRoute>
+        } />
+
+        <Route path="/all-products" element={
+          <PrivateRoute allowedRoles={2}>
+            <AllProducts />
           </PrivateRoute>
         } />
 
