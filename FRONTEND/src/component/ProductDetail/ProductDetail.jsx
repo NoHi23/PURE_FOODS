@@ -5,6 +5,7 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import './ProductDetail.css'
 import { useWishlist } from '../../layouts/WishlistContext';
+import { useNavigate } from 'react-router-dom';
 
 
 const ProductDetail = () => {
@@ -15,6 +16,58 @@ const ProductDetail = () => {
   const user = JSON.parse(localStorage.getItem("user"));
   const userId = user?.userId;
   const [selectedImage, setSelectedImage] = useState(null);
+
+  const [quantity, setQuantity] = useState(1);
+  const increaseQty = () => setQuantity(prev => Math.max(1, prev + 1));
+  const decreaseQty = () => setQuantity(prev => Math.max(1, prev - 1));
+
+  const navigate = useNavigate();
+
+  const handleAddToCart = () => {
+    if (!userId || !products) {
+      toast.error('Vui lòng đăng nhập');
+      return;
+    }
+
+    const cartItem = {
+      userID: userId,
+      productID: products.productId,
+      quantity: quantity,
+      priceAfterDiscount: products.salePrice,
+      total: products.salePrice * quantity,
+      imageURL: products.imageURL,
+      productName: products.productName,
+      originalPrice: products.price,
+      discount: products.discountPercent
+    };
+
+    console.log("🛒 Gửi dữ liệu add to cart:", cartItem);
+
+    if (!userId || !products.productId) {
+      toast.error("Thiếu thông tin giỏ hàng!");
+      return;
+    }
+
+    axios.post('http://localhost:8082/PureFoods/api/cart/create', cartItem)
+      .then(() => {
+        toast.success('Đã thêm vào giỏ hàng');
+        window.dispatchEvent(new Event('cartUpdated'));
+        navigate(`/cart-detail`, { state: { fromAddToCart: true } });
+      })
+      .catch((err) => {
+        console.error("❌ Lỗi khi thêm vào giỏ hàng:", err.response?.data || err.message);
+        toast.error('Thêm vào giỏ thất bại');
+      });
+  };
+
+
+  useEffect(() => {
+    if (quantity < 1 || isNaN(quantity)) {
+      setQuantity(1);
+    }
+  }, [quantity]);
+
+
 
   useEffect(() => {
     axios.get(`http://localhost:8082/PureFoods/api/product/getById/${id}`)
@@ -114,7 +167,7 @@ const ProductDetail = () => {
 
   //end wishlist
 
-const [isDragging, setIsDragging] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
 
   const carouselRef = useRef();
 
@@ -375,25 +428,34 @@ const [isDragging, setIsDragging] = useState(false);
 
 
                       <div className="note-box product-package">
-                        <div className="cart_qty qty-box product-qty">
-                          <div className="input-group">
-                            <button type="button" className="qty-left-minus" data-type="minus"
-                              data-field="">
+                        <div className="cart_qty qty-box product-qty m-0">
+                          <div className="input-group h-100">
+                            <button type="button" className="qty-left-minus" onClick={decreaseQty} min={1}>
                               <i className="fa fa-minus"></i>
                             </button>
-                            <input className="form-control input-number qty-input" type="text"
-                              name="quantity" value="1" />
-                            <button type="button" className="qty-right-plus" data-type="plus" data-field="">
+
+                            <input
+                              className="form-control input-number qty-input"
+                              type="text"
+                              name="quantity"
+                              value={quantity}
+                              readOnly
+                            />
+
+                            <button type="button" className="qty-right-plus" onClick={increaseQty}>
                               <i className="fa fa-plus"></i>
                             </button>
                           </div>
                         </div>
 
-                        <button onclick="location.href = 'cart.html';"
-                          className="btn btn-md bg-dark cart-button text-white w-100">Add To Cart</button>
+
+                        <button onClick={handleAddToCart} className="btn btn-md bg-dark cart-button text-white w-100">
+                          Add To Cart
+                        </button>
+
                       </div>
 
-                     
+
 
 
 
@@ -1685,9 +1747,14 @@ const [isDragging, setIsDragging] = useState(false);
                       </div>
 
                       <div className="modal-button">
-                        <button onclick="location.href = 'cart.html';"
-                          className="btn btn-md add-cart-button icon">Add
-                          To Cart</button>
+                        <button
+                          type="button"
+                          onClick={handleAddToCart}
+                          className="btn btn-md bg-dark cart-button text-white w-100"
+                        >
+                          Add To Cart
+                        </button>
+
                         <button onclick="location.href = 'product-left-thumbnail.html';"
                           className="btn theme-bg-color view-button icon text-white fw-bold btn-md">
                           View More Details</button>
@@ -1947,25 +2014,41 @@ const [isDragging, setIsDragging] = useState(false);
                     </div>
                   </div>
                   <div className="selection-section">
-                    
+
                     <div className="cart_qty qty-box product-qty m-0">
+
                       <div className="input-group h-100">
-                        <button type="button" className="qty-left-minus" data-type="minus" data-field="">
+                        <button type="button" className="qty-left-minus" onClick={decreaseQty}>
                           <i className="fa fa-minus"></i>
                         </button>
-                        <input className="form-control input-number qty-input" type="text" name="quantity"
-                          value="1" />
-                        <button type="button" className="qty-right-plus" data-type="plus" data-field="">
+
+                        <input
+                          className="form-control input-number qty-input"
+                          type="text"
+                          name="quantity"
+                          value={quantity}
+                          readOnly
+                        />
+
+                        <button type="button" className="qty-right-plus" onClick={increaseQty}>
                           <i className="fa fa-plus"></i>
                         </button>
                       </div>
+
                     </div>
                   </div>
                   <div className="add-btn">
                     <a className="btn theme-bg-color text-white wishlist-btn" href="wishlist.html"><i
                       className="fa fa-bookmark"></i> Wishlist</a>
-                    <a className="btn theme-bg-color text-white" href="cart.html"><i
-                      className="fas fa-shopping-cart"></i> Add To Cart</a>
+
+                    <button
+                      type="button"
+                      onClick={handleAddToCart}
+                      className="btn theme-bg-color text-white"
+                    >
+                      <i className="fas fa-shopping-cart"></i> Add To Cart
+                    </button>
+
                   </div>
                 </div>
               </div>

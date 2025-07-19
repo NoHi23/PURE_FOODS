@@ -5,6 +5,9 @@ import * as bootstrap from 'bootstrap';
 import feather from "feather-icons";
 import ProductSlider from "./ProductSlider";
 import CookieConsent from "./CookieConsent";
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
+
 
 const getOrUpdateExpiryTime = () => {
   let expiry = localStorage.getItem('countdownExpiry');
@@ -27,6 +30,91 @@ const HomePage = () => {
   const [timeObj, setTimeObj] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const user = JSON.parse(localStorage.getItem("user"));
   const userId = user?.userId;
+
+  const [products, setProducts] = useState(null);
+  const [quantity, setQuantity] = useState(1);
+  const navigate = useNavigate();
+
+  const handleAddToCart = (product) => {
+    if (!userId) {
+      toast.error('Vui lòng đăng nhập');
+      return;
+    }
+
+    // Nếu đang mở modal => đóng trước
+    const modalEl = document.getElementById('view');
+    if (modalEl && bootstrap.Modal.getInstance(modalEl)) {
+      bootstrap.Modal.getInstance(modalEl).hide();
+    }
+
+    const cartItem = {
+      userID: userId,
+      productID: product.productId,
+      quantity,
+      priceAfterDiscount: product.salePrice,
+      total: product.salePrice * quantity,
+      imageURL: product.imageURL,
+      productName: product.productName,
+      originalPrice: product.price,
+      discount: product.discountPercent
+    };
+
+    axios.post('http://localhost:8082/PureFoods/api/cart/create', cartItem)
+      .then(() => {
+        toast.success('Đã thêm vào giỏ hàng');
+        window.dispatchEvent(new Event('cartUpdated'));
+        navigate(`/cart-detail`, { state: { fromAddToCart: true } });
+      })
+      .catch((err) => {
+        console.error("❌ Lỗi khi thêm vào giỏ hàng:", err.response?.data || err.message);
+        toast.error('Thêm vào giỏ thất bại');
+      });
+  };
+
+
+  useEffect(() => {
+    axios.get('http://localhost:8082/PureFoods/api/product/getAll/status0')
+      .then((res) => {
+        const productList = res.data.listProduct;
+        if (productList && productList.length > 0) {
+          setProducts(productList[0]);  //  Gán sản phẩm đầu tiên để Add to Cart dùng
+          setDealProduct(productList); // hoặc gán vào dealProduct để dùng cho slider, v.v.
+        }
+      })
+      .catch((err) => {
+        console.error("❌ Lỗi khi lấy sản phẩm:", err);
+        toast.error("Không thể lấy danh sách sản phẩm");
+      });
+  }, []);
+
+
+  useEffect(() => {
+    // Xử lý sự cố còn sót modal hoặc lớp backdrop
+    const cleanupModal = () => {
+      document.body.classList.remove('modal-open');
+      const backdrops = document.querySelectorAll('.modal-backdrop');
+      backdrops.forEach((bd) => bd.remove());
+    };
+
+    cleanupModal();
+
+    return cleanupModal;
+  }, []);
+
+
+  const handleViewDetail = (productId) => {
+    // Nếu modal đang mở => đóng trước
+    const modalEl = document.getElementById('view');
+    if (modalEl && bootstrap.Modal.getInstance(modalEl)) {
+      bootstrap.Modal.getInstance(modalEl).hide();
+    }
+
+    // Navigate sang trang chi tiết
+    navigate(`/product/${productId}`);
+  };
+
+
+
   useEffect(() => {
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
@@ -661,11 +749,18 @@ const HomePage = () => {
                               <li className="nav-item dropdown">
                                 <a
                                   className="nav-link dropdown-toggle"
-                                  href="javascript:void(0)"
+                                  href="#"
+                                  role="button"
                                   data-bs-toggle="dropdown"
+                                  aria-expanded="false"
                                 >
                                   Product
                                 </a>
+                                <ul className="dropdown-menu">
+                                  <li><a className="dropdown-item" href="/all-products">All Products</a></li>
+                                  <li><a className="dropdown-item" href="/top-discount">Top Discount</a></li>
+                                  <li><a className="dropdown-item" href="/organic-products">Organic Products</a></li>
+                                </ul>
 
                                 <div className="dropdown-menu dropdown-menu-3 dropdown-menu-2">
                                   <div className="row">
@@ -2922,26 +3017,26 @@ const HomePage = () => {
                             </div>
                           </li>
                         </ul>
-
+                        
 
                         <div className="modal-button">
                           <button
-                            onClick={() => {
-                              window.location.href = "shop-left-sidebar.html";
-                            }}
-                            className="btn btn-md add-cart-button icon"
+                            type="button"
+                            className="btn btn-md bg-dark cart-button text-white w-100"
+                            onClick={() => handleAddToCart(selectedProduct)}
                           >
                             Add To Cart
                           </button>
                           <button
-                            onClick={() => {
-                              window.location.href = "shop-left-sidebar.html";
-                            }}
+                            type="button"
                             className="btn theme-bg-color view-button icon text-white fw-bold btn-md"
+                            onClick={() => handleViewDetail(selectedProduct.productId)}
                           >
                             View More Details
                           </button>
                         </div>
+
+
                       </div>
                     </div>
                   </div>
