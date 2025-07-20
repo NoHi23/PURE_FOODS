@@ -25,7 +25,7 @@ public class CartItem {
     private LocalDateTime addedAt;
 
     @Column(name = "Status", nullable = false, length = 50)
-    private String status;
+    private Integer status;
 
     public CartItem() {}
 
@@ -69,11 +69,11 @@ public class CartItem {
         this.addedAt = addedAt;
     }
 
-    public String getStatus() {
+    public Integer getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(Integer status) {
         this.status = status;
     }
 }
