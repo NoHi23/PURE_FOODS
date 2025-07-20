@@ -34,6 +34,7 @@ import CustomerProfileUpdate from './component/Customer/CustomerProfileUpdate';
 import { WishlistProvider } from './layouts/WishlistContext';
 import ProductDetail from './component/ProductDetail/ProductDetail';
 import Checkout from './component/Checkout/Checkout';
+import AllProducts from './component/All Products/AllProducts';
 
 function AppContent() {
   const location = useLocation();
@@ -162,6 +163,12 @@ function AppContent() {
           </PrivateRoute>
         } />
 
+
+        <Route path="/all-products" element={
+          <PrivateRoute allowedRoles={2}>
+            <AllProducts />
+          </PrivateRoute>
+        } />
 
 
 
