@@ -119,10 +119,10 @@ const SideBar = () => {
                 </ul>
               </li>
 
-            
 
 
-             <li className="sidebar-list">
+
+              <li className="sidebar-list">
                 <a className="sidebar-link sidebar-title" href="javascript:void(0)">
                   <i className="ri-archive-line"></i>
                   <span>Orders</span>
@@ -139,10 +139,23 @@ const SideBar = () => {
                   </li>
                 </ul>
               </li>
-
               <li className="sidebar-list">
                 <a className="linear-icon-link sidebar-link sidebar-title" href="javascript:void(0)">
-                  <i className="ri-percent-line"></i>
+                  <i className="ri-price-tag-3-line"></i>
+                  <span>Coupon</span>
+                </a>
+                <ul className="sidebar-submenu">
+                  <li>
+                    <Link to={'/admin-coupons'}>Coupon List</Link>
+                  </li>
+                  <li>
+                    <Link to={'/admin-add-new-coupons'}>Add New Coupon</Link>
+                  </li>
+                </ul>
+              </li>
+              <li className="sidebar-list">
+                <a className="linear-icon-link sidebar-link sidebar-title" href="javascript:void(0)">
+                  <i className="ri-price-tag-3-line"></i>
                   <span>Tax</span>
                 </a>
                 <ul className="sidebar-submenu">
@@ -168,7 +181,7 @@ const SideBar = () => {
                   </li>
                 </ul>
               </li>
-           
+
 
 
 
