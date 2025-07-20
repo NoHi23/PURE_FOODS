@@ -1,0 +1,32 @@
+/* Coupons.css */
+
+.icon-button {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: #6366f1;
+  font-size: 18px;
+}
+
+.icon-button:hover {
+  color: #4f46e5;
+}
+
+.table-action-icons {
+  display: flex;
+  gap: 10px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.status-success {
+  color: #28a745;
+  font-weight: 600;
+}
+
+.status-danger {
+  color: #dc3545;
+  font-weight: 600;
+}
