@@ -1,4 +1,4 @@
-/* AddNewTax.css */
+/* AddNewCoupons.css */
 
 .page-wrapper {
   background-color: #f4f6f9;
@@ -9,106 +9,56 @@
   background-color: #ffffff;
   border-radius: 8px;
   border: none;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.card-header {
+  background-color: #007bff;
+  color: white;
+  padding: 16px;
+  border-bottom: 1px solid #e0e0e0;
+  border-radius: 8px 8px 0 0;
+  font-family: 'Segoe UI', sans-serif;
 }
 
 .card-body {
   padding: 24px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: 'Segoe UI', sans-serif;
 }
 
-.title-header {
-  margin-bottom: 20px;
-}
-
-.title-header h5 {
-  font-size: 24px;
+.form-label {
   font-weight: 600;
   color: #333;
-  margin: 0;
 }
 
 .form-control,
 .form-select {
-  border: 1px solid #d1d1d1;
   border-radius: 6px;
+  border: 1px solid #ccc;
   padding: 10px;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  transition: border-color 0.3s;
 }
 
 .form-control:focus,
 .form-select:focus {
   border-color: #007bff;
   box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2);
-  outline: none;
-}
-
-.form-label {
-  font-weight: 500;
-  color: #333;
-  margin-bottom: 0;
-}
-
-.switch {
-  position: relative;
-  display: inline-block;
-  width: 40px;
-  height: 20px;
-}
-
-.switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.switch-state {
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: #ccc;
-  border-radius: 20px;
-  transition: background-color 0.3s ease;
-}
-
-.switch-state:before {
-  position: absolute;
-  content: "";
-  height: 16px;
-  width: 16px;
-  left: 2px;
-  bottom: 2px;
-  background-color: white;
-  border-radius: 50%;
-  transition: transform 0.3s ease;
-}
-
-.switch input:checked + .switch-state {
-  background-color: #007bff;
-}
-
-.switch input:checked + .switch-state:before {
-  transform: translateX(20px);
 }
 
 .btn-animation {
   background-color: #007bff;
-  border: none;
-  color: #fff;
+  border-color: #007bff;
   padding: 8px 20px;
-  border-radius: 6px;
-  font-weight: 500;
-  transition: background-color 0.2s ease, transform 0.2s ease;
+  font-weight: 600;
+  transition: background-color 0.2s ease;
 }
 
 .btn-animation:hover {
   background-color: #0056b3;
-  transform: translateY(-1px);
+  border-color: #0056b3;
 }
 
+/* Added styles for missing classes */
 .card-submit-button {
   text-align: right;
   margin-top: 20px;
@@ -117,7 +67,7 @@
 .theme-form.theme-form-2.mega-form {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 20px;
 }
 
 .mb-4.row.align-items-center {
@@ -129,19 +79,14 @@
     padding: 16px;
   }
 
-  .theme-form.theme-form-2.mega-form .col-lg-2,
-  .theme-form.theme-form-2.mega-form .col-md-3,
-  .theme-form.theme-form-2.mega-form .col-md-9,
-  .theme-form.theme-form-2.mega-form .col-lg-10 {
+  .theme-form.theme-form-2.mega-form .col-sm-3,
+  .theme-form.theme-form-2.mega-form .col-sm-9 {
     flex: 0 0 100%;
     max-width: 100%;
   }
-
-  .form-label {
-    margin-bottom: 8px;
-  }
 }
 
+/* Footer styles */
 .footer {
   margin-top: 40px;
   padding: 10px 0;
@@ -151,6 +96,6 @@
 }
 
 .footer-copyright {
-  border-top: 1px solid #e0e0e0;
+  border-top: 1px solid #ddd;
   padding-top: 10px;
 }
