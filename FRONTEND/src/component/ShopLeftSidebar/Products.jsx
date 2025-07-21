@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Eye, Heart, Star, Search } from "react-feather";
-import { Dropdown, TabContainer, Modal } from "react-bootstrap";
+import { Search } from "react-feather";
+import { Dropdown, TabContainer } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./Products.css";
 import ProductCardGrid from "./ProductCardGrid";
@@ -10,7 +10,7 @@ import Pagination from "../../layouts/Pagination";
 import ProductDetailModal from "./ProductDetailModal";
 import { usePriceFilter } from "./PriceFilterContext";
 
-const Products = ({ products, isLoading, setProducts }) => {
+const Products = ({ products, isLoading, userId }) => {
   const { priceRange } = usePriceFilter();
   const [sortOption, setSortOption] = useState("Most Popular");
   const [sortedProducts, setSortedProducts] = useState([]);
@@ -70,10 +70,7 @@ const Products = ({ products, isLoading, setProducts }) => {
 
   // Tính toán số trang và phân trang sản phẩm
   const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
-  const paginatedProducts = filteredProducts.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
+  const paginatedProducts = filteredProducts.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   if (isLoading) {
     return (
@@ -176,9 +173,9 @@ const Products = ({ products, isLoading, setProducts }) => {
           {paginatedProducts.map((product) => (
             <div key={product.productId} className={viewMode === "list" ? "" : "col"}>
               {viewMode === "list" ? (
-                <ProductListItem product={product} handleViewProduct={handleViewProduct} />
+                <ProductListItem product={product} handleViewProduct={handleViewProduct} userId={userId} />
               ) : (
-                <ProductCardGrid product={product} handleViewProduct={handleViewProduct} />
+                <ProductCardGrid product={product} handleViewProduct={handleViewProduct} userId={userId}/>
               )}
             </div>
           ))}

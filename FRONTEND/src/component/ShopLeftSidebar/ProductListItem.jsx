@@ -1,7 +1,44 @@
 import React from "react";
 import { Eye, Star } from "react-feather";
+import { Link } from "react-router-dom";
+import axios from "axios";
+import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
-const ProductListItem = ({ product, handleViewProduct }) => {
+const ProductListItem = ({ product, handleViewProduct, userId }) => {
+  const navigate = useNavigate();
+
+  const handleAddToCart = () => {
+    if (!userId) {
+      toast.error("Vui lòng đăng nhập");
+      return;
+    }
+
+    const cartItem = {
+      userID: userId,
+      productID: product.productId,
+      quantity: 1, // Mặc định là 1, có thể mở rộng với state nếu cần
+      priceAfterDiscount: product.salePrice,
+      total: product.salePrice * 1,
+      imageURL: product.imageURL,
+      productName: product.productName,
+      originalPrice: product.price,
+      discount: product.discountPercent || 0, // Giả định discountPercent có thể null
+    };
+
+    axios
+      .post("http://localhost:8082/PureFoods/api/cart/create", cartItem)
+      .then(() => {
+        toast.success("Đã thêm vào giỏ hàng");
+        window.dispatchEvent(new Event("cartUpdated"));
+        navigate("/cart-detail", { state: { fromAddToCart: true } });
+      })
+      .catch((err) => {
+        console.error("❌ Lỗi khi thêm vào giỏ hàng:", err.response?.data || err.message);
+        toast.error("Thêm vào giỏ thất bại");
+      });
+  };
+
   return (
     <div
       className="product-box-3 border-bottom d-flex align-items-center p-3 w-100"
@@ -13,17 +50,21 @@ const ProductListItem = ({ product, handleViewProduct }) => {
     >
       {/* Ảnh sản phẩm */}
       <div style={{ width: "120px", flexShrink: 0 }}>
-        <img
-          src={product.imageURL || "../assets/images/cake/product/2.png"}
-          alt={product.productName}
-          className="img-fluid rounded"
-          style={{ width: "100%", height: "100px", objectFit: "contain" }}
-        />
+        <Link to={`/product/${product.productId}`}>
+          <img
+            src={product.imageURL || "../assets/images/cake/product/2.png"}
+            alt={product.productName}
+            className="img-fluid rounded"
+            style={{ width: "100%", height: "100px", objectFit: "contain" }}
+          />
+        </Link>
       </div>
 
       {/* Thông tin sản phẩm */}
       <div className="px-4 flex-grow-1">
-        <h5 className="mb-1 fw-bold">{product.productName || "Tên sản phẩm"}</h5>
+        <Link to={`/product/${product.productId}`}>
+          <h5 className="mb-1 fw-bold">{product.productName || "Tên sản phẩm"}</h5>
+        </Link>
         <p className="mb-2 text-muted small" style={{ maxWidth: "90%" }}>
           {product.description || "Không có mô tả"}
         </p>
@@ -51,11 +92,19 @@ const ProductListItem = ({ product, handleViewProduct }) => {
 
       {/* Hành động */}
       <div className="text-end" style={{ width: "140px" }}>
-        <button className="btn btn-outline-primary btn-sm w-100 mb-2" onClick={() => handleViewProduct(product)}>
+        <button
+          className="btn btn-outline-primary btn-sm w-100 mb-2"
+          onClick={() => handleViewProduct(product)}
+        >
           <Eye size={16} className="me-1" />
           View detail
         </button>
-        <button className="btn btn-primary btn-sm w-100">Buy now</button>
+        <button
+          className="btn btn-primary btn-sm w-100"
+          onClick={handleAddToCart}
+        >
+          Add To Cart
+        </button>
       </div>
     </div>
   );

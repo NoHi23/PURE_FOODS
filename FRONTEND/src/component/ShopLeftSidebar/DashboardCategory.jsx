@@ -12,6 +12,8 @@ const DashboardCategory = () => {
   const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const location = useLocation();
+  const userLocal = JSON.parse(localStorage.getItem("user"));
+const userId = userLocal?.userId || null;
 
   useEffect(() => {
     if (categoryID) {
@@ -56,7 +58,7 @@ const DashboardCategory = () => {
               <FiltersLeftCategory />
             </div>
             <div className="col-lg-10 col-md-9">
-              <Products products={products} setProducts={setProducts} isLoading={isLoading} />
+              <Products products={products} setProducts={setProducts} isLoading={isLoading} userId={userId}/>
             </div>
           </div>
         </div>

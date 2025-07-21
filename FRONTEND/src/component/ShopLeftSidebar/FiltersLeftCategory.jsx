@@ -53,7 +53,6 @@ const FiltersLeftCategory = () => {
     axios
       .get("http://localhost:8082/PureFoods/api/category/getAll")
       .then((response) => {
-        console.log("Dữ liệu categories:", response.data);
         setCategories(response.data);
       })
       .catch((error) => {

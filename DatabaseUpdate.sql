@@ -119,6 +119,10 @@ CREATE TABLE TraderProductMapping (
 );
 
 
+
+-- lolo
+-- HUYND, run là được
+-- bôi đen run, test categories filter
 -- Update bảng categories 22/07/2025 01:05
 INSERT INTO [CleanFoodShop].[dbo].[Categories] 
     ([CategoryName], [Description], [IsOrganic], [Status])
@@ -144,7 +148,6 @@ VALUES
 (N'Frozen Salmon Fillet', 3, 3, 250.00, 50, N'Cá hồi đông lạnh cắt lát, giàu omega-3.', 'https://greengood.vn/wp-content/uploads/2024/01/59.jpg', 1, GETDATE(), 1, NULL),
 (N'Frozen Tofu Cubes', 3, 4, 100.00, 160, N'Đậu hũ cấp đông, tiện chế biến món chay.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcToHCQW9mCR-kytkQhuV3R0LxFQGwlL4eH3pw&s', 1, GETDATE(), 1, NULL);
 
-
 -- CategoryID = 4 (Meats & Seafoods)
 INSERT INTO [CleanFoodShop].[dbo].[Products]
     ([ProductName], [CategoryID], [SupplierID], [Price], [StockQuantity], [Description], [ImageURL], [LastUpdatedBy], [CreatedAt], [Status], [DiscountPercent])
@@ -160,7 +163,6 @@ VALUES
 (N'Fresh Tuna Steak', 4, 5, 350.00, 60, N'Cá ngừ cắt lát, chất lượng sashimi.', 'https://haisanantoan.vn/wp-content/uploads/2020/03/t%E1%BA%A3i-xu%E1%BB%91ng-2.jpg', 1, GETDATE(), 1, NULL),
 (N'Organic Minced Pork', 4, 6, 150.00, 140, N'Thịt heo xay hữu cơ.', 'https://cdnv2.tgdd.vn/bhx-static/bhx/Products/Images/8781/233782/bhx/cdntgddvnproductsimages8781241238bhxba-roi-heo-rut-suon-g-kitchen-khay-300g-202106021510397530_202410311040593558.jpg', 1, GETDATE(), 1, NULL);
 
-
 -- CategoryID = 5 (Beverages & Milk)
 INSERT INTO [CleanFoodShop].[dbo].[Products]
     ([ProductName], [CategoryID], [SupplierID], [Price], [StockQuantity], [Description], [ImageURL], [LastUpdatedBy], [CreatedAt], [Status], [DiscountPercent])
@@ -175,7 +177,6 @@ VALUES
 (N'Organic Orange Juice', 5, 6, 160.00, 90, N'Nước cam hữu cơ giàu vitamin C.', 'https://karofi.karofi.com/karofi-com/2022/06/uong-nuoc-cam-dung-cach.png', 1, GETDATE(), 1, NULL),
 (N'Rice Milk Drink', 5, 3, 135.00, 140, N'Nước gạo rang thơm ngon dễ uống.', 'https://suachobeyeu.vn/application/upload/products/nuoc-gao-han-quoc-sahmyook-chai-1500ml-a3.jpg', 1, GETDATE(), 1, NULL),
 (N'Natural Mineral Water', 5, 4, 90.00, 200, N'Nước khoáng tự nhiên, giàu khoáng chất.', 'https://binhminhcompany.vn/hoanghung/5/images/nuoc%20uong%20lavie%20giao%20tan%20nha(1).png', 1, GETDATE(), 1, NULL);
-
 
 -- CategoryID = 6 (Pet Foods)
 INSERT INTO [CleanFoodShop].[dbo].[Products]
