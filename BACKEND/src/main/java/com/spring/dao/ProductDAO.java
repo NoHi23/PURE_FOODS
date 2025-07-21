@@ -28,4 +28,6 @@ public interface ProductDAO   {
                                          Integer supplierId,
                                          Integer minDiscount,
                                          Pageable pageable) ;
+    List<Products> getProductsByCategory(int categoryId);
+
 }

@@ -179,6 +179,12 @@ public class ProductDAOImpl implements ProductDAO {
         return new PageImpl<>(resultList, pageable, total);
     }
 
-
-
+    @Override
+    public List<Products> getProductsByCategory(int categoryId) {
+        Session session = sessionFactory.getCurrentSession();
+        String hql = "FROM Products WHERE categoryId = :categoryId";
+        Query query = session.createQuery(hql);
+        query.setParameter("categoryId", categoryId);
+        return query.getResultList();
+    }
 }

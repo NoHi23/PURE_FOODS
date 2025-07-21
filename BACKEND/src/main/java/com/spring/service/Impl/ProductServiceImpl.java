@@ -274,4 +274,13 @@ public class ProductServiceImpl implements ProductService {
 
         return page.map(p -> mapper.map(p, ProductDTO.class));
     }
+
+    @Override
+    public List<ProductDTO> getProductsByCategory(int categoryId) {
+        List<Products> productEntities = productDAO.getProductsByCategory(categoryId);
+        return productEntities.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
 }
