@@ -18,7 +18,7 @@ const ExporterProfile = ({ user }) => {
       <div className="profile-tab dashboard-bg-box">
         <div className="dashboard-title dashboard-flex">
           <h3>Tên hồ sơ</h3>
-          <button className="btn btn-sm theme-bg-color text-white" data-bs-toggle="modal" data-bs-target="#edit-profile">
+          <button className="btn btn-sm theme-bg-color text-white" data-bs-toggle="modal" data-bs-target="#edit-profile" disabled>
             Chỉnh sửa
           </button>
         </div>

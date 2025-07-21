@@ -16,7 +16,6 @@ import java.util.List;
 @Service
 @Transactional(propagation = Propagation.REQUIRED)
 public class OrderServiceImpl implements OrderService {
-
     @Autowired
     private OrderDAO orderDAO;
 
@@ -32,7 +31,6 @@ public class OrderServiceImpl implements OrderService {
         order.setShippingCost(orderDTO.getShippingCost());
         order.setDistance(orderDTO.getDistance());
         order.setDiscountAmount(orderDTO.getDiscountAmount());
-        order.setStatus("Pending");
         order.setEstimatedDeliveryDate(orderDTO.getEstimatedDeliveryDate());
         order.setDriverID(orderDTO.getDriverID());
 
@@ -46,8 +44,7 @@ public class OrderServiceImpl implements OrderService {
         if (order == null) {
             throw new IllegalArgumentException("Order not found!");
         }
-        order.setStatus("Confirmed");
-        order.setStatusID(2); // ví dụ: 2 = Đã xác nhận
+        order.setStatusID(2); // Đã xác nhận
         orderDAO.updateOrder(order);
         return convertToDTO(order);
     }
@@ -102,7 +99,6 @@ public class OrderServiceImpl implements OrderService {
         dto.setShippingCost(order.getShippingCost());
         dto.setDistance(order.getDistance());
         dto.setDiscountAmount(order.getDiscountAmount());
-        dto.setStatus(order.getStatus());
         dto.setCancelReason(order.getCancelReason());
         dto.setEstimatedDeliveryDate(order.getEstimatedDeliveryDate());
         dto.setDelayReason(order.getDelayReason());
@@ -115,5 +111,4 @@ public class OrderServiceImpl implements OrderService {
     public int countOrder() {
         return orderDAO.countOrder();
     }
-
 }

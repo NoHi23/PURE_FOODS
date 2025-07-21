@@ -8,14 +8,12 @@ const ExporterInventoryLog = ({ currentPage, setCurrentPage }) => {
   const [transactions, setTransactions] = useState([]);
   const [productMap, setProductMap] = useState({});
   const [userMap, setUserMap] = useState({});
-  const [orderMap, setOrderMap] = useState({});
   const [searchTerm, setSearchTerm] = useState("");
 
   const filteredTransactions = transactions.filter((t) =>
     (productMap[t.productID]?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
-    (userMap[t.userId]?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
-    t.quantity?.toString().includes(searchTerm) ||
-    (orderMap[t.orderID] ? new Date(orderMap[t.orderID]).toLocaleString("vi-VN").toLowerCase() : "").includes(searchTerm.toLowerCase())
+    (userMap[t.orderID]?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
+    t.quantity?.toString().includes(searchTerm)
   );
 
   const transactionsPerPage = 7;
@@ -26,7 +24,7 @@ const ExporterInventoryLog = ({ currentPage, setCurrentPage }) => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const exporterId = JSON.parse(localStorage.getItem("user"))?.userID || 1;
+      const exporterId = JSON.parse(localStorage.getItem("user"))?.userID || 3;
       try {
         const [transactionsRes, productsRes, usersRes, ordersRes] = await Promise.all([
           axios.get(`http://localhost:8082/PureFoods/api/exporter/transactions/${exporterId}?page=0&size=10`),
@@ -45,13 +43,12 @@ const ExporterInventoryLog = ({ currentPage, setCurrentPage }) => {
           userMapTemp[u.userId] = u.fullName;
         });
         setUserMap(userMapTemp);
-        const orderMapTemp = {};
-        ordersRes.data?.forEach((o) => {
-          orderMapTemp[o.orderID] = o.orderDate;
-        });
-        setOrderMap(orderMapTemp);
       } catch (err) {
-        toast.error("Lỗi khi lấy dữ liệu: " + (err.response?.data?.message || err.message));
+        if (err.response && err.response.status === 404) {
+          toast.error("Không tìm thấy dữ liệu lịch sử. Vui lòng kiểm tra lại API.");
+        } else {
+          toast.error("Lỗi khi lấy dữ liệu: " + (err.response?.data?.message || err.message));
+        }
       }
     };
     fetchData();
@@ -73,9 +70,22 @@ const ExporterInventoryLog = ({ currentPage, setCurrentPage }) => {
           className="form-control my-3 mb-5"
           placeholder="Tìm kiếm giao dịch..."
           value={searchTerm}
-          onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
+          onChange={(e) => {
+            setSearchTerm(e.target.value);
+            setCurrentPage(1);
+          }}
         />
-        <FiSearch style={{ position: "absolute", right: "15px", top: "50%", transform: "translateY(-50%)", color: "#aaa", pointerEvents: "none" }} size={18} />
+        <FiSearch
+          style={{
+            position: "absolute",
+            right: "15px",
+            top: "50%",
+            transform: "translateY(-50%)",
+            color: "#aaa",
+            pointerEvents: "none",
+          }}
+          size={18}
+        />
       </div>
       <div className="order-tab dashboard-bg-box">
         <div className="table-responsive">
@@ -83,7 +93,7 @@ const ExporterInventoryLog = ({ currentPage, setCurrentPage }) => {
             <thead>
               <tr>
                 <th scope="col">Sản phẩm</th>
-                <th scope="col">Người xuất</th>
+                <th scope="col">Đơn hàng</th>
                 <th scope="col">Số lượng</th>
                 <th scope="col">Thời gian</th>
               </tr>
@@ -93,14 +103,16 @@ const ExporterInventoryLog = ({ currentPage, setCurrentPage }) => {
                 currentTransactions.map((t) => (
                   <tr key={t.orderDetailID}>
                     <td><h6>{productMap[t.productID] || "Không rõ"}</h6></td>
-                    <td><h6>{userMap[t.userId] || "Không rõ"}</h6></td>
+                    <td><h6>#{t.orderID || "Không rõ"}</h6></td>
                     <td><h6>{t.quantity}</h6></td>
-                    <td><h6>{orderMap[t.orderID] ? new Date(orderMap[t.orderID]).toLocaleString("vi-VN") : "Không rõ"}</h6></td>
+                    <td><h6>{new Date(t.createdAt || new Date()).toLocaleString("vi-VN")}</h6></td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan="4" className="text-center">Không có giao dịch nào.</td>
+                  <td colSpan="4" className="text-center">
+                    Không có giao dịch nào.
+                  </td>
                 </tr>
               )}
             </tbody>

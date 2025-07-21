@@ -17,9 +17,10 @@ public class OrderDAOImpl implements OrderDAO {
     private SessionFactory sessionFactory;
 
     @Override
-    public void saveOrder(Order order) {
+    public Order saveOrder(Order order) {
         Session session = sessionFactory.getCurrentSession();
         session.persist(order);
+        return order;
     }
 
     @Override

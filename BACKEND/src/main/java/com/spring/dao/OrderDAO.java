@@ -4,8 +4,8 @@ import com.spring.entity.Order;
 import java.util.List;
 
 public interface OrderDAO {
-    void saveOrder(Order order);
-    void updateOrder(Order order);
+    Order saveOrder(Order order); // Thêm phương thức
+    void updateOrder(Order order); // Thêm phương thức
     void deleteOrder(int orderId);
 
     Order getOrderById(int orderId);
@@ -14,5 +14,4 @@ public interface OrderDAO {
     List<Order> getOrdersByStatus(String status);
     List<Order> getOrdersByDriverId(int driverId);
     int countOrder();
-
 }
