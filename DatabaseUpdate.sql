@@ -116,20 +116,4 @@ CREATE TABLE TraderProducts (
 
     FOREIGN KEY (userId) REFERENCES Users(userId)
 );
-INSERT INTO TraderProducts (
-    userId,
-    productName,
-    price,
-    initialStockQuantity,
-    currentStockQuantity,
-    warehouseLocation,
-    status,
-    createdAt,
-    lastUpdated,
-    imageURL
 
-
-) VALUES 
-(3, N'Cà chua hữu cơ', 15000, 100, 100, N'Kho A1', 1, GETDATE(), GETDATE(), N'https://example.com/tomato.jpg'),
-(3, N'Dưa leo sạch', 12000, 80, 80, N'Kho B2', 1, GETDATE(), GETDATE(), N'https://example.com/cucumber.jpg'),
-(3, N'Rau cải ngọt', 10000, 150, 150, N'Kho C3', 1, GETDATE(), GETDATE(), N'https://example.com/lettuce.jpg');
