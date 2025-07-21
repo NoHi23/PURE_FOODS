@@ -41,15 +41,15 @@ const SideBar = () => {
                 </Link>
               </li>
 
-                <li className="sidebar-list">
-                  <a className="linear-icon-link sidebar-link sidebar-title" href="javascript:void(0)">
-                    <i className="ri-store-3-line"></i>
-                    <span>Product</span>
-                  </a>
-                  <ul className="sidebar-submenu">
-                    <li>
-                      <Link to={'/admin-product'}>Products</Link>
-                    </li>
+              <li className="sidebar-list">
+                <a className="linear-icon-link sidebar-link sidebar-title" href="javascript:void(0)">
+                  <i className="ri-store-3-line"></i>
+                  <span>Product</span>
+                </a>
+                <ul className="sidebar-submenu">
+                  <li>
+                    <Link to={'/admin-product'}>Products</Link>
+                  </li>
 
                   <li>
                     <Link to={'/admin-add-new-product'}>Add New Products</Link>
@@ -57,37 +57,37 @@ const SideBar = () => {
                 </ul>
               </li>
 
-                <li className="sidebar-list">
-                  <a className="linear-icon-link sidebar-link sidebar-title" href="javascript:void(0)">
-                    <i className="ri-list-check-2"></i>
-                    <span>Category</span>
-                  </a>
-                  <ul className="sidebar-submenu">
-                    <li>
-                      <Link to={'/admin-category'}>Category List</Link>
-                    </li>
+              <li className="sidebar-list">
+                <a className="linear-icon-link sidebar-link sidebar-title" href="javascript:void(0)">
+                  <i className="ri-list-check-2"></i>
+                  <span>Category</span>
+                </a>
+                <ul className="sidebar-submenu">
+                  <li>
+                    <Link to={'/admin-category'}>Category List</Link>
+                  </li>
 
-                    <li>
-                      <a href='/admin-add-new-category'>Add New Category</a>
-                    </li>
-                  </ul>
-                </li>
+                  <li>
+                    <a href='/admin-add-new-category'>Add New Category</a>
+                  </li>
+                </ul>
+              </li>
 
-                <li className="sidebar-list">
-                  <a className="linear-icon-link sidebar-link sidebar-title" href="javascript:void(0)">
-                    <i className="ri-list-check-2"></i>
-                    <span>Supplier</span>
-                  </a>
-                  <ul className="sidebar-submenu">
-                    <li>
-                      <Link to={'/admin-supplier'}>Supplier List</Link>
-                    </li>
+              <li className="sidebar-list">
+                <a className="linear-icon-link sidebar-link sidebar-title" href="javascript:void(0)">
+                  <i className="ri-list-check-2"></i>
+                  <span>Supplier</span>
+                </a>
+                <ul className="sidebar-submenu">
+                  <li>
+                    <Link to={'/admin-supplier'}>Supplier List</Link>
+                  </li>
 
-                    <li>
-                      <a href='/admin-add-new-supplier'>Add New Supplier</a>
-                    </li>
-                  </ul>
-                </li>
+                  <li>
+                    <a href='/admin-add-new-supplier'>Add New Supplier</a>
+                  </li>
+                </ul>
+              </li>
 
               <li className="sidebar-list">
                 <a className="sidebar-link sidebar-title" href="javascript:void(0)">
@@ -119,6 +119,9 @@ const SideBar = () => {
                 </ul>
               </li>
 
+
+
+
               <li className="sidebar-list">
                 <a className="sidebar-link sidebar-title" href="javascript:void(0)">
                   <i className="ri-archive-line"></i>
@@ -126,33 +129,60 @@ const SideBar = () => {
                 </a>
                 <ul className="sidebar-submenu">
                   <li>
-                    <a href="order-list.html">Order List</a>
+                    <Link to={'/admin-order'}>Order List</Link>
                   </li>
                   <li>
-                    <a href="order-detail.html">Order Detail</a>
+                    <Link to={'/admin-order-detail/:id'}>Order Detail</Link>
                   </li>
                   <li>
-                    <a href="order-tracking.html">Order Tracking</a>
+                    <Link to={'/admin-order-tracking/:id'}>Order Tracking</Link>
                   </li>
                 </ul>
               </li>
-
-
               <li className="sidebar-list">
                 <a className="linear-icon-link sidebar-link sidebar-title" href="javascript:void(0)">
                   <i className="ri-price-tag-3-line"></i>
-                  <span>Coupons</span>
+                  <span>Coupon</span>
                 </a>
                 <ul className="sidebar-submenu">
                   <li>
-                    <a href="coupon-list.html">Coupon List</a>
+                    <Link to={'/admin-coupons'}>Coupon List</Link>
                   </li>
-
                   <li>
-                    <a href="create-coupon.html">Create Coupon</a>
+                    <Link to={'/admin-add-new-coupons'}>Add New Coupon</Link>
                   </li>
                 </ul>
               </li>
+              <li className="sidebar-list">
+                <a className="linear-icon-link sidebar-link sidebar-title" href="javascript:void(0)">
+                  <i className="ri-price-tag-3-line"></i>
+                  <span>Tax</span>
+                </a>
+                <ul className="sidebar-submenu">
+                  <li>
+                    <Link to={'/admin-taxes'}>Tax List</Link>
+                  </li>
+                  <li>
+                    <Link to={'/admin-add-new-tax'}>Add New Tax</Link>
+                  </li>
+                </ul>
+              </li>
+              <li className="sidebar-list">
+                <a className="linear-icon-link sidebar-link sidebar-title" href="javascript:void(0)">
+                  <i className="ri-file-text-line"></i>
+                  <span>Blog</span>
+                </a>
+                <ul className="sidebar-submenu">
+                  <li>
+                    <Link to={'/admin-blog'}>Blog List</Link>
+                  </li>
+                  <li>
+                    <Link to={'/admin-add-new-blog'}>Add New Blog</Link>
+                  </li>
+                </ul>
+              </li>
+
+
 
 
               <li className="sidebar-list">

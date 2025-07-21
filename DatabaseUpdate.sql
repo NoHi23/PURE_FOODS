@@ -51,8 +51,42 @@ CREATE TABLE Notifications (
 ALTER TABLE [Orders]
 ADD 
     PaymentMethod NVARCHAR(50),         -- 'COD', 'VNPAY', 'Stripe', 'PayPal'
-    PaymentStatus NVARCHAR(50);     
+    PaymentStatus NVARCHAR(50);  
+	
 
--- Đổi kiểu dữ liệu cho cột Status trong bảng Ordrers: 18/07/2025
-	ALTER TABLE dbo.Orders
-	ALTER COLUMN Status NVarchar(50);
+	-- Bảng Taxes: Quản lý các mức thuế
+CREATE TABLE Taxes (
+    TaxID INT PRIMARY KEY IDENTITY(1,1),
+    TaxName NVARCHAR(100) NOT NULL,
+    TaxRate DECIMAL(5, 2) NOT NULL,
+    Description NVARCHAR(MAX),
+    EffectiveDate DATE NOT NULL,
+    Status INT NULL,
+    CreatedAt DATETIME DEFAULT GETDATE(),
+    INDEX idx_tax_name NONCLUSTERED (TaxName)
+);
+GO
+
+-- Dữ liệu mẫu cho bảng Taxes
+INSERT INTO Taxes (TaxName, TaxRate, Description, EffectiveDate, Status) VALUES
+(N'VAT', 10.00, N'Value Added Tax', '2025-01-01', 1),
+(N'Sales Tax', 8.00, N'Sales Tax for Retail', '2025-01-01', 1);
+GO
+
+-- Add Blogs table
+CREATE TABLE Blogs (
+    BlogID INT PRIMARY KEY IDENTITY(1,1),
+    Title NVARCHAR(255) NOT NULL,
+    Content NVARCHAR(MAX) NOT NULL,
+    UserID INT NOT NULL,
+    CreatedAt DATETIME DEFAULT GETDATE(),
+    Status INT NOT NULL DEFAULT 1, -- 1: Active, 0: Inactive
+    FOREIGN KEY (UserID) REFERENCES Users(UserID),
+    INDEX idx_blog_title NONCLUSTERED (Title)
+);
+
+-- Insert sample blog data
+INSERT INTO Blogs (Title, Content, UserID, Status)
+VALUES
+(N'Healthy Eating Tips', N'Explore the benefits of organic foods and tips for a balanced diet.', 1, 1),
+(N'Farm-to-Table Benefits', N'Learn how farm-to-table practices enhance food quality.', 1, 1);
