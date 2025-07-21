@@ -119,7 +119,6 @@ CREATE TABLE TraderProductMapping (
 );
 
 
-
 -- lolo
 -- HUYND, run là được
 -- bôi đen run, test categories filter
