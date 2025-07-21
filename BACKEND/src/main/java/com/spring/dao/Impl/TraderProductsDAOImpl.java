@@ -24,7 +24,7 @@ public class TraderProductsDAOImpl implements TraderProductsDAO {
     @Override
     public List<TraderProducts> getAllTraderProducts() {
         Session session = sessionFactory.getCurrentSession();
-        Query<TraderProducts> query = session.createQuery("FROM TraderProducts WHERE status = 1", TraderProducts.class);
+        Query<TraderProducts> query = session.createQuery("FROM TraderProducts", TraderProducts.class); // ⚠️ Bỏ lọc status
         return query.getResultList();
     }
 
@@ -48,8 +48,11 @@ public class TraderProductsDAOImpl implements TraderProductsDAO {
         TraderProducts traderProduct = session.get(TraderProducts.class, id);
         if (traderProduct != null) {
             session.delete(traderProduct);
+        } else {
+            throw new RuntimeException("Sản phẩm không tồn tại với ID: " + id); // Thêm ngoại lệ
         }
     }
+
 
     @Override
     public TraderProducts getLatestTraderProduct() {

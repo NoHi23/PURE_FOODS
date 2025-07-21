@@ -10,6 +10,9 @@ public interface TraderProductsDAO {
     TraderProducts updateTraderProduct(TraderProducts traderProduct);
     void deleteTraderProduct(int id);
 
+
     // Thêm phương thức getLatestTraderProduct
     TraderProducts getLatestTraderProduct();
+
+
 }

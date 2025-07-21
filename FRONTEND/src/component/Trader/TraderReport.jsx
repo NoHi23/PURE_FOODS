@@ -71,7 +71,6 @@ const TraderReport = ({ traderId }) => {
   <ReportCard title="🏬 Tồn kho hiện tại" value={summary.currentStock} color="secondary" />
 </div>
 
-
       {/* Biểu đồ theo tháng */}
       <div className="mb-5">
         <h5 className="mb-3">📈 Thống kê theo tháng</h5>

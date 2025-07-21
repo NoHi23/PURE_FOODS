@@ -56,6 +56,23 @@ public class InventoryLogsDAOImpl implements InventoryLogsDAO {
         Session session = sessionFactory.getCurrentSession();
         return session.get(InventoryLogs.class, id);
     }
+    @Override
+    public List<InventoryLogs> getAllPending() {
+        String hql = "FROM InventoryLogs WHERE status = 0 AND reason != 'Returned from Importer'";
+        return sessionFactory.getCurrentSession()
+                .createQuery(hql, InventoryLogs.class)
+                .getResultList();
+    }
+
+
+    @Override
+    public InventoryLogs findById(int logId) {
+        return sessionFactory.getCurrentSession().get(InventoryLogs.class, logId);
+    }
+    @Override
+    public void update(InventoryLogs log) {
+        sessionFactory.getCurrentSession().update(log);
+    }
 
     @Override
     public List<InventoryLogs> findPendingRequestsByStatus(int status) {

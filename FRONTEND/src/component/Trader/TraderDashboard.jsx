@@ -1,10 +1,9 @@
 import React, { useState } from "react";
 import TraderLayout from "../TraderLayout/TraderLayout";
 import TraderTab from "./TraderTab";
-import TraderInventoryManager from "./TraderInventoryManager";
+
 import TraderImportRequests from "./TraderImportRequests";
 import TraderReturnRequests from "./TraderReturnRequests";
-import TraderInventoryLog from "./TraderInventoryLog"; // ✅ sửa đúng
 import TraderInventoryCreate from "./TraderInventoryCreate";
 import TraderReport from "./TraderReport";
 import TraderProfile from "./TraderProfile";
@@ -30,21 +29,20 @@ const TraderDashboard = () => {
               <div className="dashboard-right-sidebar">
                 <div className="tab-content" id="trader-tabContent">
 
-                  {/* Tổng quan */}
-                  <div className="tab-pane fade show active" id="trader-overview" role="tabpanel">
-                    <TraderInventoryManager user={user} />
-                  </div>
+                 
 
                   {/* Tồn kho */}
                   <div className="tab-pane fade" id="trader-inventory" role="tabpanel">
                     <TraderInventoryCreate traderId={user.userId} onInventoryChange={reloadInventory} />
-                    <hr className="my-4" />
-                    <TraderInventoryLog traderId={user.userId} refreshKey={inventoryRefreshKey} />
+                    
                   </div>
 
                   {/* Yêu cầu nhập hàng */}
                   <div className="tab-pane fade" id="trader-import" role="tabpanel">
-                    <TraderImportRequests traderId={user.userId} />
+                    <TraderImportRequests traderId={user.userId}
+                    onInventoryChange={reloadInventory}
+                     />
+                      
                   </div>
 
                   {/* Trả hàng */}

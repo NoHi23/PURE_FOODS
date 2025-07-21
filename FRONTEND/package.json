@@ -16,6 +16,7 @@
     "datatables.net": "^2.3.2",
     "datatables.net-dt": "^2.3.2",
     "feather-icons": "^4.29.2",
+    "file-saver": "^2.0.5",
     "gulp": "^5.0.1",
     "gulp-autoprefixer": "^9.0.0",
     "gulp-livereload": "^4.0.2",

@@ -11,6 +11,11 @@ public interface InventoryLogsDAO {
     InventoryLogs getLatestLog();
     List<InventoryLogs> getAllLogs();
     InventoryLogs getLogById(int id);
+    List<InventoryLogs> getAllPending();
+    InventoryLogs findById(int logId);
+    void update(InventoryLogs log);
+
+
 
     // Thêm phương thức mới cho Trader
     List<InventoryLogs> findPendingRequestsByStatus(int status);
