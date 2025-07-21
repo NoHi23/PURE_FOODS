@@ -72,7 +72,7 @@ public class InventoryLogsServiceImpl implements InventoryLogsService {
 
     @Override
     public List<InventoryLogsDTO> getAllLogs() {
-        List<InventoryLogs> logs = inventoryLogsDAO.getAllLogs(); // Giả định DAO có phương thức này
+        List<InventoryLogs> logs = inventoryLogsDAO.getAllLogs();
         List<InventoryLogsDTO> dtoList = new ArrayList<>();
         for (InventoryLogs log : logs) {
             dtoList.add(convertToDTO(log));
@@ -91,4 +91,29 @@ public class InventoryLogsServiceImpl implements InventoryLogsService {
                 log.getStatus()
         );
     }
+
+    @Override
+    public InventoryLogsDTO createReturnOrder(InventoryLogsDTO dto) {
+        InventoryLogs log = new InventoryLogs();
+        log.setProductId(dto.getProductId());
+        log.setUserId(dto.getUserId());
+        log.setQuantityChange(dto.getQuantityChange());
+        log.setReason("Returned from Importer");
+        log.setCreatedAt(new Date());
+        log.setStatus(5);
+        inventoryLogsDAO.addInventoryLog(log);
+        return convertToDTO(inventoryLogsDAO.getLatestLog());
+    }
+
+    @Override
+    public InventoryLogsDTO archiveLog(int logId) {
+        InventoryLogs log = inventoryLogsDAO.getLogById(logId);
+        if (log == null) {
+            throw new RuntimeException("Không tìm thấy log cần lưu trữ!");
+        }
+        log.setStatus(3); // đánh dấu là lưu trữ
+        inventoryLogsDAO.updateInventoryLog(log);
+        return convertToDTO(log);
+    }
+
 }
