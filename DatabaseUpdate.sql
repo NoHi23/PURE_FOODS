@@ -91,16 +91,6 @@ VALUES
 (N'Healthy Eating Tips', N'Explore the benefits of organic foods and tips for a balanced diet.', 1, 1),
 (N'Farm-to-Table Benefits', N'Learn how farm-to-table practices enhance food quality.', 1, 1);
 
-CREATE TABLE TraderProductMapping (
-    id INT IDENTITY(1,1) PRIMARY KEY,
-    traderProductId INT NOT NULL,
-    productId INT NOT NULL,
-    userId INT NOT NULL,
-
-    FOREIGN KEY (traderProductId) REFERENCES TraderProducts(traderProductId) ON DELETE CASCADE,
-    FOREIGN KEY (productId) REFERENCES Products(productId) ON DELETE CASCADE,
-    FOREIGN KEY (userId) REFERENCES Users(userId)
-);
 CREATE TABLE TraderProducts (
     traderProductId INT IDENTITY(1,1) PRIMARY KEY,
     userId INT NOT NULL, -- Foreign key đến bảng Users
@@ -116,4 +106,15 @@ CREATE TABLE TraderProducts (
 
     FOREIGN KEY (userId) REFERENCES Users(userId)
 );
+CREATE TABLE TraderProductMapping (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    traderProductId INT NOT NULL,
+    productId INT NOT NULL,
+    userId INT NOT NULL,
+
+    FOREIGN KEY (traderProductId) REFERENCES TraderProducts(traderProductId) ON DELETE CASCADE,
+    FOREIGN KEY (productId) REFERENCES Products(productId) ON DELETE CASCADE,
+    FOREIGN KEY (userId) REFERENCES Users(userId)
+);
+
 
