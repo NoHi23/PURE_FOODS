@@ -68,7 +68,18 @@ const TraderTab = ({ user }) => {
               🔁 Đơn trả hàng
             </button>
           </li>
-
+<li className="nav-item" role="presentation">
+  <button
+    className="nav-link"
+    id="trader-product-mapping-tab"
+    data-bs-toggle="pill"
+    data-bs-target="#trader-product-mapping"
+    type="button"
+    role="tab"
+  >
+    🔗 Ánh xạ sản phẩm
+  </button>
+</li>
           <li className="nav-item" role="presentation">
             <button
               className="nav-link"

@@ -17,6 +17,13 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+import java.time.LocalDateTime;
+import java.util.stream.Collectors;
+import java.time.ZoneId;
+
+
 
 @Service
 @Transactional(propagation = Propagation.REQUIRED)
@@ -354,6 +361,107 @@ public class TraderInventoryServiceImpl implements TraderInventoryService {
                 product.getStatus()
         );
     }
+    @Override
+    public Map<String, Object> getTraderReportSummary(int traderId) {
+        Map<String, Object> result = new HashMap<>();
+
+        List<InventoryLogs> allLogs = inventoryLogsDAO.getAllLogs();
+        List<TraderProducts> products = traderProductsDAO.getAllTraderProducts();
+
+        int totalOrders = 0, confirmedOrders = 0, rejectedOrders = 0, returnedOrders = 0, totalShippedQuantity = 0;
+        int currentStock = 0;
+
+        for (InventoryLogs log : allLogs) {
+            TraderProductMapping mapping = traderProductMappingDAO.getByProductIdAndTraderId(log.getProductId(), traderId);
+            if (mapping == null) continue;
+
+            int status = log.getStatus();
+            totalOrders += (status == 1 || status == 2) ? 1 : 0;
+            confirmedOrders += (status == 1) ? 1 : 0;
+            rejectedOrders += (status == 2) ? 1 : 0;
+            returnedOrders += (status == 6 || status == 7) ? 1 : 0;
+            totalShippedQuantity += (status == 1) ? log.getQuantityChange() : 0;
+        }
+
+        for (TraderProducts p : products) {
+            if (p.getUserId() == traderId && p.getStatus() == 1) {
+                currentStock += p.getCurrentStockQuantity();
+            }
+        }
+
+        result.put("totalOrders", totalOrders);
+        result.put("confirmedOrders", confirmedOrders);
+        result.put("rejectedOrders", rejectedOrders);
+        result.put("returnedOrders", returnedOrders);
+        result.put("totalShippedQuantity", totalShippedQuantity);
+        result.put("currentStock", currentStock);
+
+        return result;
+    }
+    @Override
+    public List<Map<String, Object>> getMonthlyReport(int traderId) {
+        List<InventoryLogs> logs = inventoryLogsDAO.getAllLogs();
+        Map<String, Integer> monthlyTotals = new HashMap<>();
+
+        for (InventoryLogs log : logs) {
+            if (log.getStatus() != 1) continue;
+            TraderProductMapping map = traderProductMappingDAO.getByProductIdAndTraderId(log.getProductId(), traderId);
+            if (map == null) continue;
+
+            LocalDateTime createdAt = log.getCreatedAt().toInstant()
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDateTime();
+
+            String key = createdAt.getYear() + "-" + String.format("%02d", createdAt.getMonthValue());
+            monthlyTotals.put(key, monthlyTotals.getOrDefault(key, 0) + log.getQuantityChange());
+        }
+
+        return monthlyTotals.entrySet().stream()
+                .sorted(Map.Entry.comparingByKey())
+                .map(entry -> {
+                    Map<String, Object> result = new HashMap<>();
+                    result.put("month", entry.getKey());
+                    result.put("quantity", entry.getValue());
+                    return result;
+                })
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Map<String, Object>> getProductReport(int traderId) {
+        List<InventoryLogs> logs = inventoryLogsDAO.getAllLogs();
+        Map<Integer, Integer> productQuantities = new HashMap<>();
+
+        for (InventoryLogs log : logs) {
+            if (log.getStatus() != 1) continue;
+
+            TraderProductMapping map = traderProductMappingDAO.getByProductIdAndTraderId(log.getProductId(), traderId);
+            if (map == null) continue;
+
+            int traderProductId = map.getTraderProductId();
+
+            productQuantities.put(traderProductId,
+                    productQuantities.getOrDefault(traderProductId, 0) + log.getQuantityChange());
+        }
+
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (Map.Entry<Integer, Integer> entry : productQuantities.entrySet()) {
+            int traderProductId = entry.getKey();
+            int quantity = entry.getValue();
+
+            TraderProducts product = traderProductsDAO.getTraderProductById(traderProductId);
+            if (product == null) continue;
+
+            result.add(Map.of(
+                    "productId", traderProductId,
+                    "productName", product.getProductName(),
+                    "quantity", quantity
+            ));
+        }
+        return result;
+    }
+
+
 
 
 
@@ -373,4 +481,5 @@ public class TraderInventoryServiceImpl implements TraderInventoryService {
                 log.getStatus()
         );
     }
+
 }

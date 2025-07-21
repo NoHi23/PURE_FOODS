@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import TraderLayout from "../TraderLayout/TraderLayout";
 import TraderTab from "./TraderTab";
-
+import TraderProductMapping from "./TraderProductMapping";
 import TraderImportRequests from "./TraderImportRequests";
 import TraderReturnRequests from "./TraderReturnRequests";
 import TraderInventoryCreate from "./TraderInventoryCreate";
@@ -28,7 +28,14 @@ const TraderDashboard = () => {
             <div className="col-xxl-9 col-lg-8">
               <div className="dashboard-right-sidebar">
                 <div className="tab-content" id="trader-tabContent">
-
+                  {/* Ánh xạ sản phẩm */}
+                  <div className="tab-pane fade" id="trader-product-mapping" role="tabpanel">
+                    <TraderProductMapping
+                      traderId={user.userId}
+                      onInventoryChange={reloadInventory}
+                      key={inventoryRefreshKey}
+                    />
+                  </div>
                  
 
                   {/* Tồn kho */}

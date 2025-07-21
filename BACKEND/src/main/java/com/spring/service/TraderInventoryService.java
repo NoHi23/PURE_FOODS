@@ -4,6 +4,7 @@ import com.spring.dto.InventoryLogsDTO;
 import com.spring.dto.TraderStockDTO;
 
 import java.util.List;
+import java.util.Map;
 
 public interface TraderInventoryService {
     // NHÓM 1: CRUD cơ bản cho Logs của Trader
@@ -33,4 +34,9 @@ public interface TraderInventoryService {
 
     TraderStockDTO updateProductStatus(int userId, int traderProductId, int status);
 
+    Map<String, Object> getTraderReportSummary(int traderId);
+
+    List<Map<String, Object>> getMonthlyReport(int traderId);
+
+    List<Map<String, Object>> getProductReport(int traderId);
 }

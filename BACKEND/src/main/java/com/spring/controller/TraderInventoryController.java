@@ -226,6 +226,36 @@ public class TraderInventoryController {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
     }
+    @GetMapping("/report-summary")
+    public ResponseEntity<?> getTraderReportSummary(@RequestParam("userId") int userId) {
+        try {
+            Map<String, Object> summary = traderInventoryService.getTraderReportSummary(userId);
+            return ResponseEntity.ok(Map.of("message", "Báo cáo tổng quan của Trader", "data", summary));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/report-monthly")
+    public ResponseEntity<?> getMonthlyReport(@RequestParam("userId") int userId) {
+        try {
+            List<Map<String, Object>> report = traderInventoryService.getMonthlyReport(userId);
+            return ResponseEntity.ok(Map.of("message", "Báo cáo theo tháng", "data", report));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+    @GetMapping("/report-by-product")
+    public ResponseEntity<?> getProductReport(@RequestParam("userId") int userId) {
+        try {
+            List<Map<String, Object>> report = traderInventoryService.getProductReport(userId);
+            return ResponseEntity.ok(Map.of("message", "Báo cáo theo sản phẩm", "data", report));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+
 
 
 
