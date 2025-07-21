@@ -120,11 +120,4 @@ CREATE TABLE TraderProductMapping (
 );
 
 
-<<<<<<< HEAD
-) VALUES 
-(3, N'Cà chua hữu cơ', 15000, 100, 100, N'Kho A1', 1, GETDATE(), GETDATE(), N'https://example.com/tomato.jpg'),
-(3, N'Dưa leo sạch', 12000, 80, 80, N'Kho B2', 1, GETDATE(), GETDATE(), N'https://example.com/cucumber.jpg'),
-(3, N'Rau cải ngọt', 10000, 150, 150, N'Kho C3', 1, GETDATE(), GETDATE(), N'https://example.com/lettuce.jpg');
->>>>>>> 16424c2c0b6d64b623203c3a855f82a8118257c6
-=======
->>>>>>> 6dc15e41662fa7002dc7828b33eae28a4e294243
+
