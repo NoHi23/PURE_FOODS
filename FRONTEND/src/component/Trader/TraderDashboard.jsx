@@ -16,6 +16,8 @@ const TraderDashboard = () => {
     setInventoryRefreshKey(Date.now());
   };
 
+
+  
   return (
     <TraderLayout>
       <section className="user-dashboard-section section-b-space">
