@@ -1,60 +1,77 @@
-import React from "react";
-import TraderLayout from "../../layouts/TraderLayout";
+import React, { useState } from "react";
+import TraderLayout from "../TraderLayout/TraderLayout";
+import TraderTab from "./TraderTab";
+import TraderProductMapping from "./TraderProductMapping";
+import TraderImportRequests from "./TraderImportRequests";
+import TraderReturnRequests from "./TraderReturnRequests";
+import TraderInventoryCreate from "./TraderInventoryCreate";
+import TraderReport from "./TraderReport";
+import TraderProfile from "./TraderProfile";
 
 const TraderDashboard = () => {
+  const user = JSON.parse(localStorage.getItem("user"));
+  const [inventoryRefreshKey, setInventoryRefreshKey] = useState(Date.now());
+
+  const reloadInventory = () => {
+    setInventoryRefreshKey(Date.now());
+  };
+
+
+  
   return (
     <TraderLayout>
-      <section className="p-4">
-        <div className="mb-6">
-          <h2 className="text-2xl font-bold">Welcome back, Trader!</h2>
-          <p className="text-gray-600">Here is your trading dashboard summary.</p>
-        </div>
+      <section className="user-dashboard-section section-b-space">
+        <div className="container-fluid-lg">
+          <div className="row">
+            {/* Sidebar trái với các tab */}
+            <TraderTab user={user} />
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white shadow p-4 rounded-lg">
-            <h4 className="text-lg text-gray-700 font-semibold">Account Balance</h4>
-            <p className="text-2xl font-bold text-green-500">$45,320.50</p>
-          </div>
-          <div className="bg-white shadow p-4 rounded-lg">
-            <h4 className="text-lg text-gray-700 font-semibold">Open Trades</h4>
-            <p className="text-2xl font-bold text-yellow-500">5</p>
-          </div>
-          <div className="bg-white shadow p-4 rounded-lg">
-            <h4 className="text-lg text-gray-700 font-semibold">Profit (This Month)</h4>
-            <p className="text-2xl font-bold text-blue-500">+ $2,130.00</p>
-          </div>
-        </div>
+            {/* Nội dung tab */}
+            <div className="col-xxl-9 col-lg-8">
+              <div className="dashboard-right-sidebar">
+                <div className="tab-content" id="trader-tabContent">
+                  {/* Ánh xạ sản phẩm */}
+                  <div className="tab-pane fade" id="trader-product-mapping" role="tabpanel">
+                    <TraderProductMapping
+                      traderId={user.userId}
+                      onInventoryChange={reloadInventory}
+                      key={inventoryRefreshKey}
+                    />
+                  </div>
+                 
 
-        <div className="mt-8">
-          <h3 className="text-xl font-semibold mb-4">Recent Trades</h3>
-          <div className="overflow-x-auto">
-            <table className="min-w-full border text-sm">
-              <thead className="bg-gray-100">
-                <tr>
-                  <th className="p-2 border">Trade ID</th>
-                  <th className="p-2 border">Asset</th>
-                  <th className="p-2 border">Type</th>
-                  <th className="p-2 border">Amount</th>
-                  <th className="p-2 border">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td className="p-2 border">TR12345</td>
-                  <td className="p-2 border">BTC/USD</td>
-                  <td className="p-2 border">Buy</td>
-                  <td className="p-2 border">$5,000</td>
-                  <td className="p-2 border text-green-600">Closed</td>
-                </tr>
-                <tr>
-                  <td className="p-2 border">TR12346</td>
-                  <td className="p-2 border">ETH/USD</td>
-                  <td className="p-2 border">Sell</td>
-                  <td className="p-2 border">$2,500</td>
-                  <td className="p-2 border text-yellow-600">Pending</td>
-                </tr>
-              </tbody>
-            </table>
+                  {/* Tồn kho */}
+                  <div className="tab-pane fade" id="trader-inventory" role="tabpanel">
+                    <TraderInventoryCreate traderId={user.userId} onInventoryChange={reloadInventory} />
+                    
+                  </div>
+
+                  {/* Yêu cầu nhập hàng */}
+                  <div className="tab-pane fade" id="trader-import" role="tabpanel">
+                    <TraderImportRequests traderId={user.userId}
+                    onInventoryChange={reloadInventory}
+                     />
+                      
+                  </div>
+
+                  {/* Trả hàng */}
+                  <div className="tab-pane fade" id="trader-returns" role="tabpanel">
+                    <TraderReturnRequests traderId={user.userId} />
+                  </div>
+
+                  {/* Báo cáo */}
+                  <div className="tab-pane fade" id="trader-reports" role="tabpanel">
+                    <TraderReport traderId={user.userId} />
+                  </div>
+
+                  {/* Hồ sơ cá nhân */}
+                  <div className="tab-pane fade" id="trader-profile" role="tabpanel">
+                    <TraderProfile user={user} />
+                  </div>
+
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>

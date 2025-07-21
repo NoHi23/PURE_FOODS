@@ -1,17 +1,18 @@
 package com.spring.service.Impl;
 
 import com.spring.dao.OrderDAO;
+import com.spring.dao.ProductDAO;
+import com.spring.dto.BestSellingProductDTO;
 import com.spring.dto.OrderDTO;
 import com.spring.entity.Order;
+import com.spring.entity.Products;
 import com.spring.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Service
 @Transactional(propagation = Propagation.REQUIRED)
@@ -31,8 +32,16 @@ public class OrderServiceImpl implements OrderService {
         order.setShippingCost(orderDTO.getShippingCost());
         order.setDistance(orderDTO.getDistance());
         order.setDiscountAmount(orderDTO.getDiscountAmount());
+        order.setStatus("adsfsd");
         order.setEstimatedDeliveryDate(orderDTO.getEstimatedDeliveryDate());
         order.setDriverID(orderDTO.getDriverID());
+        order.setPaymentMethod(orderDTO.getPaymentMethod());
+
+        if ("COD".equalsIgnoreCase(orderDTO.getPaymentMethod())) {
+            order.setPaymentStatus("Pending");
+        } else {
+            order.setPaymentStatus("Unpaid");
+        }
 
         orderDAO.saveOrder(order);
         return convertToDTO(order);
@@ -44,7 +53,8 @@ public class OrderServiceImpl implements OrderService {
         if (order == null) {
             throw new IllegalArgumentException("Order not found!");
         }
-        order.setStatusID(2); // Đã xác nhận
+        order.setStatus("sđ");
+        order.setStatusID(2); // ví dụ: 2 = Đã xác nhận
         orderDAO.updateOrder(order);
         return convertToDTO(order);
     }
@@ -104,11 +114,51 @@ public class OrderServiceImpl implements OrderService {
         dto.setDelayReason(order.getDelayReason());
         dto.setDriverID(order.getDriverID());
         dto.setReturnReason(order.getReturnReason());
+        dto.setPaymentMethod(order.getPaymentMethod());
+        dto.setPaymentStatus(order.getPaymentStatus());
         return dto;
     }
 
     @Override
     public int countOrder() {
         return orderDAO.countOrder();
+    }
+
+    @Override
+    public double calculateTotalRevenue() {
+        List<Order> completedOrders = orderDAO.getOrdersByStatusID(4); // statusID = 4 là 'Đã hoàn thành'
+        double totalRevenue = 0;
+        for (Order order : completedOrders) {
+            totalRevenue += order.getTotalAmount();
+        }
+        return totalRevenue;
+    }
+
+    @Override
+    public Map<Integer, Double> calculateMonthlyRevenue() {
+        List<Order> completedOrders = orderDAO.getOrdersByStatusID(4); // chỉ lấy đơn đã hoàn thành
+        Map<Integer, Double> monthlyRevenue = new HashMap<>();
+
+        for (Order order : completedOrders) {
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(order.getOrderDate());
+
+            int month = calendar.get(Calendar.MONTH) + 1; // Tháng từ 0-11 => +1
+
+            monthlyRevenue.put(month,
+                    monthlyRevenue.getOrDefault(month, 0.0) + order.getTotalAmount());
+        }
+
+        return monthlyRevenue;
+    }
+
+    @Override
+    public List<BestSellingProductDTO> getTop5BestSellingProductsWithStats() {
+        return orderDAO.getTop5BestSellingProductsWithStats();
+    }
+
+    @Override
+    public List<Order> getTop5RecentOrders() {
+        return orderDAO.getTop5RecentOrders();
     }
 }

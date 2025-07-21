@@ -56,4 +56,65 @@ public class InventoryLogsDAOImpl implements InventoryLogsDAO {
         Session session = sessionFactory.getCurrentSession();
         return session.get(InventoryLogs.class, id);
     }
+    @Override
+    public List<InventoryLogs> getAllPending() {
+        String hql = "FROM InventoryLogs WHERE status = 0 AND reason != 'Returned from Importer'";
+        return sessionFactory.getCurrentSession()
+                .createQuery(hql, InventoryLogs.class)
+                .getResultList();
+    }
+
+
+    @Override
+    public InventoryLogs findById(int logId) {
+        return sessionFactory.getCurrentSession().get(InventoryLogs.class, logId);
+    }
+    @Override
+    public void update(InventoryLogs log) {
+        sessionFactory.getCurrentSession().update(log);
+    }
+
+    @Override
+    public List<InventoryLogs> findPendingRequestsByStatus(int status) {
+        Session session = sessionFactory.getCurrentSession();
+        return session.createQuery("FROM InventoryLogs WHERE status = :status", InventoryLogs.class)
+                .setParameter("status", status)
+                .list();
+    }
+
+    @Override
+    public List<InventoryLogs> findByUserIdAndStatus(int userId, int status) {
+        Session session = sessionFactory.getCurrentSession();
+        return session.createQuery("FROM InventoryLogs WHERE userId = :userId AND status = :status", InventoryLogs.class)
+                .setParameter("userId", userId)
+                .setParameter("status", status)
+                .list();
+    }
+
+    @Override
+    public List<InventoryLogs> getLogsByReasonAndStatus(String reason, int status) {
+        Session session = sessionFactory.getCurrentSession();
+        return session.createQuery("FROM InventoryLogs WHERE reason = :reason AND status = :status", InventoryLogs.class)
+                .setParameter("reason", reason)
+                .setParameter("status", status)
+                .list();
+    }
+
+
+    @Override
+    public List<InventoryLogs> getLogsByUserId(int userId) {
+        Session session = sessionFactory.getCurrentSession();
+        return session.createQuery("FROM InventoryLogs WHERE userId = :userId", InventoryLogs.class)
+                .setParameter("userId", userId)
+                .list();
+    }
+    @Override
+    public List<InventoryLogs> getLogsByReason(String reason) {
+        String hql = "FROM InventoryLogs WHERE reason = :reason ORDER BY createdAt DESC";
+        return sessionFactory.getCurrentSession()
+                .createQuery(hql, InventoryLogs.class)
+                .setParameter("reason", reason)
+                .list();
+    }
+
 }

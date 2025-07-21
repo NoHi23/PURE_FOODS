@@ -26,7 +26,7 @@ public class CartItemController {
     }
 
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<CartItemDTO>> getCartItemsByUserId(@PathVariable Long userId) {
+    public ResponseEntity<List<CartItemDTO>> getCartItemsByUserId(@PathVariable("userId") Long userId) {
         List<CartItemDTO> items = cartItemService.getCartItemsByUserId(userId);
         return ResponseEntity.ok(items);
     }
@@ -47,12 +47,12 @@ public class CartItemController {
     }
 
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<Void> deleteCartItem(@PathVariable("id") Long id) {
+    public ResponseEntity<String> deleteCartItem(@PathVariable("id") Long id) {
         try {
             cartItemService.deleteCartItem(id);
-            return ResponseEntity.noContent().build();
+            return ResponseEntity.ok("Cart item deleted successfully.");
         } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(404).body("Cart item not found.");
         }
     }
 

@@ -44,20 +44,17 @@ END
 -- Sửa cột ImageURL
 ALTER TABLE ProductImages ALTER COLUMN ImageURL NVARCHAR(MAX);
 
--- Thêm last_login nếu chưa có
-IF COL_LENGTH('Users', 'last_login') IS NULL
-    ALTER TABLE Users ADD last_login DATETIME NULL;
+-- Bảng Users: thêm cột theo dõi
+ALTER TABLE Users
+    ADD last_login DATETIME NULL;  
 
--- Tạo Notifications nếu chưa có
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Notifications]') AND type in (N'U'))
-BEGIN
-    CREATE TABLE Notifications (
-        id            INT IDENTITY PRIMARY KEY,
-        user_id       INT NOT NULL,
-        title         NVARCHAR(100),
-        content       NVARCHAR(MAX),
-        is_read       BIT DEFAULT 0,
-        created_at    DATETIME DEFAULT GETDATE(),
-        FOREIGN KEY (user_id) REFERENCES Users(UserID)
-    );
-END
+	-- Bảng Notifications:
+CREATE TABLE Notifications (
+    id            INT IDENTITY PRIMARY KEY,
+    user_id       INT NOT NULL,
+    title         NVARCHAR(100),
+    content       NVARCHAR(MAX),
+    is_read       BIT DEFAULT 0,
+    created_at    DATETIME DEFAULT GETDATE(),
+    FOREIGN KEY (user_id) REFERENCES Users(UserID)
+);
