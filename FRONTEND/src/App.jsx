@@ -34,6 +34,7 @@ import CustomerProfileUpdate from './component/Customer/CustomerProfileUpdate';
 import { WishlistProvider } from './layouts/WishlistContext';
 import ProductDetail from './component/ProductDetail/ProductDetail';
 import Checkout from './component/Checkout/Checkout';
+import DashboardCategory from './component/ShopLeftSidebar/DashboardCategory';
 
 function AppContent() {
   const location = useLocation();
@@ -67,6 +68,7 @@ function AppContent() {
       {!shouldHideHeader && <Header />}
       <Routes>
         <Route path="/" element={<HomePage />} />
+        <Route path="/category" element={<DashboardCategory />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/forgot" element={<Forgot />} />

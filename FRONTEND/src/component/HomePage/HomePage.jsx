@@ -1,18 +1,19 @@
 import React, { useEffect, useState } from "react";
 import HomepageLayout from "../../layouts/HomepageLayout";
 import axios from "axios";
-import * as bootstrap from 'bootstrap';
+import * as bootstrap from "bootstrap";
 import feather from "feather-icons";
 import ProductSlider from "./ProductSlider";
 import CookieConsent from "./CookieConsent";
+import { Link } from "react-router-dom";
 
 const getOrUpdateExpiryTime = () => {
-  let expiry = localStorage.getItem('countdownExpiry');
+  let expiry = localStorage.getItem("countdownExpiry");
   const now = new Date().getTime();
 
   if (!expiry || now >= Number(expiry)) {
     const newExpiry = now + 15 * 24 * 60 * 60 * 1000; // 15 ngày
-    localStorage.setItem('countdownExpiry', newExpiry);
+    localStorage.setItem("countdownExpiry", newExpiry);
     expiry = newExpiry;
   }
 
@@ -48,21 +49,18 @@ const HomePage = () => {
     return () => clearInterval(timer);
   }, []);
   useEffect(() => {
-    axios.get('http://localhost:8082/PureFoods/api/product/top-discount')
-      .then((res) => setDealProduct(res.data))
+    axios.get("http://localhost:8082/PureFoods/api/product/top-discount").then((res) => setDealProduct(res.data));
 
-    axios.get('http://localhost:8082/PureFoods/api/product/top-save')
-      .then((res) => setSaveProduct(res.data))
-  }, [])
+    axios.get("http://localhost:8082/PureFoods/api/product/top-save").then((res) => setSaveProduct(res.data));
+  }, []);
   const [selectedProduct, setSelectedProduct] = useState(null);
 
   const handleViewProduct = (product) => {
     setSelectedProduct(product);
-    const modal = new bootstrap.Modal(document.getElementById('view'));
+    const modal = new bootstrap.Modal(document.getElementById("view"));
     modal.show();
     console.log("hi: " + product);
   };
-
 
   const [wishlistMap, setWishlistMap] = useState({});
   useEffect(() => {
@@ -78,9 +76,7 @@ const HomePage = () => {
 
   useEffect(() => feather.replace(), [wishlistMap]);
 
-
-
-  const [category, setCategory] = useState(null)
+  const [category, setCategory] = useState(null);
   useEffect(() => {
     const fetchCategory = async () => {
       if (selectedProduct?.categoryId) {
@@ -97,8 +93,7 @@ const HomePage = () => {
     fetchCategory();
   }, [selectedProduct]);
 
-
-  const [supplier, setSupplier] = useState(null)
+  const [supplier, setSupplier] = useState(null);
   useEffect(() => {
     const fetchSuppliers = async () => {
       if (selectedProduct?.supplierId) {
@@ -114,6 +109,20 @@ const HomePage = () => {
 
     fetchSuppliers();
   }, [selectedProduct]);
+
+  const [categories, setCategories] = useState([]);
+
+  useEffect(() => {
+    axios
+      .get("http://localhost:8082/PureFoods/api/category/getAll")
+      .then((response) => {
+        console.log("Dữ liệu categories:", response.data);
+        setCategories(response.data);
+      })
+      .catch((error) => {
+        console.error("Error fetching categories:", error);
+      });
+  }, []);
 
   return (
     <HomepageLayout>
@@ -1299,115 +1308,31 @@ const HomePage = () => {
               <div className="row g-sm-4 g-3">
                 <div className="col-xxl-3 col-xl-4 d-none d-xl-block">
                   <div className="p-sticky">
+                    {/* Bắt đầu filter category */}
+
+                    {/* Bắt đầu filter category */}
                     <div className="category-menu">
                       <h3>Category</h3>
                       <ul>
-                        <li>
-                          <div className="category-list">
-                            <img src="../assets/svg/1/vegetable.svg" className="blur-up lazyload" alt="" />
-                            <h5>
-                              <a href="shop-left-sidebar.html">Vegetables & Fruit</a>
-                            </h5>
-                          </div>
-                        </li>
-                        <li>
-                          <div className="category-list">
-                            <img src="../assets/svg/1/cup.svg" className="blur-up lazyload" alt="" />
-                            <h5>
-                              <a href="shop-left-sidebar.html">Beverages</a>
-                            </h5>
-                          </div>
-                        </li>
-                        <li>
-                          <div className="category-list">
-                            <img src="../assets/svg/1/meats.svg" className="blur-up lazyload" alt="" />
-                            <h5>
-                              <a href="shop-left-sidebar.html">Meats & Seafood</a>
-                            </h5>
-                          </div>
-                        </li>
-                        <li>
-                          <div className="category-list">
-                            <img src="../assets/svg/1/breakfast.svg" className="blur-up lazyload" alt="" />
-                            <h5>
-                              <a href="shop-left-sidebar.html">Breakfast & Dairy</a>
-                            </h5>
-                          </div>
-                        </li>
-                        <li>
-                          <div className="category-list">
-                            <img src="../assets/svg/1/frozen.svg" className="blur-up lazyload" alt="" />
-                            <h5>
-                              <a href="shop-left-sidebar.html">Frozen Foods</a>
-                            </h5>
-                          </div>
-                        </li>
-                        <li>
-                          <div className="category-list">
-                            <img src="../assets/svg/1/biscuit.svg" className="blur-up lazyload" alt="" />
-                            <h5>
-                              <a href="shop-left-sidebar.html">Biscuits & Snacks</a>
-                            </h5>
-                          </div>
-                        </li>
-                        <li>
-                          <div className="category-list">
-                            <img src="../assets/svg/1/grocery.svg" className="blur-up lazyload" alt="" />
-                            <h5>
-                              <a href="shop-left-sidebar.html">Grocery & Staples</a>
-                            </h5>
-                          </div>
-                        </li>
-                        <li>
-                          <div className="category-list">
-                            <img src="../assets/svg/1/drink.svg" className="blur-up lazyload" alt="" />
-                            <h5>
-                              <a href="shop-left-sidebar.html">Wines & Alcohol Drinks</a>
-                            </h5>
-                          </div>
-                        </li>
-                        <li>
-                          <div className="category-list">
-                            <img src="../assets/svg/1/milk.svg" className="blur-up lazyload" alt="" />
-                            <h5>
-                              <a href="shop-left-sidebar.html">Milk & Dairies</a>
-                            </h5>
-                          </div>
-                        </li>
-                        <li className="pb-30">
-                          <div className="category-list">
-                            <img src="../assets/svg/1/pet.svg" className="blur-up lazyload" alt="" />
-                            <h5>
-                              <a href="shop-left-sidebar.html">Pet Foods</a>
-                            </h5>
-                          </div>
-                        </li>
-                      </ul>
-
-                      <ul className="value-list">
-                        <li>
-                          <div className="category-list">
-                            <h5 className="ms-0 text-title">
-                              <a href="shop-left-sidebar.html">Value of the Day</a>
-                            </h5>
-                          </div>
-                        </li>
-                        <li>
-                          <div className="category-list">
-                            <h5 className="ms-0 text-title">
-                              <a href="shop-left-sidebar.html">Top 50 Offers</a>
-                            </h5>
-                          </div>
-                        </li>
-                        <li className="mb-0">
-                          <div className="category-list">
-                            <h5 className="ms-0 text-title">
-                              <a href="shop-left-sidebar.html">New Arrivals</a>
-                            </h5>
-                          </div>
-                        </li>
+                        {categories.map((category) => (
+                          <li key={category.categoryID} className={categories.length - 1 ? "pb-30" : ""}>
+                            <div className="category-list">
+                              <img
+                                src={`../assets/svg/1/vegetable.svg`}
+                                className="blur-up lazyload"
+                                alt={category.categoryName}
+                              />
+                              <h5 style={{ fontSize: "18px" }}>
+                                <Link to={`/category?cate=${category.categoryID}`}>{category.categoryName}</Link>
+                              </h5>
+                            </div>
+                          </li>
+                        ))}
                       </ul>
                     </div>
+                    {/* Hết filter category */}
+
+                    {/* Hết filter category */}
 
                     <div className="ratio_156 section-t-space">
                       <div className="home-contain hover-effect">
@@ -1434,11 +1359,7 @@ const HomePage = () => {
 
                     <div className="ratio_medium section-t-space">
                       <div className="home-contain hover-effect">
-                        <img
-                          src="11.jpg"
-                          className="img-fluid blur-up lazyload"
-                          alt=""
-                        />
+                        <img src="11.jpg" className="img-fluid blur-up lazyload" alt="" />
                         <div className="home-detail p-top-left home-p-medium">
                           <div>
                             <h4 className="text-yellow text-exo home-banner">Organic</h4>
@@ -1614,21 +1535,21 @@ const HomePage = () => {
                             <li>
                               <div className="counter">
                                 <div className="hours">
-                                  <h6>{timeObj.hours.toString().padStart(2, '0')}h</h6>
+                                  <h6>{timeObj.hours.toString().padStart(2, "0")}h</h6>
                                 </div>
                               </div>
                             </li>
                             <li>
                               <div className="counter">
                                 <div className="minutes">
-                                  <h6>{timeObj.minutes.toString().padStart(2, '0')}m</h6>
+                                  <h6>{timeObj.minutes.toString().padStart(2, "0")}m</h6>
                                 </div>
                               </div>
                             </li>
                             <li>
                               <div className="counter">
                                 <div className="seconds">
-                                  <h6>{timeObj.seconds.toString().padStart(2, '0')}s</h6>
+                                  <h6>{timeObj.seconds.toString().padStart(2, "0")}s</h6>
                                 </div>
                               </div>
                             </li>
@@ -1639,11 +1560,7 @@ const HomePage = () => {
                   </div>
 
                   <div className="section-b-space">
-                    <ProductSlider
-                      products={saveProduct}
-                      handleViewProduct={handleViewProduct}
-                      userId={userId}
-                    />
+                    <ProductSlider products={saveProduct} handleViewProduct={handleViewProduct} userId={userId} />
                   </div>
 
                   <div className="title">
@@ -1725,11 +1642,7 @@ const HomePage = () => {
                     <div className="row g-md-4 g-3">
                       <div className="col-md-6">
                         <div className="banner-contain hover-effect">
-                          <img
-                            src="9.jpg"
-                            className="bg-img blur-up lazyload"
-                            alt=""
-                          />
+                          <img src="9.jpg" className="bg-img blur-up lazyload" alt="" />
                           <div className="banner-details p-center-left p-4">
                             <div>
                               <h3 className="text-exo">50% offer</h3>
@@ -1748,11 +1661,7 @@ const HomePage = () => {
                       </div>
                       <div className="col-md-6">
                         <div className="banner-contain hover-effect">
-                          <img
-                            src="10.jpg"
-                            className="bg-img blur-up lazyload"
-                            alt=""
-                          />
+                          <img src="10.jpg" className="bg-img blur-up lazyload" alt="" />
                           <div className="banner-details p-center-left p-4">
                             <div>
                               <h3 className="text-exo">50% offer</h3>
@@ -1798,10 +1707,13 @@ const HomePage = () => {
                                 </a>
                                 <ul className="product-option">
                                   <li data-bs-toggle="tooltip" data-bs-placement="top" title="View">
-                                    <a href="#" onClick={(e) => {
-                                      e.preventDefault();
-                                      handleViewProduct(saveProduct?.[12]);
-                                    }}>
+                                    <a
+                                      href="#"
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        handleViewProduct(saveProduct?.[12]);
+                                      }}
+                                    >
                                       <i data-feather="eye"></i>
                                     </a>
                                   </li>
@@ -2369,11 +2281,7 @@ const HomePage = () => {
                     <div className="row g-md-4 g-3">
                       <div className="col-xxl-8 col-xl-12 col-md-7">
                         <div className="banner-contain hover-effect">
-                          <img
-                            src="12.jpg"
-                            className="bg-img blur-up lazyload"
-                            alt=""
-                          />
+                          <img src="12.jpg" className="bg-img blur-up lazyload" alt="" />
                           <div className="banner-details p-center-left p-4">
                             <div>
                               <h2 className="text-kaushan fw-normal theme-color">Get Ready To</h2>
@@ -2397,11 +2305,7 @@ const HomePage = () => {
 
                       <div className="col-xxl-4 col-xl-12 col-md-5">
                         <a href="shop-left-sidebar.html" className="banner-contain hover-effect h-100">
-                          <img
-                            src="13.jpg"
-                            className="bg-img blur-up lazyload"
-                            alt=""
-                          />
+                          <img src="13.jpg" className="bg-img blur-up lazyload" alt="" />
                           <div className="banner-details p-center-left p-4 h-100">
                             <div>
                               <h2 className="text-kaushan fw-normal text-danger">20% Off</h2>
@@ -2849,7 +2753,6 @@ const HomePage = () => {
           </section>
 
           <div className="modal fade theme-modal view-modal" id="view" tabIndex="-1">
-
             <div className="modal-dialog modal-dialog-centered modal-xl modal-fullscreen-sm-down">
               <div className="modal-content">
                 <div className="modal-header p-0">
@@ -2861,11 +2764,7 @@ const HomePage = () => {
                   <div className="row g-sm-4 g-2">
                     <div className="col-lg-6">
                       <div className="slider-image">
-                        <img
-                          src={selectedProduct?.imageURL}
-                          className="img-fluid blur-up lazyload"
-                          alt=""
-                        />
+                        <img src={selectedProduct?.imageURL} className="img-fluid blur-up lazyload" alt="" />
                       </div>
                     </div>
 
@@ -2879,11 +2778,21 @@ const HomePage = () => {
 
                         <div className="product-rating">
                           <ul className="rating">
-                            <li><i data-feather="star" className="fill"></i></li>
-                            <li><i data-feather="star" className="fill"></i></li>
-                            <li><i data-feather="star" className="fill"></i></li>
-                            <li><i data-feather="star" className="fill"></i></li>
-                            <li><i data-feather="star"></i></li>
+                            <li>
+                              <i data-feather="star" className="fill"></i>
+                            </li>
+                            <li>
+                              <i data-feather="star" className="fill"></i>
+                            </li>
+                            <li>
+                              <i data-feather="star" className="fill"></i>
+                            </li>
+                            <li>
+                              <i data-feather="star" className="fill"></i>
+                            </li>
+                            <li>
+                              <i data-feather="star"></i>
+                            </li>
                           </ul>
                           <span className="ms-2">8 Reviews</span>
                           <span className="ms-2 text-danger">6 sold in last 16 hours</span>
@@ -2922,7 +2831,6 @@ const HomePage = () => {
                             </div>
                           </li>
                         </ul>
-
 
                         <div className="modal-button">
                           <button
@@ -3080,7 +2988,8 @@ const HomePage = () => {
                                   style: "currency",
                                   currency: "USD",
                                   minimumFractionDigits: 0,
-                                })} <del>${dp.price}</del> <span>-{dp.discountPercent}%</span>
+                                })}{" "}
+                                <del>${dp.price}</del> <span>-{dp.discountPercent}%</span>
                               </h6>
                             </a>
                           </div>
@@ -3103,8 +3012,8 @@ const HomePage = () => {
           </div>
           <div className="bg-overlay"></div>
         </div>
-      </div >
-    </HomepageLayout >
+      </div>
+    </HomepageLayout>
   );
 };
 
