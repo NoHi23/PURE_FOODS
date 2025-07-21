@@ -12,6 +12,8 @@ public class CartItemDTO {
     private int quantity;
     private float total;
     private String supplierName;
+    private Long userID;
+
 
     // ✅ Constructors
     public CartItemDTO() {
@@ -19,7 +21,7 @@ public class CartItemDTO {
 
     public CartItemDTO(Long cartItemID, Long productID, String productName, String imageURL,
                        float priceAfterDiscount, float originalPrice, float discount,
-                       int quantity, float total, String supplierName) {
+                       int quantity, float total, String supplierName, Long userID) {
         this.cartItemID = cartItemID;
         this.productID = productID;
         this.productName = productName;
@@ -30,7 +32,9 @@ public class CartItemDTO {
         this.quantity = quantity;
         this.total = total;
         this.supplierName = supplierName;
+        this.userID = userID;
     }
+
 
     // ✅ Getters & Setters
     public Long getCartItemID() {
@@ -112,5 +116,14 @@ public class CartItemDTO {
     public void setSupplierName(String supplierName) {
         this.supplierName = supplierName;
     }
+
+    public Long getUserID() {
+        return userID;
+    }
+
+    public void setUserID(Long userID) {
+        this.userID = userID;
+    }
+
 
 }

@@ -10,6 +10,35 @@ export default function Header() {
   const user = JSON.parse(localStorage.getItem("user"));
   const navigate = useNavigate();
   const userId = user?.userId;
+  const [cartItems, setCartItems] = useState([]);
+  const [cartCount, setCartCount] = useState(0);
+
+  const fetchCartItems = () => {
+    if (!userId) return;
+    axios.get(`http://localhost:8082/PureFoods/api/cart/user/${userId}`)
+      .then((res) => {
+        setCartItems(res.data);
+        setCartCount(res.data.length);
+      })
+      .catch((err) => {
+        console.error("Lỗi khi tải giỏ hàng:", err);
+      });
+  };
+
+  useEffect(() => {
+    fetchCartItems();
+  }, [userId]);
+
+  // Lắng nghe sự kiện cartUpdated để tự động cập nhật
+  useEffect(() => {
+    const handleCartUpdate = () => {
+      fetchCartItems();
+    };
+    window.addEventListener("cartUpdated", handleCartUpdate);
+    return () => window.removeEventListener("cartUpdated", handleCartUpdate);
+  }, []);
+
+
 
   const handleLogout = () => {
     localStorage.removeItem("user");
@@ -17,7 +46,7 @@ export default function Header() {
     navigate("/login");
   };
 
-  const cartCount = 0;
+
 
   const [notifications, setNotifications] = useState([]);
   const [history, setHistory] = useState([]);
@@ -101,6 +130,37 @@ export default function Header() {
       console.error("Lỗi xoá wishlist:", error);
     }
   };
+
+  // Định nghĩa trước khi dùng handleRemoveCart
+  const fetchCart = async () => {
+    try {
+      const user = JSON.parse(localStorage.getItem("user"));
+      const userId = user?.userId;
+      if (!userId) return;
+
+      const res = await axios.get(`http://localhost:8082/PureFoods/api/cart/user/${userId}`);
+      setCartItems(res.data); // nhớ khai báo state cartItems
+    } catch (err) {
+      console.error("Lỗi khi lấy giỏ hàng:", err);
+    }
+  };
+
+
+  const handleRemoveCart = async (cartItemID) => {
+    if (!cartItemID) {
+      toast.error("Không tìm thấy cartItemId để xoá");
+      return;
+    }
+
+    try {
+      await axios.delete(`http://localhost:8082/PureFoods/api/cart/delete/${cartItemID}`);
+      await fetchCart(); // gọi lại API để làm mới giỏ hàng
+    } catch (error) {
+      console.error("Lỗi xoá sản phẩm trong giỏ hàng:", error);
+      toast.error("Xoá sản phẩm thất bại");
+    }
+  };
+
 
   return (
     <header className="pb-md-4 pb-0">
@@ -286,57 +346,80 @@ export default function Header() {
 
                         <div className="onhover-div">
                           <ul className="cart-list">
-                            <li className="product-box-contain">
-                              <div className="drop-cart">
-                                <a href="product-left-thumbnail.html" className="drop-image">
-                                  <img src="../assets/images/vegetable/product/1.png"
-                                    className="blur-up lazyload" alt="" />
-                                </a>
-
-                                <div className="drop-contain">
-                                  <a href="product-left-thumbnail.html">
-                                    <h5>Fantasy Crunchy Choco Chip Cookies</h5>
+                            {cartItems.length === 0 ? (
+                              <li className="text-center p-3">Giỏ hàng trống</li>
+                            ) : (
+                              cartItems.map((item) => (
+                                <li
+                                  className="product-box-contain"
+                                  key={item.cartItemId}
+                                  style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}
+                                >
+                                  <a
+                                    href={`/product/${item.productId}`}
+                                    className="drop-image"
+                                    style={{ marginRight: '10px' }}
+                                  >
+                                    <img
+                                      src={item.imageURL && item.imageURL.trim() !== "" ? item.imageURL : "/default.jpg"}
+                                      className="blur-up lazyload"
+                                      alt={item.productName || "Product"}
+                                      style={{
+                                        width: '60px',
+                                        height: '60px',
+                                        objectFit: 'cover',
+                                        borderRadius: '5px',
+                                      }}
+                                      onError={(e) => {
+                                        if (e.target.src !== window.location.origin + "/default.jpg") {
+                                          e.target.onerror = null;
+                                          e.target.src = "/default.jpg";
+                                        }
+                                      }}
+                                    />
                                   </a>
-                                  <h6><span>1 x</span> $80.58</h6>
-                                  <button className="close-button close_button">
+                                  <div className="drop-contain" style={{ flex: 1 }}>
+                                    <a href={`/product/${item.productId}`}>
+                                      <h5 style={{ margin: '0 0 4px 0' }}>{item.productName}</h5>
+                                    </a>
+                                    <h6 style={{ margin: 0 }}>
+                                      <span>{item.quantity} x </span>
+                                      {item.priceAfterDiscount.toLocaleString("en-US", {
+                                        style: "currency",
+                                        currency: "USD",
+                                      })}
+                                    </h6>
+                                  </div>
+                                  <button
+                                    className="wishlist-remove-btn"
+                                    onClick={() => handleRemoveCart(item.cartItemID)}
+                                  >
                                     <i className="fa-solid fa-xmark"></i>
                                   </button>
-                                </div>
-                              </div>
-                            </li>
-
-                            <li className="product-box-contain">
-                              <div className="drop-cart">
-                                <a href="product-left-thumbnail.html" className="drop-image">
-                                  <img src="../assets/images/vegetable/product/2.png"
-                                    className="blur-up lazyload" alt="" />
-                                </a>
-
-                                <div className="drop-contain">
-                                  <a href="product-left-thumbnail.html">
-                                    <h5>Peanut Butter Bite Premium Butter Cookies 600 g
-                                    </h5>
-                                  </a>
-                                  <h6><span>1 x</span> $25.68</h6>
-                                  <button className="close-button close_button">
-                                    <i className="fa-solid fa-xmark"></i>
-                                  </button>
-                                </div>
-                              </div>
-                            </li>
+                                </li>
+                              ))
+                            )}
                           </ul>
 
                           <div className="price-box">
                             <h5>Total :</h5>
-                            <h4 className="theme-color fw-bold">$106.58</h4>
+                            <h4 className="theme-color fw-bold">
+                              {cartItems
+                                .reduce((sum, i) => sum + i.total, 0)
+                                .toLocaleString("en-US", {
+                                  style: "currency",
+                                  currency: "USD",
+                                })}
+                            </h4>
                           </div>
 
                           <div className="button-group">
                             <a href="/cart-detail" className="btn btn-sm cart-button">View Cart</a>
-                            <a href="checkout.html" className="btn btn-sm cart-button theme-bg-color
-                                                    text-white">Checkout</a>
+                            <a href="/checkout" className="btn btn-sm cart-button theme-bg-color text-white">Checkout</a>
                           </div>
                         </div>
+
+
                       </div>
                     </li>
                     <li className="right-side">

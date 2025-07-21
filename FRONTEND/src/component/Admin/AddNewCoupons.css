@@ -1,0 +1,101 @@
+/* AddNewCoupons.css */
+
+.page-wrapper {
+  background-color: #f4f6f9;
+  min-height: 100vh;
+}
+
+.card {
+  background-color: #ffffff;
+  border-radius: 8px;
+  border: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.card-header {
+  background-color: #007bff;
+  color: white;
+  padding: 16px;
+  border-bottom: 1px solid #e0e0e0;
+  border-radius: 8px 8px 0 0;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.card-body {
+  padding: 24px;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.form-label {
+  font-weight: 600;
+  color: #333;
+}
+
+.form-control,
+.form-select {
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  padding: 10px;
+  transition: border-color 0.3s;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2);
+}
+
+.btn-animation {
+  background-color: #007bff;
+  border-color: #007bff;
+  padding: 8px 20px;
+  font-weight: 600;
+  transition: background-color 0.2s ease;
+}
+
+.btn-animation:hover {
+  background-color: #0056b3;
+  border-color: #0056b3;
+}
+
+/* Added styles for missing classes */
+.card-submit-button {
+  text-align: right;
+  margin-top: 20px;
+}
+
+.theme-form.theme-form-2.mega-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.mb-4.row.align-items-center {
+  margin-bottom: 0;
+}
+
+@media (max-width: 768px) {
+  .card-body {
+    padding: 16px;
+  }
+
+  .theme-form.theme-form-2.mega-form .col-sm-3,
+  .theme-form.theme-form-2.mega-form .col-sm-9 {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+}
+
+/* Footer styles */
+.footer {
+  margin-top: 40px;
+  padding: 10px 0;
+  text-align: center;
+  font-size: 14px;
+  color: #666;
+}
+
+.footer-copyright {
+  border-top: 1px solid #ddd;
+  padding-top: 10px;
+}

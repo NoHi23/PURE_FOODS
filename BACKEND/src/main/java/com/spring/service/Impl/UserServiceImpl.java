@@ -358,4 +358,15 @@ public class UserServiceImpl implements UserService {
         dto.setLastLogin(user.getLastLogin());
         return dto;
     }
+
+    @Override
+    public boolean verifyPassword(int userId, String inputPassword) {
+        User user = userDAO.getUserById(userId);
+        if (user == null) return false;
+
+        // Nếu dùng BCrypt, hãy dùng passwordEncoder.matches()
+        return user.getPassword().equals(inputPassword); // So sánh mật khẩu thô
+    }
+
+
 }
