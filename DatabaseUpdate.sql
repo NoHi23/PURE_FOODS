@@ -90,3 +90,49 @@ INSERT INTO Blogs (Title, Content, UserID, Status)
 VALUES
 (N'Healthy Eating Tips', N'Explore the benefits of organic foods and tips for a balanced diet.', 1, 1),
 (N'Farm-to-Table Benefits', N'Learn how farm-to-table practices enhance food quality.', 1, 1);
+<<<<<<< HEAD
+=======
+
+CREATE TABLE TraderProductMapping (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    traderProductId INT NOT NULL,
+    productId INT NOT NULL,
+    userId INT NOT NULL,
+
+    FOREIGN KEY (traderProductId) REFERENCES TraderProducts(traderProductId) ON DELETE CASCADE,
+    FOREIGN KEY (productId) REFERENCES Products(productId) ON DELETE CASCADE,
+    FOREIGN KEY (userId) REFERENCES Users(userId)
+);
+CREATE TABLE TraderProducts (
+    traderProductId INT IDENTITY(1,1) PRIMARY KEY,
+    userId INT NOT NULL, -- Foreign key đến bảng Users
+    productName NVARCHAR(255) NOT NULL,
+    price DECIMAL(18, 2) NOT NULL,
+    initialStockQuantity INT NOT NULL,
+    currentStockQuantity INT NOT NULL,
+    warehouseLocation NVARCHAR(255),
+    status INT DEFAULT 1, -- 1: active, 0: inactive
+    createdAt DATETIME DEFAULT GETDATE(),
+    lastUpdated DATETIME DEFAULT GETDATE(),
+    imageURL NVARCHAR(MAX),
+
+    FOREIGN KEY (userId) REFERENCES Users(userId)
+);
+INSERT INTO TraderProducts (
+    userId,
+    productName,
+    price,
+    initialStockQuantity,
+    currentStockQuantity,
+    warehouseLocation,
+    status,
+    createdAt,
+    lastUpdated,
+    imageURL
+
+
+) VALUES 
+(3, N'Cà chua hữu cơ', 15000, 100, 100, N'Kho A1', 1, GETDATE(), GETDATE(), N'https://example.com/tomato.jpg'),
+(3, N'Dưa leo sạch', 12000, 80, 80, N'Kho B2', 1, GETDATE(), GETDATE(), N'https://example.com/cucumber.jpg'),
+(3, N'Rau cải ngọt', 10000, 150, 150, N'Kho C3', 1, GETDATE(), GETDATE(), N'https://example.com/lettuce.jpg');
+>>>>>>> 16424c2c0b6d64b623203c3a855f82a8118257c6
