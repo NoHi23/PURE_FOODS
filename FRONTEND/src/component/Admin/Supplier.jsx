@@ -169,8 +169,7 @@ const Supplier = () => {
                             <th>Phone</th>
                             <th>Email</th>
                             <th>Organic Cert</th>
-                            <th>Expiry</th>
-                            <th>Status</th>
+                            <th>Expiry</th>                           
                             <th>Actions</th>
                           </tr>
                         </thead>
@@ -183,8 +182,7 @@ const Supplier = () => {
                               <td>{s.phone}</td>
                               <td>{s.email}</td>
                               <td>{s.organicCertification}</td>
-                              <td>{s.certificationExpiry ? new Date(s.certificationExpiry).toLocaleDateString('en-CA') : 'N/A'}</td>
-                              <td className={s.status === 1 ? "status-success" : "status-danger"}>{s.status === 1 ? "Active" : "Inactive"}</td>
+                              <td>{s.certificationExpiry ? new Date(s.certificationExpiry).toLocaleDateString('en-CA') : 'N/A'}</td>                            
                               <td>
                                 <ul className="table-action-icons">
                                   <li>
@@ -227,8 +225,7 @@ const Supplier = () => {
                                 <p><strong>Phone:</strong> {selectedSupplier.phone}</p>
                                 <p><strong>Email:</strong> {selectedSupplier.email}</p>
                                 <p><strong>Organic Cert:</strong> {selectedSupplier.organicCertification}</p>
-                                <p><strong>Expiry:</strong> {selectedSupplier.certificationExpiry ? new Date(selectedSupplier.certificationExpiry).toLocaleDateString('en-CA') : 'N/A'}</p>
-                                <p><strong>Status:</strong> {selectedSupplier.status === 1 ? 'Active' : 'Inactive'}</p>
+                                <p><strong>Expiry:</strong> {selectedSupplier.certificationExpiry ? new Date(selectedSupplier.certificationExpiry).toLocaleDateString('en-CA') : 'N/A'}</p>                               
                               </>
                             )}
                           </div>
@@ -251,11 +248,7 @@ const Supplier = () => {
                               <input type="text" className="form-control mb-2" placeholder="Phone" name="phone" value={editSupplier.phone} onChange={handleInputChange} />
                               <input type="email" className="form-control mb-2" placeholder="Email" name="email" value={editSupplier.email} onChange={handleInputChange} />
                               <input type="text" className="form-control mb-2" placeholder="Organic Cert" name="organicCertification" value={editSupplier.organicCertification} onChange={handleInputChange} />
-                              <input type="date" className="form-control mb-2" name="certificationExpiry" value={editSupplier.certificationExpiry} onChange={handleInputChange} />
-                              <select className="form-control mb-2" name="status" value={editSupplier.status} onChange={handleInputChange}>
-                                <option value={1}>Active</option>
-                                <option value={0}>Inactive</option>
-                              </select>
+                              <input type="date" className="form-control mb-2" name="certificationExpiry" value={editSupplier.certificationExpiry} onChange={handleInputChange} />                     
                             </form>
                           </div>
                           <div className="modal-footer">

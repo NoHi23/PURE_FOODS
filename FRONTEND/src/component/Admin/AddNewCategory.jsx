@@ -103,15 +103,6 @@ const AddNewCategory = () => {
                           /> Yes
                         </div>
                       </div>
-                      <div className="mb-4 row align-items-center">
-                        <label className="form-label-title col-sm-3 mb-0">Status</label>
-                        <div className="col-sm-9">
-                          <select className="form-select" name="status" value={form.status} onChange={handleChange}>
-                            <option value={1}>Active</option>
-                            <option value={0}>Inactive</option>
-                          </select>
-                        </div>
-                      </div>
                       <div className="card-submit-button">
                         <button className="btn btn-animation ms-auto" type="submit">Submit</button>
                       </div>

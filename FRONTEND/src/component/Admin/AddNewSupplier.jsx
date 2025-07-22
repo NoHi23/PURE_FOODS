@@ -105,20 +105,7 @@ const AddNewSupplier = () => {
                         <input type="date" className="form-control" name="certificationExpiry" value={form.certificationExpiry} onChange={handleChange} />
                       </div>
 
-                      <div className="mb-4 row align-items-center">
-                        <label className="col-sm-3 col-form-label form-label-title">Status</label>
-                        <div className="col-sm-9">
-                          <label className="switch">
-                            <input
-                              type="checkbox"
-                              name="status"
-                              checked={form.status === 1}
-                              onChange={handleCheckboxChange}
-                            />
-                            <span className="switch-state"></span>
-                          </label>
-                        </div>
-                      </div>
+                      
 
                       <div className="card-submit-button">
                         <button className="btn btn-primary" type="submit">Lưu</button>
