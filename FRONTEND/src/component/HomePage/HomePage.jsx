@@ -35,22 +35,40 @@ const HomePage = () => {
   const [quantity, setQuantity] = useState(1);
   const navigate = useNavigate();
 
-  const handleAddToCart = (product) => {
+  const handleAddToCart = async (product) => {
     if (!userId) {
       toast.error('Vui lòng đăng nhập');
       return;
     }
 
-    // Nếu đang mở modal => đóng trước
-    const modalEl = document.getElementById('view');
-    if (modalEl && bootstrap.Modal.getInstance(modalEl)) {
-      bootstrap.Modal.getInstance(modalEl).hide();
+    if (quantity <= 0) {
+      toast.error("Số lượng phải lớn hơn 0");
+      return;
     }
 
+    // Kiểm tra số lượng trong giỏ hàng hiện tại
+    try {
+      const res = await axios.get(`http://localhost:8082/PureFoods/api/cart/user/${userId}`);
+      const cartItems = res.data;
+
+      const existingItem = cartItems.find((item) => item.productID === product.productId);
+      const currentQuantityInCart = existingItem ? existingItem.quantity : 0;
+
+      if (currentQuantityInCart + quantity > product.stockQuantity) {
+        toast.error(`Chỉ còn ${product.stockQuantity - currentQuantityInCart} sản phẩm trong kho`);
+        return;
+      }
+    } catch (err) {
+      console.error("❌ Lỗi khi kiểm tra giỏ hàng:", err);
+      toast.error("Không thể kiểm tra số lượng trong kho");
+      return;
+    }
+
+    // Tiếp tục thêm vào giỏ hàng nếu đủ stock
     const cartItem = {
       userID: userId,
       productID: product.productId,
-      quantity,
+      quantity: quantity,
       priceAfterDiscount: product.salePrice,
       total: product.salePrice * quantity,
       imageURL: product.imageURL,
@@ -59,17 +77,17 @@ const HomePage = () => {
       discount: product.discountPercent
     };
 
-    axios.post('http://localhost:8082/PureFoods/api/cart/create', cartItem)
-      .then(() => {
-        toast.success('Đã thêm vào giỏ hàng');
-        window.dispatchEvent(new Event('cartUpdated'));
-        navigate(`/cart-detail`, { state: { fromAddToCart: true } });
-      })
-      .catch((err) => {
-        console.error("❌ Lỗi khi thêm vào giỏ hàng:", err.response?.data || err.message);
-        toast.error('Thêm vào giỏ thất bại');
-      });
+    try {
+      await axios.post('http://localhost:8082/PureFoods/api/cart/create', cartItem);
+      toast.success('Đã thêm vào giỏ hàng');
+      window.dispatchEvent(new Event('cartUpdated'));
+      navigate(`/cart-detail`, { state: { fromAddToCart: true } });
+    } catch (err) {
+      console.error("❌ Lỗi khi thêm vào giỏ hàng:", err.response?.data || err.message);
+      toast.error('Thêm vào giỏ thất bại');
+    }
   };
+
 
 
   useEffect(() => {
@@ -3017,7 +3035,7 @@ const HomePage = () => {
                             </div>
                           </li>
                         </ul>
-                        
+
 
                         <div className="modal-button">
                           <button

@@ -399,9 +399,8 @@ export default function Header() {
                             </h4>
                           </div>
 
-                          <div className="button-group">
+                          <div className="button-group justify-content-center">
                             <a href="/cart-detail" className="btn btn-sm cart-button">View Cart</a>
-                            <a href="/checkout" className="btn btn-sm cart-button theme-bg-color text-white">Checkout</a>
                           </div>
                         </div>
 

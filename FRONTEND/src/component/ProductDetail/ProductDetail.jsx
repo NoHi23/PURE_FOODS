@@ -23,41 +23,53 @@ const ProductDetail = () => {
 
   const navigate = useNavigate();
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (!userId || !products) {
       toast.error('Vui lòng đăng nhập');
       return;
     }
 
-    const cartItem = {
-      userID: userId,
-      productID: products.productId,
-      quantity: quantity,
-      priceAfterDiscount: products.salePrice,
-      total: products.salePrice * quantity,
-      imageURL: products.imageURL,
-      productName: products.productName,
-      originalPrice: products.price,
-      discount: products.discountPercent
-    };
-
-    console.log("🛒 Gửi dữ liệu add to cart:", cartItem);
-
-    if (!userId || !products.productId) {
-      toast.error("Thiếu thông tin giỏ hàng!");
+    if (quantity <= 0) {
+      toast.error("Số lượng phải lớn hơn 0!");
       return;
     }
 
-    axios.post('http://localhost:8082/PureFoods/api/cart/create', cartItem)
-      .then(() => {
-        toast.success('Đã thêm vào giỏ hàng');
-        window.dispatchEvent(new Event('cartUpdated'));
-        navigate(`/cart-detail`, { state: { fromAddToCart: true } });
-      })
-      .catch((err) => {
-        console.error("❌ Lỗi khi thêm vào giỏ hàng:", err.response?.data || err.message);
-        toast.error('Thêm vào giỏ thất bại');
-      });
+    try {
+      //  Kiểm tra số lượng sản phẩm hiện tại trong giỏ hàng
+      const res = await axios.get(`http://localhost:8082/PureFoods/api/cart/user/${userId}`);
+      const cartItems = res.data;
+
+      const existingItem = cartItems.find(item => item.productID === products.productId);
+      const currentQtyInCart = existingItem ? existingItem.quantity : 0;
+      const totalAfterAdd = currentQtyInCart + quantity;
+
+      if (totalAfterAdd > products.stockQuantity) {
+        toast.error(`Chỉ còn ${products.stockQuantity - currentQtyInCart} sản phẩm trong kho`);
+        return;
+      }
+
+      //  Gửi API tạo cart item
+      const cartItem = {
+        userID: userId,
+        productID: products.productId,
+        quantity: quantity,
+        priceAfterDiscount: products.salePrice,
+        total: products.salePrice * quantity,
+        imageURL: products.imageURL,
+        productName: products.productName,
+        originalPrice: products.price,
+        discount: products.discountPercent
+      };
+
+      await axios.post('http://localhost:8082/PureFoods/api/cart/create', cartItem);
+      toast.success('Đã thêm vào giỏ hàng');
+      window.dispatchEvent(new Event('cartUpdated'));
+      navigate(`/cart-detail`, { state: { fromAddToCart: true } });
+
+    } catch (err) {
+      console.error("❌ Lỗi khi thêm vào giỏ hàng:", err.response?.data || err.message);
+      toast.error('Thêm vào giỏ thất bại');
+    }
   };
 
 
@@ -66,6 +78,12 @@ const ProductDetail = () => {
       setQuantity(1);
     }
   }, [quantity]);
+
+
+  useEffect(() => {
+    window.scrollTo(0, 0); // Scroll lên đầu
+    document.body.style.overflow = 'auto'; // Cho phép cuộn lại nếu bị khoá
+  }, []);
 
 
 

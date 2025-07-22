@@ -3,6 +3,7 @@ import axios from 'axios';
 import './CartDetail.css';
 import { useParams, useLocation } from 'react-router-dom';
 import CartLayout from '../../layouts/CartLayout';
+import { toast } from 'react-toastify';
 
 const CartDetail = () => {
   const location = useLocation();
@@ -13,6 +14,12 @@ const CartDetail = () => {
   const [couponCode, setCouponCode] = useState('');
   const [couponDiscount, setCouponDiscount] = useState(0);
   const [shippingFee] = useState(6.9); // USD
+
+  useEffect(() => {
+    window.scrollTo(0, 0); // Scroll lên đầu
+    document.body.style.overflow = 'auto'; // Cho phép cuộn lại nếu bị khoá
+  }, []);
+
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -37,16 +44,26 @@ const CartDetail = () => {
 
   const handleQuantityChange = (item, delta) => {
     const newQty = item.quantity + delta;
+
+    //  Nếu nhỏ hơn 1 → không cho giảm tiếp
     if (newQty < 1) return;
+
+    //  Nếu vượt quá stock → cảnh báo và dừng lại
+    if (newQty > item.stock) {
+      toast.warning(`Chỉ còn ${item.stock} sản phẩm trong kho`, { position: 'top-center' });
+      return;
+    }
+
     const updatedItem = {
       ...item,
       quantity: newQty,
       total: newQty * item.priceAfterDiscount
     };
+
     axios.put(`http://localhost:8082/PureFoods/api/cart/update/${item.cartItemID}`, updatedItem)
       .then(() => {
         fetchCart();
-        window.dispatchEvent(new Event("cartUpdated")); // Thêm dòng này
+        window.dispatchEvent(new Event("cartUpdated"));
       })
       .catch(err => console.error(err));
   };
