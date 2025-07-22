@@ -39,21 +39,25 @@ const CartDetail = () => {
   const handleQuantityChange = (item, delta) => {
     const newQty = item.quantity + delta;
     if (newQty < 1) return;
-
     const updatedItem = {
       ...item,
       quantity: newQty,
       total: newQty * item.priceAfterDiscount
     };
-
     axios.put(`http://localhost:8082/PureFoods/api/cart/update/${item.cartItemID}`, updatedItem)
-      .then(() => fetchCart())
+      .then(() => {
+        fetchCart();
+        window.dispatchEvent(new Event("cartUpdated")); // Thêm dòng này
+      })
       .catch(err => console.error(err));
   };
 
   const handleRemove = (cartItemID) => {
     axios.delete(`http://localhost:8082/PureFoods/api/cart/delete/${cartItemID}`)
-      .then(() => fetchCart())
+      .then(() => {
+        fetchCart();
+        window.dispatchEvent(new Event("cartUpdated")); //  Thêm dòng này
+      })
       .catch(err => console.error(err));
   };
 

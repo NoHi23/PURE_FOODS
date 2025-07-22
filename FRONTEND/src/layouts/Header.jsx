@@ -131,20 +131,6 @@ export default function Header() {
     }
   };
 
-  // Định nghĩa trước khi dùng handleRemoveCart
-  const fetchCart = async () => {
-    try {
-      const user = JSON.parse(localStorage.getItem("user"));
-      const userId = user?.userId;
-      if (!userId) return;
-
-      const res = await axios.get(`http://localhost:8082/PureFoods/api/cart/user/${userId}`);
-      setCartItems(res.data); // nhớ khai báo state cartItems
-    } catch (err) {
-      console.error("Lỗi khi lấy giỏ hàng:", err);
-    }
-  };
-
 
   const handleRemoveCart = async (cartItemID) => {
     if (!cartItemID) {
@@ -154,7 +140,7 @@ export default function Header() {
 
     try {
       await axios.delete(`http://localhost:8082/PureFoods/api/cart/delete/${cartItemID}`);
-      await fetchCart(); // gọi lại API để làm mới giỏ hàng
+      await fetchCartItems(); //  gọi lại để cập nhật
     } catch (error) {
       console.error("Lỗi xoá sản phẩm trong giỏ hàng:", error);
       toast.error("Xoá sản phẩm thất bại");
