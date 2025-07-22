@@ -64,7 +64,7 @@ const ProductDetail = () => {
       await axios.post('http://localhost:8082/PureFoods/api/cart/create', cartItem);
       toast.success('Đã thêm vào giỏ hàng');
       window.dispatchEvent(new Event('cartUpdated'));
-      navigate(`/cart-detail`, { state: { fromAddToCart: true } });
+      //navigate(`/cart-detail`, { state: { fromAddToCart: true } });
 
     } catch (err) {
       console.error("❌ Lỗi khi thêm vào giỏ hàng:", err.response?.data || err.message);

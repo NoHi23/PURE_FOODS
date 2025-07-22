@@ -50,7 +50,7 @@ const CartDetail = () => {
 
     //  Nếu vượt quá stock → cảnh báo và dừng lại
     if (newQty > item.stock) {
-      toast.warning(`Chỉ còn ${item.stock} sản phẩm trong kho`, { position: 'top-center' });
+      toast.warning(`Chỉ có ${item.stock} sản phẩm trong kho`, { position: 'top-center' });
       return;
     }
 
