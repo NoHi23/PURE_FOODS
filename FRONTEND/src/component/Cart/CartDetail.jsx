@@ -1,4 +1,3 @@
-// ... imports như cũ
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import './CartDetail.css';
@@ -150,9 +149,14 @@ const CartDetail = () => {
                               </h5>
                             </td>
                             <td>
-                              <button className="btn btn-sm btn-outline-danger" onClick={() => handleRemove(item.cartItemID)}>
-                                Remove
-                              </button>
+                              <div className="d-flex justify-content-center">
+                                <button
+                                  className="btn btn-sm btn-outline-danger"
+                                  onClick={() => handleRemove(item.cartItemID)}
+                                >
+                                  Remove
+                                </button>
+                              </div>
                             </td>
                           </tr>
                         ))}
