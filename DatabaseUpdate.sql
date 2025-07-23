@@ -191,3 +191,7 @@ VALUES
 (N'Fish Food Flakes', 6, 4, 90.00, 140, N'Thức ăn dạng vảy cho cá cảnh.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSTiYb9bk3ha1bDi9Gt-7leiOxcNgVHK59gDA&s', 1, GETDATE(), 1, NULL),
 (N'Cat Milk Substitute', 6, 5, 130.00, 120, N'Sữa thay thế cho mèo con.', 'https://www.puprise.com/wp-content/uploads/2019/08/Himalaya-Healthy-Pet-Food-Meat-Rice-Dog-Food.jpg', 1, GETDATE(), 1, NULL),
 (N'Pet Dental Chews', 6, 6, 140.00, 110, N'Xương gặm làm sạch răng thú cưng.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ-JGf9yOlz4RVkvXrc641zEGlJIgq9LF7ihw&s', 1, GETDATE(), 1, NULL);
+
+INSERT INTO [CleanFoodShop].[dbo].[Users] 
+	(FullName, Email, Password, RoleID, Phone, Address, Status, reset_token, token_expiry, last_login) 
+VALUES ('Admin Test', 'admin1@gmail.com', 'admin', 1, 0123456789, 'FPT Campus Hoa Lac', 0, NULL, NULL, NULL);

@@ -4,6 +4,7 @@ import { Star } from "react-feather";
 import { Range } from "react-range";
 import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
+import Swal from "sweetalert2";
 import { usePriceFilter } from "./PriceFilterContext";
 
 const FiltersLeftCategory = () => {
@@ -65,7 +66,14 @@ const FiltersLeftCategory = () => {
 
     if (updated.includes(categoryId)) {
       if (updated.length === 1) {
-        toast.error("Bạn phải chọn ít nhất 1 danh mục! Không thể bỏ chọn danh mục duy nhất.");
+        Swal.fire({
+          icon: "warning",
+          title: "Không thể bỏ chọn",
+          text: "Bạn phải chọn ít nhất 1 danh mục. Không thể bỏ chọn danh duy nhất.",
+          timer: 1500,
+          timerProgressBar: true,
+          showConfirmButton: true,
+        });
         return;
       }
       updated = updated.filter((id) => id !== categoryId);
@@ -79,6 +87,43 @@ const FiltersLeftCategory = () => {
     searchParams.set("cate", updated.join(","));
     searchParams.set("page", 1);
     navigate(`/category?${searchParams.toString()}`);
+  };
+
+  const handleSelectAllCategories = () => {
+    const allIds = categories.map((c) => c.categoryID);
+    const isAllSelected = allIds.every((id) => selectedCategories.includes(id));
+
+    if (isAllSelected) {
+      Swal.fire({
+        icon: "success",
+        title: "Đặt lại thành công",
+        text: "Đã đặt lại danh mục về mặc định.",
+        timer: 1500,
+        timerProgressBar: true,
+        showConfirmButton: true,
+      });
+
+      setSelectedCategories([1]);
+      const searchParams = new URLSearchParams(location.search);
+      searchParams.set("cate", "1");
+      searchParams.set("page", 1);
+      navigate(`/category?${searchParams.toString()}`);
+    } else {
+      Swal.fire({
+        icon: "success",
+        title: "Đã chon tất cả danh mục",
+        text: "Đã chọn tất cả danh mục, có rất nhiều sản phẩm thú vị. Hãy khám pha ngay!",
+        timer: 2000,
+        timerProgressBar: true,
+        showConfirmButton: true,
+      });
+
+      setSelectedCategories(allIds);
+      const searchParams = new URLSearchParams(location.search);
+      searchParams.set("cate", allIds.join(","));
+      searchParams.set("page", 1);
+      navigate(`/category?${searchParams.toString()}`);
+    }
   };
 
   const toggleSection = (sectionId) => {
@@ -97,25 +142,31 @@ const FiltersLeftCategory = () => {
       id: "categories",
       title: "Categories",
       content: (
-        <ul className="category-list custom-padding custom-height">
-          {categories.map((category) => (
-            <li key={category.categoryID}>
-              <div className="form-check ps-0 m-0 category-list-box d-flex align-items-center gap-2">
-                <input
-                  type="checkbox"
-                  className="checkbox_animated"
-                  checked={selectedCategories.includes(category.categoryID)}
-                  onChange={() => handleCategoryChange(category.categoryID)}
-                  id={`cat-${category.categoryID}`}
-                />
-                <label className="form-check-label mb-0" htmlFor={`cat-${category.categoryID}`}>
-                  <span className="name">{category.categoryName}</span>{" "}
-                  <span className="number">({category.productCount})</span>
-                </label>
-              </div>
-            </li>
-          ))}
-        </ul>
+        <>
+          <button className="btn btn-sm btn-primary mb-2" onClick={handleSelectAllCategories}>
+            {selectedCategories.length === categories.length ? "Set At Default" : "Select All Categories"}
+          </button>
+
+          <ul className="category-list custom-padding custom-height">
+            {categories.map((category) => (
+              <li key={category.categoryID}>
+                <div className="form-check ps-0 m-0 category-list-box d-flex align-items-center gap-2">
+                  <input
+                    type="checkbox"
+                    className="checkbox_animated"
+                    checked={selectedCategories.includes(category.categoryID)}
+                    onChange={() => handleCategoryChange(category.categoryID)}
+                    id={`cat-${category.categoryID}`}
+                  />
+                  <label className="form-check-label mb-0" htmlFor={`cat-${category.categoryID}`}>
+                    <span className="name">{category.categoryName}</span>{" "}
+                    <span className="number">({category.productCount})</span>
+                  </label>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </>
       ),
     },
     {
