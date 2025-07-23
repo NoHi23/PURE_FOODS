@@ -42480,6 +42480,12 @@ body.rtl .menu-label {
   color: #f59e0b; /* vàng tươi */
 }
 
+.order-table tbody tr td label.returned {
+  background-color: rgba(139, 92, 246, 0.1); /* tím nhạt pastel */
+  color: #8b5cf6; /* tím trung tính */
+}
+
+
 .order-table tbody tr td:first-child {
   font-weight: 600
 }
