@@ -10,5 +10,6 @@ public interface CartItemDAO {
     CartItem updateCartItem(CartItem cartItem);
     void deleteCartItem(Long id);
     CartItem findByUserAndProduct(Long userId, Long productId);
+    void deleteByUserId(int userId);
 
 }

@@ -13,6 +13,7 @@ public class OrderDetail {
     @Column(name = "OrderID" )
     private int orderID;
 
+
     @Column(name = "ProductID" )
     private int productID;
 
@@ -63,5 +64,7 @@ public class OrderDetail {
     public void setStatus(int status) {
         this.status = status;
     }
+
+
 
 }

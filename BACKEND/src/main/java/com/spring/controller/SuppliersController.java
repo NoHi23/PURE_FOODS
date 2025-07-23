@@ -3,6 +3,7 @@ package com.spring.controller;
 
 import com.spring.dto.CategoryDTO;
 import com.spring.dto.SuppliersDTO;
+import com.spring.entity.Suppliers;
 import com.spring.service.SuppliersService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -91,6 +92,16 @@ public class SuppliersController {
             errorResponse.put("message", e.getMessage());
             errorResponse.put("status", 400);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        }
+    }
+
+    @GetMapping("/searchByName")
+    public ResponseEntity<Suppliers> getSupplierByName(@RequestParam("name")  String name) {
+        Suppliers supplier = suppliersService.findByName(name);
+        if (supplier != null) {
+            return ResponseEntity.ok(supplier);
+        } else {
+            return ResponseEntity.notFound().build();
         }
     }
 }

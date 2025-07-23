@@ -1,6 +1,7 @@
 package com.spring.service;
 
 import com.spring.dto.SuppliersDTO;
+import com.spring.entity.Suppliers;
 
 import java.util.List;
 
@@ -12,5 +13,6 @@ public interface SuppliersService {
     SuppliersDTO updateSupplier(int id, SuppliersDTO dto);
     void deleteSupplier(int id);
     int countSupplier();
-
+    String findNameById(Integer id);
+    Suppliers findByName(String name);
 }

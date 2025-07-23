@@ -1,11 +1,15 @@
 package com.spring.controller;
 
+import com.spring.dao.PromotionDAO;
+import com.spring.dao.UserPromotionDAO;
 import com.spring.dto.PromotionDTO;
 import com.spring.service.PromotionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -70,5 +74,45 @@ public class PromotionController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Map.of("message", "Promotion not found", "status", 404));
         }
+    }
+
+    @GetMapping("/code/{code}")
+    public ResponseEntity<?> getPromotionByCouponCode(@PathVariable("code") String code) {
+        try {
+            PromotionDTO promotionDTO = promotionService.getPromotionByCode(code);
+            return ResponseEntity.ok(Map.of("promotion", promotionDTO, "status", 200));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("message", "Promotion not found", "status", 404));
+        }
+    }
+    @PostMapping("/spin/{userId}")
+    public ResponseEntity<?> spinWheel(@PathVariable("userId") int userId) {
+        try {
+            Map<String, Object> result = promotionService.spinWheel(userId);
+            result.put("status", 200);
+            result.put("alreadySpun", false);
+            return ResponseEntity.ok(result);
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of(
+                            "message", e.getMessage(),
+                            "status", 403,
+                            "alreadySpun", true
+                    ));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of(
+                            "message", "Có lỗi xảy ra khi quay vòng",
+                            "status", 500
+                    ));
+        }
+    }
+    @Autowired
+    private UserPromotionDAO userPromotionDAO;
+    @GetMapping("/spin/check/{userId}")
+    public ResponseEntity<?> checkIfUserSpun(@PathVariable("userId") int userId) {
+        boolean alreadySpun = userPromotionDAO.existsByUserIdAndDate(userId, LocalDate.now());
+        return ResponseEntity.ok(Map.of("alreadySpun", alreadySpun));
     }
 }

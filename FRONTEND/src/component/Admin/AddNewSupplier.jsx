@@ -45,15 +45,63 @@ const AddNewSupplier = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validateForm()) return;
+
     try {
-      await axios.post("http://localhost:8082/PureFoods/api/supplier/create", form);
-      toast.success("Thêm nhà cung cấp thành công!");
-      navigate('/admin-supplier');
+      // Kiểm tra tên nhà cung cấp đã tồn tại chưa
+      const res = await axios.get("http://localhost:8082/PureFoods/api/supplier/searchByName", {
+        params: { name: form.supplierName.trim() }
+      });
+
+      if (res.status === 200) {
+        toast.error("Nhà cung cấp này đã tồn tại!");
+        return;
+      }
     } catch (error) {
-      toast.error("Lỗi khi thêm nhà cung cấp!");
-      console.error(error);
+      if (error.response && error.response.status === 404) {
+        //  Tên chưa tồn tại -> tiếp tục tạo
+        try {
+          await axios.post("http://localhost:8082/PureFoods/api/supplier/create", form);
+          toast.success("Thêm nhà cung cấp thành công!");
+          //navigate('/admin-supplier');
+        } catch (err) {
+          toast.error("Lỗi khi thêm nhà cung cấp!");
+          console.error(err);
+        }
+      } else {
+        toast.error("Lỗi khi kiểm tra tên nhà cung cấp!");
+        console.error(error);
+      }
     }
   };
+
+
+  const validateForm = () => {
+    if (!form.supplierName.trim()) {
+      toast.warn("Tên nhà cung cấp không được để trống!");
+      return false;
+    }
+    if (!form.phone.trim()) {
+      toast.warn("Số điện thoại không được để trống!");
+      return false;
+    }
+    if (!form.email.trim()) {
+      toast.warn("Email không được để trống!");
+      return false;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(form.email)) {
+      toast.warn("Email không đúng định dạng!");
+      return false;
+    }
+    const phoneRegex = /^[0-9]{8,15}$/;
+    if (!phoneRegex.test(form.phone)) {
+      toast.warn("Số điện thoại không hợp lệ!");
+      return false;
+    }
+    return true;
+  };
+
 
   return (
     <div className="page-wrapper compact-wrapper" id="pageWrapper">
@@ -105,20 +153,7 @@ const AddNewSupplier = () => {
                         <input type="date" className="form-control" name="certificationExpiry" value={form.certificationExpiry} onChange={handleChange} />
                       </div>
 
-                      <div className="mb-4 row align-items-center">
-                        <label className="col-sm-3 col-form-label form-label-title">Status</label>
-                        <div className="col-sm-9">
-                          <label className="switch">
-                            <input
-                              type="checkbox"
-                              name="status"
-                              checked={form.status === 1}
-                              onChange={handleCheckboxChange}
-                            />
-                            <span className="switch-state"></span>
-                          </label>
-                        </div>
-                      </div>
+
 
                       <div className="card-submit-button">
                         <button className="btn btn-primary" type="submit">Lưu</button>

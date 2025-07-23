@@ -30,4 +30,10 @@
             dao.markAllUnreadAsReadByUserId(userId);
             return 0;
         }
+
+        @Override
+        @Transactional
+        public void saveNotification(Notifications notification) {
+            dao.save(notification);
+        }
     }

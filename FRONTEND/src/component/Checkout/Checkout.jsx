@@ -63,15 +63,16 @@ const Checkout = () => {
     }
 
     try {
-      const response = await axios.post('http://localhost:8082/PureFoods/api/orders/createOrder', {
-        customerID,
-        totalAmount,
+      const response = await axios.put(`http://localhost:8082/PureFoods/api/orders/updateOrder/${id}`, {
+        customerID: user?.userId,
+        totalAmount: totalAmount, 
         shippingAddress: address,
-        shippingMethodID: shippingMethodID || 1,
+        shippingMethodID: 1, // nếu chỉ có 1 shipping method
         paymentMethod: paymentMethod === 'VNPAY' ? 'VNPAY' : 'COD',
-        statusID: 2,             
+        statusID: 1,
         driverID: 1
       });
+
 
       console.log("Phản hồi từ backend:", response.data);
 
@@ -98,6 +99,36 @@ const Checkout = () => {
       })
       .catch(err => console.error(err));
   }, [id]);
+
+
+  const [orderDetails, setOrderDetails] = useState([]);
+  const [productDetails, setProductDetails] = useState([]);
+  const subtotal = orderDetails.reduce((sum, item) => sum + item.unitPrice, 0);
+  const discount = subtotal - totalAmount;
+
+
+  useEffect(() => {
+    if (!id) return;
+
+    axios.get(`http://localhost:8082/PureFoods/api/order-details/order/${id}`)
+      .then(async res => {
+        const details = res.data;
+        setOrderDetails(details);
+
+        const productPromises = details.map(detail =>
+          axios.get(`http://localhost:8082/PureFoods/api/product/getById/${detail.productID}`)
+            .then(res => ({
+              ...detail,
+              product: res.data
+            }))
+        );
+
+        const results = await Promise.all(productPromises);
+        setProductDetails(results);
+      })
+      .catch(err => console.error("❌ Lỗi khi lấy order detail:", err));
+  }, [id]);
+
 
   return (
     <CheckoutLayout>
@@ -378,9 +409,7 @@ const Checkout = () => {
                               </div>
                             </div>
 
-                            <div className="text-end mt-4">
-                              <button className="btn btn-animation" onClick={handlePlaceOrder}>Đặt hàng</button>
-                            </div>
+
                           </div>
                         </div>
                       </div>
@@ -396,75 +425,35 @@ const Checkout = () => {
                   <div className="summery-header">
                     <h3>Order Summery</h3>
                   </div>
+                  <ul className="summery-contain" >
+                    {productDetails.map((item, idx) => (
 
-                  <ul className="summery-contain">
-                    <li>
-                      <img src="../assets/images/vegetable/product/1.png"
-                        className="img-fluid blur-up lazyloaded checkout-image" alt="" />
-                      <h4>Bell pepper <span>X 1</span></h4>
-                      <h4 className="price">$32.34</h4>
-                    </li>
+                      <li key={idx}>
+                        <img src={item.imageURL}
+                          className="img-fluid blur-up lazyloaded checkout-image" alt="" />
+                        <h4>{item.productName} <span>X {item.quantity}</span></h4>
+                        <h4 className="price">${item.unitPrice}</h4>
+                      </li>
 
-                    <li>
-                      <img src="../assets/images/vegetable/product/2.png"
-                        className="img-fluid blur-up lazyloaded checkout-image" alt="" />
-                      <h4>Eggplant <span>X 3</span></h4>
-                      <h4 className="price">$12.23</h4>
-                    </li>
 
-                    <li>
-                      <img src="../assets/images/vegetable/product/3.png"
-                        className="img-fluid blur-up lazyloaded checkout-image" alt="" />
-                      <h4>Onion <span>X 2</span></h4>
-                      <h4 className="price">$18.27</h4>
-                    </li>
+                    ))}
 
-                    <li>
-                      <img src="../assets/images/vegetable/product/4.png"
-                        className="img-fluid blur-up lazyloaded checkout-image" alt="" />
-                      <h4>Potato <span>X 1</span></h4>
-                      <h4 className="price">$26.90</h4>
-                    </li>
-
-                    <li>
-                      <img src="../assets/images/vegetable/product/5.png"
-                        className="img-fluid blur-up lazyloaded checkout-image" alt="" />
-                      <h4>Baby Chili <span>X 1</span></h4>
-                      <h4 className="price">$19.28</h4>
-                    </li>
-
-                    <li>
-                      <img src="../assets/images/vegetable/product/6.png"
-                        className="img-fluid blur-up lazyloaded checkout-image" alt="" />
-                      <h4>Broccoli <span>X 2</span></h4>
-                      <h4 className="price">$29.69</h4>
-                    </li>
                   </ul>
 
                   <ul className="summery-total">
                     <li>
                       <h4>Subtotal</h4>
-                      <h4 className="price">$111.81</h4>
-                    </li>
-
-                    <li>
-                      <h4>Shipping</h4>
-                      <h4 className="price">$8.90</h4>
-                    </li>
-
-                    <li>
-                      <h4>Tax</h4>
-                      <h4 className="price">$29.498</h4>
+                      <h4 className="price">${subtotal.toFixed(2)}</h4>
                     </li>
 
                     <li>
                       <h4>Coupon/Code</h4>
-                      <h4 className="price">$-23.10</h4>
+                      <h4 className="price">-${(discount > 0 ? discount.toFixed(2) : '0.00')}</h4>
                     </li>
 
                     <li className="list-total">
                       <h4>Total (USD)</h4>
-                      <h4 className="price">$19.28</h4>
+                      <h4 className="price">${totalAmount.toFixed(2)}</h4>
                     </li>
                   </ul>
                 </div>
@@ -489,7 +478,7 @@ const Checkout = () => {
                   </ul>
                 </div>
 
-                <button className="btn theme-bg-color text-white btn-md w-100 mt-4 fw-bold">Place Order</button>
+                <button className="btn theme-bg-color text-white btn-md w-100 mt-4 fw-bold" onClick={handlePlaceOrder}>Place Order</button>
               </div>
             </div>
           </div>

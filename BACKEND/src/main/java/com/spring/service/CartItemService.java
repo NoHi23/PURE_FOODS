@@ -9,5 +9,6 @@ public interface CartItemService {
     CartItemDTO createCartItem(CartItemDTO dto);
     CartItemDTO updateCartItem(Long id, CartItemDTO dto);
     void deleteCartItem(Long id);
+    void clearCartByUserId(int userId);
 
 }

@@ -3,6 +3,7 @@ package com.spring.entity;
 import jakarta.persistence.*;
 
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Table(name = "Orders")
@@ -191,5 +192,6 @@ public class Order {
     public void setPaymentStatus(String paymentStatus) {
         this.paymentStatus = paymentStatus;
     }
+
 }
 

@@ -43,6 +43,11 @@ import AddNewBlog from './component/Admin/AddNewBlog';
 //import CustomerBlog from './component/CustomerBlog';
 //import BlogDetail from './component/BlogDetail';
 import DashboardCategory from './component/ShopLeftSidebar/DashboardCategory';
+import OrderSuccess from './component/OrderSuccess/OrderSuccess';
+import SpinWheelButton from './component/SpinWheelPage/SpinWheelButton';
+import AllProducts from './component/All Products/AllProducts';
+{/*import CustomerBlog from './component/CustomerBlog';
+import BlogDetail from './component/BlogDetail';*/}
 
 function AppContent() {
   const location = useLocation();
@@ -64,7 +69,7 @@ function AppContent() {
 
   const backToTopPaths = [
     '/login', '/signup', '/forgot', '/reset-password', '/verify-otp',
-    '/', '/wishlist'
+    '/', '/wishlist', '/order-success'
   ];
 
   const aiChatPaths = ['/', '/wishlist'];
@@ -73,6 +78,10 @@ function AppContent() {
   const shouldHideFooter = hideFooterPaths.includes(location.pathname);
   const shouldHideBackToTop = backToTopPaths.includes(location.pathname) || isProductDetail || isCheckout;
   const shouldShowAIChat = aiChatPaths.includes(location.pathname) || isProductDetail || isCheckout;
+
+  const spinPaths = ['/', '/wishlist', '/cart-detail'];
+  const shouldShowSpin = spinPaths.includes(location.pathname);
+
 
   return (
     <>
@@ -192,6 +201,12 @@ function AppContent() {
           </PrivateRoute>
         } /> */}
 
+        <Route path="/all-products" element={
+          <PrivateRoute allowedRoles={2}>
+            <AllProducts />
+          </PrivateRoute>
+        } />
+
         <Route path="/cart-detail" element={
           <PrivateRoute allowedRoles={2}>
             <CartDetail />
@@ -215,6 +230,12 @@ function AppContent() {
           </PrivateRoute>
         } />
 
+        <Route path="/order-success/:id" element={
+          <PrivateRoute allowedRoles={2}>
+            <OrderSuccess />
+          </PrivateRoute>
+        } />
+
         <Route path="/importer" element={
           <PrivateRoute allowedRoles={4}>
             <ImporterDashboard />
@@ -229,6 +250,8 @@ function AppContent() {
       {!shouldHideFooter && <Footer />}
       {!shouldHideBackToTop && <BackToTopButton />}
       {shouldShowAIChat && <AIChatWidget />}
+      {shouldShowSpin && <SpinWheelButton />}
+
     </>
   );
 }
@@ -250,6 +273,7 @@ function App() {
           pauseOnHover={false}
           theme="light"
           transition={Bounce}
+          style={{ zIndex: 99999 }}
         />
       </WishlistProvider>
     </BrowserRouter>
