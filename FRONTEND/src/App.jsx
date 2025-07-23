@@ -41,6 +41,7 @@ import AddNewTax from './component/Admin/AddNewTax';
 import Blog from './component/Admin/Blog';
 import AddNewBlog from './component/Admin/AddNewBlog';
 import OrderSuccess from './component/OrderSuccess/OrderSuccess';
+import SpinWheelButton from './component/SpinWheelPage/SpinWheelPage';
 {/*import CustomerBlog from './component/CustomerBlog';
 import BlogDetail from './component/BlogDetail';*/}
 
@@ -73,6 +74,10 @@ function AppContent() {
   const shouldHideFooter = hideFooterPaths.includes(location.pathname);
   const shouldHideBackToTop = backToTopPaths.includes(location.pathname) || isProductDetail || isCheckout;
   const shouldShowAIChat = aiChatPaths.includes(location.pathname) || isProductDetail || isCheckout;
+
+  const spinPaths = ['/', '/wishlist', '/cart-detail'];
+  const shouldShowSpin = spinPaths.includes(location.pathname);
+
 
   return (
     <>
@@ -221,7 +226,7 @@ function AppContent() {
           </PrivateRoute>
         } />
 
-         <Route path="/order-success/:id" element={
+        <Route path="/order-success/:id" element={
           <PrivateRoute allowedRoles={2}>
             <OrderSuccess />
           </PrivateRoute>
@@ -241,6 +246,8 @@ function AppContent() {
       {!shouldHideFooter && <Footer />}
       {!shouldHideBackToTop && <BackToTopButton />}
       {shouldShowAIChat && <AIChatWidget />}
+      {shouldShowSpin && <SpinWheelButton />}
+
     </>
   );
 }

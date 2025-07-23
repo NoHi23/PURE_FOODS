@@ -2,6 +2,7 @@ package com.spring.service;
 
 import com.spring.dto.PromotionDTO;
 import java.util.List;
+import java.util.Map;
 
 public interface PromotionService {
 
@@ -16,5 +17,6 @@ public interface PromotionService {
     void deletePromotion(int id);
 
     PromotionDTO getPromotionByCode(String code);
-
+    Map<String, Object> spinWheel(int userId);
+    void expireOldUserPromotions();
 }

@@ -120,3 +120,20 @@ CREATE TABLE TraderProductMapping (
 
 
 
+--hieunn update 23/7/2025
+
+CREATE TABLE SpinHistory (
+    id INT PRIMARY KEY IDENTITY,
+    userId INT NOT NULL,
+    spinDate DATE NOT NULL,
+    promotionCode VARCHAR(50),
+    CONSTRAINT UQ_User_SpinDate UNIQUE (userId, spinDate)
+);
+
+CREATE TABLE UserPromotion (
+    id INT PRIMARY KEY IDENTITY,
+    userId INT NOT NULL,
+    promotionCode VARCHAR(50) NOT NULL,
+    status VARCHAR(20) DEFAULT 'active', -- 'active', 'used', 'expired'
+    assignedDate DATE NOT NULL
+);
