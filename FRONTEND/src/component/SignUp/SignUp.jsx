@@ -59,33 +59,41 @@ const SignUp = () => {
           handleGoogleResponse(res);
         },
       });
-      window.google.accounts.id.renderButton(
-        document.getElementById('googleSignInDiv'),
-        { theme: 'outline', size: 'large', width: '100%' }
-      );
+      window.google.accounts.id.renderButton(document.getElementById("googleSignInDiv"), {
+        theme: "outline",
+        size: "large",
+        width: "100%",
+      });
     }
   }, []);
 
   const handleGoogleResponse = async (response) => {
     try {
-      const res = await axios.post('http://localhost:8082/PureFoods/api/users/google', {
-        token: response.credential
-      }, { withCredentials: true });
+      const res = await axios.post(
+        "http://localhost:8082/PureFoods/api/users/google",
+        {
+          token: response.credential,
+        },
+        { withCredentials: true }
+      );
 
       const user = res.data;
-      toast.success('Welcome ' + user.fullName);
+      toast.success("Welcome " + user.fullName);
 
       console.log("Google Response:", response);
+      localStorage.setItem("user", JSON.stringify(user));
+
+      
 
       // Chuyển hướng theo role
       if (user.roleID === 1) {
         navigate("/admin-dashboard");
       } else if (user.roleID === 2) {
-        navigate("/");
+        navigate("/"); // customer khách hàng
       } else if (user.roleID === 3) {
-        navigate("/wholesaler");
+        navigate("/wholesaler"); // trader
       } else if (user.roleID === 4) {
-        navigate("/importer");
+        navigate("/importer"); // người nhập hàng
       } else if (user.roleID === 5) {
         navigate("/exporter");
       } else if (user.roleID === 6) {
@@ -93,7 +101,6 @@ const SignUp = () => {
       } else {
         toast.warn("Unknown role!");
       }
-
     } catch (error) {
       const errorMessage =
         error.response && error.response.data && error.response.data.message
@@ -104,26 +111,26 @@ const SignUp = () => {
   };
   useEffect(() => {
     if (!window.FB) {
-      const script = document.createElement('script');
+      const script = document.createElement("script");
       script.src = "https://connect.facebook.net/en_US/sdk.js";
       script.async = true;
       script.defer = true;
       script.crossOrigin = "anonymous";
       script.onload = () => {
         window.FB.init({
-          appId: '1056124739222943',
+          appId: "1056124739222943",
           cookie: true,
           xfbml: true,
-          version: 'v20.0'
+          version: "v20.0",
         });
       };
       document.body.appendChild(script);
     } else {
       window.FB.init({
-        appId: '1056124739222943',
+        appId: "1056124739222943",
         cookie: true,
         xfbml: true,
-        version: 'v20.0'
+        version: "v20.0",
       });
     }
 
@@ -136,38 +143,41 @@ const SignUp = () => {
   }, []);
 
   const handleFacebookLogin = () => {
-    window.FB.login(function (response) {
-      if (response.authResponse) {
-        const accessToken = response.authResponse.accessToken;
+    window.FB.login(
+      function (response) {
+        if (response.authResponse) {
+          const accessToken = response.authResponse.accessToken;
 
-        window.FB.api('/me', { fields: 'name,email' }, function (userInfo) {
-          console.log('User info:', userInfo);
+          window.FB.api("/me", { fields: "name,email" }, function (userInfo) {
+            console.log("User info:", userInfo);
 
-          axios.post('http://localhost:8082/PureFoods/api/users/facebook', {
-            accessToken: accessToken
-          }).then(res => {
-            const user = res.data.user;
-            toast.success("Welcome " + user.fullName);
+            axios.post('http://localhost:8082/PureFoods/api/users/facebook', {
+              accessToken: accessToken
+            }).then(res => {
+              const user = res.data.user;
+              toast.success("Welcome " + user.fullName);
 
-            if (user.roleID === 1) navigate("/admin-dashboard");
-            else if (user.roleID === 2) navigate("/");
-            else if (user.roleID === 3) navigate("/wholesaler");
-            else if (user.roleID === 4) navigate("/importer");
-            else if (user.roleID === 5) navigate("/exporter");
-            else if (user.roleID === 6) navigate("/shipper");
+              localStorage.setItem('user', JSON.stringify(user));
 
-          }).catch(err => {
-            const errorMessage =
-              err.response && err.response.data && err.response.data.message
-                ? err.response.data.message
-                : "Facebook login failed";
-            toast.error(errorMessage);
+              if (user.roleID === 1) navigate("/admin-dashboard");
+              else if (user.roleID === 2) navigate("/");
+              else if (user.roleID === 3) navigate("/wholesaler");
+              else if (user.roleID === 4) navigate("/importer");
+              else if (user.roleID === 5) navigate("/exporter");
+              else if (user.roleID === 6) navigate("/shipper");
+
+            }).catch(err => {
+              const errorMessage =
+                err.response && err.response.data && err.response.data.message
+                  ? err.response.data.message
+                  : "Facebook login failed";
+              toast.error(errorMessage);
+            });
           });
-        });
-      } else {
-        toast.error("User cancelled login or did not fully authorize.");
-      }
-    }, { scope: 'public_profile,email' });
+        } else {
+          toast.error("User cancelled login or did not fully authorize.");
+        }
+      }, { scope: 'public_profile,email' });
   };
 
   return (

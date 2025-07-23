@@ -3,9 +3,11 @@ package com.spring.service.Impl;
 import com.spring.dao.PromotionDAO;
 import com.spring.dao.UserPromotionDAO;
 import com.spring.dto.PromotionDTO;
+import com.spring.entity.Notifications;
 import com.spring.entity.Promotions;
 import com.spring.entity.SpinHistory;
 import com.spring.entity.UserPromotion;
+import com.spring.service.NotificationService;
 import com.spring.service.PromotionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -117,58 +119,60 @@ public class PromotionServiceImpl implements PromotionService {
         return promotion;
     }
 
+
+    @Autowired
+    private NotificationService notificationService;
+
     @Override
     public Map<String, Object> spinWheel(int userId) {
         LocalDate today = LocalDate.now();
 
-        // Kiểm tra user đã quay hôm nay chưa
+        // 1. Kiểm tra đã quay hôm nay chưa
         boolean alreadySpun = promotionDAO.existsByUserIdAndDate(userId, today);
         if (alreadySpun) {
             throw new IllegalStateException("Bạn đã quay vòng hôm nay rồi!");
         }
 
-
-        // Lấy danh sách các mã giảm giá đang hoạt động
+        // 2. Lấy danh sách mã giảm giá đang hoạt động
         List<PromotionDTO> allPromotions = getAllPromotions();
+        if (allPromotions.isEmpty()) {
+            throw new RuntimeException("Không có mã giảm giá nào đang hoạt động!");
+        }
 
-        // Sắp xếp tăng dần theo discountValue
+        // 3. Chọn 5 mã giảm giá
         List<PromotionDTO> sortedPromotions = allPromotions.stream()
                 .sorted(Comparator.comparingDouble(PromotionDTO::getDiscountValue))
                 .collect(Collectors.toList());
 
         List<PromotionDTO> selectedPromotions = new ArrayList<>();
-
         int size = sortedPromotions.size();
+
         if (size >= 5) {
-            // ✅ 2 mã giảm ít nhất
             selectedPromotions.add(sortedPromotions.get(0));
             selectedPromotions.add(sortedPromotions.get(1));
-
-            // ✅ 2 mã giảm vừa vừa (ở giữa danh sách)
             int midStart = size / 2 - 1;
             selectedPromotions.add(sortedPromotions.get(midStart));
             selectedPromotions.add(sortedPromotions.get(midStart + 1));
-
-            // ✅ 1 mã giảm nhiều nhất
             selectedPromotions.add(sortedPromotions.get(size - 1));
         } else {
-            // Nếu không đủ 5 mã, dùng hết danh sách hiện có
             selectedPromotions.addAll(sortedPromotions);
         }
-        // ✅ Bước 1: Tính tổng 1/discount
+
+        // 4. Tính tổng tỉ lệ nghịch của discount
         double totalInverse = selectedPromotions.stream()
                 .filter(p -> p.getDiscountValue() > 0)
                 .mapToDouble(p -> 1.0 / p.getDiscountValue())
                 .sum();
 
-        // ✅ Bước 2: Xây dựng "bánh xe" theo tỉ lệ nghịch discount
-        List<String> wheel = new ArrayList<>();
+        List<String> wheel = new ArrayList<>(); // dùng cho quay
+        List<String> wheelDescriptions = new ArrayList<>(); // dùng để gửi về FE
+        Map<String, String> codeToDescription = new HashMap<>();
+
         int totalRate = 0;
 
-        for (PromotionDTO p : selectedPromotions)
-        {
+        for (PromotionDTO p : selectedPromotions) {
             double discount = p.getDiscountValue();
-            if (discount <= 0.0) continue; // bỏ qua nếu giảm giá sai
+            if (discount <= 0.0) continue;
 
             double weight = (1.0 / discount) / totalInverse * 100.0;
             int rate = (int) Math.round(weight);
@@ -177,37 +181,53 @@ public class PromotionServiceImpl implements PromotionService {
             for (int i = 0; i < rate; i++) {
                 wheel.add(p.getPromotionCode());
             }
+
+            codeToDescription.put(p.getPromotionCode(), p.getDescription());
         }
 
-        // ✅ Bước 3: Thêm "chúc may mắn lần sau" nếu còn dư
+        // 5. Thêm "NONE" nếu còn dư
         int remaining = 100 - totalRate;
         for (int i = 0; i < remaining; i++) {
             wheel.add("NONE");
         }
+        codeToDescription.put("NONE", "❌ Chúc bạn may mắn lần sau!");
 
-        // ✅ Bước 4: Quay ngẫu nhiên
-        Collections.shuffle(wheel); // làm ngẫu nhiên hơn
+        // 6. Quay ngẫu nhiên
+        Collections.shuffle(wheel);
         String resultCode = wheel.get(new Random().nextInt(wheel.size()));
 
-        // ✅ Bước 5: Lưu lịch sử quay
-        if (!resultCode.equals("NONE")) {
-            // Lưu mã vào ngân hàng mã người dùng
+        // 7. Lưu lịch sử nếu trúng
+        if (!"NONE".equals(resultCode)) {
             UserPromotion userPromotion = new UserPromotion();
             userPromotion.setUserId(userId);
             userPromotion.setPromotionCode(resultCode);
             userPromotion.setStatus("active");
             userPromotion.setAssignedDate(today);
-            userPromotionDAO.save(userPromotion); // Gọi DAO để lưu
+            userPromotionDAO.save(userPromotion);
         }
 
-        // ✅ Bước 6: Trả kết quả
+        // 8. Trả kết quả
         Map<String, Object> result = new HashMap<>();
-        result.put("promotion", resultCode.equals("NONE") ? null : getPromotionByCode(resultCode));
-        result.put("message", resultCode.equals("NONE")
+        result.put("promotion", "NONE".equals(resultCode) ? null : getPromotionByCode(resultCode));
+        result.put("message", "NONE".equals(resultCode)
                 ? "Chúc may mắn lần sau!"
                 : "Bạn đã nhận được mã giảm giá: " + resultCode);
+
+
+        Notifications notify = new Notifications();
+        notify.setUserId(userId);
+        notify.setTitle("Vòng quay may mắn!");
+        notify.setContent("Chúc mừng bạn đã nhận được mã giảm giá: " + resultCode);
+        notificationService.saveNotification(notify);
+        // Đảm bảo không trùng description hiển thị
+        Set<String> uniqueDescriptions = wheel.stream()
+                .map(code -> codeToDescription.getOrDefault(code, code))
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+
+        result.put("wheelItems", new ArrayList<>(uniqueDescriptions));
         return result;
     }
+
 
     public boolean applyPromotionCode(int userId, String code) {
         UserPromotion up = userPromotionDAO.findActiveByUserIdAndCode(userId, code);
@@ -215,11 +235,9 @@ public class PromotionServiceImpl implements PromotionService {
             throw new RuntimeException("Mã không hợp lệ hoặc đã sử dụng");
         }
 
-        // Đánh dấu đã sử dụng
         up.setStatus("used");
         userPromotionDAO.update(up);
 
-        // Có thể trả lại thông tin giảm giá để áp dụng đơn hàng
         return true;
     }
     public void expireOldUserPromotions() {
