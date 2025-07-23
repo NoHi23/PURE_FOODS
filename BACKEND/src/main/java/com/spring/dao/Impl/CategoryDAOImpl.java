@@ -3,6 +3,7 @@ package com.spring.dao.Impl;
 import com.spring.dao.CategoryDAO;
 import com.spring.entity.Category;
 import com.spring.entity.Products;
+import com.spring.entity.Suppliers;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.query.Query;
@@ -49,6 +50,16 @@ public class CategoryDAOImpl implements CategoryDAO {
         if (category != null) {
             session.delete(category);
         }
+    }
+
+    @Override
+    public Category getCategoryByName(String name) {
+        Session session = sessionFactory.getCurrentSession();
+        Query<Category> query = session.createQuery(
+                "FROM Category WHERE LOWER(categoryName) LIKE :name", Category.class);
+        query.setParameter("name", "%" + name.toLowerCase().trim() + "%");
+        List<Category> result = query.getResultList();
+        return result.isEmpty() ? null : result.get(0);
     }
 
 }

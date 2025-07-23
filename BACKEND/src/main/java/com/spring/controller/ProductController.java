@@ -2,7 +2,11 @@ package com.spring.controller;
 
 
 import com.spring.dto.ProductDTO;
+import com.spring.service.CategoryService;
 import com.spring.service.ProductService;
+import com.spring.service.SuppliersService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.data.domain.PageRequest;
@@ -18,8 +22,15 @@ import java.util.Map;
 @RequestMapping("/api/product")
 @CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 public class ProductController {
+    private static final Logger log = LoggerFactory.getLogger(ProductController.class);
     @Autowired
     private ProductService productService;
+
+    @Autowired
+    private CategoryService categoryService;
+
+    @Autowired
+    private SuppliersService suppliersService;
 
     @GetMapping("/getAll")
     public ResponseEntity<?> getAllProduct() {
@@ -184,7 +195,12 @@ public class ProductController {
         Pageable pageable = PageRequest.of(page, size);
 
         Page<ProductDTO> result = productService.searchProducts(
-                q == null ? "" : q.trim(), categoryId, supplierId, minDiscount, pageable);
+                q == null ? "" : q.trim(),
+                categoryId,
+                supplierId,
+                minDiscount,
+                pageable
+        );
 
         Map<String, Object> body = new HashMap<>();
         body.put("status", 200);
@@ -194,8 +210,24 @@ public class ProductController {
         body.put("currentPage", result.getNumber());
         body.put("products", result.getContent());
 
+        if (categoryId != null) {
+            String categoryName = categoryService.findNameById(categoryId);
+            body.put("categoryId", categoryId);
+            body.put("categoryName", categoryName);
+            System.out.println("Category Name: " + categoryName);
+        }
+
+        if (supplierId != null) {
+            String supplierName = suppliersService.findNameById(supplierId);
+            body.put("supplierId", supplierId);
+            body.put("supplierName", supplierName);
+            System.out.println("Supplier Name: " + supplierName);
+        }
+
         return ResponseEntity.ok(body);
     }
+
+
 
     @GetMapping("/getById/{id}")
     public ResponseEntity<?> getProductById(@PathVariable("id") int id) {
@@ -212,6 +244,12 @@ public class ProductController {
             errorResponse.put("status", 400);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
+    }
+
+    @GetMapping("/by-category/{categoryId}")
+    public ResponseEntity<List<ProductDTO>> getProductsByCategory(@PathVariable("categoryId") int categoryId) {
+        List<ProductDTO> products = productService.getProductsByCategory(categoryId);
+        return ResponseEntity.ok(products);
     }
 
 }

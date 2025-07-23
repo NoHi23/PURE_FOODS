@@ -27,5 +27,6 @@ public interface ProductService {
                                     Integer supplierId,
                                     Integer minDiscount,
                                     Pageable pageable) ;
+    List<ProductDTO> getProductsByCategory(int categoryId);
 
 }

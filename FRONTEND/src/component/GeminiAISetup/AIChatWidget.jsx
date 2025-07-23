@@ -47,26 +47,98 @@ function AIChatWidget() {
     }
     return res.json();
   }
-
   const systemInstruction = `
-Bạn là một trợ lý AI của Pure Foods, chuyên chuyển đổi ngôn ngữ tự nhiên thành các tham số truy vấn API.
-Dựa vào câu của người dùng, hãy trích xuất các thông tin sau và trả về dưới dạng một đối tượng JSON **duy nhất**.
+Bạn là một trợ lý AI giúp người dùng tìm sản phẩm. 
+Nhiệm vụ của bạn là chuyển đổi truy vấn ngôn ngữ tự nhiên thành JSON để gửi đến API tìm kiếm sản phẩm. 
+Chỉ trả về đúng object JSON, KHÔNG giải thích thêm.
 
-Các trường có thể có:
-- "q": (string) Từ khóa tìm kiếm chính, chỉ lấy phần quan trọng nhất.
-- "categoryId": (number) ID của danh mục.
-- "supplierId": (number) ID của nhà cung cấp.
-- "minDiscount": (number) Mức giảm giá tối thiểu, chỉ lấy số.
+Các trường được hỗ trợ:
+- q: từ khóa tìm kiếm
+- priceFrom: giá tối thiểu (số)
+- priceTo: giá tối đa (số)
+- supplierId: mã nhà cung cấp
+- categoryId: mã danh mục
+
+Nếu không biết supplierId hoặc categoryId, hãy trả về "supplierName" hoặc "categoryName" thay thế để hệ thống xử lý sau.
+
+🎯 Nếu người dùng chỉ nhập một từ (ví dụ: "Vinamilk", "Fresh", "Rau", "Trái cây", "Thịt", "Bánh kẹo"):
+- Nếu là tên thương hiệu hoặc nhà cung cấp → gán vào "supplierName"
+- Nếu là loại hàng, nhóm thực phẩm → gán vào "categoryName"
+- Nếu không chắc → gán vào "q"
+
+Các API liên quan:
+1. [Tìm sản phẩm theo tiêu chí]:
+- Đầu vào: JSON có thể chứa q, priceFrom, priceTo, supplierId, categoryId
+- API: /api/products/search
+
+2. [Lấy supplierId theo tên]:
+- Đầu vào: supplierName
+- API: /api/supplier/searchByName?name={name}
+- Trả về: supplierId
+
+3. [Lấy categoryId theo tên]:
+- Đầu vào: categoryName
+- API: /api/category/searchByName?name={name}
+- Trả về: categoryId
 
 Ví dụ:
-User: "tìm sữa vinamilk giảm giá 10%" -> {"q": "sữa vinamilk", "minDiscount": 10}
-User: "cho tôi các sản phẩm trong danh mục 5" -> {"categoryId": 5}
-User: "mì ăn liền của nhà cung cấp 12, có giảm giá" -> {"supplierId": 12, "minDiscount": 1}
-User: "sản phẩm 123" -> {"q": "123"}  // <-- Thêm ví dụ này
+"Tìm sản phẩm vinamilk giá dưới 20000" → 
+{ "q": "vinamilk", "priceTo": 20000 }
 
-**QUAN TRỌNG**: Chỉ trả về JSON, không thêm bất kỳ giải thích hay markdown nào khác.
+"Tìm sữa từ nhà cung cấp vinamilk" → 
+{ "q": "sữa", "supplierName": "vinamilk" }
+
+"Fresh" → 
+{ "supplierName": "Fresh" }
+
+"Trái cây" → 
+{ "categoryName": "Trái cây" }
+
+"Bánh" → 
+{ "q": "bánh" }
 `;
 
+
+
+  async function resolveMissingIds(criteria) {
+    const updated = { ...criteria };
+
+    // Lấy supplierId nếu chỉ có supplierName
+    if (updated.supplierName && !updated.supplierId) {
+      try {
+        const res = await fetch(`http://localhost:8082/PureFoods/api/supplier/searchByName?name=${encodeURIComponent(updated.supplierName)}`);
+
+        if (res.ok) {
+          const data = await res.json();
+          if (data?.supplierId) {
+            updated.supplierId = data.supplierId;
+            delete updated.supplierName;
+          } else {
+            console.warn("Không tìm thấy supplierId trong response", data);
+          }
+        } else {
+          console.warn("Không tìm thấy nhà cung cấp:", updated.supplierName);
+        }
+      } catch (e) {
+        console.warn("Lỗi khi lấy supplierId:", e);
+      }
+    }
+
+    if (updated.categoryName && !updated.categoryId) {
+      try {
+        const res = await fetch(`http://localhost:8082/PureFoods/api/category/searchByName?name=${encodeURIComponent(updated.categoryName)}`);
+        const data = await res.json();
+        if (data?.categoryId) {
+          updated.categoryId = data.categoryId;
+          delete updated.categoryName;
+        }
+      } catch (e) {
+        console.warn("Không thể lấy categoryId:", e);
+      }
+    }
+
+    return updated;
+  }
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!inputValue.trim() || isLoading) return;
@@ -83,8 +155,8 @@ User: "sản phẩm 123" -> {"q": "123"}  // <-- Thêm ví dụ này
       const responseText = geminiRes.response.text();
 
       const cleanedJsonString = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
-      const jsonCriteria = JSON.parse(cleanedJsonString);
-
+      const rawCriteria = JSON.parse(cleanedJsonString);
+      const jsonCriteria = await resolveMissingIds(rawCriteria);
       const apiResponse = await findProductsByCriteria(jsonCriteria);
 
       if (apiResponse && apiResponse.products && apiResponse.products.length > 0) {
