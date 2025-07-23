@@ -6,8 +6,8 @@ target/
 
 # Không push file kết nối SQL
 BACKEND/src/main/resources/application.properties
-BACKEND/src/main/resources/database.properties
-src/main/resources/database.properties
+#BACKEND/src/main/resources/database.properties
+#src/main/resources/database.properties
 
 ### IntelliJ IDEA ###
 .idea/
