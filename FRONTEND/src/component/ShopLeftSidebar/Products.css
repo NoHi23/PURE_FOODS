@@ -77,10 +77,7 @@
 
 .three-grid.active img,
 .grid-btn.active img,
-.list-btn.active img {
-  border: 2px solid #007bff;
-  border-radius: 4px;
-}
+
 .product-box-3 {
   transition: all 0.3s ease;
 }
@@ -102,7 +99,7 @@
 /* Nút view */
 .grid-option li button {
   border: 1px solid #ccc;
-  background-color: rgb(58, 215, 58);
+  background-color: #00b893;
   border-radius: 8px;
   padding: 6px 10px;
   transition: all 0.2s ease-in-out;
@@ -122,13 +119,13 @@
 /* Hover: đổi nền nhẹ */
 .grid-option li button:hover {
   background-color: #dbd515;
-  border-color: #999;
+  border-color: #00b893;
 }
 
 /* Active: viền màu chủ đạo và bóng đẹp */
 .grid-option li.active button {
-  border-color: #007bff;
-  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2);
+  border-color: #00b893;
+  box-shadow: 0 0 0 2px #00b893;
 }
 
 /* Ẩn outline click */

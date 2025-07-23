@@ -1120,7 +1120,7 @@ const HomePage = () => {
 
                   <div className="category-slider-2 product-wrapper no-arrow">
                     <div>
-                      <a href="/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1" className="category-box category-dark">
+                      <a href="/category?cate=1%2C2&page=1" className="category-box category-dark">
                         <div>
                           <img src="../assets/svg/1/vegetable.svg" className="blur-up lazyload" alt="" />
                           <h5>Vegetables & Fruit</h5>
@@ -1129,7 +1129,7 @@ const HomePage = () => {
                     </div>
 
                     <div>
-                      <a href="/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1" className="category-box category-dark">
+                      <a href="/category?cate=5&page=1" className="category-box category-dark">
                         <div>
                           <img src="../assets/svg/1/cup.svg" className="blur-up lazyload" alt="" />
                           <h5>Beverages</h5>
@@ -1138,7 +1138,7 @@ const HomePage = () => {
                     </div>
 
                     <div>
-                      <a href="/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1" className="category-box category-dark">
+                      <a href="/category?cate=4" className="category-box category-dark">
                         <div>
                           <img src="../assets/svg/1/meats.svg" className="blur-up lazyload" alt="" />
                           <h5>Meats & Seafood</h5>
@@ -1156,7 +1156,7 @@ const HomePage = () => {
                     </div>
 
                     <div>
-                      <a href="/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1" className="category-box category-dark">
+                      <a href="/category?cate=3" className="category-box category-dark">
                         <div>
                           <img src="../assets/svg/1/frozen.svg" className="blur-up lazyload" alt="" />
                           <h5>Frozen Foods</h5>
@@ -1165,7 +1165,7 @@ const HomePage = () => {
                     </div>
 
                     <div>
-                      <a href="/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1" className="category-box category-dark">
+                      <a href="/category?cate=5&page=1" className="category-box category-dark">
                         <div>
                           <img src="../assets/svg/1/milk.svg" className="blur-up lazyload" alt="" />
                           <h5>Milk & Dairies</h5>
@@ -1174,7 +1174,7 @@ const HomePage = () => {
                     </div>
 
                     <div>
-                      <a href="/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1" className="category-box category-dark">
+                      <a href="/category?cate=6" className="category-box category-dark">
                         <div>
                           <img src="../assets/svg/1/pet.svg" className="blur-up lazyload" alt="" />
                           <h5>Pet Food</h5>
