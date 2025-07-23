@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { FiSearch } from "react-icons/fi";
+import { FiSearch, FiRefreshCw, FiCornerUpLeft } from "react-icons/fi";
 import { Modal, Button } from "react-bootstrap";
 import Pagination from "../../layouts/Pagination";
 import FilterStatus from "./FilterStatus";
@@ -8,6 +8,7 @@ import Swal from "sweetalert2";
 
 const ImporterInventoryLog = ({ currentPage, setCurrentPage, setLogs }) => {
   const [logs, setLocalLogs] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
   const [products, setProducts] = useState({});
   const [users, setUsers] = useState({});
   const [searchTerm, setSearchTerm] = useState("");
@@ -92,6 +93,57 @@ const ImporterInventoryLog = ({ currentPage, setCurrentPage, setLogs }) => {
     fetchData();
   }, [setLogs]);
 
+  const handleRefresh = async () => {
+    setIsLoading(true);
+    try {
+      const [logsRes, productsRes, usersRes] = await Promise.all([
+        axios.get("http://localhost:8082/PureFoods/api/inventory-logs/getAll"),
+        axios.get("http://localhost:8082/PureFoods/api/product/getAll"),
+        axios.get("http://localhost:8082/PureFoods/api/users/getAll"),
+      ]);
+
+      const logData = logsRes.data.logs || [];
+      const sortedLogs = [...logData].sort((a, b) => {
+        if (a.status === 5 && b.status !== 5) return -1;
+        if (a.status !== 5 && b.status === 5) return 1;
+        if (a.status !== b.status) return a.status - b.status;
+        return new Date(b.createdAt) - new Date(a.createdAt);
+      });
+
+      setLocalLogs(sortedLogs);
+      if (setLogs) setLogs(sortedLogs);
+
+      const productMap = {};
+      (productsRes.data.listProduct || []).forEach((p) => {
+        productMap[p.productId] = { name: p.productName, imageURL: p.imageURL };
+      });
+      setProducts(productMap);
+
+      const userMap = {};
+      (usersRes.data.userList || []).forEach((u) => {
+        userMap[u.userId] = u.fullName;
+      });
+      setUsers(userMap);
+
+      Swal.fire({
+        icon: "success",
+        title: "Đã làm mới!",
+        text: "Dữ liệu đã được cập nhật thành công.",
+        confirmButtonText: "OK",
+      });
+    } catch (err) {
+      console.error("Lỗi khi làm mới:", err);
+      Swal.fire({
+        icon: "error",
+        title: "Lỗi!",
+        text: "Làm mới thất bại. Vui lòng thử lại.",
+        confirmButtonText: "OK",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const logsPerPage = 7;
   const totalPages = Math.ceil(filteredLogs.length / logsPerPage);
   const indexOfLast = currentPage * logsPerPage;
@@ -136,9 +188,9 @@ const ImporterInventoryLog = ({ currentPage, setCurrentPage, setLogs }) => {
           size={18}
         />
       </div>
-      <div className="d-flex justify-content-between mb-4">
+      <div className="d-flex justify-content-between align-items-center mb-4 gap-3 flex-wrap">
         <button
-          className="btn"
+          className="btn d-flex align-items-center gap-2"
           style={{
             backgroundColor: "#f40766ff",
             color: "white",
@@ -155,7 +207,29 @@ const ImporterInventoryLog = ({ currentPage, setCurrentPage, setLogs }) => {
           }}
           onClick={() => setShowReturnModal(true)}
         >
-          🔁 Yêu cầu trả hàng
+          <FiCornerUpLeft size={20} /> Yêu cầu trả hàng
+        </button>
+
+        <button
+          className="btn fw-bold text-white d-flex justify-content-center align-items-center"
+          onClick={handleRefresh}
+          disabled={isLoading}
+          style={{
+            backgroundColor: "#007bff",
+            border: "1px solid #007bff",
+            transition: "all 0.3s ease",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = "#0056b3";
+            e.currentTarget.style.borderColor = "#0056b3";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = "#007bff";
+            e.currentTarget.style.borderColor = "#007bff";
+          }}
+        >
+          <FiRefreshCw className={`me-2 ${isLoading ? "fa-spin" : ""}`} />
+          {isLoading ? "Đang làm mới..." : "Làm mới dữ liệu"}
         </button>
 
         <button
