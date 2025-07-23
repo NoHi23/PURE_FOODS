@@ -43,3 +43,8 @@ body.dark .product-box {
   color: white;
   border-color: var(--theme-color, #0da487);
 }
+
+.nav-item.dropdown:hover .dropdown-menu {
+  display: block;
+  margin-top: 0;
+}

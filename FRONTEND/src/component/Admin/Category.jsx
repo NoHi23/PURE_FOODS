@@ -143,8 +143,7 @@ const Category = () => {
                             <th>ID</th>
                             <th>Name</th>
                             <th>Description</th>
-                            <th>Organic</th>
-                            <th>Status</th>
+                            <th>Organic</th>                         
                             <th>Actions</th>
                           </tr>
                         </thead>
@@ -154,10 +153,7 @@ const Category = () => {
                               <td>{c.categoryID}</td>
                               <td>{c.categoryName}</td>
                               <td>{c.categoryDescription}</td>
-                              <td>{c.isOrganic === 1 ? "Yes" : "No"}</td>
-                              <td className={c.status === 1 ? "status-success" : "status-danger"}>
-                                {c.status === 1 ? "Active" : "Inactive"}
-                              </td>
+                              <td>{c.isOrganic === 1 ? "Yes" : "No"}</td>                             
                               <td>
                                 <ul className="table-action-icons">
                                   <li>
@@ -197,8 +193,7 @@ const Category = () => {
                                 <p><strong>ID:</strong> {selectedCategory.categoryID}</p>
                                 <p><strong>Name:</strong> {selectedCategory.categoryName}</p>
                                 <p><strong>Description:</strong> {selectedCategory.categoryDescription}</p>
-                                <p><strong>Organic:</strong> {selectedCategory.isOrganic === 1 ? "Yes" : "No"}</p>
-                                <p><strong>Status:</strong> {selectedCategory.status === 1 ? "Active" : "Inactive"}</p>
+                                <p><strong>Organic:</strong> {selectedCategory.isOrganic === 1 ? "Yes" : "No"}</p>                               
                               </>
                             )}
                           </div>
@@ -227,14 +222,7 @@ const Category = () => {
                               <div className="mb-3">
                                 <label className="form-label">Is Organic</label>
                                 <input type="checkbox" name="isOrganic" checked={editCategory.isOrganic === 1} onChange={handleInputChange} />
-                              </div>
-                              <div className="mb-3">
-                                <label className="form-label">Status</label>
-                                <select name="status" className="form-control" value={editCategory.status} onChange={handleInputChange}>
-                                  <option value={1}>Active</option>
-                                  <option value={0}>Inactive</option>
-                                </select>
-                              </div>
+                              </div>                             
                             </form>
                           </div>
                           <div className="modal-footer">

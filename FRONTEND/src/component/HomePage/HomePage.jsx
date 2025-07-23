@@ -9,6 +9,7 @@ import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { toast } from 'react-toastify';
 import UpdateInfoModal from "../Login/UpdateInfoModal";
+import ProductDropdown from "./ProductDropdown";
 
 
 const getOrUpdateExpiryTime = () => {
@@ -37,7 +38,7 @@ const HomePage = () => {
   const [quantity, setQuantity] = useState(1);
   const navigate = useNavigate();
 
-  const handleAddToCart = (product) => {
+  const handleAddToCart = async (product) => {
     if (!userId) {
       toast.error("Vui lòng đăng nhập");
       return;
@@ -49,10 +50,34 @@ const HomePage = () => {
       bootstrap.Modal.getInstance(modalEl).hide();
     }
 
+    if (quantity <= 0) {
+      toast.error("Số lượng phải lớn hơn 0");
+      return;
+    }
+
+    // Kiểm tra số lượng trong giỏ hàng hiện tại
+    try {
+      const res = await axios.get(`http://localhost:8082/PureFoods/api/cart/user/${userId}`);
+      const cartItems = res.data;
+
+      const existingItem = cartItems.find((item) => item.productID === product.productId);
+      const currentQuantityInCart = existingItem ? existingItem.quantity : 0;
+
+      if (currentQuantityInCart + quantity > product.stockQuantity) {
+        toast.error(`Chỉ còn ${product.stockQuantity - currentQuantityInCart} sản phẩm trong kho`);
+        return;
+      }
+    } catch (err) {
+      console.error("❌ Lỗi khi kiểm tra giỏ hàng:", err);
+      toast.error("Không thể kiểm tra số lượng trong kho");
+      return;
+    }
+
+    // Tiếp tục thêm vào giỏ hàng nếu đủ stock
     const cartItem = {
       userID: userId,
       productID: product.productId,
-      quantity,
+      quantity: quantity,
       priceAfterDiscount: product.salePrice,
       total: product.salePrice * quantity,
       imageURL: product.imageURL,
@@ -72,7 +97,18 @@ const HomePage = () => {
         console.error("❌ Lỗi khi thêm vào giỏ hàng:", err.response?.data || err.message);
         toast.error("Thêm vào giỏ thất bại");
       });
+    try {
+      await axios.post('http://localhost:8082/PureFoods/api/cart/create', cartItem);
+      toast.success('Đã thêm vào giỏ hàng');
+      window.dispatchEvent(new Event('cartUpdated'));
+      //navigate(`/cart-detail`, { state: { fromAddToCart: true } });
+    } catch (err) {
+      console.error("❌ Lỗi khi thêm vào giỏ hàng:", err.response?.data || err.message);
+      toast.error('Thêm vào giỏ thất bại');
+    }
   };
+
+
 
   useEffect(() => {
     axios
@@ -275,72 +311,10 @@ const HomePage = () => {
                           </div>
                           <div className="offcanvas-body">
                             <ul className="navbar-nav">
-                              <li className="nav-item dropdown">
-                                <a
-                                  className="nav-link dropdown-toggle"
-                                  href="javascript:void(0)"
-                                  data-bs-toggle="dropdown"
-                                >
+                              <li className="nav-item">
+                                <Link className="nav-link" to="/">
                                   Home
-                                </a>
-
-                                <ul className="dropdown-menu">
-                                  <li>
-                                    <a className="dropdown-item" href="index.html">
-                                      Kartshop
-                                    </a>
-                                  </li>
-                                  <li>
-                                    <a className="dropdown-item" href="index-2.html">
-                                      Sweetshop
-                                    </a>
-                                  </li>
-                                  <li>
-                                    <a className="dropdown-item" href="index-3.html">
-                                      Organic
-                                    </a>
-                                  </li>
-                                  <li>
-                                    <a className="dropdown-item" href="index-4.html">
-                                      Supershop
-                                    </a>
-                                  </li>
-                                  <li>
-                                    <a className="dropdown-item" href="index-5.html">
-                                      classNameic shop
-                                    </a>
-                                  </li>
-                                  <li>
-                                    <a className="dropdown-item" href="index-6.html">
-                                      Furniture
-                                    </a>
-                                  </li>
-                                  <li>
-                                    <a className="dropdown-item" href="index-7.html">
-                                      Search Oriented
-                                    </a>
-                                  </li>
-                                  <li>
-                                    <a className="dropdown-item" href="index-8.html">
-                                      Category Focus
-                                    </a>
-                                  </li>
-                                  <li>
-                                    <a className="dropdown-item" href="index-9.html">
-                                      Fashion
-                                    </a>
-                                  </li>
-                                  <li>
-                                    <a className="dropdown-item" href="index-10.html">
-                                      Book
-                                    </a>
-                                  </li>
-                                  <li>
-                                    <a className="dropdown-item" href="index-11.html">
-                                      Digital
-                                    </a>
-                                  </li>
-                                </ul>
+                                </Link>
                               </li>
 
                               <li className="nav-item dropdown">
@@ -552,6 +526,7 @@ const HomePage = () => {
                                   </div>
                                 </div>
                               </li>
+                              <ProductDropdown />
 
                               <li className="nav-item dropdown dropdown-mega">
                                 <a
@@ -2574,6 +2549,7 @@ const HomePage = () => {
                             </div>
                           </li>
                         </ul>
+
 
 
                         <div className="modal-button">
