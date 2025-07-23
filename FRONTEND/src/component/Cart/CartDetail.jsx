@@ -93,11 +93,11 @@ const CartDetail = () => {
                     <table className="table all-package theme-table">
                       <thead>
                         <tr>
-                          <th>Product</th>
-                          <th>Price</th>
-                          <th>Quantity</th>
-                          <th>Total</th>
-                          <th>Action</th>
+                          <th style={{ color: "black" }}>Product</th>
+                          <th style={{ color: "black" }}>Price</th>
+                          <th style={{ color: "black" }}>Quantity</th>
+                          <th style={{ color: "black" }}>Total</th>
+                          <th style={{ color: "black" }}>Action</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -147,7 +147,7 @@ const CartDetail = () => {
                             </td>
                             <td>
                               <button className="btn btn-sm btn-outline-danger" onClick={() => handleRemove(item.cartItemID)}>
-                                Remove
+                                Remove 🗑️
                               </button>
                             </td>
                           </tr>
@@ -173,7 +173,7 @@ const CartDetail = () => {
                         value={couponCode}
                         onChange={(e) => setCouponCode(e.target.value)}
                       />
-                      <button className="btn btn-sm btn-dark" onClick={handleApplyCoupon}>Apply</button>
+                      <button className="btn btn-sm btn-dark text-white" onClick={handleApplyCoupon}>Apply</button>
                     </div>
                   </div>
 

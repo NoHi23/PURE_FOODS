@@ -6,9 +6,8 @@ import feather from "feather-icons";
 import ProductSlider from "./ProductSlider";
 import CookieConsent from "./CookieConsent";
 import { Link } from "react-router-dom";
-import { useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify';
-
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const getOrUpdateExpiryTime = () => {
   let expiry = localStorage.getItem("countdownExpiry");
@@ -38,12 +37,12 @@ const HomePage = () => {
 
   const handleAddToCart = (product) => {
     if (!userId) {
-      toast.error('Vui lòng đăng nhập');
+      toast.error("Vui lòng đăng nhập");
       return;
     }
 
     // Nếu đang mở modal => đóng trước
-    const modalEl = document.getElementById('view');
+    const modalEl = document.getElementById("view");
     if (modalEl && bootstrap.Modal.getInstance(modalEl)) {
       bootstrap.Modal.getInstance(modalEl).hide();
     }
@@ -57,28 +56,29 @@ const HomePage = () => {
       imageURL: product.imageURL,
       productName: product.productName,
       originalPrice: product.price,
-      discount: product.discountPercent
+      discount: product.discountPercent,
     };
 
-    axios.post('http://localhost:8082/PureFoods/api/cart/create', cartItem)
+    axios
+      .post("http://localhost:8082/PureFoods/api/cart/create", cartItem)
       .then(() => {
-        toast.success('Đã thêm vào giỏ hàng');
-        window.dispatchEvent(new Event('cartUpdated'));
+        toast.success("Đã thêm vào giỏ hàng");
+        window.dispatchEvent(new Event("cartUpdated"));
         navigate(`/cart-detail`, { state: { fromAddToCart: true } });
       })
       .catch((err) => {
         console.error("❌ Lỗi khi thêm vào giỏ hàng:", err.response?.data || err.message);
-        toast.error('Thêm vào giỏ thất bại');
+        toast.error("Thêm vào giỏ thất bại");
       });
   };
 
-
   useEffect(() => {
-    axios.get('http://localhost:8082/PureFoods/api/product/getAll/status0')
+    axios
+      .get("http://localhost:8082/PureFoods/api/product/getAll/status0")
       .then((res) => {
         const productList = res.data.listProduct;
         if (productList && productList.length > 0) {
-          setProducts(productList[0]);  //  Gán sản phẩm đầu tiên để Add to Cart dùng
+          setProducts(productList[0]); //  Gán sản phẩm đầu tiên để Add to Cart dùng
           setDealProduct(productList); // hoặc gán vào dealProduct để dùng cho slider, v.v.
         }
       })
@@ -88,12 +88,11 @@ const HomePage = () => {
       });
   }, []);
 
-
   useEffect(() => {
     // Xử lý sự cố còn sót modal hoặc lớp backdrop
     const cleanupModal = () => {
-      document.body.classList.remove('modal-open');
-      const backdrops = document.querySelectorAll('.modal-backdrop');
+      document.body.classList.remove("modal-open");
+      const backdrops = document.querySelectorAll(".modal-backdrop");
       backdrops.forEach((bd) => bd.remove());
     };
 
@@ -102,10 +101,9 @@ const HomePage = () => {
     return cleanupModal;
   }, []);
 
-
   const handleViewDetail = (productId) => {
     // Nếu modal đang mở => đóng trước
-    const modalEl = document.getElementById('view');
+    const modalEl = document.getElementById("view");
     if (modalEl && bootstrap.Modal.getInstance(modalEl)) {
       bootstrap.Modal.getInstance(modalEl).hide();
     }
@@ -113,8 +111,6 @@ const HomePage = () => {
     // Navigate sang trang chi tiết
     navigate(`/product/${productId}`);
   };
-
-
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -235,398 +231,25 @@ const HomePage = () => {
                           </button>
                         </div>
 
-                        <ul className="category-list">
-                          <li className="onhover-category-list">
-                            <a href="javascript:void(0)" className="category-name">
-                              <img src="../assets/svg/1/vegetable.svg" alt="" />
-                              <h6>Vegetables & Fruit</h6>
-                              <i className="fa-solid fa-angle-right"></i>
-                            </a>
-
-                            <div className="onhover-category-box">
-                              <div className="list-1">
-                                <div className="category-title-box">
-                                  <h5>Organic Vegetables</h5>
-                                </div>
-                                <ul>
-                                  <li>
-                                    <a href="javascript:void(0)">Potato & Tomato</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Cucumber & Capsicum</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Leafy Vegetables</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Root Vegetables</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Beans & Okra</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Cabbage & Cauliflower</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Gourd & Drumstick</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Specialty</a>
-                                  </li>
-                                </ul>
-                                <div className="category-title-box">
-                                  <h5>Organic Vegetables</h5>
-                                </div>
-                                <ul>
-                                  <li>
-                                    <a href="javascript:void(0)">Potato & Tomato</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Cucumber & Capsicum</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Leafy Vegetables</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Root Vegetables</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Beans & Okra</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Cabbage & Cauliflower</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Gourd & Drumstick</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Specialty</a>
-                                  </li>
-                                </ul>
+                        {/* Bắt đầu category header từ đây */}
+                        <ul>
+                          {categories.map((category) => (
+                            <li
+                              key={category.categoryID}
+                              style={{ display: "block" }}
+                              className={`onhover-category-list ${categories.length - 1 ? "pb-30" : ""}`}
+                            >
+                              <div className="category-list">
+                                <h5 style={{ fontSize: "18px" }}>
+                                  <Link to={`/category?cate=${category.categoryID}`}>
+                                    {category.categoryName} <i className="fa-solid fa-angle-right"></i>
+                                  </Link>
+                                </h5>
                               </div>
-                            </div>
-                          </li>
-
-                          <li className="onhover-category-list">
-                            <a href="javascript:void(0)" className="category-name">
-                              <img src="../assets/svg/1/cup.svg" alt="" />
-                              <h6>Beverages</h6>
-                              <i className="fa-solid fa-angle-right"></i>
-                            </a>
-
-                            <div className="onhover-category-box w-100">
-                              <div className="list-1">
-                                <div className="category-title-box">
-                                  <h5>Energy & Soft Drinks</h5>
-                                </div>
-                                <ul>
-                                  <li>
-                                    <a href="javascript:void(0)">Soda & Cocktail Mix</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Soda & Cocktail Mix</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Sports & Energy Drinks</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Non Alcoholic Drinks</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Packaged Water</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Spring Water</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Flavoured Water</a>
-                                  </li>
-                                </ul>
-                              </div>
-                            </div>
-                          </li>
-
-                          <li className="onhover-category-list">
-                            <a href="javascript:void(0)" className="category-name">
-                              <img src="../assets/svg/1/meats.svg" alt="" />
-                              <h6>Meats & Seafood</h6>
-                              <i className="fa-solid fa-angle-right"></i>
-                            </a>
-
-                            <div className="onhover-category-box">
-                              <div className="list-1">
-                                <div className="category-title-box">
-                                  <h5>Meat</h5>
-                                </div>
-                                <ul>
-                                  <li>
-                                    <a href="javascript:void(0)">Fresh Meat</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Frozen Meat</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Marinated Meat</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Fresh & Frozen Meat</a>
-                                  </li>
-                                </ul>
-                              </div>
-
-                              <div className="list-2">
-                                <div className="category-title-box">
-                                  <h5>Seafood</h5>
-                                </div>
-                                <ul>
-                                  <li>
-                                    <a href="javascript:void(0)">Fresh Water Fish</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Dry Fish</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Frozen Fish & Seafood</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Marine Water Fish</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Canned Seafood</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Prawans & Shrimps</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Other Seafood</a>
-                                  </li>
-                                </ul>
-                              </div>
-                            </div>
-                          </li>
-
-                          <li className="onhover-category-list">
-                            <a href="javascript:void(0)" className="category-name">
-                              <img src="../assets/svg/1/breakfast.svg" alt="" />
-                              <h6>Breakfast & Dairy</h6>
-                              <i className="fa-solid fa-angle-right"></i>
-                            </a>
-
-                            <div className="onhover-category-box">
-                              <div className="list-1">
-                                <div className="category-title-box">
-                                  <h5>Breakfast Cereals</h5>
-                                </div>
-                                <ul>
-                                  <li>
-                                    <a href="javascript:void(0)">Oats & Porridge</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Kids Cereal</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Muesli</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Flakes</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Granola & Cereal Bars</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Instant Noodles</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Pasta & Macaroni</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Frozen Non-Veg Snacks</a>
-                                  </li>
-                                </ul>
-                              </div>
-
-                              <div className="list-2">
-                                <div className="category-title-box">
-                                  <h5>Dairy</h5>
-                                </div>
-                                <ul>
-                                  <li>
-                                    <a href="javascript:void(0)">Milk</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Curd</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Paneer, Tofu & Cream</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Butter & Margarine</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Condensed, Powdered Milk</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Buttermilk & Lassi</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Yogurt & Shrikhand</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Flavoured, Soya Milk</a>
-                                  </li>
-                                </ul>
-                              </div>
-                            </div>
-                          </li>
-
-                          <li className="onhover-category-list">
-                            <a href="javascript:void(0)" className="category-name">
-                              <img src="../assets/svg/1/frozen.svg" alt="" />
-                              <h6>Frozen Foods</h6>
-                              <i className="fa-solid fa-angle-right"></i>
-                            </a>
-
-                            <div className="onhover-category-box w-100">
-                              <div className="list-1">
-                                <div className="category-title-box">
-                                  <h5>Noodle, Pasta</h5>
-                                </div>
-                                <ul>
-                                  <li>
-                                    <a href="javascript:void(0)">Instant Noodles</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Hakka Noodles</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Cup Noodles</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Vermicelli</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Instant Pasta</a>
-                                  </li>
-                                </ul>
-                              </div>
-                            </div>
-                          </li>
-
-                          <li className="onhover-category-list">
-                            <a href="javascript:void(0)" className="category-name">
-                              <img src="../assets/svg/1/biscuit.svg" alt="" />
-                              <h6>Biscuits & Snacks</h6>
-                              <i className="fa-solid fa-angle-right"></i>
-                            </a>
-
-                            <div className="onhover-category-box">
-                              <div className="list-1">
-                                <div className="category-title-box">
-                                  <h5>Biscuits & Cookies</h5>
-                                </div>
-                                <ul>
-                                  <li>
-                                    <a href="javascript:void(0)">Salted Biscuits</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Marie, Health, Digestive</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Cream Biscuits & Wafers</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Glucose & Milk Biscuits</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Cookies</a>
-                                  </li>
-                                </ul>
-                              </div>
-
-                              <div className="list-2">
-                                <div className="category-title-box">
-                                  <h5>Bakery Snacks</h5>
-                                </div>
-                                <ul>
-                                  <li>
-                                    <a href="javascript:void(0)">Bread Sticks & Lavash</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Cheese & Garlic Bread</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Puffs, Patties, Sandwiches</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Breadcrumbs & Croutons</a>
-                                  </li>
-                                </ul>
-                              </div>
-                            </div>
-                          </li>
-
-                          <li className="onhover-category-list">
-                            <a href="javascript:void(0)" className="category-name">
-                              <img src="../assets/svg/1/grocery.svg" alt="" />
-                              <h6>Grocery & Staples</h6>
-                              <i className="fa-solid fa-angle-right"></i>
-                            </a>
-
-                            <div className="onhover-category-box">
-                              <div className="list-1">
-                                <div className="category-title-box">
-                                  <h5>Grocery</h5>
-                                </div>
-                                <ul>
-                                  <li>
-                                    <a href="javascript:void(0)">Lemon, Ginger & Garlic</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Indian & Exotic Herbs</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Organic Vegetables</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Organic Fruits</a>
-                                  </li>
-                                </ul>
-                              </div>
-
-                              <div className="list-2">
-                                <div className="category-title-box">
-                                  <h5>Organic Staples</h5>
-                                </div>
-                                <ul>
-                                  <li>
-                                    <a href="javascript:void(0)">Organic Dry Fruits</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Organic Dals & Pulses</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Organic Millet & Flours</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Organic Sugar, Jaggery</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Organic Masalas & Spices</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Organic Rice, Other Rice</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Organic Flours</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Organic Edible Oil, Ghee</a>
-                                  </li>
-                                </ul>
-                              </div>
-                            </div>
-                          </li>
+                            </li>
+                          ))}
                         </ul>
+                        {/* Kết thúc ở đây */}
                       </div>
                     </div>
 
@@ -733,7 +356,7 @@ const HomePage = () => {
                                     </a>
                                   </li>
                                   <li>
-                                    <a className="dropdown-item" href="shop-left-sidebar.html">
+                                    <a className="dropdown-item" href="/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1">
                                       Shop Left Sidebar
                                     </a>
                                   </li>
@@ -766,9 +389,21 @@ const HomePage = () => {
                                   Product
                                 </a>
                                 <ul className="dropdown-menu">
-                                  <li><a className="dropdown-item" href="/all-products">All Products</a></li>
-                                  <li><a className="dropdown-item" href="/top-discount">Top Discount</a></li>
-                                  <li><a className="dropdown-item" href="/organic-products">Organic Products</a></li>
+                                  <li>
+                                    <a className="dropdown-item" href="/all-products">
+                                      All Products
+                                    </a>
+                                  </li>
+                                  <li>
+                                    <a className="dropdown-item" href="/top-discount">
+                                      Top Discount
+                                    </a>
+                                  </li>
+                                  <li>
+                                    <a className="dropdown-item" href="/organic-products">
+                                      Organic Products
+                                    </a>
+                                  </li>
                                 </ul>
 
                                 <div className="dropdown-menu dropdown-menu-3 dropdown-menu-2">
@@ -918,27 +553,27 @@ const HomePage = () => {
                                   <div className="row">
                                     <div className="dropdown-column col-xl-3">
                                       <h5 className="dropdown-header">Daily Vegetables</h5>
-                                      <a className="dropdown-item" href="shop-left-sidebar.html">
+                                      <a className="dropdown-item" href="/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1">
                                         Beans & Brinjals
                                       </a>
 
-                                      <a className="dropdown-item" href="shop-left-sidebar.html">
+                                      <a className="dropdown-item" href="/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1">
                                         Broccoli & Cauliflower
                                       </a>
 
-                                      <a href="shop-left-sidebar.html" className="dropdown-item">
+                                      <a href="/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1" className="dropdown-item">
                                         Chilies, Garlic
                                       </a>
 
-                                      <a className="dropdown-item" href="shop-left-sidebar.html">
+                                      <a className="dropdown-item" href="/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1">
                                         Vegetables & Salads
                                       </a>
 
-                                      <a className="dropdown-item" href="shop-left-sidebar.html">
+                                      <a className="dropdown-item" href="/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1">
                                         Gourd, Cucumber
                                       </a>
 
-                                      <a className="dropdown-item" href="shop-left-sidebar.html">
+                                      <a className="dropdown-item" href="/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1">
                                         Herbs & Sprouts
                                       </a>
 
@@ -949,54 +584,54 @@ const HomePage = () => {
 
                                     <div className="dropdown-column col-xl-3">
                                       <h5 className="dropdown-header">Baby Tender</h5>
-                                      <a className="dropdown-item" href="shop-left-sidebar.html">
+                                      <a className="dropdown-item" href="/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1">
                                         Beans & Brinjals
                                       </a>
 
-                                      <a className="dropdown-item" href="shop-left-sidebar.html">
+                                      <a className="dropdown-item" href="/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1">
                                         Broccoli & Cauliflower
                                       </a>
 
-                                      <a className="dropdown-item" href="shop-left-sidebar.html">
+                                      <a className="dropdown-item" href="/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1">
                                         Chilies, Garlic
                                       </a>
 
-                                      <a className="dropdown-item" href="shop-left-sidebar.html">
+                                      <a className="dropdown-item" href="/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1">
                                         Vegetables & Salads
                                       </a>
 
-                                      <a className="dropdown-item" href="shop-left-sidebar.html">
+                                      <a className="dropdown-item" href="/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1">
                                         Gourd, Cucumber
                                       </a>
 
-                                      <a className="dropdown-item" href="shop-left-sidebar.html">
+                                      <a className="dropdown-item" href="/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1">
                                         Potatoes & Tomatoes
                                       </a>
 
-                                      <a href="shop-left-sidebar.html" className="dropdown-item">
+                                      <a href="/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1" className="dropdown-item">
                                         Peas & Corn
                                       </a>
                                     </div>
 
                                     <div className="dropdown-column col-xl-3">
                                       <h5 className="dropdown-header">Exotic Vegetables</h5>
-                                      <a className="dropdown-item" href="shop-left-sidebar.html">
+                                      <a className="dropdown-item" href="/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1">
                                         Asparagus & Artichokes
                                       </a>
 
-                                      <a className="dropdown-item" href="shop-left-sidebar.html">
+                                      <a className="dropdown-item" href="/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1">
                                         Avocados & Peppers
                                       </a>
 
-                                      <a className="dropdown-item" href="shop-left-sidebar.html">
+                                      <a className="dropdown-item" href="/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1">
                                         Broccoli & Zucchini
                                       </a>
 
-                                      <a className="dropdown-item" href="shop-left-sidebar.html">
+                                      <a className="dropdown-item" href="/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1">
                                         Celery, Fennel & Leeks
                                       </a>
 
-                                      <a className="dropdown-item" href="shop-left-sidebar.html">
+                                      <a className="dropdown-item" href="/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1">
                                         Chilies & Lime
                                       </a>
                                     </div>
@@ -1278,11 +913,11 @@ const HomePage = () => {
                         </p>
                         <button
                           onClick={() => {
-                            window.location.href = "shop-left-sidebar.html";
+                            window.location.href = "/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1";
                           }}
                           className="btn btn-animation mt-xxl-4 mt-2 home-button mend-auto"
                         >
-                          Shop Now <i className="fa-solid fa-right-long icon"></i>
+                          Shop Now<i className="fa-solid fa-right-long icon"></i>
                         </button>
                       </div>
                     </div>
@@ -1301,7 +936,7 @@ const HomePage = () => {
                             </h2>
                             <h3 className="theme-color">Nut Collection</h3>
                             <p className="w-75">We deliver organic vegetables & fruits</p>
-                            <a href="shop-left-sidebar.html" className="shop-button">
+                            <a href="/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1" className="shop-button">
                               Shop Now <i className="fa-solid fa-right-long"></i>
                             </a>
                           </div>
@@ -1317,7 +952,7 @@ const HomePage = () => {
                             <h3 className="mt-0 theme-color fw-bold">Healthy Food</h3>
                             <h4 className="text-danger">Organic Market</h4>
                             <p className="organic">Start your daily shopping with some Organic food</p>
-                            <a href="shop-left-sidebar.html" className="shop-button">
+                            <a href="/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1" className="shop-button">
                               Shop Now <i className="fa-solid fa-right-long"></i>
                             </a>
                           </div>
@@ -1341,7 +976,7 @@ const HomePage = () => {
                         <h5>Hot Deals on New Items</h5>
                         <h6 className="text-content">Daily Essentials Eggs & Dairy</h6>
                       </div>
-                      <a href="shop-left-sidebar.html" className="banner-button text-white">
+                      <a href="/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1" className="banner-button text-white">
                         Shop Now <i className="fa-solid fa-right-long ms-2"></i>
                       </a>
                     </div>
@@ -1357,7 +992,7 @@ const HomePage = () => {
                         <h5>Buy More & Save More</h5>
                         <h6 className="text-content">Fresh Vegetables</h6>
                       </div>
-                      <a href="shop-left-sidebar.html" className="banner-button text-white">
+                      <a href="/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1" className="banner-button text-white">
                         Shop Now <i className="fa-solid fa-right-long ms-2"></i>
                       </a>
                     </div>
@@ -1373,7 +1008,7 @@ const HomePage = () => {
                         <h5>Organic Meat Prepared</h5>
                         <h6 className="text-content">Delivered to Your Home</h6>
                       </div>
-                      <a href="shop-left-sidebar.html" className="banner-button text-white">
+                      <a href="/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1" className="banner-button text-white">
                         Shop Now <i className="fa-solid fa-right-long ms-2"></i>
                       </a>
                     </div>
@@ -1389,7 +1024,7 @@ const HomePage = () => {
                         <h5>Buy More & Save More</h5>
                         <h6 className="text-content">Nuts & Snacks</h6>
                       </div>
-                      <a href="shop-left-sidebar.html" className="banner-button text-white">
+                      <a href="/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1" className="banner-button text-white">
                         Shop Now <i className="fa-solid fa-right-long ms-2"></i>
                       </a>
                     </div>
@@ -1441,7 +1076,7 @@ const HomePage = () => {
                             <h3 className="fw-light">every hour</h3>
                             <button
                               onClick={() => {
-                                window.location.href = "shop-left-sidebar.html";
+                                window.location.href = "/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1";
                               }}
                               className="btn btn-animation btn-md mend-auto"
                             >
@@ -1463,7 +1098,7 @@ const HomePage = () => {
                             <p className="mb-3">Super Offer to 50% Off</p>
                             <button
                               onClick={() => {
-                                window.location.href = "shop-left-sidebar.html";
+                                window.location.href = "/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1";
                               }}
                               className="btn btn-animation btn-md mend-auto"
                             >
@@ -1670,7 +1305,7 @@ const HomePage = () => {
 
                   <div className="category-slider-2 product-wrapper no-arrow">
                     <div>
-                      <a href="shop-left-sidebar.html" className="category-box category-dark">
+                      <a href="/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1" className="category-box category-dark">
                         <div>
                           <img src="../assets/svg/1/vegetable.svg" className="blur-up lazyload" alt="" />
                           <h5>Vegetables & Fruit</h5>
@@ -1679,7 +1314,7 @@ const HomePage = () => {
                     </div>
 
                     <div>
-                      <a href="shop-left-sidebar.html" className="category-box category-dark">
+                      <a href="/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1" className="category-box category-dark">
                         <div>
                           <img src="../assets/svg/1/cup.svg" className="blur-up lazyload" alt="" />
                           <h5>Beverages</h5>
@@ -1688,7 +1323,7 @@ const HomePage = () => {
                     </div>
 
                     <div>
-                      <a href="shop-left-sidebar.html" className="category-box category-dark">
+                      <a href="/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1" className="category-box category-dark">
                         <div>
                           <img src="../assets/svg/1/meats.svg" className="blur-up lazyload" alt="" />
                           <h5>Meats & Seafood</h5>
@@ -1697,7 +1332,7 @@ const HomePage = () => {
                     </div>
 
                     <div>
-                      <a href="shop-left-sidebar.html" className="category-box category-dark">
+                      <a href="/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1" className="category-box category-dark">
                         <div>
                           <img src="../assets/svg/1/breakfast.svg" className="blur-up lazyload" alt="" />
                           <h5>Breakfast</h5>
@@ -1706,7 +1341,7 @@ const HomePage = () => {
                     </div>
 
                     <div>
-                      <a href="shop-left-sidebar.html" className="category-box category-dark">
+                      <a href="/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1" className="category-box category-dark">
                         <div>
                           <img src="../assets/svg/1/frozen.svg" className="blur-up lazyload" alt="" />
                           <h5>Frozen Foods</h5>
@@ -1715,7 +1350,7 @@ const HomePage = () => {
                     </div>
 
                     <div>
-                      <a href="shop-left-sidebar.html" className="category-box category-dark">
+                      <a href="/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1" className="category-box category-dark">
                         <div>
                           <img src="../assets/svg/1/milk.svg" className="blur-up lazyload" alt="" />
                           <h5>Milk & Dairies</h5>
@@ -1724,7 +1359,7 @@ const HomePage = () => {
                     </div>
 
                     <div>
-                      <a href="shop-left-sidebar.html" className="category-box category-dark">
+                      <a href="/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1" className="category-box category-dark">
                         <div>
                           <img src="../assets/svg/1/pet.svg" className="blur-up lazyload" alt="" />
                           <h5>Pet Food</h5>
@@ -1744,7 +1379,7 @@ const HomePage = () => {
                               <h4 className="text-russo fw-normal theme-color mb-2">Testy Mushrooms</h4>
                               <button
                                 onClick={() => {
-                                  window.location.href = "shop-left-sidebar.html";
+                                  window.location.href = "/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1";
                                 }}
                                 className="btn btn-animation btn-sm mend-auto"
                               >
@@ -1763,7 +1398,7 @@ const HomePage = () => {
                               <h4 className="text-russo fw-normal theme-color mb-2">Fresh MEAT</h4>
                               <button
                                 onClick={() => {
-                                  window.location.href = "shop-left-sidebar.html";
+                                  window.location.href = "/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1";
                                 }}
                                 className="btn btn-animation btn-sm mend-auto"
                               >
@@ -2387,7 +2022,7 @@ const HomePage = () => {
                               </p>
                               <button
                                 onClick={() => {
-                                  window.location.href = "shop-left-sidebar.html";
+                                  window.location.href = "/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1";
                                 }}
                                 className="btn btn-animation btn-sm mend-auto"
                               >
@@ -2399,7 +2034,7 @@ const HomePage = () => {
                       </div>
 
                       <div className="col-xxl-4 col-xl-12 col-md-5">
-                        <a href="shop-left-sidebar.html" className="banner-contain hover-effect h-100">
+                        <a href="/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1" className="banner-contain hover-effect h-100">
                           <img src="13.jpg" className="bg-img blur-up lazyload" alt="" />
                           <div className="banner-details p-center-left p-4 h-100">
                             <div>
@@ -2713,7 +2348,7 @@ const HomePage = () => {
                           <h5 className="lh-sm mx-auto mt-1 text-content">Save up to 5% OFF</h5>
                           <button
                             onClick={() => {
-                              window.location.href = "shop-left-sidebar.html";
+                              window.location.href = "/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1";
                             }}
                             className="btn btn-animation btn-sm mx-auto mt-sm-3 mt-2"
                           >
@@ -2926,7 +2561,6 @@ const HomePage = () => {
                             </div>
                           </li>
                         </ul>
-                        
 
                         <div className="modal-button">
                           <button
@@ -2944,8 +2578,6 @@ const HomePage = () => {
                             View More Details
                           </button>
                         </div>
-
-
                       </div>
                     </div>
                   </div>
@@ -3077,7 +2709,7 @@ const HomePage = () => {
                               <img src={dp.imageURL} className="blur-up lazyload" alt="" />
                             </a>
 
-                            <a href="shop-left-sidebar.html" className="deal-contain">
+                            <a href="/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1" className="deal-contain">
                               <h5>{dp.productName}</h5>
                               <h6>
                                 {dp.salePrice.toLocaleString("en-US", {
