@@ -1,0 +1,27 @@
+.order-image {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 20px; /* hoặc tuỳ theo ý bạn */
+  position: relative;
+}
+
+.checkmark {
+  position: relative;
+  width: 120px;
+  height: 120px;
+}
+
+.checkmark__background,
+.checkmark__check {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.checkmark svg {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}

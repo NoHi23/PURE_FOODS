@@ -2,6 +2,8 @@ package com.spring.controller;
 
 
 import com.spring.dto.CategoryDTO;
+import com.spring.entity.Category;
+import com.spring.entity.Suppliers;
 import com.spring.service.CategoryService;
 import com.spring.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,4 +64,14 @@ public class CategoryController {
             return ResponseEntity.notFound().build();
         }
     }
+    @GetMapping("/searchByName")
+    public ResponseEntity<Category> getCategoryByName(@RequestParam("name")  String name) {
+        Category category = categoryService.findByName(name);
+        if (category != null) {
+            return ResponseEntity.ok(category);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
 }

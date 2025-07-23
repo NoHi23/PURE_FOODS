@@ -7,7 +7,9 @@ import ProductSlider from "./ProductSlider";
 import CookieConsent from "./CookieConsent";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
+import { toast } from 'react-toastify';
+import UpdateInfoModal from "../Login/UpdateInfoModal";
+
 
 const getOrUpdateExpiryTime = () => {
   let expiry = localStorage.getItem("countdownExpiry");
@@ -206,6 +208,17 @@ const HomePage = () => {
       .catch((error) => {
         console.error("Error fetching categories:", error);
       });
+  }, []);
+
+  const [showUpdateModal, setShowUpdateModal] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (user && (!user.phone || !user.address)) {
+      setCurrentUser(user);
+      setShowUpdateModal(true);
+    }
   }, []);
 
   return (
@@ -2562,6 +2575,7 @@ const HomePage = () => {
                           </li>
                         </ul>
 
+
                         <div className="modal-button">
                           <button
                             type="button"
@@ -2705,11 +2719,11 @@ const HomePage = () => {
                       {dealProduct?.map((dp, i) => (
                         <li className={`list-${(i % 3) + 1}`} key={i}>
                           <div className="deal-offer-contain">
-                            <a href="/" className="deal-image">
+                            <a href={`/product/${dp.productId}`} className="deal-image">
                               <img src={dp.imageURL} className="blur-up lazyload" alt="" />
                             </a>
 
-                            <a href="/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1" className="deal-contain">
+                            <a href={`/product/${dp.productId}`} className="deal-contain">
                               <h5>{dp.productName}</h5>
                               <h6>
                                 {dp.salePrice.toLocaleString("en-US", {
@@ -2741,7 +2755,18 @@ const HomePage = () => {
           <div className="bg-overlay"></div>
         </div>
       </div>
-    </HomepageLayout>
+      {showUpdateModal && currentUser && (
+        <UpdateInfoModal
+          isOpen={showUpdateModal}
+          user={currentUser}
+          onClose={() => setShowUpdateModal(false)}
+          onSuccess={(updatedUser) => {
+            setCurrentUser(updatedUser);
+            localStorage.setItem("user", JSON.stringify(updatedUser));
+          }}
+        />
+      )}
+    </HomepageLayout >
   );
 };
 
