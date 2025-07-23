@@ -197,8 +197,8 @@ const CartDetail = () => {
                           showCancelButton: true,
                           confirmButtonColor: "#d33",
                           cancelButtonColor: "#3085d6",
-                          confirmButtonText: "Xóa hết đi!",
-                          cancelButtonText: "Thôi để đó 😅",
+                          confirmButtonText: "Xóa hết!",
+                          cancelButtonText: "Huỷ bỏ",
                         }).then((result) => {
                           if (result.isConfirmed) {
                             axios
