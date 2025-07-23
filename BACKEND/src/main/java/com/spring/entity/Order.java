@@ -13,33 +13,21 @@ public class Order {
 
     private int customerID;
     private Date orderDate;
-
-    @Column(name = "total_amount")
     private Double totalAmount;
     private int statusID;
     private String shippingAddress;
     private int shippingMethodID;
     private Double shippingCost;
-
-    @Column(name = "distance")
     private Double distance;
-
-    @Column(name = "discount_amount")
     private Double discountAmount;
-
-    @Column(name = "cancel_reason")
+    private String status;
     private String cancelReason;
-
-    @Column(name = "estimated_delivery_date")
     private Date estimatedDeliveryDate;
-
-    @Column(name = "delay_reason")
     private String delayReason;
     private int driverID;
     private String returnReason;
     private String paymentMethod;
     private String paymentStatus;
-    private String status;
 
     public Order() {
     }

@@ -1,8 +1,8 @@
 package com.spring.entity;
 
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
-import java.util.List;
+import java.math.BigDecimal;
+import java.util.Date;
 
 @Entity
 @Table(name = "Exporters")
@@ -10,97 +10,200 @@ public class Exporter {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "ExporterID")
-    private Long exporterId;
+    private int exporterID;
 
-    @Column(name = "UserID", nullable = false)
-    private Long userId;
+    @ManyToOne
+    @JoinColumn(name = "userID", nullable = false)
+    private User user;
 
-    @Column(name = "CustomerID")
-    private Long customerId;
+    @ManyToOne
+    @JoinColumn(name = "customerID")
+    private User customer;
 
-    @Column(name = "CustomerName")
+    @Column(name = "customerName")
     private String customerName;
 
-    @Column(name = "Phone")
+    @Column(name = "phone")
     private String phone;
 
-    @Column(name = "Email")
+    @Column(name = "email")
     private String email;
 
-    @Column(name = "ShippingAddress")
+    @Column(name = "shippingAddress")
     private String shippingAddress;
 
-    @Column(name = "DriverID")
-    private Long driverId;
+    @ManyToOne
+    @JoinColumn(name = "driverID")
+    private Driver driver;
 
-    @Column(name = "OrderDate")
-    private LocalDateTime orderDate;
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "orderDate")
+    private Date orderDate;
 
-    @Column(name = "EstimatedDeliveryDate")
-    private LocalDateTime estimatedDeliveryDate;
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "estimatedDeliveryDate")
+    private Date estimatedDeliveryDate;
 
-    @Column(name = "DelayReason")
+    @Column(name = "delayReason")
     private String delayReason;
 
-    @Column(name = "TotalAmount")
-    private float totalAmount;
+    @Column(name = "totalAmount", precision = 10, scale = 2)
+    private BigDecimal totalAmount;
 
-    @Column(name = "StatusID")
-    private Integer statusId;
+    @ManyToOne
+    @JoinColumn(name = "statusID")
+    private OrderStatus statusRef;
 
-    @Column(name = "CancelReason")
+    @Column(name = "cancelReason")
     private String cancelReason;
 
-    @Column(name = "ReturnReason")
+    @Column(name = "returnReason")
     private String returnReason;
 
-    @Column(name = "Source")
+    @Column(name = "source")
     private String source;
 
-    @Column(name = "Status")
+    @Column(name = "status")
     private Integer status;
 
- @OneToMany(mappedBy = "exporterId", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private List<ExporterDetail> items;
+    // Constructors
+    public Exporter() {
+    }
 
-    public Exporter() {}
+    // Getters & Setters
+    public int getExporterID() {
+        return exporterID;
+    }
 
-    // Getters and Setters
-    public Long getExporterId() { return exporterId; }
-    public void setExporterId(Long exporterId) { this.exporterId = exporterId; }
-    public Long getUserId() { return userId; }
-    public void setUserId(Long userId) { this.userId = userId; }
-    public Long getCustomerId() { return customerId; }
-    public void setCustomerId(Long customerId) { this.customerId = customerId; }
-    public String getCustomerName() { return customerName; }
-    public void setCustomerName(String customerName) { this.customerName = customerName; }
-    public String getPhone() { return phone; }
-    public void setPhone(String phone) { this.phone = phone; }
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
-    public String getShippingAddress() { return shippingAddress; }
-    public void setShippingAddress(String shippingAddress) { this.shippingAddress = shippingAddress; }
-    public Long getDriverId() { return driverId; }
-    public void setDriverId(Long driverId) { this.driverId = driverId; }
-    public LocalDateTime getOrderDate() { return orderDate; }
-    public void setOrderDate(LocalDateTime orderDate) { this.orderDate = orderDate; }
-    public LocalDateTime getEstimatedDeliveryDate() { return estimatedDeliveryDate; }
-    public void setEstimatedDeliveryDate(LocalDateTime estimatedDeliveryDate) { this.estimatedDeliveryDate = estimatedDeliveryDate; }
-    public String getDelayReason() { return delayReason; }
-    public void setDelayReason(String delayReason) { this.delayReason = delayReason; }
-    public float getTotalAmount() { return totalAmount; }
-    public void setTotalAmount(float totalAmount) { this.totalAmount = totalAmount; }
-    public Integer getStatusId() { return statusId; }
-    public void setStatusId(Integer statusId) { this.statusId = statusId; }
-    public String getCancelReason() { return cancelReason; }
-    public void setCancelReason(String cancelReason) { this.cancelReason = cancelReason; }
-    public String getReturnReason() { return returnReason; }
-    public void setReturnReason(String returnReason) { this.returnReason = returnReason; }
-    public String getSource() { return source; }
-    public void setSource(String source) { this.source = source; }
-    public Integer getStatus() { return status; }
-    public void setStatus(Integer status) { this.status = status; }
-    public List<ExporterDetail> getItems() { return items; }
-    public void setItems(List<ExporterDetail> items) { this.items = items; }
+    public void setExporterID(int exporterID) {
+        this.exporterID = exporterID;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public User getCustomer() {
+        return customer;
+    }
+
+    public void setCustomer(User customer) {
+        this.customer = customer;
+    }
+
+    public String getCustomerName() {
+        return customerName;
+    }
+
+    public void setCustomerName(String customerName) {
+        this.customerName = customerName;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getShippingAddress() {
+        return shippingAddress;
+    }
+
+    public void setShippingAddress(String shippingAddress) {
+        this.shippingAddress = shippingAddress;
+    }
+
+    public Driver getDriver() {
+        return driver;
+    }
+
+    public void setDriver(Driver driver) {
+        this.driver = driver;
+    }
+
+    public Date getOrderDate() {
+        return orderDate;
+    }
+
+    public void setOrderDate(Date orderDate) {
+        this.orderDate = orderDate;
+    }
+
+    public Date getEstimatedDeliveryDate() {
+        return estimatedDeliveryDate;
+    }
+
+    public void setEstimatedDeliveryDate(Date estimatedDeliveryDate) {
+        this.estimatedDeliveryDate = estimatedDeliveryDate;
+    }
+
+    public String getDelayReason() {
+        return delayReason;
+    }
+
+    public void setDelayReason(String delayReason) {
+        this.delayReason = delayReason;
+    }
+
+    public BigDecimal getTotalAmount() {
+        return totalAmount;
+    }
+
+    public void setTotalAmount(BigDecimal totalAmount) {
+        this.totalAmount = totalAmount;
+    }
+
+    public OrderStatus getStatusRef() {
+        return statusRef;
+    }
+
+    public void setStatusRef(OrderStatus statusRef) {
+        this.statusRef = statusRef;
+    }
+
+    public String getCancelReason() {
+        return cancelReason;
+    }
+
+    public void setCancelReason(String cancelReason) {
+        this.cancelReason = cancelReason;
+    }
+
+    public String getReturnReason() {
+        return returnReason;
+    }
+
+    public void setReturnReason(String returnReason) {
+        this.returnReason = returnReason;
+    }
+
+    public String getSource() {
+        return source;
+    }
+
+    public void setSource(String source) {
+        this.source = source;
+    }
+
+    public Integer getStatus() {
+        return status;
+    }
+
+    public void setStatus(Integer status) {
+        this.status = status;
+    }
 }
