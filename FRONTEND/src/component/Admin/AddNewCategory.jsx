@@ -40,8 +40,9 @@ const AddNewCategory = () => {
       const res = await axios.post(`http://localhost:8082/PureFoods/api/category/create`, form);
       if (res.status === 200 || res.data.status === 200) {
         toast.success("Thêm danh mục thành công!");
+        window.dispatchEvent(new Event('categoryUpdated')); // Thông báo cập nhật
         setForm({ categoryName: '', categoryDescription: '', isOrganic: 0, status: 1 });
-        navigate('/admin-category');
+        //navigate('/admin-category');
       } else {
         toast.error(res.data.message || "Có lỗi xảy ra");
       }

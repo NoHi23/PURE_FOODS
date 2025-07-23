@@ -14,6 +14,8 @@ const CartDetail = () => {
   const [couponCode, setCouponCode] = useState('');
   const [couponDiscount, setCouponDiscount] = useState(0);
   const [shippingFee] = useState(6.9); // USD
+  const [inputQuantities, setInputQuantities] = useState({});
+
 
   useEffect(() => {
     window.scrollTo(0, 0); // Scroll lên đầu
@@ -38,6 +40,9 @@ const CartDetail = () => {
         setCartItems(res.data);
         const newSubtotal = res.data.reduce((sum, item) => sum + item.total, 0);
         setSubtotal(newSubtotal);
+        setInputQuantities(
+          Object.fromEntries(res.data.map((item) => [item.cartItemID, item.quantity]))
+        );
       })
       .catch(err => console.error("❌ Error fetching cart:", err));
   };
@@ -93,6 +98,14 @@ const CartDetail = () => {
   const toUSD = (amount) => {
     return amount.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
   };
+
+  useEffect(() => {
+    const handleCartUpdate = () => {
+      fetchCart(); // khi Header xoá sản phẩm → gọi lại API
+    };
+    window.addEventListener("cartUpdated", handleCartUpdate);
+    return () => window.removeEventListener("cartUpdated", handleCartUpdate);
+  }, []);
 
   const total = subtotal + shippingFee - couponDiscount;
 
@@ -150,13 +163,66 @@ const CartDetail = () => {
                             <td>
                               <div className="quantity price-quantity d-flex align-items-center gap-2">
                                 <button className="btn btn-sm btn-light" onClick={() => handleQuantityChange(item, -1)}>-</button>
+
                                 <input
                                   type="number"
                                   className="form-control"
-                                  value={item.quantity}
-                                  readOnly
+                                  value={inputQuantities[item.cartItemID] ?? item.quantity}
+                                  placeholder="0"
+                                  onChange={(e) => {
+                                    const value = e.target.value;
+                                    setInputQuantities((prev) => ({
+                                      ...prev,
+                                      [item.cartItemID]: value,
+                                    }));
+                                  }}
+                                  onBlur={(e) => {
+                                    const value = parseInt(inputQuantities[item.cartItemID]);
+
+                                    if (isNaN(value)) {
+                                      toast.warning("Vui lòng nhập số hợp lệ", { position: 'top-center' });
+                                      setInputQuantities((prev) => ({
+                                        ...prev,
+                                        [item.cartItemID]: item.quantity,
+                                      }));
+                                      return;
+                                    }
+
+                                    if (value < 1) {
+                                      toast.warning("Số lượng phải từ 1 trở lên", { position: 'top-center' });
+                                      setInputQuantities((prev) => ({
+                                        ...prev,
+                                        [item.cartItemID]: item.quantity,
+                                      }));
+                                      return;
+                                    }
+
+                                    if (value > item.stock) {
+                                      toast.warning(`Chỉ có ${item.stock} sản phẩm trong kho`, { position: 'top-center' });
+                                      setInputQuantities((prev) => ({
+                                        ...prev,
+                                        [item.cartItemID]: item.quantity,
+                                      }));
+                                      return;
+                                    }
+
+                                    const updatedItem = {
+                                      ...item,
+                                      quantity: value,
+                                      total: value * item.priceAfterDiscount,
+                                    };
+
+                                    axios
+                                      .put(`http://localhost:8082/PureFoods/api/cart/update/${item.cartItemID}`, updatedItem)
+                                      .then(() => {
+                                        fetchCart();
+                                        window.dispatchEvent(new Event("cartUpdated"));
+                                      })
+                                      .catch((err) => console.error(err));
+                                  }}
                                   style={{ width: "60px", textAlign: "center" }}
                                 />
+
                                 <button className="btn btn-sm btn-light" onClick={() => handleQuantityChange(item, 1)}>+</button>
                               </div>
                             </td>

@@ -141,6 +141,7 @@ export default function Header() {
     try {
       await axios.delete(`http://localhost:8082/PureFoods/api/cart/delete/${cartItemID}`);
       await fetchCartItems(); //  gọi lại để cập nhật
+      window.dispatchEvent(new Event("cartUpdated"));
     } catch (error) {
       console.error("Lỗi xoá sản phẩm trong giỏ hàng:", error);
       toast.error("Xoá sản phẩm thất bại");

@@ -48,7 +48,7 @@ const AddNewSupplier = () => {
     try {
       await axios.post("http://localhost:8082/PureFoods/api/supplier/create", form);
       toast.success("Thêm nhà cung cấp thành công!");
-      navigate('/admin-supplier');
+      //navigate('/admin-supplier');
     } catch (error) {
       toast.error("Lỗi khi thêm nhà cung cấp!");
       console.error(error);
