@@ -59,7 +59,7 @@ const Forgot = () => {
                     </div>
 
                     <div class="col-12">
-                      <button type="submit" class="btn btn-animation w-100 justify-content-center" disabled={isLoading} >
+                      <button type="submit" class="btn btn-animation w-100 justify-content-center" disabled={isLoading} style={{ backgroundColor: "#0DA487"}} >
                         {isLoading ? (                    
                           <>
                             <span class="spinner-border spinner-border-sm me-2"></span>

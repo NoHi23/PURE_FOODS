@@ -32,5 +32,4 @@ public interface UserService {
 
     UserDTO getUserById(int userId);
     boolean verifyPassword(int userId, String inputPassword);
-
 }

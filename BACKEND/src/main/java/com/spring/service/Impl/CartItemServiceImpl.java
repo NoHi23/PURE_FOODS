@@ -168,4 +168,10 @@ public class CartItemServiceImpl implements CartItemService {
         item.setUserID(dto.getUserID());
         return item;
     }
+
+    @Override
+    public void clearCartByUserId(int userId) {
+        cartItemDAO.deleteByUserId(userId);
+    }
+
 }

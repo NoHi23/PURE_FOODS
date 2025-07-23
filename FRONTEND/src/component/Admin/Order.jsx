@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import './Order.css';
 import axios from 'axios';
 import $ from 'jquery';
 import 'datatables.net';
@@ -8,10 +7,25 @@ import SideBar from '../AdminDashboard/SideBar';
 
 const Order = () => {
   const [orders, setOrders] = useState([]);
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [orderDetails, setOrderDetails] = useState([]);
+
+
+  const handleViewDetails = (orderId) => {
+    setSelectedOrder(orderId);
+    
+    axios.get(`http://localhost:8082/PureFoods/api/orders/${orderId}`)
+      .then(res => {
+        setOrderDetails(res.data.order);
+        $('#orderDetailModal').modal('show');
+      })
+      .catch(err => console.error(err));
+  };
+
 
   useEffect(() => {
     axios.get("http://localhost:8082/PureFoods/api/orders/getAll")
-      .then(res => setOrders(res.data))
+      .then(res => setOrders(res.data.orders))
       .catch(err => console.error(err));
   }, []);
 
@@ -58,6 +72,14 @@ const Order = () => {
     }
   };
 
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentProducts = orders.slice(startIndex, endIndex);
+  const totalPages = Math.ceil(orders.length / itemsPerPage);
+
   return (
     <div className="page-wrapper compact-wrapper" id="pageWrapper">
       <TopBar />
@@ -85,7 +107,7 @@ const Order = () => {
                           </tr>
                         </thead>
                         <tbody>
-                          {orders.map((o, i) => (
+                          {currentProducts?.map((o, i) => (
                             <tr key={i}>
                               <td>{o.orderID}</td>
                               <td>{new Date(o.orderDate).toLocaleDateString()}</td>
@@ -94,7 +116,11 @@ const Order = () => {
                               <td>${o.totalAmount}</td>
                               <td>
                                 <ul>
-                                  <li><a href="#"><i className="ri-eye-line"></i></a></li>
+                                  <li>
+                                    <a href="#" onClick={(e) => { e.preventDefault(); handleViewDetails(o.orderID); }}>
+                                      <i className="ri-eye-line"></i>
+                                    </a>
+                                  </li>
                                   <li><a href="#"><i className="ri-pencil-line"></i></a></li>
                                   <li><a href="#" data-bs-toggle="modal" data-bs-target="#deleteModal">
                                     <i className="ri-delete-bin-line"></i></a>
@@ -106,6 +132,27 @@ const Order = () => {
                           ))}
                         </tbody>
                       </table>
+                      <div className="pagination-container d-flex justify-content-center mt-3">
+                        <nav>
+                          <ul className="pagination">
+                            <li className={`page-item ${currentPage === 1 && "disabled"}`}>
+                              <button className="page-link" onClick={() => setCurrentPage(currentPage - 1)}>Previous</button>
+                            </li>
+
+                            {[...Array(totalPages)].map((_, index) => (
+                              <li key={index} className={`page-item ${currentPage === index + 1 && "active"}`}>
+                                <button className="page-link" onClick={() => setCurrentPage(index + 1)}>
+                                  {index + 1}
+                                </button>
+                              </li>
+                            ))}
+
+                            <li className={`page-item ${currentPage === totalPages && "disabled"}`}>
+                              <button className="page-link" onClick={() => setCurrentPage(currentPage + 1)}>Next</button>
+                            </li>
+                          </ul>
+                        </nav>
+                      </div>
                     </div>
 
                   </div>
@@ -126,6 +173,40 @@ const Order = () => {
         </div>
       </div>
 
+      <div className="modal fade" id="orderDetailModal" tabIndex="-1" aria-hidden="true">
+        <div className="modal-dialog modal-lg modal-dialog-centered">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h5 className="modal-title">Order Details - ID: {selectedOrder}</h5>
+              <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div className="modal-body">
+              <table className="table table-bordered">
+                <thead>
+                  <tr>
+                    <th>Product Name</th>
+                    <th>Quantity</th>
+                    <th>Unit Price</th>
+                    <th>Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {orderDetails.length > 0 ? orderDetails.map((detail, idx) => (
+                    <tr key={idx}>
+                      <td>dsfd</td>
+                      <td>asdf</td>
+                      <td>asdf</td>
+                      <td>asdf</td>
+                    </tr>
+                  )) : (
+                    <tr><td colSpan="4" className="text-center">No details found.</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
       <div className="modal fade" id="deleteModal" tabIndex="-1" aria-hidden="true">
         <div className="modal-dialog modal-dialog-centered">
           <div className="modal-content">

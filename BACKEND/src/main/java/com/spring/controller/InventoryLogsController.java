@@ -29,7 +29,7 @@ public class InventoryLogsController {
         try {
             InventoryLogsDTO confirmedOrder = inventoryLogsService.confirmOrder(orderDTO);
             Map<String, Object> response = new HashMap<>();
-            response.put("message", "Order confirmed successfully!");
+            response.put("message", "Xác nhận đơn hàng thành công!");
             response.put("status", 200);
             response.put("log", confirmedOrder);
             return ResponseEntity.ok(response);
@@ -46,7 +46,7 @@ public class InventoryLogsController {
         try {
             InventoryLogsDTO createdOrder = inventoryLogsService.createOrder(orderDTO);
             Map<String, Object> response = new HashMap<>();
-            response.put("message", "Order created successfully!");
+            response.put("message", "Tạo đơn nhập hàng thành công!");
             response.put("status", 200);
             response.put("log", createdOrder);
             return ResponseEntity.ok(response);
@@ -63,7 +63,7 @@ public class InventoryLogsController {
         try {
             List<InventoryLogsDTO> logs = inventoryLogsService.getLogsByProductId(productId);
             Map<String, Object> response = new HashMap<>();
-            response.put("message", "Get inventory logs successfully!");
+            response.put("message", "Lấy lịch sử nhập hàng thàng công!");
             response.put("status", 200);
             response.put("logs", logs);
             return ResponseEntity.ok(response);
@@ -80,7 +80,7 @@ public class InventoryLogsController {
         try {
             List<InventoryLogsDTO> list = inventoryLogsService.getAllLogs();
             Map<String, Object> response = new HashMap<>();
-            response.put("message", "get all inventory logs successfully!");
+            response.put("message", "Lấy tất cả lịch sử nhập hàng thành công!");
             response.put("status", 200);
             response.put("logs", list);
             return ResponseEntity.ok(response);
@@ -91,4 +91,37 @@ public class InventoryLogsController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
     }
+
+    @PostMapping("/return-order")
+    public ResponseEntity<?> returnOrder(@RequestBody InventoryLogsDTO dto) {
+        try {
+            InventoryLogsDTO created = inventoryLogsService.createReturnOrder(dto);
+            Map<String, Object> res = new HashMap<>();
+            res.put("message", "Đã tạo đơn trả hàng thành công");
+            res.put("log", created);
+            return ResponseEntity.ok(res);
+        } catch (RuntimeException e) {
+            Map<String, Object> err = new HashMap<>();
+            err.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(err);
+        }
+    }
+
+    @PostMapping("/archive")
+    public ResponseEntity<?> archiveLog(@RequestBody InventoryLogsDTO dto) {
+        try {
+            InventoryLogsDTO updated = inventoryLogsService.archiveLog(dto.getLogId());
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Đã lưu trữ đơn hàng!");
+            response.put("status", 200);
+            response.put("log", updated);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> error = new HashMap<>();
+            error.put("message", e.getMessage());
+            error.put("status", 500);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+        }
+    }
+
 }
