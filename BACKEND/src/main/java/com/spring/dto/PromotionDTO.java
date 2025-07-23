@@ -1,5 +1,7 @@
 package com.spring.dto;
 
+import java.time.LocalDate;
+
 public class PromotionDTO {
     private int promotionID;
     private String promotionCode;
@@ -7,14 +9,14 @@ public class PromotionDTO {
     private String discountType;
     private double discountValue;
     private String startDate;
-    private String endDate;
+    private LocalDate endDate;
     private double minOrderAmount;
     private int status;
 
     public PromotionDTO() {}
 
     public PromotionDTO(int promotionID, String promotionCode, String description, String discountType,
-                        double discountValue, String startDate, String endDate, double minOrderAmount, int status) {
+                        double discountValue, String startDate, LocalDate endDate, double minOrderAmount, int status) {
         this.promotionID = promotionID;
         this.promotionCode = promotionCode;
         this.description = description;
@@ -62,10 +64,10 @@ public class PromotionDTO {
     public void setStartDate(String startDate) {
         this.startDate = startDate;
     }
-    public String getEndDate() {
+    public LocalDate getEndDate() {
         return endDate;
     }
-    public void setEndDate(String endDate) {
+    public void setEndDate(LocalDate endDate) {
         this.endDate = endDate;
     }
     public double getMinOrderAmount() {

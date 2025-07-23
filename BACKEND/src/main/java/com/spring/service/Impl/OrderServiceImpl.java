@@ -1,10 +1,12 @@
 package com.spring.service.Impl;
 
 import com.spring.dao.OrderDAO;
+import com.spring.dao.OrderDetailDAO;
 import com.spring.dao.ProductDAO;
 import com.spring.dto.BestSellingProductDTO;
 import com.spring.dto.OrderDTO;
 import com.spring.entity.Order;
+import com.spring.entity.OrderDetail;
 import com.spring.entity.Products;
 import com.spring.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -161,4 +163,42 @@ public class OrderServiceImpl implements OrderService {
     public List<Order> getTop5RecentOrders() {
         return orderDAO.getTop5RecentOrders();
     }
+    @Override
+    public void updateOrder(Order order) {
+        orderDAO.updateOrder(order);
+    }
+
+    @Override
+    public Order getOrderEntityById(int orderId) {
+            return orderDAO.findById(orderId).orElse(null);
+    }
+
+    @Autowired
+    private OrderDetailDAO orderDetailRepository;
+
+    @Autowired
+    private ProductDAO productRepository;
+
+    @Override
+    @Transactional
+    public void decreaseProductQuantitiesByOrderId(int orderId) {
+        List<OrderDetail> orderDetails = orderDetailRepository.findByOrderID(orderId);
+
+        for (OrderDetail detail : orderDetails) {
+            Products product = productRepository.findById(detail.getProductID())
+                    ;
+
+            int newQuantity = product.getStockQuantity() - detail.getQuantity();
+            if (newQuantity < 0) {
+                throw new RuntimeException("Không đủ hàng cho sản phẩm: " + product.getProductName());
+            }
+
+            product.setStockQuantity(newQuantity);
+            productRepository.save(product);
+        }
+    }
+
+
+
+
 }

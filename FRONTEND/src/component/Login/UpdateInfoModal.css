@@ -1,0 +1,28 @@
+.form-update-info label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+
+.form-update-info input {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  margin-bottom: 10px;
+  font-size: 14px;
+}
+
+.form-update-info button {
+  padding: 10px;
+  font-size: 15px;
+  border: none;
+  border-radius: 8px;
+  background-color: #28a745;
+  color: white;
+  cursor: pointer;
+}
+
+.form-update-info button:hover {
+  background-color: #218838;
+}

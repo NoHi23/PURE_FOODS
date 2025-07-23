@@ -71,4 +71,33 @@ public class PromotionController {
                     .body(Map.of("message", "Promotion not found", "status", 404));
         }
     }
+
+    @GetMapping("/code/{code}")
+    public ResponseEntity<?> getPromotionByCouponCode(@PathVariable("code") String code) {
+        try {
+            PromotionDTO promotionDTO = promotionService.getPromotionByCode(code);
+            return ResponseEntity.ok(Map.of("promotion", promotionDTO, "status", 200));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("message", "Promotion not found", "status", 404));
+        }
+    }
+    @PostMapping("/spin/{userId}")
+    public ResponseEntity<?> spinWheel(@PathVariable("userId") int userId) {
+        try {
+            Map<String, Object> result = promotionService.spinWheel(userId);
+            return ResponseEntity.ok(Map.of(
+                    "message", result.get("message"),
+                    "promotion", result.get("promotion"),
+                    "status", 200
+            ));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("message", e.getMessage(), "status", 403));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "Có lỗi xảy ra khi quay vòng", "status", 500));
+        }
+    }
+
 }
