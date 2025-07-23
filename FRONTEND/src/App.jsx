@@ -40,6 +40,7 @@ import Taxes from './component/Admin/Taxes';
 import AddNewTax from './component/Admin/AddNewTax';
 import Blog from './component/Admin/Blog';
 import AddNewBlog from './component/Admin/AddNewBlog';
+import OrderSuccess from './component/OrderSuccess/OrderSuccess';
 {/*import CustomerBlog from './component/CustomerBlog';
 import BlogDetail from './component/BlogDetail';*/}
 
@@ -63,7 +64,7 @@ function AppContent() {
 
   const backToTopPaths = [
     '/login', '/signup', '/forgot', '/reset-password', '/verify-otp',
-    '/', '/wishlist'
+    '/', '/wishlist', '/order-success'
   ];
 
   const aiChatPaths = ['/', '/wishlist'];
@@ -220,6 +221,12 @@ function AppContent() {
           </PrivateRoute>
         } />
 
+         <Route path="/order-success/:id" element={
+          <PrivateRoute allowedRoles={2}>
+            <OrderSuccess />
+          </PrivateRoute>
+        } />
+
         <Route path="/importer" element={
           <PrivateRoute allowedRoles={4}>
             <ImporterDashboard />
@@ -255,6 +262,7 @@ function App() {
           pauseOnHover={false}
           theme="light"
           transition={Bounce}
+          style={{ zIndex: 99999 }}
         />
       </WishlistProvider>
     </BrowserRouter>

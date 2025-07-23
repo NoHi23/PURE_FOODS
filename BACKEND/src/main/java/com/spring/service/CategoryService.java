@@ -1,6 +1,8 @@
 package com.spring.service;
 
 import com.spring.dto.CategoryDTO;
+import com.spring.entity.Category;
+
 import java.util.List;
 
 public interface CategoryService {
@@ -18,4 +20,6 @@ public interface CategoryService {
 
     // Xóa danh mục theo ID
     void deleteCategory(int id);
+    String findNameById(Integer id);
+    Category findByName(String name) ;
 }

@@ -14,4 +14,7 @@ public interface PromotionService {
     PromotionDTO updatePromotion(int id, PromotionDTO promotionDTO);
 
     void deletePromotion(int id);
+
+    PromotionDTO getPromotionByCode(String code);
+
 }

@@ -56,4 +56,14 @@ public class SuppliersDAOImpl implements SuppliersDAO {
         return query.uniqueResult().intValue();
     }
 
+    @Override
+    public Suppliers getSupplierByName(String name) {
+        Session session = sessionFactory.getCurrentSession();
+        Query<Suppliers> query = session.createQuery(
+                "FROM Suppliers WHERE LOWER(supplierName) LIKE :name", Suppliers.class);
+        query.setParameter("name", "%" + name.toLowerCase().trim() + "%");
+        List<Suppliers> result = query.getResultList();
+        return result.isEmpty() ? null : result.get(0); // lấy kết quả đầu tiên khớp gần đúng
+    }
+
 }

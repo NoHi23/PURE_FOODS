@@ -32,6 +32,15 @@ public class PromotionServiceImpl implements PromotionService {
     }
 
     @Override
+    public PromotionDTO getPromotionByCode(String code) {
+        Promotions promotion = promotionDAO.getPromotionByCode(code);
+        if (promotion == null) {
+            throw new RuntimeException("Promotion not found");
+        }
+        return convertToDTO(promotion);
+    }
+
+    @Override
     public List<PromotionDTO> getAllPromotions() {
         List<Promotions> promotions = promotionDAO.getAllPromotions();
         return promotions.stream()

@@ -71,4 +71,17 @@ public class PromotionController {
                     .body(Map.of("message", "Promotion not found", "status", 404));
         }
     }
+
+    @GetMapping("/code/{code}")
+    public ResponseEntity<?> getPromotionByCouponCode(@PathVariable("code") String code) {
+        try {
+            PromotionDTO promotionDTO = promotionService.getPromotionByCode(code);
+            return ResponseEntity.ok(Map.of("promotion", promotionDTO, "status", 200));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("message", "Promotion not found", "status", 404));
+        }
+    }
+
+
 }

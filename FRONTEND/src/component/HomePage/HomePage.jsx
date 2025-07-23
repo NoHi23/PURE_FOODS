@@ -7,6 +7,7 @@ import ProductSlider from "./ProductSlider";
 import CookieConsent from "./CookieConsent";
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import UpdateInfoModal from "../Login/UpdateInfoModal";
 
 
 const getOrUpdateExpiryTime = () => {
@@ -202,6 +203,17 @@ const HomePage = () => {
 
     fetchSuppliers();
   }, [selectedProduct]);
+
+  const [showUpdateModal, setShowUpdateModal] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (user && (!user.phone || !user.address)) {
+      setCurrentUser(user);
+      setShowUpdateModal(true);
+    }
+  }, []);
 
   return (
     <HomepageLayout>
@@ -3017,7 +3029,7 @@ const HomePage = () => {
                             </div>
                           </li>
                         </ul>
-                        
+
 
                         <div className="modal-button">
                           <button
@@ -3164,11 +3176,11 @@ const HomePage = () => {
                       {dealProduct?.map((dp, i) => (
                         <li className={`list-${(i % 3) + 1}`} key={i}>
                           <div className="deal-offer-contain">
-                            <a href="/" className="deal-image">
+                            <a href={`/product/${dp.productId}`} className="deal-image">
                               <img src={dp.imageURL} className="blur-up lazyload" alt="" />
                             </a>
 
-                            <a href="shop-left-sidebar.html" className="deal-contain">
+                            <a href={`/product/${dp.productId}`} className="deal-contain">
                               <h5>{dp.productName}</h5>
                               <h6>
                                 {dp.salePrice.toLocaleString("en-US", {
@@ -3199,6 +3211,17 @@ const HomePage = () => {
           <div className="bg-overlay"></div>
         </div>
       </div >
+      {showUpdateModal && currentUser && (
+        <UpdateInfoModal
+          isOpen={showUpdateModal}
+          user={currentUser}
+          onClose={() => setShowUpdateModal(false)}
+          onSuccess={(updatedUser) => {
+            setCurrentUser(updatedUser);
+            localStorage.setItem("user", JSON.stringify(updatedUser));
+          }}
+        />
+      )}
     </HomepageLayout >
   );
 };

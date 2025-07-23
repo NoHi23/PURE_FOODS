@@ -10,4 +10,6 @@ public interface PromotionDAO {
     Promotions createPromotion(Promotions promotion);
     Promotions updatePromotion(Promotions promotion);
     void deletePromotion(int id);
+    Promotions getPromotionByCode(String code);
+
 }

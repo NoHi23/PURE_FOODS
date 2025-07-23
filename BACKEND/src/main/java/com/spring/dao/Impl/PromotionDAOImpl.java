@@ -21,12 +21,20 @@ public class PromotionDAOImpl implements PromotionDAO {
     }
 
     @Override
+    public Promotions getPromotionByCode(String code) {
+        Session session = sessionFactory.getCurrentSession();
+        String hql = "FROM Promotions p WHERE p.promotionCode = :code";
+        return session.createQuery(hql, Promotions.class)
+                .setParameter("code", code)
+                .uniqueResult();
+    }
+
+    @Override
     public List<Promotions> getAllPromotions() {
         Session session = sessionFactory.getCurrentSession();
         Query<Promotions> query = session.createQuery("FROM Promotions", Promotions.class);
         return query.getResultList();
     }
-
     @Override
     public Promotions createPromotion(Promotions promotion) {
         Session session = sessionFactory.getCurrentSession();

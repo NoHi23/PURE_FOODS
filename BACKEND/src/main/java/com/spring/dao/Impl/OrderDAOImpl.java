@@ -13,6 +13,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public class OrderDAOImpl implements OrderDAO {
@@ -129,4 +130,10 @@ public class OrderDAOImpl implements OrderDAO {
                 .list();
     }
 
+    @Override
+    public Optional<Order> findById(int orderId) {
+        Session session = sessionFactory.getCurrentSession();
+        Order order = session.get(Order.class, orderId);
+        return Optional.ofNullable(order);
+    }
 }

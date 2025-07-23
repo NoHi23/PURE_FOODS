@@ -192,5 +192,25 @@ public class OrderDTO {
     public void setPaymentStatus(String paymentStatus){
         this.paymentStatus = paymentStatus;
     }
+    public OrderDTO(com.spring.entity.Order order) {
+        this.orderID = order.getOrderID();
+        this.customerID = order.getCustomerID();
+        this.orderDate = order.getOrderDate();
+        this.totalAmount = order.getTotalAmount();
+        this.statusID = order.getStatusID();
+        this.shippingAddress = order.getShippingAddress();
+        this.shippingMethodID = order.getShippingMethodID();
+        this.shippingCost = order.getShippingCost();
+        this.distance = order.getDistance();
+        this.discountAmount = order.getDiscountAmount();
+        this.status = order.getStatus();
+        this.cancelReason = order.getCancelReason();
+        this.estimatedDeliveryDate = order.getEstimatedDeliveryDate();
+        this.delayReason = order.getDelayReason();
+        this.driverID = order.getDriverID();
+        this.returnReason = order.getReturnReason();
+        this.paymentMethod = order.getPaymentMethod();
+        this.paymentStatus = order.getPaymentStatus();
+    }
 
 }

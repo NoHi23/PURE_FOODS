@@ -90,8 +90,7 @@ INSERT INTO Blogs (Title, Content, UserID, Status)
 VALUES
 (N'Healthy Eating Tips', N'Explore the benefits of organic foods and tips for a balanced diet.', 1, 1),
 (N'Farm-to-Table Benefits', N'Learn how farm-to-table practices enhance food quality.', 1, 1);
-<<<<<<< HEAD
-=======
+
 
 CREATE TABLE TraderProducts (
     traderProductId INT IDENTITY(1,1) PRIMARY KEY,
