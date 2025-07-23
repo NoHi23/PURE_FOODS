@@ -1,7 +1,6 @@
 import React from "react";
 
 const Tab = ({ user }) => {
-  console.log("Tab rendered, user:", user);
   if (!user) return <div>Vui lòng đăng nhập để xem menu!</div>;
 
   return (
@@ -25,33 +24,94 @@ const Tab = ({ user }) => {
         </div>
         <ul className="nav nav-pills user-nav-pills" id="pills-tab" role="tablist">
           <li className="nav-item" role="presentation">
-            <button className="nav-link active" id="pills-dashboard-tab" data-bs-toggle="pill" data-bs-target="#pills-dashboard" type="button" role="tab" aria-controls="pills-dashboard">
+            <button
+              className="nav-link active"
+              id="pills-dashboard-tab"
+              data-bs-toggle="pill"
+              data-bs-target="#pills-dashboard"
+              type="button"
+              role="tab"
+              aria-controls="pills-dashboard"
+            >
               <i data-feather="home"></i>Thông tin tổng quan
             </button>
           </li>
           <li className="nav-item" role="presentation">
-            <button className="nav-link" id="pills-product-tab" data-bs-toggle="pill" data-bs-target="#pills-product" type="button" role="tab" aria-controls="pills-product">
+            <button
+              className="nav-link"
+              id="pills-product-tab"
+              data-bs-toggle="pill"
+              data-bs-target="#pills-product"
+              type="button"
+              role="tab"
+              aria-controls="pills-product"
+            >
               <i data-feather="shopping-bag"></i>Quản lý xuất kho
             </button>
           </li>
           <li className="nav-item" role="presentation">
-            <button className="nav-link" id="pills-order-tab" data-bs-toggle="pill" data-bs-target="#pills-order" type="button" role="tab" aria-controls="pills-order">
+            <button
+              className="nav-link"
+              id="pills-order-tab"
+              data-bs-toggle="pill"
+              data-bs-target="#pills-order"
+              type="button"
+              role="tab"
+              aria-controls="pills-order"
+            >
               <i data-feather="shopping-bag"></i>Lịch sử xuất kho
             </button>
           </li>
           <li className="nav-item" role="presentation">
-            <button className="nav-link" id="pills-profile-tab" data-bs-toggle="pill" data-bs-target="#pills-profile" type="button" role="tab" aria-controls="pills-profile">
+            <button
+              className="nav-link"
+              id="pills-profile-tab"
+              data-bs-toggle="pill"
+              data-bs-target="#pills-profile"
+              type="button"
+              role="tab"
+              aria-controls="pills-profile"
+            >
               <i data-feather="user"></i>Thông tin cá nhân
             </button>
           </li>
           <li className="nav-item" role="presentation">
-            <button className="nav-link" id="pills-security-tab" data-bs-toggle="pill" data-bs-target="#pills-security" type="button" role="tab" aria-controls="pills-security">
+            <button
+              className="nav-link"
+              id="pills-security-tab"
+              data-bs-toggle="pill"
+              data-bs-target="#pills-security"
+              type="button"
+              role="tab"
+              aria-controls="pills-security"
+            >
               <i data-feather="settings"></i>Cài đặt
             </button>
           </li>
           <li className="nav-item" role="presentation">
-            <button className="nav-link" id="pills-create-order-tab" data-bs-toggle="pill" data-bs-target="#pills-create-order" type="button" role="tab" aria-controls="pills-create-order">
+            <button
+              className="nav-link"
+              id="pills-create-order-tab"
+              data-bs-toggle="pill"
+              data-bs-target="#pills-create-order"
+              type="button"
+              role="tab"
+              aria-controls="pills-create-order"
+            >
               <i data-feather="plus"></i>Quản lý đơn hàng
+            </button>
+          </li>
+          <li className="nav-item" role="presentation">
+            <button
+              className="nav-link"
+              id="pills-driver-management-tab"
+              data-bs-toggle="pill"
+              data-bs-target="#pills-driver-management"
+              type="button"
+              role="tab"
+              aria-controls="pills-driver-management"
+            >
+              <i data-feather="truck"></i>Quản lý tài xế
             </button>
           </li>
         </ul>

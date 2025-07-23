@@ -12,6 +12,8 @@ END
 Create Database  CleanFoodShop;
 USE CleanFoodShop;
 GO
+
+
 -- Bảng Role: Quản lý vai trò người dùng
 CREATE TABLE Role (
 RoleID INT PRIMARY KEY IDENTITY(1,1),
@@ -279,6 +281,7 @@ FOREIGN KEY (UserID) REFERENCES Users(UserID),
 INDEX idx_product_id NONCLUSTERED (ProductID)
 );
 GO
+
 -- Chèn dữ liệu mẫu vào bảng OrderStatuses
 INSERT INTO OrderStatuses (StatusName, Description, Status)
 VALUES
@@ -287,6 +290,67 @@ VALUES
 ('Shipped', N'Đơn hàng đã được giao cho đơn vị vận chuyển', 1),
 ('Delivered', N'Đơn hàng đã được giao đến khách hàng', 1),
 ('Cancelled', N'Đơn hàng đã bị hủy', 0);
+GO
+
+-- Bảng Exporters: Quản lý yêu cầu xuất hàng
+CREATE TABLE Exporters (
+    ExporterID INT PRIMARY KEY IDENTITY(1,1),
+    UserID INT NOT NULL,
+    CustomerID INT,
+    CustomerName NVARCHAR(100),
+    Phone NVARCHAR(20),
+    Email NVARCHAR(100),
+    ShippingAddress NVARCHAR(255),
+    DriverID INT,
+    OrderDate DATETIME DEFAULT GETDATE(),
+    EstimatedDeliveryDate DATETIME,
+    DelayReason NVARCHAR(255),
+    TotalAmount DECIMAL(10, 2),
+    StatusID INT,
+    CancelReason NVARCHAR(255),
+    ReturnReason NVARCHAR(255),
+    Source NVARCHAR(100),
+    Status INT,
+    FOREIGN KEY (UserID) REFERENCES Users(UserID),
+    FOREIGN KEY (CustomerID) REFERENCES Users(UserID),
+    FOREIGN KEY (DriverID) REFERENCES Drivers(DriverID),
+    FOREIGN KEY (StatusID) REFERENCES OrderStatuses(StatusID),
+    INDEX idx_user_id NONCLUSTERED (UserID),
+    INDEX idx_customer_id NONCLUSTERED (CustomerID),
+    INDEX idx_status_id NONCLUSTERED (StatusID)
+);
+GO
+
+-- Bảng ExporterDetails: Chi tiết yêu cầu xuất hàng
+CREATE TABLE ExporterDetails (
+    ExporterDetailID INT PRIMARY KEY IDENTITY(1,1),
+    ExporterID INT NOT NULL,
+    ProductID INT NOT NULL,
+    Quantity INT NOT NULL CHECK (Quantity > 0),
+    UnitPrice DECIMAL(10, 2) NOT NULL,
+    ImageURL NVARCHAR(MAX),
+    Status INT,
+    FOREIGN KEY (ExporterID) REFERENCES Exporters(ExporterID),
+    FOREIGN KEY (ProductID) REFERENCES Products(ProductID),
+    INDEX idx_exporter_id NONCLUSTERED (ExporterID),
+    INDEX idx_product_id NONCLUSTERED (ProductID)
+);
+GO
+
+-- Bảng ExporterHistory: Lịch sử thao tác xuất/trả hàng
+CREATE TABLE ExporterHistory (
+    HistoryID INT PRIMARY KEY IDENTITY(1,1),
+    ExporterID INT NOT NULL,
+    Action NVARCHAR(50) NOT NULL,
+    UserID INT,
+    ActionDate DATETIME DEFAULT GETDATE(),
+    Details NVARCHAR(MAX),
+    Status INT,
+    FOREIGN KEY (ExporterID) REFERENCES Exporters(ExporterID),
+    FOREIGN KEY (UserID) REFERENCES Users(UserID),
+    INDEX idx_exporter_id NONCLUSTERED (ExporterID),
+    INDEX idx_action_date NONCLUSTERED (ActionDate)
+);
 GO
 GO
 SET IDENTITY_INSERT Role On;
@@ -376,4 +440,24 @@ GO
 INSERT INTO InventoryLogs (ProductID, UserID, QuantityChange, Reason, Status) VALUES
 (1, 1, 50, N'Stock replenishment', 1),
 (2, 1, 100, N'New shipment', 1);
+GO
+-- Chèn dữ liệu mẫu vào bảng Exporters
+INSERT INTO Exporters (UserID, CustomerID, CustomerName, Phone, Email, ShippingAddress, DriverID, OrderDate, EstimatedDeliveryDate, TotalAmount, StatusID, Source, Status)
+VALUES
+(1, 2, N'Tran Thi B', '0907654321', 'b.tran@email.com', N'456 Hai Ba Trung, HCM', 1, '2025-07-22 07:00:00', '2025-07-25', 80.00, 1, N'Customer', 1),
+(1, 2, N'Tran Thi B', '0907654321', 'b.tran@email.com', N'123 Le Loi, HN', 2, '2025-07-22 07:05:00', '2025-07-24', 60.00, 2, N'Customer', 1);
+GO
+
+-- Chèn dữ liệu mẫu vào bảng ExporterDetails
+INSERT INTO ExporterDetails (ExporterID, ProductID, Quantity, UnitPrice, ImageURL, Status)
+VALUES
+(1, 1, 2, 50.00, 'spinach.jpg', 1),
+(2, 2, 2, 30.00, 'apple.jpg', 1);
+GO
+
+-- Chèn dữ liệu mẫu vào bảng ExporterHistory
+INSERT INTO ExporterHistory (ExporterID, Action, UserID, Details, Status)
+VALUES
+(1, 'Create', 1, N'Created exporter request', 1),
+(2, 'Create', 1, N'Created exporter request', 1);
 GO

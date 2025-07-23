@@ -39,6 +39,7 @@ public class Order {
     private String returnReason;
     private String paymentMethod;
     private String paymentStatus;
+    private String status;
 
     public Order() {
     }
