@@ -44,7 +44,7 @@ import AddNewBlog from './component/Admin/AddNewBlog';
 //import BlogDetail from './component/BlogDetail';
 import DashboardCategory from './component/ShopLeftSidebar/DashboardCategory';
 import OrderSuccess from './component/OrderSuccess/OrderSuccess';
-import SpinWheelButton from './component/SpinWheelPage/SpinWheelPage';
+import SpinWheelButton from './component/SpinWheelPage/SpinWheelButton';
 {/*import CustomerBlog from './component/CustomerBlog';
 import BlogDetail from './component/BlogDetail';*/}
 

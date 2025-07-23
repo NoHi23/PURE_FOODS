@@ -13,7 +13,7 @@
 }
 
 .card-header {
-  background-color: #009688;
+  background-color: #009688 !important;
   color: white;
   padding: 16px;
   border-bottom: 1px solid #e0e0e0;
@@ -37,25 +37,26 @@
   border: 1px solid #ccc;
   padding: 10px;
   transition: border-color 0.3s;
+  
 }
 
 .form-control:focus,
 .form-select:focus {
-  border-color: #009688;
+  border-color: #009688 !important;
   box-shadow: 0 0 0 2px rgba(0, 150, 136, 0.2);
 }
 
 .btn-animation {
-  background-color: #009688;
-  border-color: #009688;
+  background-color: #009688 !important;
+  border-color: #009688 !important;
   padding: 8px 20px;
   font-weight: 600;
   transition: background-color 0.2s ease;
 }
 
 .btn-animation:hover {
-  background-color: #00796b;
-  border-color: #00796b;
+  background-color: #00796b !important;
+  border-color: #00796b !important;
 }
 
 /* Added styles for missing classes */
