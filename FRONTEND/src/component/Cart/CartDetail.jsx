@@ -26,6 +26,18 @@ const CartDetail = () => {
     document.body.style.overflow = 'auto'; // Cho phép cuộn lại nếu bị khoá
   }, []);
 
+  useEffect(() => {
+    const handleCartUpdate = () => {
+      fetchCart();
+    };
+
+    window.addEventListener("cartUpdated", handleCartUpdate);
+
+    return () => {
+      window.removeEventListener("cartUpdated", handleCartUpdate);
+    };
+  }, []);
+
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -103,7 +115,7 @@ const CartDetail = () => {
     return amount.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
   };
 
-  
+
 
   // const total = subtotal + shippingFee - couponDiscount;
   const total = subtotal - couponDiscount;
@@ -284,9 +296,6 @@ const CartDetail = () => {
                               </h5>
                             </td>
                             <td>
-                              <button className="btn btn-sm btn-outline-danger" onClick={() => handleRemove(item.cartItemID)}>
-                                Remove 🗑️
-                              </button>
                               <div className="d-flex justify-content-center">
                                 <button
                                   className="btn btn-sm btn-outline-danger"

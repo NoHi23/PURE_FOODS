@@ -45,6 +45,7 @@ import AddNewBlog from './component/Admin/AddNewBlog';
 import DashboardCategory from './component/ShopLeftSidebar/DashboardCategory';
 import OrderSuccess from './component/OrderSuccess/OrderSuccess';
 import SpinWheelButton from './component/SpinWheelPage/SpinWheelButton';
+import AllProducts from './component/All Products/AllProducts';
 {/*import CustomerBlog from './component/CustomerBlog';
 import BlogDetail from './component/BlogDetail';*/}
 
@@ -199,6 +200,12 @@ function AppContent() {
             <TraderDashboard />
           </PrivateRoute>
         } /> */}
+
+        <Route path="/all-products" element={
+          <PrivateRoute allowedRoles={2}>
+            <AllProducts />
+          </PrivateRoute>
+        } />
 
         <Route path="/cart-detail" element={
           <PrivateRoute allowedRoles={2}>
