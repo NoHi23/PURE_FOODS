@@ -10,6 +10,7 @@ const AddNewCoupons = () => {
   const navigate = useNavigate();
   const [form, setForm] = useState({
     promotionCode: '',
+    description: '',
     discountType: 'Percentage',
     discountValue: '',
     startDate: '',
@@ -42,14 +43,15 @@ const AddNewCoupons = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!form.promotionCode || !form.discountValue || !form.startDate || !form.endDate) {
-      toast.error('Vui lòng nhập đầy đủ (Mã, Giá trị giảm, Ngày bắt đầu, Ngày kết thúc)');
+    if (!form.promotionCode || !form.description || !form.discountValue || !form.startDate || !form.endDate) {
+      toast.error('Vui lòng nhập đầy đủ (Mã, Mô tả, Giá trị giảm, Ngày bắt đầu, Ngày kết thúc)');
       return;
     }
 
     try {
       const payload = {
         promotionCode: form.promotionCode,
+        description: form.description,
         discountType: form.discountType,
         discountValue: parseFloat(form.discountValue) || 0,
         startDate: new Date(form.startDate).toISOString().split('T')[0],
@@ -62,6 +64,7 @@ const AddNewCoupons = () => {
         toast.success(res.data.message || 'Thêm mã giảm giá thành công!');
         setForm({
           promotionCode: '',
+          description: '',
           discountType: 'Percentage',
           discountValue: '',
           startDate: '',
@@ -111,6 +114,19 @@ const AddNewCoupons = () => {
                                   type="text"
                                   name="promotionCode"
                                   value={form.promotionCode}
+                                  onChange={handleChange}
+                                  required
+                                />
+                              </div>
+                            </div>
+                            <div className="mb-4 row align-items-center">
+                              <label className="col-lg-2 col-md-3 mb-0">Description</label>
+                              <div className="col-md-9 col-lg-10">
+                                <input
+                                  className="form-control"
+                                  type="text"
+                                  name="description"
+                                  value={form.description}
                                   onChange={handleChange}
                                   required
                                 />
