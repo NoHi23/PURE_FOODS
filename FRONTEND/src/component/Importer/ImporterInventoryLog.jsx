@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { FiSearch } from "react-icons/fi";
+import { FiSearch, FiRefreshCw, FiCornerUpLeft } from "react-icons/fi";
 import { Modal, Button } from "react-bootstrap";
 import Pagination from "../../layouts/Pagination";
 import FilterStatus from "./FilterStatus";
@@ -8,6 +8,7 @@ import Swal from "sweetalert2";
 
 const ImporterInventoryLog = ({ currentPage, setCurrentPage, setLogs }) => {
   const [logs, setLocalLogs] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
   const [products, setProducts] = useState({});
   const [users, setUsers] = useState({});
   const [searchTerm, setSearchTerm] = useState("");
@@ -16,6 +17,7 @@ const ImporterInventoryLog = ({ currentPage, setCurrentPage, setLogs }) => {
   const [selectedStatus, setSelectedStatus] = useState("all");
   const [showReturnModal, setShowReturnModal] = useState(false);
   const [selectedReturnLogs, setSelectedReturnLogs] = useState([]);
+  const [returnReasons, setReturnReasons] = useState({});
 
   const archivedLogs = logs.filter((log) => log.status === 3);
 
@@ -55,10 +57,13 @@ const ImporterInventoryLog = ({ currentPage, setCurrentPage, setLogs }) => {
 
         const logData = logsRes.data.logs || [];
         const sortedLogs = [...logData].sort((a, b) => {
-          // Ưu tiên status: 0 -> 1 -> 2
-          if (a.status !== b.status) {
-            return a.status - b.status;
-          }
+          // Ưu tiên status 5 đầu tiên
+          if (a.status === 5 && b.status !== 5) return -1;
+          if (a.status !== 5 && b.status === 5) return 1;
+
+          // Sau đó là các status khác theo thứ tự 0 -> 1 -> 2 -> 4 (nếu có)
+          if (a.status !== b.status) return a.status - b.status;
+
           // Nếu cùng status thì sắp theo thời gian mới nhất trước
           const timeA = new Date(a.createdAt).getTime();
           const timeB = new Date(b.createdAt).getTime();
@@ -87,6 +92,57 @@ const ImporterInventoryLog = ({ currentPage, setCurrentPage, setLogs }) => {
     };
     fetchData();
   }, [setLogs]);
+
+  const handleRefresh = async () => {
+    setIsLoading(true);
+    try {
+      const [logsRes, productsRes, usersRes] = await Promise.all([
+        axios.get("http://localhost:8082/PureFoods/api/inventory-logs/getAll"),
+        axios.get("http://localhost:8082/PureFoods/api/product/getAll"),
+        axios.get("http://localhost:8082/PureFoods/api/users/getAll"),
+      ]);
+
+      const logData = logsRes.data.logs || [];
+      const sortedLogs = [...logData].sort((a, b) => {
+        if (a.status === 5 && b.status !== 5) return -1;
+        if (a.status !== 5 && b.status === 5) return 1;
+        if (a.status !== b.status) return a.status - b.status;
+        return new Date(b.createdAt) - new Date(a.createdAt);
+      });
+
+      setLocalLogs(sortedLogs);
+      if (setLogs) setLogs(sortedLogs);
+
+      const productMap = {};
+      (productsRes.data.listProduct || []).forEach((p) => {
+        productMap[p.productId] = { name: p.productName, imageURL: p.imageURL };
+      });
+      setProducts(productMap);
+
+      const userMap = {};
+      (usersRes.data.userList || []).forEach((u) => {
+        userMap[u.userId] = u.fullName;
+      });
+      setUsers(userMap);
+
+      Swal.fire({
+        icon: "success",
+        title: "Đã làm mới!",
+        text: "Dữ liệu đã được cập nhật thành công.",
+        confirmButtonText: "OK",
+      });
+    } catch (err) {
+      console.error("Lỗi khi làm mới:", err);
+      Swal.fire({
+        icon: "error",
+        title: "Lỗi!",
+        text: "Làm mới thất bại. Vui lòng thử lại.",
+        confirmButtonText: "OK",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const logsPerPage = 7;
   const totalPages = Math.ceil(filteredLogs.length / logsPerPage);
@@ -132,9 +188,9 @@ const ImporterInventoryLog = ({ currentPage, setCurrentPage, setLogs }) => {
           size={18}
         />
       </div>
-      <div className="d-flex justify-content-between mb-4">
+      <div className="d-flex justify-content-between align-items-center mb-4 gap-3 flex-wrap">
         <button
-          className="btn"
+          className="btn d-flex align-items-center gap-2"
           style={{
             backgroundColor: "#f40766ff",
             color: "white",
@@ -151,7 +207,29 @@ const ImporterInventoryLog = ({ currentPage, setCurrentPage, setLogs }) => {
           }}
           onClick={() => setShowReturnModal(true)}
         >
-          🔁 Yêu cầu trả hàng
+          <FiCornerUpLeft size={20} /> Yêu cầu trả hàng
+        </button>
+
+        <button
+          className="btn fw-bold text-white d-flex justify-content-center align-items-center"
+          onClick={handleRefresh}
+          disabled={isLoading}
+          style={{
+            backgroundColor: "#007bff",
+            border: "1px solid #007bff",
+            transition: "all 0.3s ease",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = "#0056b3";
+            e.currentTarget.style.borderColor = "#0056b3";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = "#007bff";
+            e.currentTarget.style.borderColor = "#007bff";
+          }}
+        >
+          <FiRefreshCw className={`me-2 ${isLoading ? "fa-spin" : ""}`} />
+          {isLoading ? "Đang làm mới..." : "Làm mới dữ liệu"}
         </button>
 
         <button
@@ -251,8 +329,28 @@ const ImporterInventoryLog = ({ currentPage, setCurrentPage, setLogs }) => {
                     </td>
                     <td>
                       <div style={{ display: "flex", flexDirection: "column", alignItems: "start" }}>
-                        <label className={log.status === 0 ? "warning" : log.status === 1 ? "success" : "danger"}>
-                          {log.status === 0 ? "Đang xử lý" : log.status === 1 ? "Hoàn thành" : "Từ chối"}
+                        <label
+                          className={
+                            log.status === 0
+                              ? "warning"
+                              : log.status === 1
+                              ? "success"
+                              : log.status === 2
+                              ? "danger"
+                              : log.status === 5
+                              ? "returned"
+                              : "unknown"
+                          }
+                        >
+                          {log.status === 0
+                            ? "Đang xử lý"
+                            : log.status === 1
+                            ? "Hoàn thành"
+                            : log.status === 5
+                            ? "Trả hàng"
+                            : log.status === 2
+                            ? "Từ chối"
+                            : "không rõ"}
                         </label>
                         {log.status === 1 && (
                           <button
@@ -431,7 +529,18 @@ const ImporterInventoryLog = ({ currentPage, setCurrentPage, setLogs }) => {
                       <td>{products[log.productId]?.name || "Không rõ"}</td>
                       <td>{users[log.userId] || log.userId}</td>
                       <td>{log.quantityChange}</td>
-                      <td>{log.reason || "Không có lý do"}</td>
+                      <td>
+                        <input
+                          type="text"
+                          className="form-control"
+                          required
+                          placeholder="Nhập lý do trả hàng"
+                          value={returnReasons[log.logId] || ""}
+                          onChange={(e) => setReturnReasons({ ...returnReasons, [log.logId]: e.target.value })}
+                          disabled={!selectedReturnLogs.includes(log.logId)}
+                        />
+                      </td>
+
                       <td>
                         {new Date(log.createdAt).toLocaleString("vi-VN", {
                           year: "numeric",
@@ -462,6 +571,7 @@ const ImporterInventoryLog = ({ currentPage, setCurrentPage, setLogs }) => {
                       productId: log.productId,
                       userId: log.userId,
                       quantityChange: log.quantityChange,
+                      reason: returnReasons[log.logId] || "Không có lý do",
                     });
                   } catch (err) {
                     console.error("Lỗi khi gửi yêu cầu trả hàng:", err);
@@ -478,6 +588,7 @@ const ImporterInventoryLog = ({ currentPage, setCurrentPage, setLogs }) => {
 
               setSelectedReturnLogs([]);
               setShowReturnModal(false);
+              setReturnReasons({});
             }}
           >
             ✅ Xác nhận trả hàng

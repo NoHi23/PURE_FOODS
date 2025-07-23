@@ -98,7 +98,7 @@ public class InventoryLogsServiceImpl implements InventoryLogsService {
         log.setProductId(dto.getProductId());
         log.setUserId(dto.getUserId());
         log.setQuantityChange(dto.getQuantityChange());
-        log.setReason("Returned from Importer");
+        log.setReason(dto.getReason());
         log.setCreatedAt(new Date());
         log.setStatus(5);
         inventoryLogsDAO.addInventoryLog(log);
