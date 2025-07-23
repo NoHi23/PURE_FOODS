@@ -13,12 +13,22 @@ const ImporterSetting = () => {
 
   const handleDisableAccount = async () => {
     if (!userId) {
-      toast.error("Không tìm thấy thông tin người dùng.");
+      Swal.fire({
+        icon: "error",
+        title: "Không tìm thấy người dùng",
+        text: "Vui lòng đăng nhập lại hoặc thử tải lại trang.",
+        confirmButtonText: "OK",
+      });
       return;
     }
 
     if (!disableReason) {
-      toast.warn("Hãy chọn lý do bạn muốn vô hiệu hoá tài khoản nhé 😢");
+      Swal.fire({
+        icon: "warning",
+        title: "Thiếu lý do 😢",
+        text: "Hãy chọn lý do bạn muốn vô hiệu hoá tài khoản nhé.",
+        confirmButtonText: "OK",
+      });
       return;
     }
 
@@ -57,7 +67,12 @@ const ImporterSetting = () => {
     }
 
     if (!deleteReason) {
-      toast.warn("Hãy chọn lý do bạn muốn xoá tài khoản 😢");
+      Swal.fire({
+        icon: "warning",
+        title: "Thiếu lý do 😢",
+        text: "Hãy chọn lý do bạn muốn Xoá tài khoản nhé.",
+        confirmButtonText: "OK",
+      });
       return;
     }
 

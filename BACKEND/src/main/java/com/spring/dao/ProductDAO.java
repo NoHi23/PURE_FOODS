@@ -36,9 +36,10 @@ public interface ProductDAO {
     List<Products> getTopDiscountProducts(int limit);
 
     Page<Products> searchProducts(String keyword,
-                                  Integer categoryId,
-                                  Integer supplierId,
-                                  Integer minDiscount,
-                                  Pageable pageable);
+                                         Integer categoryId,
+                                         Integer supplierId,
+                                         Integer minDiscount,
+                                         Pageable pageable) ;
+    List<Products> getProductsByCategory(int categoryId);
 
 }

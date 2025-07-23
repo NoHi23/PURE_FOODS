@@ -204,7 +204,7 @@ const CartDetail = () => {
                             </td>
                             <td>
                               <button className="btn btn-sm btn-outline-danger" onClick={() => handleRemove(item.cartItemID)}>
-                                Remove
+                                Remove 🗑️
                               </button>
                             </td>
                           </tr>
@@ -230,7 +230,7 @@ const CartDetail = () => {
                         value={couponCode}
                         onChange={(e) => setCouponCode(e.target.value)}
                       />
-                      <button className="btn btn-sm btn-dark" onClick={handleApplyCoupon}>Apply</button>
+                      <button className="btn btn-sm btn-dark text-white" onClick={handleApplyCoupon}>Apply</button>
                     </div>
                   </div>
 

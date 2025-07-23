@@ -257,17 +257,17 @@ const LoginPage = () => {
                             Remember me
                           </label>
                         </div>
-                        <Link to={"/forgot"} className="forgot-password">
+                        <Link to={"/forgot"} className="forgot-password" style={{ textDecoration: "none", color: "#0DA487" }}>
                           Forgot Password?
                         </Link>
                       </div>
                     </div>
                     <div className="col-12">
-                      <button type="submit" className="btn btn-animation w-100 justify-content-center">
+                      <button type="submit" className="btn btn-animation w-100 justify-content-center" style={{ backgroundColor: "#0DA487"}}>
                         Log In
                       </button>
-                      <h5 className="new-page mt-3 text-center">
-                        Don't have an account ? <a href="/signup">Create an account</a>
+                      <h5 className="new-page mt-3 text-center" style={{ fontWeight: "normal", fontSize: "18px" }}>
+                        Don't have an account ? <a href="/signup" style={{color:"#0DA487", textDecoration:"none"}}>Create an account</a>
                       </h5>
                     </div>
                   </form>

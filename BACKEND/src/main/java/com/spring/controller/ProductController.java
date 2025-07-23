@@ -246,4 +246,10 @@ public class ProductController {
         }
     }
 
+    @GetMapping("/by-category/{categoryId}")
+    public ResponseEntity<List<ProductDTO>> getProductsByCategory(@PathVariable("categoryId") int categoryId) {
+        List<ProductDTO> products = productService.getProductsByCategory(categoryId);
+        return ResponseEntity.ok(products);
+    }
+
 }

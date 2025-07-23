@@ -1,0 +1,138 @@
+/* Products.css */
+.top-filter-menu {
+  padding: 10px 0;
+  align-items: center;
+}
+.category-dropdown {
+  margin-right: auto; /* Đẩy sang trái */
+}
+.grid-option ul {
+  display: flex;
+  gap: 10px;
+}
+.grid-option img {
+  width: 24px;
+  height: 24px;
+}
+/* Products.css */
+.span-name {
+  font-size: 0.85rem;
+  color: #777;
+}
+
+.name {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 5px 0;
+  color: #333;
+}
+
+.product-rating {
+  margin-top: 8px;
+}
+
+.price {
+  margin-top: 10px;
+}
+
+.theme-color {
+  color: #007bff;
+  font-weight: bold;
+}
+
+.btn-add-cart {
+  font-size: 0.95rem;
+  font-weight: 500;
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  transition: 0.3s;
+  justify-content: center;
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin-left: 40px;
+}
+
+.btn-add-cart:hover {
+  background-color: #e2e6ea;
+}
+
+.add-icon {
+  background-color: #dee2e6;
+  color: #007bff;
+}
+
+.search-box input {
+  border-radius: 10px;
+  padding: 6px 12px;
+  border: 2px solid #ccc;
+}
+.input-group .form-control:focus {
+  box-shadow: none;
+}
+.input-group-text {
+  background-color: #f8f9fa;
+  border-color: #ced4da;
+}
+
+.three-grid.active img,
+.grid-btn.active img,
+.list-btn.active img {
+  border: 2px solid #007bff;
+  border-radius: 4px;
+}
+.product-box-3 {
+  transition: all 0.3s ease;
+}
+.product-list-item .product-image {
+  flex-shrink: 0;
+}
+.product-list-item .product-detail {
+  flex-grow: 1;
+}
+/* View Mode Icons Container */
+.grid-option ul {
+  display: flex;
+  gap: 10px;
+  list-style: none;
+  padding-left: 0;
+  margin-bottom: 0;
+}
+
+/* Nút view */
+.grid-option li button {
+  border: 1px solid #ccc;
+  background-color: rgb(58, 215, 58);
+  border-radius: 8px;
+  padding: 6px 10px;
+  transition: all 0.2s ease-in-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+}
+
+/* Icon trong nút */
+.grid-option li button img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Hover: đổi nền nhẹ */
+.grid-option li button:hover {
+  background-color: #dbd515;
+  border-color: #999;
+}
+
+/* Active: viền màu chủ đạo và bóng đẹp */
+.grid-option li.active button {
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2);
+}
+
+/* Ẩn outline click */
+.grid-option li button:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2);
+}

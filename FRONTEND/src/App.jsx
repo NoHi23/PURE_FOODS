@@ -40,6 +40,9 @@ import Taxes from './component/Admin/Taxes';
 import AddNewTax from './component/Admin/AddNewTax';
 import Blog from './component/Admin/Blog';
 import AddNewBlog from './component/Admin/AddNewBlog';
+//import CustomerBlog from './component/CustomerBlog';
+//import BlogDetail from './component/BlogDetail';
+import DashboardCategory from './component/ShopLeftSidebar/DashboardCategory';
 import OrderSuccess from './component/OrderSuccess/OrderSuccess';
 import SpinWheelButton from './component/SpinWheelPage/SpinWheelPage';
 {/*import CustomerBlog from './component/CustomerBlog';
@@ -84,6 +87,7 @@ function AppContent() {
       {!shouldHideHeader && <Header />}
       <Routes>
         <Route path="/" element={<HomePage />} />
+        <Route path="/category" element={<DashboardCategory />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/forgot" element={<Forgot />} />
@@ -188,13 +192,6 @@ function AppContent() {
             <Wishlist />
           </PrivateRoute>
         } />
-
-        {/* Importer Routes 
-        <Route path="/importer" element={
-          <PrivateRoute allowedRoles={4}>
-            <ImporterDashboard />
-          </PrivateRoute>
-        } /> */}
 
         {/* Trader Routes 
         <Route path="/wholesaler" element={
