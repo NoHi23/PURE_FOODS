@@ -475,7 +475,7 @@ export default function Header() {
                             <i className="ri-notification-line"></i>
                             <h6 className="f-18 mb-0" style={{ marginLeft: "5px" }}>Notitications</h6>
                           </li>
-                          {notifications.map(n => (
+                          {notifications.slice(0, 5).map(n => (
                             <li key={n.id} onClick={() => handleMarkRead(n.id)}>
                               <p>
                                 <i className="fa fa-circle me-2 font-primary"></i>
@@ -486,7 +486,7 @@ export default function Header() {
                               </p>
                             </li>
                           ))}
-                          {history.map(h => (
+                          {history.slice(0, 5).map(h => (
                             <li key={h.id}>
                               <p style={{ opacity: .6 }}>
                                 <i className="fa fa-circle me-2 font-secondary"></i>
@@ -500,9 +500,14 @@ export default function Header() {
                           {notifications.length === 0 && history.length === 0 && (
                             <li><p>No notification.</p></li>
                           )}
-                          <li>
+                          <li className="button-group d-flex justify-content-center mt-2">
                             <a className="btn btn-primary" onClick={handleMarkAllRead}>
                               Check all notification
+                            </a>
+                          </li>
+                          <li className="button-group d-flex justify-content-center mt-2">
+                            <a href="/notifications" className="btn btn-primary">
+                              View all notifications
                             </a>
                           </li>
                         </ul>
@@ -530,12 +535,15 @@ export default function Header() {
                                 <a href="/customer-profile-update">Profile Setting</a>
                               </li>
                               <li className="product-box-contain">
-                                <a href="#" onClick={handleLogout}>
-                                  Logout
-                                </a>
+                                <a href="/my-coupons">My Coupons</a>
                               </li>
                               <li className="product-box-contain">
                                 <a href="/forgot">Forgot Password</a>
+                              </li>
+                              <li className="product-box-contain">
+                                <a href="#" onClick={handleLogout}>
+                                  Logout
+                                </a>
                               </li>
                             </>
                           ) : (

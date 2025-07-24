@@ -289,5 +289,30 @@ public class OrderController {
         }
     }
 
+    @PutMapping("/{orderId}/status")
+    public ResponseEntity<?> updateOrderStatus(
+            @PathVariable("orderId") int orderId,
+            @RequestBody Map<String, Integer> request
+    ) {
+        try {
+            int newStatusId = request.get("statusID");
+
+            Order order = orderService.getOrderEntityById(orderId);
+            if (order == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Order not found");
+            }
+
+            order.setStatusID(newStatusId);
+            orderService.updateOrder(order);
+
+            return ResponseEntity.ok(Map.of(
+                    "message", "Order status updated successfully!",
+                    "status", 200
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "Update status failed", "status", 500));
+        }
+    }
 
 }
