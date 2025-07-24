@@ -2,6 +2,7 @@ package com.spring.controller;
 
 
 import com.spring.dto.ProductDTO;
+import com.spring.dto.ProductImageDTO;
 import com.spring.service.CategoryService;
 import com.spring.service.ProductService;
 import com.spring.service.SuppliersService;
@@ -251,5 +252,25 @@ public class ProductController {
         List<ProductDTO> products = productService.getProductsByCategory(categoryId);
         return ResponseEntity.ok(products);
     }
+
+    @GetMapping("/related/{productId}")
+    public ResponseEntity<?> getRelatedProducts(@PathVariable("productId") int productId) {
+        try {
+            List<ProductDTO> relatedProducts = productService.getRelatedProducts(productId);
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Lấy sản phẩm liên quan thành công!");
+            response.put("status", 200);
+            response.put("relatedProducts", relatedProducts);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("message", e.getMessage());
+            errorResponse.put("status", 400);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        }
+    }
+
+
+
 
 }

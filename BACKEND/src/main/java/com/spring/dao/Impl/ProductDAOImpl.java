@@ -188,4 +188,25 @@ public class ProductDAOImpl implements ProductDAO {
         query.setParameter("categoryId", categoryId);
         return query.getResultList();
     }
+
+    @Override
+    public List<Products> getRelatedProducts(int productId) {
+        Session session = sessionFactory.getCurrentSession();
+
+        // Lấy sản phẩm hiện tại để biết categoryId
+        Products currentProduct = session.get(Products.class, productId);
+        if (currentProduct == null) {
+            throw new RuntimeException("Product not found with id: " + productId);
+        }
+
+        int categoryId = currentProduct.getCategoryId(); // nếu bạn dùng quan hệ thì dùng: currentProduct.getCategory().getCategoryId()
+
+        // Lấy các sản phẩm cùng category nhưng khác productId hiện tại
+        String hql = "FROM Products WHERE categoryId = :categoryId AND productId != :productId";
+        Query query = session.createQuery(hql, Products.class);
+        query.setParameter("categoryId", categoryId);
+        query.setParameter("productId", productId);
+
+        return query.getResultList();
+    }
 }

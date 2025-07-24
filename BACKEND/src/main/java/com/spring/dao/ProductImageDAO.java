@@ -8,6 +8,7 @@ public interface ProductImageDAO {
     void addImage(ProductImages image);
     List<ProductImages> getImagesByProductId(int productId);
     void deleteImagesByProductId(int productId);
+    List<ProductImages> findByProductId(int productId);
 
 }
 

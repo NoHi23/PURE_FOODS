@@ -2,7 +2,10 @@ package com.spring.dao.Impl;
 
 import com.spring.dao.ProductImageDAO;
 import com.spring.entity.ProductImages;
+import com.spring.entity.Products;
+import jakarta.persistence.TypedQuery;
 import jakarta.transaction.Transactional;
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -38,4 +41,13 @@ public class ProductImageDAOImpl implements ProductImageDAO {
                 .setParameter("ProductID", productId)
                 .executeUpdate();
     }
+    @Override
+    public List<ProductImages> findByProductId(int productId) {
+        String hql = "FROM ProductImages WHERE productId = :productId";
+        TypedQuery<ProductImages> query = sessionFactory.getCurrentSession()
+                .createQuery(hql, ProductImages.class);
+        query.setParameter("productId", productId);
+        return query.getResultList();
+    }
+
 }
