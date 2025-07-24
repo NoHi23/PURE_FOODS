@@ -34,15 +34,57 @@ const AddNewCategory = () => {
     setForm({ ...form, [name]: newValue });
   };
 
+  const checkCategoryNameExists = async (name) => {
+    try {
+      const res = await axios.get(`http://localhost:8082/PureFoods/api/category/searchByName`, {
+        params: { name: name.trim() }
+      });
+      return !!res.data; // Nếu có dữ liệu thì tức là đã tồn tại
+    } catch (err) {
+      if (err.response && err.response.status === 404) {
+        return false; // 404 tức là chưa tồn tại
+      }
+      toast.error("Lỗi khi kiểm tra tên danh mục");
+      return true; // để chặn lại trong trường hợp lỗi khác
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const trimmedName = form.categoryName.trim();
+    const trimmedDesc = form.categoryDescription.trim();
+
+    // Validate đầu vào
+    if (!trimmedName) {
+      toast.warn("Tên danh mục không được để trống!");
+      return;
+    }
+
+    if (!trimmedDesc || trimmedDesc.length < 5) {
+      toast.warn("Mô tả danh mục phải có ít nhất 5 ký tự!");
+      return;
+    }
+
+    // Kiểm tra tên trùng
+    const nameExists = await checkCategoryNameExists(trimmedName);
+    if (nameExists) {
+      toast.error("Tên danh mục đã tồn tại!");
+      return;
+    }
+
+    // Gửi request tạo mới
     try {
-      const res = await axios.post(`http://localhost:8082/PureFoods/api/category/create`, form);
+      const res = await axios.post(`http://localhost:8082/PureFoods/api/category/create`, {
+        ...form,
+        categoryName: trimmedName,
+        categoryDescription: trimmedDesc
+      });
+
       if (res.status === 200 || res.data.status === 200) {
         toast.success("Thêm danh mục thành công!");
-        window.dispatchEvent(new Event('categoryUpdated')); // Thông báo cập nhật
+        window.dispatchEvent(new Event('categoryUpdated'));
         setForm({ categoryName: '', categoryDescription: '', isOrganic: 0, status: 1 });
-        //navigate('/admin-category');
       } else {
         toast.error(res.data.message || "Có lỗi xảy ra");
       }

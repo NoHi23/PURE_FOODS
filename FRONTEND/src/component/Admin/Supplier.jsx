@@ -111,26 +111,45 @@ const Supplier = () => {
 
   const handleUpdateSupplier = async () => {
     const trimmedName = editSupplier.supplierName.trim();
+    const trimmedContact = editSupplier.contactName.trim();
     const trimmedPhone = editSupplier.phone.trim();
     const trimmedEmail = editSupplier.email.trim();
+    const trimmedAddress = editSupplier.address.trim();
+    const trimmedCertification = editSupplier.organicCertification.trim();
+    const certificationExpiry = editSupplier.certificationExpiry;
 
-    // Validate: Không được để trống
-    if (!trimmedName || !trimmedPhone || !trimmedEmail) {
-      toast.error("Vui lòng nhập đầy đủ Tên, Số điện thoại và Email.");
+    // Kiểm tra các trường không được rỗng
+    if (
+      !trimmedName ||
+      !trimmedContact ||
+      !trimmedPhone ||
+      !trimmedEmail ||
+      !trimmedAddress ||
+      !trimmedCertification ||
+      !certificationExpiry
+    ) {
+      toast.error("Vui lòng nhập đầy đủ tất cả các trường bắt buộc.");
       return;
     }
 
-    // Validate: Email đúng định dạng
+    // Kiểm tra định dạng email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(trimmedEmail)) {
-      toast.error("Email không hợp lệ.");
+      toast.error("Email không đúng định dạng.");
       return;
     }
 
-    // Validate: Phone là số
-    const phoneRegex = /^[0-9]+$/;
+    // Kiểm tra định dạng số điện thoại (chỉ chứa số)
+    const phoneRegex = /^\d+$/;
     if (!phoneRegex.test(trimmedPhone)) {
       toast.error("Số điện thoại chỉ được chứa số.");
+      return;
+    }
+
+    // Kiểm tra ngày Certification Expiry phải >= ngày hiện tại
+    const today = new Date().toISOString().split("T")[0];
+    if (certificationExpiry < today) {
+      toast.error("Certification Expiry phải lớn hơn hoặc bằng ngày hiện tại.");
       return;
     }
 
@@ -235,7 +254,7 @@ const Supplier = () => {
                               <td>{s.phone}</td>
                               <td>{s.email}</td>
                               <td>{s.address}</td>
-                              <td>{s.organicCertification}</td>
+                              <td>{s.organicCertification === "Yes" ? "Yes" : "No"}</td>
                               <td>{s.certificationExpiry ? new Date(s.certificationExpiry).toLocaleDateString('en-CA') : 'N/A'}</td>
                               <td>
                                 <ul className="table-action-icons">
@@ -300,7 +319,7 @@ const Supplier = () => {
                                 <p><strong>Phone:</strong> {selectedSupplier.phone}</p>
                                 <p><strong>Email:</strong> {selectedSupplier.email}</p>
                                 <p><strong>Address:</strong> {selectedSupplier.address}</p>
-                                <p><strong>Organic Cert:</strong> {selectedSupplier.organicCertification}</p>
+                                <p><strong>Organic Cert:</strong> {selectedSupplier.organicCertification === "Yes" ? "Yes" : "No"}</p>
                                 <p><strong>Expiry:</strong> {selectedSupplier.certificationExpiry ? new Date(selectedSupplier.certificationExpiry).toLocaleDateString('en-CA') : 'N/A'}</p>
                               </>
                             )}
@@ -335,10 +354,32 @@ const Supplier = () => {
                               <input type="text" className="form-control mb-2" placeholder="Address" name="address" value={editSupplier.address} onChange={handleInputChange} />
 
                               <label><strong>Organic Cert:</strong></label>
-                              <input type="text" className="form-control mb-2" placeholder="Organic Cert" name="organicCertification" value={editSupplier.organicCertification} onChange={handleInputChange} />
+                              <div className="form-check mb-2">
+                                <input
+                                  type="checkbox"
+                                  className="form-check-input"
+                                  id="organicCertCheckbox"
+                                  name="organicCertification"
+                                  checked={editSupplier.organicCertification === "Yes"}
+                                  onChange={(e) =>
+                                    setEditSupplier(prev => ({
+                                      ...prev,
+                                      organicCertification: e.target.checked ? "Yes" : "No"
+                                    }))
+                                  }
+                                />
+                                <label className="form-check-label" htmlFor="organicCertCheckbox">Organic Certified</label>
+                              </div>
 
                               <label><strong>Certification Expiry:</strong></label>
-                              <input type="date" className="form-control mb-2" name="certificationExpiry" value={editSupplier.certificationExpiry} onChange={handleInputChange} />
+                              <input
+                                type="date"
+                                className="form-control mb-2"
+                                name="certificationExpiry"
+                                value={editSupplier.certificationExpiry}
+                                onChange={handleInputChange}
+                                min={new Date().toISOString().split('T')[0]}
+                              />
                             </form>
                           </div>
                           <div className="modal-footer">

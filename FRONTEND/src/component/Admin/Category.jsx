@@ -8,6 +8,7 @@ import SideBar from '../AdminDashboard/SideBar';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import * as bootstrap from 'bootstrap';
+import 'datatables.net';
 
 const Category = () => {
   const [categories, setCategories] = useState([]);
@@ -76,6 +77,15 @@ const Category = () => {
     }
   }, [categories]);
 
+  useEffect(() => {
+    // Khởi tạo lại DataTable mỗi lần categories thay đổi
+    const table = $('#categoryTable').DataTable();
+    table.destroy(); // huỷ DataTable cũ
+    setTimeout(() => {
+      $('#categoryTable').DataTable(); // khởi tạo lại
+    }, 0);
+  }, [categories]);
+
   const handleView = (category) => {
     setSelectedCategory(category);
     new bootstrap.Modal(document.getElementById("viewModal")).show();
@@ -93,9 +103,51 @@ const Category = () => {
     setEditCategory(prev => ({ ...prev, [name]: val }));
   };
 
-  const handleUpdateCategory = async () => {
+  const checkCategoryNameExists = async (name, excludeID = null) => {
     try {
-      await axios.put(`http://localhost:8082/PureFoods/api/category/update/${editCategory.categoryID}`, editCategory);
+      const res = await axios.get(`http://localhost:8082/PureFoods/api/category/searchByName`, {
+        params: { name: name.trim() }
+      });
+
+      if (res.data && (!excludeID || res.data.categoryID !== excludeID)) {
+        return true; // Đã tồn tại với ID khác
+      }
+      return false;
+    } catch (err) {
+      if (err.response && err.response.status === 404) return false;
+      toast.error("Lỗi khi kiểm tra tên danh mục");
+      return true;
+    }
+  };
+
+  const handleUpdateCategory = async () => {
+    const trimmedName = editCategory.categoryName.trim();
+    const trimmedDesc = editCategory.categoryDescription.trim();
+
+    // Validate cơ bản
+    if (!trimmedName) {
+      toast.warn("Tên danh mục không được để trống!");
+      return;
+    }
+
+    if (trimmedDesc.length < 5) {
+      toast.warn("Mô tả phải có ít nhất 5 ký tự!");
+      return;
+    }
+
+    // Kiểm tra trùng tên (trừ chính nó)
+    const isDuplicate = await checkCategoryNameExists(trimmedName, editCategory.categoryID);
+    if (isDuplicate) {
+      toast.error("Tên danh mục đã tồn tại!");
+      return;
+    }
+
+    try {
+      await axios.put(`http://localhost:8082/PureFoods/api/category/update/${editCategory.categoryID}`, {
+        ...editCategory,
+        categoryName: trimmedName,
+        categoryDescription: trimmedDesc
+      });
       fetchCategories();
       bootstrap.Modal.getInstance(document.getElementById("editModal")).hide();
       toast.success("Cập nhật thành công!");
@@ -112,11 +164,18 @@ const Category = () => {
   const handleDelete = async () => {
     try {
       await axios.delete(`http://localhost:8082/PureFoods/api/category/delete/${categoryToDelete.categoryID}`);
-      fetchCategories();
+
+      // Cập nhật state categories mà không cần fetch lại từ server
+      setCategories(prev => prev.filter(c => c.categoryID !== categoryToDelete.categoryID));
+
+      // Đóng modal & thông báo
       bootstrap.Modal.getInstance(document.getElementById("deleteModal")).hide();
       toast.success("Đã xoá danh mục!");
     } catch (err) {
       toast.error("Xoá thất bại!");
+    }
+    if ((currentPage - 1) * itemsPerPage >= categories.length - 1) {
+      setCurrentPage(currentPage - 1);
     }
   };
 
