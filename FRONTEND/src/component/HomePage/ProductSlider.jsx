@@ -110,7 +110,11 @@ const ProductSlider = ({ products, handleViewProduct, userId }) => {
                         <i data-feather="eye"></i>
                       </a>
                     </li>
-                    
+                    <li>
+                      <a >
+                        <i data-feather="refresh-cw"></i>
+                      </a>
+                    </li>
                     <li data-bs-toggle="tooltip" title={tooltipText}>
                       <a href="#" onClick={(e) => {
                         e.preventDefault();
@@ -122,7 +126,7 @@ const ProductSlider = ({ products, handleViewProduct, userId }) => {
                   </ul>
                 </div>
 
-                <div className="product-detail">
+                <div >
                   <a href={`/product/${product.productId}`}><h6 className="name">{product.productName}</h6></a>
                   <h5 className="sold text-content">
                     <span className="theme-color price">

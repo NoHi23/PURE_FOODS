@@ -17,13 +17,13 @@ const SideBar = () => {
           <div className='logoSide'>
             <div className="logo-wrapper logo-wrapper-center">
               <Link to={'/admin-dashboard'}>
-                <img className="img-fluid for-white" src="../back-end/assets/images/logo/full-white.png" alt="logo" />
+                <img className="img-fluid for-white" src="/assets/images/logo/1.png" alt="logo" />
               </Link>
             </div>
             <div className="logo-icon-wrapper">
               <Link to={'/admin-dashboard'}>
-                <img className="img-fluid main-logo main-white" src="../back-end/assets/images/logo/logo.png" alt="logo" />
-                <img className="img-fluid main-logo main-dark" src="../back-end/assets/images/logo/logo-white.png"
+                <img className="img-fluid main-logo main-white" src="/assets/images/logo/1.png" alt="logo" />
+                <img className="img-fluid main-logo main-dark" src="/assets/images/logo/1.png"
                   alt="logo" />
               </Link>
             </div>

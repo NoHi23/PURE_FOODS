@@ -30,26 +30,26 @@ const Category = () => {
   };
 
   useEffect(() => {
-      const sidebarLinks = document.querySelectorAll('.sidebar-link');
-  
-      const handleClick = (e) => {
-        const nextEl = e.currentTarget.nextElementSibling;
-        if (nextEl && nextEl.classList.contains('sidebar-submenu')) {
-          e.preventDefault();
-          nextEl.classList.toggle('show');
-        }
-      };
-  
+    const sidebarLinks = document.querySelectorAll('.sidebar-link');
+
+    const handleClick = (e) => {
+      const nextEl = e.currentTarget.nextElementSibling;
+      if (nextEl && nextEl.classList.contains('sidebar-submenu')) {
+        e.preventDefault();
+        nextEl.classList.toggle('show');
+      }
+    };
+
+    sidebarLinks.forEach(link => {
+      link.addEventListener('click', handleClick);
+    });
+
+    return () => {
       sidebarLinks.forEach(link => {
-        link.addEventListener('click', handleClick);
+        link.removeEventListener('click', handleClick);
       });
-  
-      return () => {
-        sidebarLinks.forEach(link => {
-          link.removeEventListener('click', handleClick);
-        });
-      };
-    }, []);
+    };
+  }, []);
 
   useEffect(() => {
     fetchCategories();
@@ -273,7 +273,7 @@ const Category = () => {
             <footer className="footer">
               <div className="row">
                 <div className="col-md-12 footer-copyright text-center">
-                  <p className="mb-0">Copyright 2022 © Fastkart theme</p>
+                  <p className="mb-0">Copyright 2025 © Clean Food Shop theme by pixelstrap</p>
                 </div>
               </div>
             </footer>

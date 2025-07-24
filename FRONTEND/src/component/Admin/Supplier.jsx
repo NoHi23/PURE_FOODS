@@ -29,27 +29,27 @@ const Supplier = () => {
       .catch(err => console.error(err));
   };
 
-   useEffect(() => {
-        const sidebarLinks = document.querySelectorAll('.sidebar-link');
-    
-        const handleClick = (e) => {
-          const nextEl = e.currentTarget.nextElementSibling;
-          if (nextEl && nextEl.classList.contains('sidebar-submenu')) {
-            e.preventDefault();
-            nextEl.classList.toggle('show');
-          }
-        };
-    
-        sidebarLinks.forEach(link => {
-          link.addEventListener('click', handleClick);
-        });
-    
-        return () => {
-          sidebarLinks.forEach(link => {
-            link.removeEventListener('click', handleClick);
-          });
-        };
-      }, []);
+  useEffect(() => {
+    const sidebarLinks = document.querySelectorAll('.sidebar-link');
+
+    const handleClick = (e) => {
+      const nextEl = e.currentTarget.nextElementSibling;
+      if (nextEl && nextEl.classList.contains('sidebar-submenu')) {
+        e.preventDefault();
+        nextEl.classList.toggle('show');
+      }
+    };
+
+    sidebarLinks.forEach(link => {
+      link.addEventListener('click', handleClick);
+    });
+
+    return () => {
+      sidebarLinks.forEach(link => {
+        link.removeEventListener('click', handleClick);
+      });
+    };
+  }, []);
 
   useEffect(() => {
     fetchSuppliers();
@@ -76,27 +76,27 @@ const Supplier = () => {
   };
 
   const handleEdit = (supplier) => {
-  let formattedDate = '';
+    let formattedDate = '';
 
-  if (supplier.certificationExpiry) {
-    try {
-      const date = new Date(supplier.certificationExpiry);
-      const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000); // Bù trừ UTC+7
-      formattedDate = local.toISOString().split('T')[0];
-    } catch (e) {
-      console.error("Invalid date:", supplier.certificationExpiry);
+    if (supplier.certificationExpiry) {
+      try {
+        const date = new Date(supplier.certificationExpiry);
+        const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000); // Bù trừ UTC+7
+        formattedDate = local.toISOString().split('T')[0];
+      } catch (e) {
+        console.error("Invalid date:", supplier.certificationExpiry);
+      }
     }
-  }
 
-  setSelectedSupplier(supplier);
-  setEditSupplier({
-    supplierId: supplier.supplierId,
-    ...supplier,
-    certificationExpiry: formattedDate
-  });
+    setSelectedSupplier(supplier);
+    setEditSupplier({
+      supplierId: supplier.supplierId,
+      ...supplier,
+      certificationExpiry: formattedDate
+    });
 
-  new bootstrap.Modal(document.getElementById("editModal")).show();
-};
+    new bootstrap.Modal(document.getElementById("editModal")).show();
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -104,22 +104,22 @@ const Supplier = () => {
   };
 
   const handleUpdateSupplier = async () => {
-  try {
-    const dataToSend = {
-      ...editSupplier,
-      certificationExpiry: editSupplier.certificationExpiry === '' ? null : editSupplier.certificationExpiry
-    };
+    try {
+      const dataToSend = {
+        ...editSupplier,
+        certificationExpiry: editSupplier.certificationExpiry === '' ? null : editSupplier.certificationExpiry
+      };
 
-    await axios.put(`http://localhost:8082/PureFoods/api/supplier/update/${editSupplier.supplierId}`, dataToSend);
+      await axios.put(`http://localhost:8082/PureFoods/api/supplier/update/${editSupplier.supplierId}`, dataToSend);
 
-    fetchSuppliers();
-    bootstrap.Modal.getInstance(document.getElementById("editModal")).hide();
-    toast.success("Cập nhật thành công!");
-  } catch (err) {
-    console.error("Update error:", err.response?.data || err.message);
-    toast.error("Lỗi cập nhật!");
-  }
-};
+      fetchSuppliers();
+      bootstrap.Modal.getInstance(document.getElementById("editModal")).hide();
+      toast.success("Cập nhật thành công!");
+    } catch (err) {
+      console.error("Update error:", err.response?.data || err.message);
+      toast.error("Lỗi cập nhật!");
+    }
+  };
 
   const confirmDelete = (supplier) => {
     setSupplierToDelete(supplier);
@@ -293,7 +293,7 @@ const Supplier = () => {
             <footer className="footer">
               <div className="row">
                 <div className="col-md-12 footer-copyright text-center">
-                  <p className="mb-0">Copyright 2022 © Fastkart theme</p>
+                  <p className="mb-0">Copyright 2025 © Clean Food Shop theme by pixelstrap</p>
                 </div>
               </div>
             </footer>

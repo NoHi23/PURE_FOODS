@@ -170,7 +170,7 @@ export default function Header() {
             <div className="col-xxl-3 d-xxl-block d-none">
               <div className="top-left-header">
                 <i className="iconly-Location icli text-white"></i>
-                <span className="text-white">1418 Riverwood Drive, CA 96052, US</span>
+                <span className="text-white">KM29 Thang Long Boulevard Thach Hoa Commune 10000 Hà Nội</span>
               </div>
             </div>
 
@@ -179,15 +179,15 @@ export default function Header() {
                 <div className="notification-slider">
                   <div className="timer-notification">
                     <h6>
-                      <strong className="me-1">Chào mừng bạn đến với PURE FOOD!</strong>
+                      <strong className="me-1">Chào mừng bạn đến với Clean Food Shop!</strong>
                       Tặng các ưu đãi mới vào ngày cuối tuần.
-                      <strong className="ms-1">Mã giảm giá mới: Fast024</strong>
+                      <strong className="ms-1">Mã giảm giá mới: CLEANFOODSHOP</strong>
                     </h6>
                   </div>
                   <div className="timer-notification">
                     <h6>
                       Một thứ gì đó bạn yêu thích có thể đang được bán{" "}
-                      <a href="/shop-left-sidebar" className="text-white">
+                      <a href="/" className="text-white">
                         Mua ngay!
                       </a>
                     </h6>
