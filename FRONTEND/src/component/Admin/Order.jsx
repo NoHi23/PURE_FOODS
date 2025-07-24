@@ -4,24 +4,20 @@ import $ from 'jquery';
 import 'datatables.net';
 import TopBar from '../AdminDashboard/TopBar';
 import SideBar from '../AdminDashboard/SideBar';
-
+import './Order.css'
+import { toast } from 'react-toastify';
 const Order = () => {
   const [orders, setOrders] = useState([]);
   const [selectedOrder, setSelectedOrder] = useState(null);
-  const [orderDetails, setOrderDetails] = useState([]);
+  const [customerNames, setCustomerNames] = useState({});
+  const [orderStatuses, setOrderStatuses] = useState({});
+  const [orderDetailList, setOrderDetailList] = useState([]);
 
-
-  const handleViewDetails = (orderId) => {
-    setSelectedOrder(orderId);
-
-    axios.get(`http://localhost:8082/PureFoods/api/orders/${orderId}`)
-      .then(res => {
-        setOrderDetails(res.data.order);
-        $('#orderDetailModal').modal('show');
-      })
-      .catch(err => console.error(err));
+  const [selectedAddress, setSelectedAddress] = useState('');
+  const handleViewMap = (address) => {
+    setSelectedAddress(address);
+    $('#mapModal').modal('show');
   };
-
 
   useEffect(() => {
     axios.get("http://localhost:8082/PureFoods/api/orders/getAll")
@@ -63,14 +59,17 @@ const Order = () => {
     };
   }, []);
 
-  const getStatusClass = (status) => {
-    switch (status?.toLowerCase()) {
-      case 'success': return 'status-success';
-      case 'pending': return 'status-warning';
-      case 'cancel': return 'status-danger';
-      default: return '';
+  const getStatusClass = (statusName) => {
+    switch (statusName?.toLowerCase()) {
+      case 'pending': return 'text-warning';
+      case 'processing': return 'text-primary';
+      case 'shipped': return 'text-info';
+      case 'delivered': return 'text-success';
+      case 'cancelled': return 'text-danger';
+      default: return 'text-secondary';
     }
   };
+
 
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -79,6 +78,116 @@ const Order = () => {
   const endIndex = startIndex + itemsPerPage;
   const currentProducts = orders.slice(startIndex, endIndex);
   const totalPages = Math.ceil(orders.length / itemsPerPage);
+
+
+  const fetchCustomerName = async (customerID) => {
+    if (!customerID || customerNames[customerID]) return;
+
+    try {
+      const res = await axios.get(`http://localhost:8082/PureFoods/api/users/${customerID}`);
+      const name = res.data.user.fullName;
+      setCustomerNames(prev => ({ ...prev, [customerID]: name }));
+    } catch (error) {
+      console.error(`Error fetching customer ${customerID}`, error);
+    }
+  };
+
+  useEffect(() => {
+    orders.forEach(order => {
+      fetchCustomerName(order.customerID);
+    });
+  }, [orders]);
+
+  const fetchOrderStatus = async (statusID) => {
+    if (!statusID || orderStatuses[statusID]) return;
+
+    try {
+      const res = await axios.get(`http://localhost:8082/PureFoods/api/order-status/${statusID}`);
+      const statusName = res.data.statusName;
+      setOrderStatuses(prev => ({ ...prev, [statusID]: statusName }));
+    } catch (error) {
+      console.error(`Error fetching status ${statusID}`, error);
+    }
+  };
+  useEffect(() => {
+    orders.forEach(order => {
+      fetchOrderStatus(order.statusID);
+    });
+  }, [orders]);
+
+  const handleUpdateStatus = async (orderId, newStatusId) => {
+    try {
+      const res = await axios.put(`http://localhost:8082/PureFoods/api/orders/${orderId}/status`, {
+        statusID: newStatusId
+      });
+      if (res.data.status === 200) {
+        toast.success("Cập nhật trạng thái thành công!");
+
+        const updatedOrders = orders.map(order => {
+          if (order.orderID === orderId) {
+            return { ...order, statusID: newStatusId };
+          }
+          return order;
+        });
+        setOrders(updatedOrders);
+
+        fetchOrderStatus(newStatusId);
+      }
+    } catch (err) {
+      console.error("Lỗi khi cập nhật trạng thái", err);
+      toast.error("Cập nhật trạng thái thất bại");
+    }
+  };
+
+  const handleViewDetails = async (orderId) => {
+    setSelectedOrder(orderId);
+
+    try {
+      const res = await axios.get(`http://localhost:8082/PureFoods/api/order-details/order/${orderId}`);
+      const details = res.data;
+
+      const detailWithProducts = await Promise.all(
+        details.map(async (detail) => {
+          const productRes = await axios.get(`http://localhost:8082/PureFoods/api/product/getById/${detail.productID}`);
+          const product = productRes.data.product;
+
+          let categoryName = "Unknown";
+          if (product.categoryId) {
+            try {
+              const catRes = await axios.get(`http://localhost:8082/PureFoods/api/category/${product.categoryId}`);
+              categoryName = catRes.data.categoryName;
+            } catch (e) {
+              console.error("Lỗi lấy category:", e);
+            }
+          }
+
+          let supplierName = "Unknown";
+          if (product.supplierId) {
+            try {
+              const supRes = await axios.get(`http://localhost:8082/PureFoods/api/supplier/${product.supplierId}`);
+              supplierName = supRes.data.supplierName;
+            } catch (e) {
+              console.error("Lỗi lấy supplier:", e);
+            }
+          }
+
+          return {
+            ...detail,
+            product: {
+              ...product,
+              categoryName,
+              supplierName
+            }
+          };
+        })
+      );
+
+      setOrderDetailList(detailWithProducts);
+      $('#orderDetailModal').modal('show');
+    } catch (error) {
+      console.error("Lỗi khi lấy chi tiết đơn hàng:", error);
+    }
+  };
 
   return (
     <div className="page-wrapper compact-wrapper" id="pageWrapper">
@@ -99,21 +208,37 @@ const Order = () => {
                         <thead>
                           <tr>
                             <th>Order Code</th>
-                            <th>Date</th>
+                            <th>Customer</th>
+                            <th>OrderDate</th>
+                            <th>Shipping Address</th>
                             <th>Payment</th>
+                            <th>Total Amount</th>
                             <th>Status</th>
-                            <th>Amount</th>
                             <th>Options</th>
                           </tr>
                         </thead>
                         <tbody>
                           {currentProducts?.map((o, i) => (
                             <tr key={i}>
-                              <td>{o.orderID}</td>
+                              <td>#00{o.orderID}</td>
+                              <td>{customerNames[o.customerID] || 'Loading...'}</td>
                               <td>{new Date(o.orderDate).toLocaleDateString()}</td>
-                              <td>{o.paymentMethod || 'Paypal'}</td>
-                              <td className={getStatusClass(o.status)}>{o.status}</td>
+                              <td>{o.paymentMethod}</td>
+                              <td>{o.shippingAddress}</td>
                               <td>${o.totalAmount}</td>
+                              <td>
+                                <select
+                                  value={o.statusID}
+                                  className={`form-select form-select-sm ${getStatusClass(orderStatuses[o.statusID])}`}
+                                  onChange={(e) => handleUpdateStatus(o.orderID, parseInt(e.target.value))}
+                                >
+                                  <option value={1}>Pending</option>
+                                  <option value={2}>Processing</option>
+                                  <option value={3}>Shipped</option>
+                                  <option value={4}>Delivered</option>
+                                  <option value={5}>Cancelled</option>
+                                </select>
+                              </td>
                               <td>
                                 <ul>
                                   <li>
@@ -121,11 +246,17 @@ const Order = () => {
                                       <i className="ri-eye-line"></i>
                                     </a>
                                   </li>
-                                  <li><a href="#"><i className="ri-pencil-line"></i></a></li>
-                                  <li><a href="#" data-bs-toggle="modal" data-bs-target="#deleteModal">
-                                    <i className="ri-delete-bin-line"></i></a>
+
+                                  <li>
+                                    <a
+                                      href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(o.shippingAddress)}`}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      title="Xem trên Google Map"
+                                    >
+                                      <i className="ri-map-pin-line"></i>
+                                    </a>
                                   </li>
-                                  <li><a href="#"><i className="ri-map-pin-line"></i></a></li>
                                 </ul>
                               </td>
                             </tr>
@@ -173,11 +304,11 @@ const Order = () => {
         </div>
       </div>
 
-      <div className="modal fade" id="orderDetailModal" tabIndex="-1" aria-hidden="true">
+      <div className="modal fade" id="orderDetailModal" tabIndex="-1" aria-hidden="true" >
         <div className="modal-dialog modal-lg modal-dialog-centered">
-          <div className="modal-content">
+          <div className="modal-content" style={{ width: "1000px" }}>
             <div className="modal-header">
-              <h5 className="modal-title">Order Details - ID: {selectedOrder}</h5>
+              <h5 className="modal-title">Order Details - ID: #00{selectedOrder}</h5>
               <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div className="modal-body">
@@ -185,24 +316,42 @@ const Order = () => {
                 <thead>
                   <tr>
                     <th>Product Name</th>
+                    <th>Category</th>
+                    <th>Supplier</th>
+                    <th>Price</th>
+                    <th>Discount Persent</th>
+                    <th>Price after Sale</th>
                     <th>Quantity</th>
-                    <th>Unit Price</th>
                     <th>Total</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {orderDetails.length > 0 ? orderDetails.map((detail, idx) => (
+                  {orderDetailList.length > 0 ? orderDetailList.map((detail, idx) => (
                     <tr key={idx}>
-                      <td>dsfd</td>
-                      <td>asdf</td>
-                      <td>asdf</td>
-                      <td>asdf</td>
+                      <td>
+                        <div className="d-flex align-items-center">
+                          <img
+                            src={detail.product?.imageURL}
+                            alt={detail.product?.productName}
+                            style={{ width: '50px', height: '50px', objectFit: 'cover', marginRight: '10px' }}
+                          />
+                          <span>{detail.product?.productName}</span>
+                        </div>
+                      </td>
+                      <td>{detail.product?.categoryName}</td>
+                      <td>{detail.product?.supplierName}</td>
+                      <td>${detail.product?.price}</td>
+                      <td>${detail.product?.discountPercent}</td>
+                      <td>${detail.product?.salePrice}</td>
+                      <td>{detail.quantity}</td>
+                      <td>${(detail.product?.salePrice * detail.quantity).toFixed(2)}</td>
                     </tr>
                   )) : (
                     <tr><td colSpan="4" className="text-center">No details found.</td></tr>
                   )}
                 </tbody>
               </table>
+
             </div>
           </div>
         </div>

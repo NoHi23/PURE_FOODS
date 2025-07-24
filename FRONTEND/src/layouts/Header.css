@@ -93,3 +93,62 @@
   background-color: #ff4d4f;
   color: white;
 }
+
+.onhover-dropdown .notification-dropdown {
+  min-width: 300px;
+  max-width: 360px;
+  width: 100%;
+  right: 0;
+  left: auto;
+  position: absolute;
+  top: 100%;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+  overflow-y: auto;
+  max-height: 400px;
+  z-index: 999;
+  padding: 10px;
+}
+
+/* Tiêu đề */
+.notification-dropdown li:first-child {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 6px;
+  margin-bottom: 8px;
+}
+
+/* Mỗi item */
+.notification-dropdown li p {
+  margin: 5px 0;
+  font-size: 14px;
+  line-height: 1.4;
+  color: #333;
+}
+
+/* Hover nhẹ */
+.notification-dropdown li:hover {
+  background-color: #f9f9f9;
+  cursor: pointer;
+}
+
+/* Phần nút bên dưới */
+.notification-dropdown li a.btn {
+  width: 100%;
+  font-size: 14px;
+  margin-top: 6px;
+  padding: 6px 10px;
+}
+
+/* Badge đếm số lượng */
+.notification-box .badge-theme {
+  background-color: #ff4d4f;
+  color: #fff;
+  font-size: 12px;
+  padding: 4px 6px;
+  position: absolute;
+  top: -6px;
+  right: -6px;
+}

@@ -131,12 +131,6 @@ const SideBar = () => {
                   <li>
                     <Link to={'/admin-order'}>Order List</Link>
                   </li>
-                  <li>
-                    <Link to={'/admin-order-detail/:id'}>Order Detail</Link>
-                  </li>
-                  <li>
-                    <Link to={'/admin-order-tracking/:id'}>Order Tracking</Link>
-                  </li>
                 </ul>
               </li>
               <li className="sidebar-list">
@@ -181,9 +175,6 @@ const SideBar = () => {
                   </li>
                 </ul>
               </li>
-
-
-
 
               <li className="sidebar-list">
                 <a className="sidebar-link sidebar-title link-nav" href="product-review.html">
