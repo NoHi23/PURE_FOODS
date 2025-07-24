@@ -9,6 +9,7 @@ import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { toast } from 'react-toastify';
 import UpdateInfoModal from "../Login/UpdateInfoModal";
+import ProductDropdown from "./ProductDropdown";
 
 
 const getOrUpdateExpiryTime = () => {
@@ -37,7 +38,7 @@ const HomePage = () => {
   const [quantity, setQuantity] = useState(1);
   const navigate = useNavigate();
 
-  const handleAddToCart = (product) => {
+  const handleAddToCart = async (product) => {
     if (!userId) {
       toast.error("Vui lòng đăng nhập");
       return;
@@ -49,10 +50,34 @@ const HomePage = () => {
       bootstrap.Modal.getInstance(modalEl).hide();
     }
 
+    if (quantity <= 0) {
+      toast.error("Số lượng phải lớn hơn 0");
+      return;
+    }
+
+    // Kiểm tra số lượng trong giỏ hàng hiện tại
+    try {
+      const res = await axios.get(`http://localhost:8082/PureFoods/api/cart/user/${userId}`);
+      const cartItems = res.data;
+
+      const existingItem = cartItems.find((item) => item.productID === product.productId);
+      const currentQuantityInCart = existingItem ? existingItem.quantity : 0;
+
+      if (currentQuantityInCart + quantity > product.stockQuantity) {
+        toast.error(`Chỉ còn ${product.stockQuantity - currentQuantityInCart} sản phẩm trong kho`);
+        return;
+      }
+    } catch (err) {
+      console.error("❌ Lỗi khi kiểm tra giỏ hàng:", err);
+      toast.error("Không thể kiểm tra số lượng trong kho");
+      return;
+    }
+
+    // Tiếp tục thêm vào giỏ hàng nếu đủ stock
     const cartItem = {
       userID: userId,
       productID: product.productId,
-      quantity,
+      quantity: quantity,
       priceAfterDiscount: product.salePrice,
       total: product.salePrice * quantity,
       imageURL: product.imageURL,
@@ -60,19 +85,18 @@ const HomePage = () => {
       originalPrice: product.price,
       discount: product.discountPercent,
     };
-
-    axios
-      .post("http://localhost:8082/PureFoods/api/cart/create", cartItem)
-      .then(() => {
-        toast.success("Đã thêm vào giỏ hàng");
-        window.dispatchEvent(new Event("cartUpdated"));
-        navigate(`/cart-detail`, { state: { fromAddToCart: true } });
-      })
-      .catch((err) => {
-        console.error("❌ Lỗi khi thêm vào giỏ hàng:", err.response?.data || err.message);
-        toast.error("Thêm vào giỏ thất bại");
-      });
+    try {
+      await axios.post('http://localhost:8082/PureFoods/api/cart/create', cartItem);
+      toast.success('Đã thêm vào giỏ hàng');
+      window.dispatchEvent(new Event('cartUpdated'));
+      //navigate(`/cart-detail`, { state: { fromAddToCart: true } });
+    } catch (err) {
+      console.error("❌ Lỗi khi thêm vào giỏ hàng:", err.response?.data || err.message);
+      toast.error('Thêm vào giỏ thất bại');
+    }
   };
+
+
 
   useEffect(() => {
     axios
@@ -275,72 +299,10 @@ const HomePage = () => {
                           </div>
                           <div className="offcanvas-body">
                             <ul className="navbar-nav">
-                              <li className="nav-item dropdown">
-                                <a
-                                  className="nav-link dropdown-toggle"
-                                  href="javascript:void(0)"
-                                  data-bs-toggle="dropdown"
-                                >
+                              <li className="nav-item">
+                                <Link className="nav-link" to="/">
                                   Home
-                                </a>
-
-                                <ul className="dropdown-menu">
-                                  <li>
-                                    <a className="dropdown-item" href="index.html">
-                                      Kartshop
-                                    </a>
-                                  </li>
-                                  <li>
-                                    <a className="dropdown-item" href="index-2.html">
-                                      Sweetshop
-                                    </a>
-                                  </li>
-                                  <li>
-                                    <a className="dropdown-item" href="index-3.html">
-                                      Organic
-                                    </a>
-                                  </li>
-                                  <li>
-                                    <a className="dropdown-item" href="index-4.html">
-                                      Supershop
-                                    </a>
-                                  </li>
-                                  <li>
-                                    <a className="dropdown-item" href="index-5.html">
-                                      classNameic shop
-                                    </a>
-                                  </li>
-                                  <li>
-                                    <a className="dropdown-item" href="index-6.html">
-                                      Furniture
-                                    </a>
-                                  </li>
-                                  <li>
-                                    <a className="dropdown-item" href="index-7.html">
-                                      Search Oriented
-                                    </a>
-                                  </li>
-                                  <li>
-                                    <a className="dropdown-item" href="index-8.html">
-                                      Category Focus
-                                    </a>
-                                  </li>
-                                  <li>
-                                    <a className="dropdown-item" href="index-9.html">
-                                      Fashion
-                                    </a>
-                                  </li>
-                                  <li>
-                                    <a className="dropdown-item" href="index-10.html">
-                                      Book
-                                    </a>
-                                  </li>
-                                  <li>
-                                    <a className="dropdown-item" href="index-11.html">
-                                      Digital
-                                    </a>
-                                  </li>
-                                </ul>
+                                </Link>
                               </li>
 
                               <li className="nav-item dropdown">
@@ -390,168 +352,8 @@ const HomePage = () => {
                                   </li>
                                 </ul>
                               </li>
-
-                              <li className="nav-item dropdown">
-                                <a
-                                  className="nav-link dropdown-toggle"
-                                  href="#"
-                                  role="button"
-                                  data-bs-toggle="dropdown"
-                                  aria-expanded="false"
-                                >
-                                  Product
-                                </a>
-                                <ul className="dropdown-menu">
-                                  <li>
-                                    <a className="dropdown-item" href="/all-products">
-                                      All Products
-                                    </a>
-                                  </li>
-                                  <li>
-                                    <a className="dropdown-item" href="/top-discount">
-                                      Top Discount
-                                    </a>
-                                  </li>
-                                  <li>
-                                    <a className="dropdown-item" href="/organic-products">
-                                      Organic Products
-                                    </a>
-                                  </li>
-                                </ul>
-
-                                <div className="dropdown-menu dropdown-menu-3 dropdown-menu-2">
-                                  <div className="row">
-                                    <div className="col-xl-3">
-                                      <div className="dropdown-column m-0">
-                                        <h5 className="dropdown-header">Product Pages </h5>
-                                        <a className="dropdown-item" href="product-left-thumbnail.html">
-                                          Product Thumbnail
-                                        </a>
-                                        <a className="dropdown-item" href="product-4-image.html">
-                                          Product Images
-                                        </a>
-                                        <a className="dropdown-item" href="product-slider.html">
-                                          Product Slider
-                                        </a>
-                                        <a className="dropdown-item" href="product-sticky.html">
-                                          Product Sticky
-                                        </a>
-                                        <a className="dropdown-item" href="product-accordion.html">
-                                          Product Accordion
-                                        </a>
-                                        <a className="dropdown-item" href="product-circle.html">
-                                          Product Tab
-                                        </a>
-                                        <a className="dropdown-item" href="product-digital.html">
-                                          Product Digital
-                                        </a>
-
-                                        <h5 className="custom-mt dropdown-header">Product Features</h5>
-                                        <a className="dropdown-item" href="product-circle.html">
-                                          Bundle (Cross Sale)
-                                        </a>
-                                        <a className="dropdown-item" href="product-left-thumbnail.html">
-                                          Hot Stock Progress <label className="menu-label">New</label>
-                                        </a>
-                                        <a className="dropdown-item" href="product-sold-out.html">
-                                          SOLD OUT
-                                        </a>
-                                        <a className="dropdown-item" href="product-circle.html">
-                                          Sale Countdown
-                                        </a>
-                                      </div>
-                                    </div>
-                                    <div className="col-xl-3">
-                                      <div className="dropdown-column m-0">
-                                        <h5 className="dropdown-header">Product Variants Style </h5>
-                                        <a className="dropdown-item" href="product-rectangle.html">
-                                          Variant Rectangle
-                                        </a>
-                                        <a className="dropdown-item" href="product-circle.html">
-                                          Variant Circle <label className="menu-label">New</label>
-                                        </a>
-                                        <a className="dropdown-item" href="product-color-image.html">
-                                          Variant Image Swatch
-                                        </a>
-                                        <a className="dropdown-item" href="product-color.html">
-                                          Variant Color
-                                        </a>
-                                        <a className="dropdown-item" href="product-radio.html">
-                                          Variant Radio Button
-                                        </a>
-                                        <a className="dropdown-item" href="product-dropdown.html">
-                                          Variant Dropdown
-                                        </a>
-                                        <h5 className="custom-mt dropdown-header">Product Features</h5>
-                                        <a className="dropdown-item" href="product-left-thumbnail.html">
-                                          Sticky Checkout
-                                        </a>
-                                        <a className="dropdown-item" href="product-dynamic.html">
-                                          Dynamic Checkout
-                                        </a>
-                                        <a className="dropdown-item" href="product-sticky.html">
-                                          Secure Checkout
-                                        </a>
-                                        <a className="dropdown-item" href="product-bundle.html">
-                                          Active Product view
-                                        </a>
-                                        <a className="dropdown-item" href="product-bundle.html">
-                                          Active Last Orders
-                                        </a>
-                                      </div>
-                                    </div>
-                                    <div className="col-xl-3">
-                                      <div className="dropdown-column m-0">
-                                        <h5 className="dropdown-header">Product Features </h5>
-                                        <a className="dropdown-item" href="product-image.html">
-                                          Product Simple
-                                        </a>
-                                        <a className="dropdown-item" href="product-rectangle.html">
-                                          Product classNameified <label className="menu-label">New</label>
-                                        </a>
-                                        <a className="dropdown-item" href="product-size-chart.html">
-                                          Size Chart <label className="menu-label">New</label>
-                                        </a>
-                                        <a className="dropdown-item" href="product-size-chart.html">
-                                          Delivery & Return
-                                        </a>
-                                        <a className="dropdown-item" href="product-size-chart.html">
-                                          Product Review
-                                        </a>
-                                        <a className="dropdown-item" href="product-expert.html">
-                                          Ask an Expert
-                                        </a>
-                                        <h5 className="custom-mt dropdown-header">Product Features</h5>
-                                        <a className="dropdown-item" href="product-bottom-thumbnail.html">
-                                          Product Tags
-                                        </a>
-                                        <a className="dropdown-item" href="product-image.html">
-                                          Store Information
-                                        </a>
-                                        <a className="dropdown-item" href="product-image.html">
-                                          Social Share <label className="menu-label warning-label">Hot</label>
-                                        </a>
-                                        <a className="dropdown-item" href="product-left-thumbnail.html">
-                                          Related Products
-                                          <label className="menu-label warning-label">Hot</label>
-                                        </a>
-                                        <a className="dropdown-item" href="product-right-thumbnail.html">
-                                          Wishlist & Compare
-                                        </a>
-                                      </div>
-                                    </div>
-                                    <div className="col-xl-3 d-xl-block d-none">
-                                      <div className="dropdown-column m-0">
-                                        <div className="menu-img-banner">
-                                          <a className="text-title" href="product-circle.html">
-                                            <img src="../assets/images/mega-menu.png" alt="banner" />
-                                          </a>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                              </li>
+                       
+                              <ProductDropdown />
 
                               <li className="nav-item dropdown dropdown-mega">
                                 <a
@@ -1318,7 +1120,7 @@ const HomePage = () => {
 
                   <div className="category-slider-2 product-wrapper no-arrow">
                     <div>
-                      <a href="/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1" className="category-box category-dark">
+                      <a href="/category?cate=1%2C2&page=1" className="category-box category-dark">
                         <div>
                           <img src="../assets/svg/1/vegetable.svg" className="blur-up lazyload" alt="" />
                           <h5>Vegetables & Fruit</h5>
@@ -1327,7 +1129,7 @@ const HomePage = () => {
                     </div>
 
                     <div>
-                      <a href="/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1" className="category-box category-dark">
+                      <a href="/category?cate=5&page=1" className="category-box category-dark">
                         <div>
                           <img src="../assets/svg/1/cup.svg" className="blur-up lazyload" alt="" />
                           <h5>Beverages</h5>
@@ -1336,7 +1138,7 @@ const HomePage = () => {
                     </div>
 
                     <div>
-                      <a href="/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1" className="category-box category-dark">
+                      <a href="/category?cate=4" className="category-box category-dark">
                         <div>
                           <img src="../assets/svg/1/meats.svg" className="blur-up lazyload" alt="" />
                           <h5>Meats & Seafood</h5>
@@ -1354,7 +1156,7 @@ const HomePage = () => {
                     </div>
 
                     <div>
-                      <a href="/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1" className="category-box category-dark">
+                      <a href="/category?cate=3" className="category-box category-dark">
                         <div>
                           <img src="../assets/svg/1/frozen.svg" className="blur-up lazyload" alt="" />
                           <h5>Frozen Foods</h5>
@@ -1363,7 +1165,7 @@ const HomePage = () => {
                     </div>
 
                     <div>
-                      <a href="/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1" className="category-box category-dark">
+                      <a href="/category?cate=5&page=1" className="category-box category-dark">
                         <div>
                           <img src="../assets/svg/1/milk.svg" className="blur-up lazyload" alt="" />
                           <h5>Milk & Dairies</h5>
@@ -1372,7 +1174,7 @@ const HomePage = () => {
                     </div>
 
                     <div>
-                      <a href="/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1" className="category-box category-dark">
+                      <a href="/category?cate=6" className="category-box category-dark">
                         <div>
                           <img src="../assets/svg/1/pet.svg" className="blur-up lazyload" alt="" />
                           <h5>Pet Food</h5>
@@ -2574,6 +2376,7 @@ const HomePage = () => {
                             </div>
                           </li>
                         </ul>
+
 
 
                         <div className="modal-button">

@@ -2,6 +2,9 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import AllProductsLayout from '../../layouts/AllProductsLayout';
 import './AllProducts.css';
+import ProductSlider from '../HomePage/ProductSlider'; // đổi đường dẫn nếu khác
+import { toast } from 'react-toastify';
+import * as bootstrap from 'bootstrap';
 
 const AllProducts = () => {
     const [products, setProducts] = useState([]);
@@ -9,6 +12,11 @@ const AllProducts = () => {
     const [suppliers, setSuppliers] = useState([]);
     const [selectedCategory, setSelectedCategory] = useState('');
     const [selectedSupplier, setSelectedSupplier] = useState('');
+    const [saveProduct, setSaveProduct] = useState([]);
+    const [selectedProduct, setSelectedProduct] = useState(null);
+
+    const user = JSON.parse(localStorage.getItem("user"));
+    const userId = user?.userId;
 
     useEffect(() => {
         if (!selectedCategory && !selectedSupplier) {
@@ -47,7 +55,6 @@ const AllProducts = () => {
         axios
             .get('http://localhost:8082/PureFoods/api/category/getAll')
             .then((res) => {
-                console.log("CATEGORY DATA:", res.data); 
                 setCategories(res.data || []);
             })
             .catch((err) => {
@@ -59,13 +66,27 @@ const AllProducts = () => {
         axios
             .get('http://localhost:8082/PureFoods/api/supplier/getAll')
             .then((res) => {
-                console.log("SUPPLIER DATA:", res.data);
                 setSuppliers(res.data.suppliers || []);
             })
             .catch((err) => {
                 console.error('Error fetching suppliers:', err);
             });
     };
+
+
+    const handleViewProduct = (product) => {
+        setSelectedProduct(product);
+
+        const modalElement = document.getElementById('view');
+        if (!modalElement) {
+            console.error("Modal with id 'view' not found in DOM");
+            return;
+        }
+
+        const modal = new bootstrap.Modal(modalElement);
+        modal.show();
+    };
+
 
     return (
         <AllProductsLayout>
@@ -105,70 +126,70 @@ const AllProducts = () => {
                         </div>
 
                         <div className="col-xxl-9 col-lg-8">
-                            <div className="row g-sm-4 g-3">
-                                {products.length === 0 ? (
-                                    <div className="col-12">
-                                        <h4>No products found.</h4>
-                                    </div>
-                                ) : (
-                                    products.map((product) => (
-                                        <div className="col-xxl-3 col-lg-4 col-sm-6" key={product.productId}>
-                                            <div className="product-box-3 h-100 wow fadeInUp">
-                                                <div className="product-header">
-                                                    <div className="product-image">
-                                                        <img
-                                                            src={product.imageUrl}
-                                                            className="img-fluid"
-                                                            alt={product.productName}
-                                                        />
-                                                        <ul className="product-option">
-                                                            <li data-bs-toggle="tooltip" data-bs-placement="top" title="Add to Wishlist">
-                                                                <a href="#" className="btn btn-sm">
-                                                                    <i className="fa fa-heart"></i>
-                                                                </a>
-                                                            </li>
-                                                            <li data-bs-toggle="tooltip" data-bs-placement="top" title="Quick View">
-                                                                <a href="#" className="btn btn-sm">
-                                                                    <i className="fa fa-eye"></i>
-                                                                </a>
-                                                            </li>
-                                                            <li data-bs-toggle="tooltip" data-bs-placement="top" title="Add to Cart">
-                                                                <a href="#" className="btn btn-sm">
-                                                                    <i className="fa fa-shopping-cart"></i>
-                                                                </a>
-                                                            </li>
-                                                        </ul>
-                                                    </div>
-                                                </div>
-                                                <div className="product-footer">
-                                                    <div className="product-detail">
-                                                        <h5 className="name">{product.productName}</h5>
-                                                        <h6 className="unit">Stock: {product.stockQuantity}</h6>
-                                                        <h5 className="price">
-                                                            {product.discountPercent > 0 ? (
-                                                                <>
-                                                                    <span className="theme-color">
-                                                                        {(product.price * (1 - product.discountPercent / 100)).toLocaleString()}₫
-                                                                    </span>
-                                                                    <del>{product.price.toLocaleString()}₫</del>
-                                                                </>
-                                                            ) : (
-                                                                <span className="theme-color">
-                                                                    {product.price.toLocaleString()}₫
-                                                                </span>
-                                                            )}
-                                                        </h5>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))
-                                )}
-                            </div>
+                            {products.length === 0 ? (
+                                <div className="col-12">
+                                    <h4>No products found.</h4>
+                                </div>
+                            ) : (
+                                <div className="section-b-space w-100">
+                                    <ProductSlider
+                                        products={products}
+                                        handleViewProduct={handleViewProduct}
+                                        userId={userId}
+                                    />
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
             </section>
+
+            {/* Product View Modal */}
+            <div
+                className="modal fade"
+                id="view"
+                tabIndex="-1"
+                aria-labelledby="productModalLabel"
+                aria-hidden="true"
+            >
+                <div className="modal-dialog modal-lg modal-dialog-centered">
+                    <div className="modal-content">
+                        <div className="modal-header">
+                            <h5 className="modal-title" id="productModalLabel">
+                                {selectedProduct?.productName}
+                            </h5>
+                            <button
+                                type="button"
+                                className="btn-close"
+                                data-bs-dismiss="modal"
+                                aria-label="Close"
+                            ></button>
+                        </div>
+                        <div className="modal-body">
+                            {selectedProduct ? (
+                                <div className="row">
+                                    <div className="col-md-6">
+                                        <img
+                                            src={selectedProduct.imageUrl}
+                                            alt={selectedProduct.productName}
+                                            className="img-fluid"
+                                        />
+                                    </div>
+                                    <div className="col-md-6">
+                                        <p><strong>Giá:</strong> {selectedProduct.price.toLocaleString()}$</p>
+                                        <p><strong>Giảm giá:</strong> {selectedProduct.discountPercent}%</p>
+                                        <p><strong>Tồn kho:</strong> {selectedProduct.stockQuantity}</p>
+                                        {/* Thêm thông tin khác nếu cần */}
+                                    </div>
+                                </div>
+                            ) : (
+                                <p>Đang tải sản phẩm...</p>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </AllProductsLayout>
     );
 };

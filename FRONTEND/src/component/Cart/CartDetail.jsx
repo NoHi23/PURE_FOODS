@@ -1,22 +1,42 @@
-// ... imports như cũ
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import './CartDetail.css';
-import { useParams, useLocation, Link, Navigate } from 'react-router-dom';
-import CartLayout from '../../layouts/CartLayout';
-import { toast } from 'react-toastify';
-import dayjs from 'dayjs';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import "./CartDetail.css";
+import { useParams, useLocation, Link, Navigate } from "react-router-dom";
+import CartLayout from "../../layouts/CartLayout";
+import { toast } from "react-toastify";
+import dayjs from "dayjs";
+import { useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
+
 const CartDetail = () => {
   const location = useLocation();
   const user = JSON.parse(localStorage.getItem("user"));
   const userId = user?.userId;
   const [cartItems, setCartItems] = useState([]);
   const [subtotal, setSubtotal] = useState(0);
-  const [couponCode, setCouponCode] = useState('');
+  const [couponCode, setCouponCode] = useState("");
   const [couponDiscount, setCouponDiscount] = useState(0);
   // const [shippingFee] = useState(6.9); // USD
   const navigate = useNavigate();
+  const [shippingFee] = useState(6.9); // USD
+  const [inputQuantities, setInputQuantities] = useState({});
+
+  useEffect(() => {
+    window.scrollTo(0, 0); // Scroll lên đầu
+    document.body.style.overflow = "auto"; // Cho phép cuộn lại nếu bị khoá
+  }, []);
+
+  useEffect(() => {
+    const handleCartUpdate = () => {
+      fetchCart();
+    };
+
+    window.addEventListener("cartUpdated", handleCartUpdate);
+
+    return () => {
+      window.removeEventListener("cartUpdated", handleCartUpdate);
+    };
+  }, []);
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -30,51 +50,70 @@ const CartDetail = () => {
   }, [location.state?.fromProductDetail]);
 
   const fetchCart = () => {
-    axios.get(`http://localhost:8082/PureFoods/api/cart/user/${userId}`)
-      .then(res => {
+    axios
+      .get(`http://localhost:8082/PureFoods/api/cart/user/${userId}`)
+      .then((res) => {
         setCartItems(res.data);
         const newSubtotal = res.data.reduce((sum, item) => sum + item.total, 0);
         setSubtotal(newSubtotal);
+        setInputQuantities(Object.fromEntries(res.data.map((item) => [item.cartItemID, item.quantity])));
       })
-      .catch(err => console.error("❌ Error fetching cart:", err));
+      .catch((err) => console.error("❌ Error fetching cart:", err));
   };
 
   const handleQuantityChange = (item, delta) => {
     const newQty = item.quantity + delta;
+
+    //  Nếu nhỏ hơn 1 → không cho giảm tiếp
     if (newQty < 1) return;
+
+    //  Nếu vượt quá stock → cảnh báo và dừng lại
+    if (newQty > item.stock) {
+      toast.warning(`Chỉ có ${item.stock} sản phẩm trong kho`, { position: "top-center" });
+      return;
+    }
 
     const updatedItem = {
       ...item,
       quantity: newQty,
-      total: newQty * item.priceAfterDiscount
+      total: newQty * item.priceAfterDiscount,
     };
 
-    axios.put(`http://localhost:8082/PureFoods/api/cart/update/${item.cartItemID}`, updatedItem)
-      .then(() => fetchCart())
-      .catch(err => console.error(err));
+    axios
+      .put(`http://localhost:8082/PureFoods/api/cart/update/${item.cartItemID}`, updatedItem)
+      .then(() => {
+        fetchCart();
+        window.dispatchEvent(new Event("cartUpdated"));
+      })
+      .catch((err) => console.error(err));
   };
 
   const handleRemove = (cartItemID) => {
-    axios.delete(`http://localhost:8082/PureFoods/api/cart/delete/${cartItemID}`)
-      .then(() => fetchCart())
-      .catch(err => console.error(err));
+    axios
+      .delete(`http://localhost:8082/PureFoods/api/cart/delete/${cartItemID}`)
+      .then(() => {
+        fetchCart();
+        window.dispatchEvent(new Event("cartUpdated")); //  Thêm dòng này
+      })
+      .catch((err) => console.error(err));
   };
 
   const handleApplyCoupon = () => {
     if (!couponCode.trim()) return;
-    axios.get(`http://localhost:8082/PureFoods/api/promotion/code/${couponCode}`)
-      .then(res => {
+    axios
+      .get(`http://localhost:8082/PureFoods/api/promotion/code/${couponCode}`)
+      .then((res) => {
         const discountAmount = res.data.promotion.discountValue || 0;
         setCouponDiscount(discountAmount);
       })
-      .catch(err => {
+      .catch((err) => {
         setCouponDiscount(0);
-        console.error('Invalid coupon');
+        console.error("Invalid coupon");
       });
   };
 
   const toUSD = (amount) => {
-    return amount.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+    return amount.toLocaleString("en-US", { style: "currency", currency: "USD" });
   };
 
   // const total = subtotal + shippingFee - couponDiscount;
@@ -97,21 +136,22 @@ const CartDetail = () => {
       driverID: 1,
       returnReason: null,
       paymentMethod: "COD",
-      paymentStatus: "Pending" // hoặc null nếu bạn muốn backend xử lý mặc định
+      paymentStatus: "Pending", // hoặc null nếu bạn muốn backend xử lý mặc định
     };
 
-    axios.post('http://localhost:8082/PureFoods/api/orders/create', orderPayload)
-      .then(res => {
+    axios
+      .post("http://localhost:8082/PureFoods/api/orders/create", orderPayload)
+      .then((res) => {
         const orderID = res.data.order.orderID;
 
         // Thêm từng order detail
-        const orderDetailRequests = cartItems.map(item => {
-          return axios.post('http://localhost:8082/PureFoods/api/order-details/create', {
+        const orderDetailRequests = cartItems.map((item) => {
+          return axios.post("http://localhost:8082/PureFoods/api/order-details/create", {
             orderID: orderID,
             productID: item.productID,
             quantity: item.quantity,
             unitPrice: item.priceAfterDiscount * item.quantity,
-            status: 1 // hoặc trạng thái mặc định
+            status: 1, // hoặc trạng thái mặc định
           });
         });
 
@@ -120,18 +160,16 @@ const CartDetail = () => {
             toast.success("🛒 Order and details created!");
             navigate(`/checkout/${orderID}`);
           })
-          .catch(err => {
+          .catch((err) => {
             console.error("❌ Error creating order details:", err);
             toast.error("❌ Failed to add order details");
           });
-
       })
-      .catch(err => {
+      .catch((err) => {
         console.error("❌ Error creating order:", err);
         toast.error("❌ Failed to create order");
       });
   };
-
 
   return (
     <CartLayout>
@@ -140,21 +178,55 @@ const CartDetail = () => {
           {cartItems.length === 0 ? (
             <div className="text-center py-5">
               <h3>Your cart is empty</h3>
-              <a href="/" className="btn btn-primary mt-3">Continue Shopping</a>
+              <a href="/" className="btn btn-primary mt-3">
+                Continue Shopping
+              </a>
             </div>
           ) : (
             <div className="row g-sm-4 g-3">
               <div className="col-xxl-9">
                 <div className="cart-table">
                   <div className="table-responsive">
+                    <button
+                      className="btn btn-danger w-100 mt-2 mb-3"
+                      onClick={() => {
+                        Swal.fire({
+                          title: "Bạn có chắc không?",
+                          text: "Toàn bộ sản phẩm trong giỏ sẽ bị xóa!",
+                          icon: "warning",
+                          showCancelButton: true,
+                          confirmButtonColor: "#d33",
+                          cancelButtonColor: "#3085d6",
+                          confirmButtonText: "Xóa hết!",
+                          cancelButtonText: "Huỷ bỏ",
+                        }).then((result) => {
+                          if (result.isConfirmed) {
+                            axios
+                              .delete(`http://localhost:8082/PureFoods/api/cart/user/${userId}/clear`)
+                              .then(() => {
+                                Swal.fire("🗑️ Đã xóa!", "Toàn bộ sản phẩm đã bị xóa khỏi giỏ hàng.", "success");
+                                fetchCart();
+                                window.dispatchEvent(new Event("cartUpdated"));
+                              })
+                              .catch((err) => {
+                                console.error("❌ Lỗi khi xóa toàn bộ giỏ:", err);
+                                Swal.fire("Lỗi!", "Xóa giỏ hàng thất bại. Vui lòng thử lại sau.", "error");
+                              });
+                          }
+                        });
+                      }}
+                    >
+                      Remove All Product
+                    </button>
+                    <hr></hr>
                     <table className="table all-package theme-table">
                       <thead>
-                        <tr >
-                          <th className='text-dark'>Product</th>
-                          <th className='text-dark'>Price</th>
-                          <th className='text-dark'>Quantity</th>
-                          <th className='text-dark'>Total</th>
-                          <th className='text-dark'>Action</th>
+                        <tr>
+                          <th className="text-dark">Product</th>
+                          <th className="text-dark">Price</th>
+                          <th className="text-dark">Quantity</th>
+                          <th className="text-dark">Total</th>
+                          <th className="text-dark">Action</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -175,9 +247,7 @@ const CartDetail = () => {
                               </div>
                             </td>
                             <td>
-                              <p className="theme-color">
-                                {toUSD(item.priceAfterDiscount)}
-                              </p>
+                              <p className="theme-color">{toUSD(item.priceAfterDiscount)}</p>
                               {item.discount > 0 && (
                                 <span className="text-content text-decoration-line-through">
                                   {toUSD(item.originalPrice)}
@@ -186,26 +256,91 @@ const CartDetail = () => {
                             </td>
                             <td>
                               <div className="quantity price-quantity d-flex align-items-center gap-2">
-                                <button className="btn btn-sm btn-light" onClick={() => handleQuantityChange(item, -1)}>-</button>
+                                <button className="btn btn-sm btn-light" onClick={() => handleQuantityChange(item, -1)}>
+                                  -
+                                </button>
+
                                 <input
                                   type="number"
                                   className="form-control"
-                                  value={item.quantity}
-                                  readOnly
+                                  value={inputQuantities[item.cartItemID] ?? item.quantity}
+                                  placeholder="0"
+                                  onChange={(e) => {
+                                    const value = e.target.value;
+                                    setInputQuantities((prev) => ({
+                                      ...prev,
+                                      [item.cartItemID]: value,
+                                    }));
+                                  }}
+                                  onBlur={(e) => {
+                                    const value = parseInt(inputQuantities[item.cartItemID]);
+
+                                    if (isNaN(value)) {
+                                      toast.warning("Vui lòng nhập số hợp lệ", { position: "top-center" });
+                                      setInputQuantities((prev) => ({
+                                        ...prev,
+                                        [item.cartItemID]: item.quantity,
+                                      }));
+                                      return;
+                                    }
+
+                                    if (value < 1) {
+                                      toast.warning("Số lượng phải từ 1 trở lên", { position: "top-center" });
+                                      setInputQuantities((prev) => ({
+                                        ...prev,
+                                        [item.cartItemID]: item.quantity,
+                                      }));
+                                      return;
+                                    }
+
+                                    if (value > item.stock) {
+                                      toast.warning(`Chỉ có ${item.stock} sản phẩm trong kho`, {
+                                        position: "top-center",
+                                      });
+                                      setInputQuantities((prev) => ({
+                                        ...prev,
+                                        [item.cartItemID]: item.quantity,
+                                      }));
+                                      return;
+                                    }
+
+                                    const updatedItem = {
+                                      ...item,
+                                      quantity: value,
+                                      total: value * item.priceAfterDiscount,
+                                    };
+
+                                    axios
+                                      .put(
+                                        `http://localhost:8082/PureFoods/api/cart/update/${item.cartItemID}`,
+                                        updatedItem
+                                      )
+                                      .then(() => {
+                                        fetchCart();
+                                        window.dispatchEvent(new Event("cartUpdated"));
+                                      })
+                                      .catch((err) => console.error(err));
+                                  }}
                                   style={{ width: "60px", textAlign: "center" }}
                                 />
-                                <button className="btn btn-sm btn-light" onClick={() => handleQuantityChange(item, 1)}>+</button>
+
+                                <button className="btn btn-sm btn-light" onClick={() => handleQuantityChange(item, 1)}>
+                                  +
+                                </button>
                               </div>
                             </td>
                             <td>
-                              <h5 className="fw-semibold">
-                                {toUSD(item.total)}
-                              </h5>
+                              <h5 className="fw-semibold">{toUSD(item.total)}</h5>
                             </td>
                             <td>
-                              <button className="btn btn-sm btn-outline-danger" onClick={() => handleRemove(item.cartItemID)}>
-                                Remove 🗑️
-                              </button>
+                              <div className="d-flex justify-content-center">
+                                <button
+                                  className="btn btn-sm btn-outline-danger"
+                                  onClick={() => handleRemove(item.cartItemID)}
+                                >
+                                  Remove
+                                </button>
+                              </div>
                             </td>
                           </tr>
                         ))}
@@ -230,7 +365,9 @@ const CartDetail = () => {
                         value={couponCode}
                         onChange={(e) => setCouponCode(e.target.value)}
                       />
-                      <button className="btn btn-sm btn-dark text-white" onClick={handleApplyCoupon}>Apply</button>
+                      <button className="btn btn-sm btn-dark text-white" onClick={handleApplyCoupon}>
+                        Apply
+                      </button>
                     </div>
                   </div>
 
@@ -259,8 +396,10 @@ const CartDetail = () => {
                   </ul>
 
                   <div className="button-group cart-button">
-                    <button className="btn btn-animation w-100" onClick={handleCreateOrder}>Proceed to Checkout</button>
-                    <a href="/" className="btn btn-light shopping-button w-100 mt-2">
+                    <button className="btn btn-animation w-100" onClick={handleCreateOrder}>
+                      Proceed to Checkout
+                    </button>
+                    <a href="/" className="btn btn-primary shopping-button w-100 mt-2">
                       Continue Shopping
                     </a>
                   </div>

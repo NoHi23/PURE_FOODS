@@ -40,8 +40,9 @@ const AddNewCategory = () => {
       const res = await axios.post(`http://localhost:8082/PureFoods/api/category/create`, form);
       if (res.status === 200 || res.data.status === 200) {
         toast.success("Thêm danh mục thành công!");
+        window.dispatchEvent(new Event('categoryUpdated')); // Thông báo cập nhật
         setForm({ categoryName: '', categoryDescription: '', isOrganic: 0, status: 1 });
-        navigate('/admin-category');
+        //navigate('/admin-category');
       } else {
         toast.error(res.data.message || "Có lỗi xảy ra");
       }
@@ -101,15 +102,6 @@ const AddNewCategory = () => {
                             checked={form.isOrganic === 1}
                             onChange={handleChange}
                           /> Yes
-                        </div>
-                      </div>
-                      <div className="mb-4 row align-items-center">
-                        <label className="form-label-title col-sm-3 mb-0">Status</label>
-                        <div className="col-sm-9">
-                          <select className="form-select" name="status" value={form.status} onChange={handleChange}>
-                            <option value={1}>Active</option>
-                            <option value={0}>Inactive</option>
-                          </select>
                         </div>
                       </div>
                       <div className="card-submit-button">

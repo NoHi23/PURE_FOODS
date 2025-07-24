@@ -11,6 +11,12 @@ import * as bootstrap from 'bootstrap';
 
 const Supplier = () => {
   const [suppliers, setSuppliers] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentSuppliers = suppliers.slice(startIndex, endIndex);
+  const totalPages = Math.ceil(suppliers.length / itemsPerPage);
   const [selectedSupplier, setSelectedSupplier] = useState(null);
   const [editSupplier, setEditSupplier] = useState({
     supplierName: '',
@@ -104,7 +110,52 @@ const Supplier = () => {
   };
 
   const handleUpdateSupplier = async () => {
+    const trimmedName = editSupplier.supplierName.trim();
+    const trimmedPhone = editSupplier.phone.trim();
+    const trimmedEmail = editSupplier.email.trim();
+
+    // Validate: Không được để trống
+    if (!trimmedName || !trimmedPhone || !trimmedEmail) {
+      toast.error("Vui lòng nhập đầy đủ Tên, Số điện thoại và Email.");
+      return;
+    }
+
+    // Validate: Email đúng định dạng
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(trimmedEmail)) {
+      toast.error("Email không hợp lệ.");
+      return;
+    }
+
+    // Validate: Phone là số
+    const phoneRegex = /^[0-9]+$/;
+    if (!phoneRegex.test(trimmedPhone)) {
+      toast.error("Số điện thoại chỉ được chứa số.");
+      return;
+    }
+
     try {
+      // Kiểm tra trùng tên nếu người dùng thay đổi
+      if (trimmedName !== selectedSupplier.supplierName.trim()) {
+        try {
+          const res = await axios.get("http://localhost:8082/PureFoods/api/supplier/searchByName", {
+            params: { name: trimmedName }
+          });
+
+          if (res.status === 200 && res.data.supplierId !== selectedSupplier.supplierId) {
+            toast.error("Tên nhà cung cấp đã tồn tại!");
+            return;
+          }
+        } catch (error) {
+          if (error.response && error.response.status !== 404) {
+            toast.error("Lỗi khi kiểm tra tên nhà cung cấp!");
+            console.error(error);
+            return;
+          }
+          // 404 là OK → không trùng
+        }
+      }
+
       const dataToSend = {
         ...editSupplier,
         certificationExpiry: editSupplier.certificationExpiry === '' ? null : editSupplier.certificationExpiry
@@ -120,6 +171,7 @@ const Supplier = () => {
       toast.error("Lỗi cập nhật!");
     }
   };
+
 
   const confirmDelete = (supplier) => {
     setSupplierToDelete(supplier);
@@ -168,23 +220,23 @@ const Supplier = () => {
                             <th>Contact</th>
                             <th>Phone</th>
                             <th>Email</th>
+                            <th>Address</th>
                             <th>Organic Cert</th>
                             <th>Expiry</th>
-                            <th>Status</th>
                             <th>Actions</th>
                           </tr>
                         </thead>
                         <tbody>
-                          {suppliers.map((s, i) => (
+                          {currentSuppliers.map((s, i) => (
                             <tr key={i}>
                               <td>{s.supplierId}</td>
                               <td>{s.supplierName}</td>
                               <td>{s.contactName}</td>
                               <td>{s.phone}</td>
                               <td>{s.email}</td>
+                              <td>{s.address}</td>
                               <td>{s.organicCertification}</td>
                               <td>{s.certificationExpiry ? new Date(s.certificationExpiry).toLocaleDateString('en-CA') : 'N/A'}</td>
-                              <td className={s.status === 1 ? "status-success" : "status-danger"}>{s.status === 1 ? "Active" : "Inactive"}</td>
                               <td>
                                 <ul className="table-action-icons">
                                   <li>
@@ -208,6 +260,27 @@ const Supplier = () => {
                           ))}
                         </tbody>
                       </table>
+                      <div className="pagination-container d-flex justify-content-center mt-3">
+                        <nav>
+                          <ul className="pagination">
+                            <li className={`page-item ${currentPage === 1 && "disabled"}`}>
+                              <button className="page-link" onClick={() => setCurrentPage(currentPage - 1)}>Previous</button>
+                            </li>
+
+                            {[...Array(totalPages)].map((_, index) => (
+                              <li key={index} className={`page-item ${currentPage === index + 1 && "active"}`}>
+                                <button className="page-link" onClick={() => setCurrentPage(index + 1)}>
+                                  {index + 1}
+                                </button>
+                              </li>
+                            ))}
+
+                            <li className={`page-item ${currentPage === totalPages && "disabled"}`}>
+                              <button className="page-link" onClick={() => setCurrentPage(currentPage + 1)}>Next</button>
+                            </li>
+                          </ul>
+                        </nav>
+                      </div>
                     </div>
 
                     {/* View Modal */}
@@ -226,9 +299,9 @@ const Supplier = () => {
                                 <p><strong>Contact:</strong> {selectedSupplier.contactName}</p>
                                 <p><strong>Phone:</strong> {selectedSupplier.phone}</p>
                                 <p><strong>Email:</strong> {selectedSupplier.email}</p>
+                                <p><strong>Address:</strong> {selectedSupplier.address}</p>
                                 <p><strong>Organic Cert:</strong> {selectedSupplier.organicCertification}</p>
                                 <p><strong>Expiry:</strong> {selectedSupplier.certificationExpiry ? new Date(selectedSupplier.certificationExpiry).toLocaleDateString('en-CA') : 'N/A'}</p>
-                                <p><strong>Status:</strong> {selectedSupplier.status === 1 ? 'Active' : 'Inactive'}</p>
                               </>
                             )}
                           </div>
@@ -246,16 +319,26 @@ const Supplier = () => {
                           </div>
                           <div className="modal-body">
                             <form>
+                              <label><strong>Name:</strong></label>
                               <input type="text" className="form-control mb-2" placeholder="Name" name="supplierName" value={editSupplier.supplierName} onChange={handleInputChange} />
+
+                              <label><strong>Contact:</strong></label>
                               <input type="text" className="form-control mb-2" placeholder="Contact" name="contactName" value={editSupplier.contactName} onChange={handleInputChange} />
+
+                              <label><strong>Phone:</strong></label>
                               <input type="text" className="form-control mb-2" placeholder="Phone" name="phone" value={editSupplier.phone} onChange={handleInputChange} />
+
+                              <label><strong>Email:</strong></label>
                               <input type="email" className="form-control mb-2" placeholder="Email" name="email" value={editSupplier.email} onChange={handleInputChange} />
+
+                              <label><strong>Address:</strong></label>
+                              <input type="text" className="form-control mb-2" placeholder="Address" name="address" value={editSupplier.address} onChange={handleInputChange} />
+
+                              <label><strong>Organic Cert:</strong></label>
                               <input type="text" className="form-control mb-2" placeholder="Organic Cert" name="organicCertification" value={editSupplier.organicCertification} onChange={handleInputChange} />
+
+                              <label><strong>Certification Expiry:</strong></label>
                               <input type="date" className="form-control mb-2" name="certificationExpiry" value={editSupplier.certificationExpiry} onChange={handleInputChange} />
-                              <select className="form-control mb-2" name="status" value={editSupplier.status} onChange={handleInputChange}>
-                                <option value={1}>Active</option>
-                                <option value={0}>Inactive</option>
-                              </select>
                             </form>
                           </div>
                           <div className="modal-footer">

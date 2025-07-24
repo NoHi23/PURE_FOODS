@@ -11,6 +11,12 @@ import * as bootstrap from 'bootstrap';
 
 const Category = () => {
   const [categories, setCategories] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentCategories = categories.slice(startIndex, endIndex);
+  const totalPages = Math.ceil(categories.length / itemsPerPage);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [editCategory, setEditCategory] = useState({
     categoryName: '',
@@ -144,20 +150,16 @@ const Category = () => {
                             <th>Name</th>
                             <th>Description</th>
                             <th>Organic</th>
-                            <th>Status</th>
                             <th>Actions</th>
                           </tr>
                         </thead>
                         <tbody>
-                          {categories.map((c, i) => (
+                          {currentCategories.map((c, i) => (
                             <tr key={i}>
                               <td>{c.categoryID}</td>
                               <td>{c.categoryName}</td>
                               <td>{c.categoryDescription}</td>
                               <td>{c.isOrganic === 1 ? "Yes" : "No"}</td>
-                              <td className={c.status === 1 ? "status-success" : "status-danger"}>
-                                {c.status === 1 ? "Active" : "Inactive"}
-                              </td>
                               <td>
                                 <ul className="table-action-icons">
                                   <li>
@@ -181,6 +183,27 @@ const Category = () => {
                           ))}
                         </tbody>
                       </table>
+                      <div className="pagination-container d-flex justify-content-center mt-3">
+                        <nav>
+                          <ul className="pagination">
+                            <li className={`page-item ${currentPage === 1 && "disabled"}`}>
+                              <button className="page-link" onClick={() => setCurrentPage(currentPage - 1)}>Previous</button>
+                            </li>
+
+                            {[...Array(totalPages)].map((_, index) => (
+                              <li key={index} className={`page-item ${currentPage === index + 1 && "active"}`}>
+                                <button className="page-link" onClick={() => setCurrentPage(index + 1)}>
+                                  {index + 1}
+                                </button>
+                              </li>
+                            ))}
+
+                            <li className={`page-item ${currentPage === totalPages && "disabled"}`}>
+                              <button className="page-link" onClick={() => setCurrentPage(currentPage + 1)}>Next</button>
+                            </li>
+                          </ul>
+                        </nav>
+                      </div>
                     </div>
 
                     {/* VIEW MODAL */}
@@ -198,7 +221,6 @@ const Category = () => {
                                 <p><strong>Name:</strong> {selectedCategory.categoryName}</p>
                                 <p><strong>Description:</strong> {selectedCategory.categoryDescription}</p>
                                 <p><strong>Organic:</strong> {selectedCategory.isOrganic === 1 ? "Yes" : "No"}</p>
-                                <p><strong>Status:</strong> {selectedCategory.status === 1 ? "Active" : "Inactive"}</p>
                               </>
                             )}
                           </div>
@@ -227,13 +249,6 @@ const Category = () => {
                               <div className="mb-3">
                                 <label className="form-label">Is Organic</label>
                                 <input type="checkbox" name="isOrganic" checked={editCategory.isOrganic === 1} onChange={handleInputChange} />
-                              </div>
-                              <div className="mb-3">
-                                <label className="form-label">Status</label>
-                                <select name="status" className="form-control" value={editCategory.status} onChange={handleInputChange}>
-                                  <option value={1}>Active</option>
-                                  <option value={0}>Inactive</option>
-                                </select>
                               </div>
                             </form>
                           </div>
