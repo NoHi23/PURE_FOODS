@@ -95,18 +95,15 @@ useEffect(() => {
           `http://localhost:8082/PureFoods/api/productImage/all/${products.productId}`
         );
 
-        // Lấy danh sách ảnh từ API và chỉ lấy imageUrl
         const apiThumbnails = response.data.map((img) => img.imageUrl);
 
-        // Ghép ảnh mặc định với các ảnh còn lại
         const thumbnails = [products.imageURL, ...apiThumbnails];
 
         setThumbnailList(thumbnails);
-        setSelectedImage(thumbnails[0]); // ảnh mặc định là đầu tiên
+        setSelectedImage(thumbnails[0]); 
       } catch (error) {
         console.error("Lỗi khi lấy ảnh sản phẩm:", error);
 
-        // fallback: dùng ảnh mặc định và vài ảnh phụ tạm thời
         const thumbnails = [
           products.imageURL,
         ];
@@ -136,7 +133,6 @@ useEffect(() => {
     zoomRef.current.style.backgroundSize = 'cover';
   };
 
-  //start logic wishlist
   const fetchWishlistStatus = async () => {
     if (!products || !userId) return;
     try {
