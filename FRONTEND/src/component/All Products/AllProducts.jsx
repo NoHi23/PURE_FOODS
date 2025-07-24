@@ -5,6 +5,7 @@ import './AllProducts.css';
 import ProductSlider from '../HomePage/ProductSlider'; // đổi đường dẫn nếu khác
 import { toast } from 'react-toastify';
 import * as bootstrap from 'bootstrap';
+import { useNavigate } from 'react-router-dom';
 
 const AllProducts = () => {
     const [products, setProducts] = useState([]);
@@ -14,9 +15,70 @@ const AllProducts = () => {
     const [selectedSupplier, setSelectedSupplier] = useState('');
     const [saveProduct, setSaveProduct] = useState([]);
     const [selectedProduct, setSelectedProduct] = useState(null);
-
+    const [cartQuantities, setCartQuantities] = useState({});
     const user = JSON.parse(localStorage.getItem("user"));
     const userId = user?.userId;
+    const navigate = useNavigate();
+    const [category, setCategory] = useState(null);
+    const [supplier, setSupplier] = useState(null);
+
+
+
+    const handleAddToCart = async (product) => {
+        if (!userId) {
+            toast.error("Vui lòng đăng nhập");
+            return;
+        }
+
+        try {
+            const res = await axios.get(`http://localhost:8082/PureFoods/api/cart/user/${userId}`);
+            const cartItems = res.data;
+            const existingItem = cartItems.find(item => item.productID === product.productId);
+            const currentQty = existingItem ? existingItem.quantity : 0;
+            const newQty = currentQty + 1;
+
+            if (newQty > product.stockQuantity) {
+                toast.warning(`Chỉ còn ${product.stockQuantity - currentQty} sản phẩm trong kho`);
+                return;
+            }
+
+            const cartItem = {
+                userID: userId,
+                productID: product.productId,
+                quantity: newQty,
+                priceAfterDiscount: product.salePrice,
+                total: product.salePrice * newQty,
+                imageURL: product.imageURL,
+                productName: product.productName,
+                originalPrice: product.price,
+                discount: product.discountPercent,
+            };
+
+            if (existingItem) {
+                await axios.put(`http://localhost:8082/PureFoods/api/cart/update/${existingItem.cartItemID}`, cartItem);
+            } else {
+                await axios.post("http://localhost:8082/PureFoods/api/cart/create", cartItem);
+            }
+
+            setCartQuantities(prev => ({ ...prev, [product.productId]: newQty }));
+            toast.success("Đã thêm vào giỏ hàng");
+            window.dispatchEvent(new Event("cartUpdated"));
+        } catch (err) {
+            toast.error("Thêm vào giỏ hàng thất bại");
+            console.error(err);
+        }
+    };
+
+
+    const handleViewDetail = (productId) => {
+        const modalEl = document.getElementById("view");
+        if (modalEl && bootstrap.Modal.getInstance(modalEl)) {
+            bootstrap.Modal.getInstance(modalEl).hide();
+        }
+
+        navigate(`/product/${productId}`);
+    };
+
 
     useEffect(() => {
         if (!selectedCategory && !selectedSupplier) {
@@ -74,8 +136,17 @@ const AllProducts = () => {
     };
 
 
-    const handleViewProduct = (product) => {
+    const handleViewProduct = async (product) => {
         setSelectedProduct(product);
+
+        try {
+            const resCategory = await axios.get(`http://localhost:8082/PureFoods/api/category/${product.categoryId}`);
+            const resSupplier = await axios.get(`http://localhost:8082/PureFoods/api/supplier/${product.supplierId}`);
+            setCategory(resCategory.data);
+            setSupplier(resSupplier.data);
+        } catch (error) {
+            console.error("Lỗi khi tải danh mục hoặc nhà cung cấp:", error);
+        }
 
         const modalElement = document.getElementById('view');
         if (!modalElement) {
@@ -86,6 +157,7 @@ const AllProducts = () => {
         const modal = new bootstrap.Modal(modalElement);
         modal.show();
     };
+
 
 
     return (
@@ -145,46 +217,106 @@ const AllProducts = () => {
             </section>
 
             {/* Product View Modal */}
-            <div
-                className="modal fade"
-                id="view"
-                tabIndex="-1"
-                aria-labelledby="productModalLabel"
-                aria-hidden="true"
-            >
-                <div className="modal-dialog modal-lg modal-dialog-centered">
+            <div className="modal fade theme-modal view-modal" id="view" tabIndex="-1">
+                <div className="modal-dialog modal-dialog-centered modal-xl modal-fullscreen-sm-down">
                     <div className="modal-content">
-                        <div className="modal-header">
-                            <h5 className="modal-title" id="productModalLabel">
-                                {selectedProduct?.productName}
-                            </h5>
-                            <button
-                                type="button"
-                                className="btn-close"
-                                data-bs-dismiss="modal"
-                                aria-label="Close"
-                            ></button>
+                        <div className="modal-header p-0">
+                            <button type="button" className="btn-close" data-bs-dismiss="modal">
+                                <i className="fa-solid fa-xmark"></i>
+                            </button>
                         </div>
                         <div className="modal-body">
-                            {selectedProduct ? (
-                                <div className="row">
-                                    <div className="col-md-6">
-                                        <img
-                                            src={selectedProduct.imageUrl}
-                                            alt={selectedProduct.productName}
-                                            className="img-fluid"
-                                        />
-                                    </div>
-                                    <div className="col-md-6">
-                                        <p><strong>Giá:</strong> {selectedProduct.price.toLocaleString()}$</p>
-                                        <p><strong>Giảm giá:</strong> {selectedProduct.discountPercent}%</p>
-                                        <p><strong>Tồn kho:</strong> {selectedProduct.stockQuantity}</p>
-                                        {/* Thêm thông tin khác nếu cần */}
+                            <div className="row g-sm-4 g-2">
+                                <div className="col-lg-6">
+                                    <div className="slider-image">
+                                        <img src={selectedProduct?.imageURL} className="img-fluid blur-up lazyload" alt="" />
                                     </div>
                                 </div>
-                            ) : (
-                                <p>Đang tải sản phẩm...</p>
-                            )}
+
+                                <div className="col-lg-6">
+                                    <div className="right-sidebar-modal">
+                                        <h4 className="title-name">{selectedProduct?.productName}</h4>
+                                        <h4 className="price theme-color ">
+                                            ${selectedProduct?.salePrice?.toFixed(2)}{" "}
+                                            <del className="text-muted ">${selectedProduct?.price}</del>
+                                        </h4>
+
+                                        <div className="product-rating">
+                                            <ul className="rating">
+                                                <li>
+                                                    <i data-feather="star" className="fill"></i>
+                                                </li>
+                                                <li>
+                                                    <i data-feather="star" className="fill"></i>
+                                                </li>
+                                                <li>
+                                                    <i data-feather="star" className="fill"></i>
+                                                </li>
+                                                <li>
+                                                    <i data-feather="star" className="fill"></i>
+                                                </li>
+                                                <li>
+                                                    <i data-feather="star"></i>
+                                                </li>
+                                            </ul>
+                                            <span className="ms-2">8 Reviews</span>
+                                            <span className="ms-2 text-danger">6 sold in last 16 hours</span>
+                                        </div>
+
+                                        <div className="product-detail">
+                                            <p>{selectedProduct?.description || "No description available."}</p>
+                                        </div>
+
+                                        <ul className="brand-list">
+                                            <li>
+                                                <div className="brand-box">
+                                                    <h5>Category Name:</h5>
+                                                    <h6 className="mb-3">{category?.categoryName || "Đang tải..."}</h6>
+                                                </div>
+                                            </li>
+                                            <li>
+                                                <div className="brand-box">
+                                                    <h5>Supplier Name:</h5>
+                                                    <h6 className="mb-3">{supplier?.supplierName || "Đang tải..."}</h6>
+                                                </div>
+                                            </li>
+                                        </ul>
+
+                                        <ul className="brand-list">
+                                            <li>
+                                                <div className="brand-box">
+                                                    <h5>Stock Quantity:</h5>
+                                                    <h6 className="mb-3">{selectedProduct?.stockQuantity || "Đang tải..."}</h6>
+                                                </div>
+                                            </li>
+                                            <li>
+                                                <div className="brand-box">
+                                                    <h5>Supplier Name:</h5>
+                                                    <h6 className="mb-3">{supplier?.supplierName || "Đang tải..."}</h6>
+                                                </div>
+                                            </li>
+                                        </ul>
+
+
+                                        <div className="modal-button">
+                                            <button
+                                                type="button"
+                                                className="btn btn-md bg-dark cart-button text-white w-100"
+                                                onClick={() => handleAddToCart(selectedProduct)}
+                                            >
+                                                Add To Cart
+                                            </button>
+                                            <button
+                                                type="button"
+                                                className="btn theme-bg-color view-button icon text-white fw-bold btn-md"
+                                                onClick={() => handleViewDetail(selectedProduct.productId)}
+                                            >
+                                                View More Details
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

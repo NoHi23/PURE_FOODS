@@ -14,7 +14,7 @@ const AddNewSupplier = () => {
     phone: '',
     email: '',
     address: '',
-    organicCertification: '',
+    organicCertification: 0, // 0 = No, 1 = Yes
     certificationExpiry: '',
     status: 1,
   });
@@ -81,8 +81,17 @@ const AddNewSupplier = () => {
       toast.warn("Tên nhà cung cấp không được để trống!");
       return false;
     }
+    if (!form.contactName.trim()) {
+      toast.warn("Tên người liên hệ không được để trống!");
+      return false;
+    }
     if (!form.phone.trim()) {
       toast.warn("Số điện thoại không được để trống!");
+      return false;
+    }
+    const phoneRegex = /^[0-9]{8,15}$/;
+    if (!phoneRegex.test(form.phone)) {
+      toast.warn("Số điện thoại không hợp lệ (phải là số, từ 8 đến 15 chữ số)!");
       return false;
     }
     if (!form.email.trim()) {
@@ -94,11 +103,24 @@ const AddNewSupplier = () => {
       toast.warn("Email không đúng định dạng!");
       return false;
     }
-    const phoneRegex = /^[0-9]{8,15}$/;
-    if (!phoneRegex.test(form.phone)) {
-      toast.warn("Số điện thoại không hợp lệ!");
+    if (!form.address.trim()) {
+      toast.warn("Địa chỉ không được để trống!");
       return false;
     }
+    if (!form.certificationExpiry.trim()) {
+      toast.warn("Ngày hết hạn chứng nhận không được để trống!");
+      return false;
+    }
+
+    const today = new Date();
+    const expiryDate = new Date(form.certificationExpiry);
+    today.setHours(0, 0, 0, 0);
+
+    if (expiryDate < today) {
+      toast.warn("Ngày hết hạn chứng nhận phải từ hôm nay trở đi!");
+      return false;
+    }
+
     return true;
   };
 
@@ -141,19 +163,27 @@ const AddNewSupplier = () => {
                       <div className="mb-3">
                         <label className="form-label">Address</label>
                         <textarea className="form-control" name="address" rows="2" value={form.address} onChange={handleChange}></textarea>
-                      </div>
-
-                      <div className="mb-3">
-                        <label className="form-label">OrganicCertification</label>
-                        <input type="text" className="form-control" name="organicCertification" value={form.organicCertification} onChange={handleChange} />
-                      </div>
+                      </div>                  
 
                       <div className="mb-3">
                         <label className="form-label">CertificationExpiry</label>
                         <input type="date" className="form-control" name="certificationExpiry" value={form.certificationExpiry} onChange={handleChange} />
                       </div>
 
-
+                      <div className="mb-4 row align-items-center">
+                        <label className="form-label-title col-sm-3 mb-0">OrganicCertification</label>
+                        <div className="col-sm-9">
+                          <input
+                            type="checkbox"
+                            name="organicCertification"
+                            checked={form.organicCertification === 1}
+                            onChange={(e) =>
+                              setForm({ ...form, organicCertification: e.target.checked ? 1 : 0 })
+                            }
+                          />{" "}
+                          Yes
+                        </div>
+                      </div>
 
                       <div className="card-submit-button">
                         <button className="btn btn-primary" type="submit">Lưu</button>
