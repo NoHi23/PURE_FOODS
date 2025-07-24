@@ -8,9 +8,16 @@ import SideBar from '../AdminDashboard/SideBar';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import * as bootstrap from 'bootstrap';
+import 'datatables.net';
 
 const Category = () => {
   const [categories, setCategories] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentCategories = categories.slice(startIndex, endIndex);
+  const totalPages = Math.ceil(categories.length / itemsPerPage);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [editCategory, setEditCategory] = useState({
     categoryName: '',
@@ -30,26 +37,26 @@ const Category = () => {
   };
 
   useEffect(() => {
-      const sidebarLinks = document.querySelectorAll('.sidebar-link');
-  
-      const handleClick = (e) => {
-        const nextEl = e.currentTarget.nextElementSibling;
-        if (nextEl && nextEl.classList.contains('sidebar-submenu')) {
-          e.preventDefault();
-          nextEl.classList.toggle('show');
-        }
-      };
-  
+    const sidebarLinks = document.querySelectorAll('.sidebar-link');
+
+    const handleClick = (e) => {
+      const nextEl = e.currentTarget.nextElementSibling;
+      if (nextEl && nextEl.classList.contains('sidebar-submenu')) {
+        e.preventDefault();
+        nextEl.classList.toggle('show');
+      }
+    };
+
+    sidebarLinks.forEach(link => {
+      link.addEventListener('click', handleClick);
+    });
+
+    return () => {
       sidebarLinks.forEach(link => {
-        link.addEventListener('click', handleClick);
+        link.removeEventListener('click', handleClick);
       });
-  
-      return () => {
-        sidebarLinks.forEach(link => {
-          link.removeEventListener('click', handleClick);
-        });
-      };
-    }, []);
+    };
+  }, []);
 
   useEffect(() => {
     fetchCategories();
@@ -70,6 +77,15 @@ const Category = () => {
     }
   }, [categories]);
 
+  useEffect(() => {
+    // Khởi tạo lại DataTable mỗi lần categories thay đổi
+    const table = $('#categoryTable').DataTable();
+    table.destroy(); // huỷ DataTable cũ
+    setTimeout(() => {
+      $('#categoryTable').DataTable(); // khởi tạo lại
+    }, 0);
+  }, [categories]);
+
   const handleView = (category) => {
     setSelectedCategory(category);
     new bootstrap.Modal(document.getElementById("viewModal")).show();
@@ -87,9 +103,51 @@ const Category = () => {
     setEditCategory(prev => ({ ...prev, [name]: val }));
   };
 
-  const handleUpdateCategory = async () => {
+  const checkCategoryNameExists = async (name, excludeID = null) => {
     try {
-      await axios.put(`http://localhost:8082/PureFoods/api/category/update/${editCategory.categoryID}`, editCategory);
+      const res = await axios.get(`http://localhost:8082/PureFoods/api/category/searchByName`, {
+        params: { name: name.trim() }
+      });
+
+      if (res.data && (!excludeID || res.data.categoryID !== excludeID)) {
+        return true; // Đã tồn tại với ID khác
+      }
+      return false;
+    } catch (err) {
+      if (err.response && err.response.status === 404) return false;
+      toast.error("Lỗi khi kiểm tra tên danh mục");
+      return true;
+    }
+  };
+
+  const handleUpdateCategory = async () => {
+    const trimmedName = editCategory.categoryName.trim();
+    const trimmedDesc = editCategory.categoryDescription.trim();
+
+    // Validate cơ bản
+    if (!trimmedName) {
+      toast.warn("Tên danh mục không được để trống!");
+      return;
+    }
+
+    if (trimmedDesc.length < 5) {
+      toast.warn("Mô tả phải có ít nhất 5 ký tự!");
+      return;
+    }
+
+    // Kiểm tra trùng tên (trừ chính nó)
+    const isDuplicate = await checkCategoryNameExists(trimmedName, editCategory.categoryID);
+    if (isDuplicate) {
+      toast.error("Tên danh mục đã tồn tại!");
+      return;
+    }
+
+    try {
+      await axios.put(`http://localhost:8082/PureFoods/api/category/update/${editCategory.categoryID}`, {
+        ...editCategory,
+        categoryName: trimmedName,
+        categoryDescription: trimmedDesc
+      });
       fetchCategories();
       bootstrap.Modal.getInstance(document.getElementById("editModal")).hide();
       toast.success("Cập nhật thành công!");
@@ -106,11 +164,18 @@ const Category = () => {
   const handleDelete = async () => {
     try {
       await axios.delete(`http://localhost:8082/PureFoods/api/category/delete/${categoryToDelete.categoryID}`);
-      fetchCategories();
+
+      // Cập nhật state categories mà không cần fetch lại từ server
+      setCategories(prev => prev.filter(c => c.categoryID !== categoryToDelete.categoryID));
+
+      // Đóng modal & thông báo
       bootstrap.Modal.getInstance(document.getElementById("deleteModal")).hide();
       toast.success("Đã xoá danh mục!");
     } catch (err) {
       toast.error("Xoá thất bại!");
+    }
+    if ((currentPage - 1) * itemsPerPage >= categories.length - 1) {
+      setCurrentPage(currentPage - 1);
     }
   };
 
@@ -144,20 +209,16 @@ const Category = () => {
                             <th>Name</th>
                             <th>Description</th>
                             <th>Organic</th>
-                            <th>Status</th>
                             <th>Actions</th>
                           </tr>
                         </thead>
                         <tbody>
-                          {categories.map((c, i) => (
+                          {currentCategories.map((c, i) => (
                             <tr key={i}>
                               <td>{c.categoryID}</td>
                               <td>{c.categoryName}</td>
                               <td>{c.categoryDescription}</td>
                               <td>{c.isOrganic === 1 ? "Yes" : "No"}</td>
-                              <td className={c.status === 1 ? "status-success" : "status-danger"}>
-                                {c.status === 1 ? "Active" : "Inactive"}
-                              </td>
                               <td>
                                 <ul className="table-action-icons">
                                   <li>
@@ -181,6 +242,27 @@ const Category = () => {
                           ))}
                         </tbody>
                       </table>
+                      <div className="pagination-container d-flex justify-content-center mt-3">
+                        <nav>
+                          <ul className="pagination">
+                            <li className={`page-item ${currentPage === 1 && "disabled"}`}>
+                              <button className="page-link" onClick={() => setCurrentPage(currentPage - 1)}>Previous</button>
+                            </li>
+
+                            {[...Array(totalPages)].map((_, index) => (
+                              <li key={index} className={`page-item ${currentPage === index + 1 && "active"}`}>
+                                <button className="page-link" onClick={() => setCurrentPage(index + 1)}>
+                                  {index + 1}
+                                </button>
+                              </li>
+                            ))}
+
+                            <li className={`page-item ${currentPage === totalPages && "disabled"}`}>
+                              <button className="page-link" onClick={() => setCurrentPage(currentPage + 1)}>Next</button>
+                            </li>
+                          </ul>
+                        </nav>
+                      </div>
                     </div>
 
                     {/* VIEW MODAL */}
@@ -198,7 +280,6 @@ const Category = () => {
                                 <p><strong>Name:</strong> {selectedCategory.categoryName}</p>
                                 <p><strong>Description:</strong> {selectedCategory.categoryDescription}</p>
                                 <p><strong>Organic:</strong> {selectedCategory.isOrganic === 1 ? "Yes" : "No"}</p>
-                                <p><strong>Status:</strong> {selectedCategory.status === 1 ? "Active" : "Inactive"}</p>
                               </>
                             )}
                           </div>
@@ -227,13 +308,6 @@ const Category = () => {
                               <div className="mb-3">
                                 <label className="form-label">Is Organic</label>
                                 <input type="checkbox" name="isOrganic" checked={editCategory.isOrganic === 1} onChange={handleInputChange} />
-                              </div>
-                              <div className="mb-3">
-                                <label className="form-label">Status</label>
-                                <select name="status" className="form-control" value={editCategory.status} onChange={handleInputChange}>
-                                  <option value={1}>Active</option>
-                                  <option value={0}>Inactive</option>
-                                </select>
                               </div>
                             </form>
                           </div>
@@ -273,7 +347,7 @@ const Category = () => {
             <footer className="footer">
               <div className="row">
                 <div className="col-md-12 footer-copyright text-center">
-                  <p className="mb-0">Copyright 2022 © Fastkart theme</p>
+                  <p className="mb-0">Copyright 2025 © Clean Food Shop theme by pixelstrap</p>
                 </div>
               </div>
             </footer>

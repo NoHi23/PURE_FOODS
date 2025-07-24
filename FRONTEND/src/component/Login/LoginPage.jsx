@@ -45,7 +45,8 @@ const LoginPage = () => {
       const { message, user, status } = response.data;
 
       if (status === 200) {
-        toast.success(message);
+        toast.success("Welcome " + user.fullName);
+
         localStorage.setItem("user", JSON.stringify(user));
         if (remember) {
           Cookies.set("user", JSON.stringify(user), { expires: 1 / 144 }); // expires sau 10 phút
@@ -209,7 +210,7 @@ const LoginPage = () => {
             <div className="col-xl-5 col-lg-6 me-auto">
               <div className="log-in-box">
                 <div className="log-in-title">
-                  <h3>Welcome To Pure Food</h3>
+                  <h3>Welcome To Clean Food Shop</h3>
                   <h4>Log In Your Account</h4>
                 </div>
                 <div className="input-box">
@@ -256,17 +257,17 @@ const LoginPage = () => {
                             Remember me
                           </label>
                         </div>
-                        <Link to={"/forgot"} className="forgot-password">
+                        <Link to={"/forgot"} className="forgot-password" style={{ textDecoration: "none", color: "#0DA487" }}>
                           Forgot Password?
                         </Link>
                       </div>
                     </div>
                     <div className="col-12">
-                      <button type="submit" className="btn btn-animation w-100 justify-content-center">
+                      <button type="submit" className="btn btn-animation w-100 justify-content-center" style={{ backgroundColor: "#0DA487"}}>
                         Log In
                       </button>
-                      <h5 className="new-page mt-3 text-center">
-                        Don't have an account ? <a href="/signup">Create an account</a>
+                      <h5 className="new-page mt-3 text-center" style={{ fontWeight: "normal", fontSize: "18px" }}>
+                        Don't have an account ? <a href="/signup" style={{color:"#0DA487", textDecoration:"none"}}>Create an account</a>
                       </h5>
                     </div>
                   </form>

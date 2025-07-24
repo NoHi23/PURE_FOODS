@@ -22,6 +22,8 @@ import java.util.List;
         private Date harvestDate;
         private Date expirationDate;
         private String nutritionalInfo;
+        private String categoryName;
+        private String supplierName;
 
         public ProductDTO() {
         }
@@ -180,5 +182,18 @@ import java.util.List;
         }
         public void setGalleryImages(List<String> galleryImages) {
             this.galleryImages = galleryImages;
+        }
+
+        public String getCategoryName() {
+            return categoryName;
+        }
+        public void setCategoryName(String categoryName) {
+            this.categoryName = categoryName;
+        }
+        public String getSupplierName() {
+            return supplierName;
+        }
+        public void setSupplierName(String supplierName) {
+            this.supplierName = supplierName;
         }
     }

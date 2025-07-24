@@ -1,0 +1,33 @@
+.dropdown-mega {
+    position: absolute;
+    width: 100%;
+    left: 0;
+    top: 100%;
+    z-index: 1000;
+    background-color: #fff;
+    border: 1px solid #eaeaea;
+    padding: 20px 30px;
+}
+
+.dropdown-menu-2 {
+    display: none;
+}
+
+.nav-item.dropdown:hover .dropdown-menu-2 {
+    display: block;
+}
+
+.dropdown-column {
+    padding: 10px;
+}
+
+.dropdown-header {
+    font-weight: 600;
+    margin-bottom: 10px;
+    font-size: 16px;
+}
+
+.dropdown-item {
+    padding: 5px 0;
+    font-size: 14px;
+}

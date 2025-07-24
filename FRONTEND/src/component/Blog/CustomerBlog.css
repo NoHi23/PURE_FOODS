@@ -1,0 +1,51 @@
+/* CustomerBlog.css */
+.blog-container {
+  padding: 40px 0;
+  background-color: #f4f6f9;
+}
+
+.blog-card {
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.blog-title {
+  font-size: 24px;
+  font-weight: 600;
+  color: #333;
+}
+
+.blog-content {
+  font-size: 16px;
+  color: #666;
+}
+
+.blog-meta {
+  font-size: 14px;
+  color: #999;
+}
+
+.blog-link {
+  color: #009688;
+  text-decoration: none;
+}
+
+.blog-link:hover {
+  text-decoration: underline;
+}
+
+.footer {
+  margin-top: 40px;
+  padding: 10px 0;
+  text-align: center;
+  font-size: 14px;
+  color: #666;
+}
+
+.footer-copyright {
+  border-top: 1px solid #ddd;
+  padding-top: 10px;
+}

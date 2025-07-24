@@ -12,5 +12,6 @@ public interface NotificationService {
     public List<Notifications> all(int uid) ;
 
     public int markAllAsRead(int userId);
+    void saveNotification(Notifications notification);
 
 }

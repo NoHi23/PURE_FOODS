@@ -1,11 +1,11 @@
 package com.spring.service.Impl;
 
+import com.spring.dao.NotificationDAO;
 import com.spring.dao.ProductDAO;
 import com.spring.dao.ProductImageDAO;
+import com.spring.dao.UserDAO;
 import com.spring.dto.ProductDTO;
-import com.spring.entity.ProductDetails;
-import com.spring.entity.ProductImages;
-import com.spring.entity.Products;
+import com.spring.entity.*;
 import com.spring.service.ProductService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +30,12 @@ public class ProductServiceImpl implements ProductService {
     private ProductImageDAO productImageDAO;
 
     @Autowired
+    private UserDAO userDAO;
+
+    @Autowired
+    private NotificationDAO notificationDAO;
+
+    @Autowired
     private ModelMapper mapper;
 
     @Override
@@ -40,7 +46,6 @@ public class ProductServiceImpl implements ProductService {
             throw new RuntimeException("Danh sách sản phẩm trống");
         }
         for (Products product : productList) {
-            //thêm đoạn này mới hiện harvestDate, expirationDate, nutritionalInfo
             ProductDetails details = productDAO.getProductDetailsById(product.getProductId());
             list.add(convertToDTO(product, details));
         }
@@ -106,7 +111,20 @@ public class ProductServiceImpl implements ProductService {
         q.setStatus(product.getStatus());
         q.setLastUpdateBy(product.getLastUpdatedBy());
         try {
+
             productDAO.updateProduct(q);
+            if (product.getStockQuantity() < 5) {
+                List<User> users = userDAO.findByRoleId(4);
+
+                for (User user : users) {
+                    Notifications noti = new Notifications();
+                    noti.setUserId(user.getUserId());
+                    noti.setTitle("Cảnh báo số lượng thấp");
+                    noti.setContent("Sản phẩm '" + product.getProductName() + "' chỉ còn " + product.getStockQuantity() + " trong kho.");
+                    noti.setCreatedAt(new Timestamp(System.currentTimeMillis()));
+                    notificationDAO.save(noti);
+                }
+            }
         } catch (Exception e) {
             throw new RuntimeException("Failed to update product: " + e.getMessage(), e);
         }
@@ -255,5 +273,35 @@ public class ProductServiceImpl implements ProductService {
                 pageable);
 
         return page.map(p -> mapper.map(p, ProductDTO.class));
+    }
+
+    @Override
+    public List<ProductDTO> getProductsByCategory(int categoryId) {
+        List<Products> productEntities = productDAO.getProductsByCategory(categoryId);
+        return productEntities.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ProductDTO> getRelatedProducts(int productId) {
+        List<Products> relatedEntities = productDAO.getRelatedProducts(productId);
+        return relatedEntities.stream().map(product -> {
+            ProductDTO dto = new ProductDTO();
+            dto.setProductId(product.getProductId());
+            dto.setProductName(product.getProductName());
+            dto.setPrice(product.getPrice());
+            dto.setStatus(product.getStatus());
+            dto.setCategoryId(product.getCategoryId());
+            dto.setImageURL(product.getImageURL());
+            dto.setSupplierId(product.getSupplierId());
+            dto.setDiscountPercent(product.getDiscountPercent());
+            dto.setStockQuantity(product.getStockQuantity());
+            dto.setDescription(product.getDescription());
+            dto.setLastUpdatedBy(product.getLastUpdatedBy());
+            dto.setCreatedAt(product.getCreatedAt());
+            dto.setSalePrice(product.getPriceAfterDiscount());
+            return dto;
+        }).collect(Collectors.toList());
     }
 }

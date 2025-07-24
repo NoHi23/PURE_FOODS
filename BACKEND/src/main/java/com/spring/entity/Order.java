@@ -3,20 +3,21 @@ package com.spring.entity;
 import jakarta.persistence.*;
 
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Table(name = "Orders")
 public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer orderID;
+    private int orderID;
 
-    private Integer customerID;
+    private int customerID;
     private Date orderDate;
     private Double totalAmount;
-    private Integer statusID;
+    private int statusID;
     private String shippingAddress;
-    private Integer shippingMethodID;
+    private int shippingMethodID;
     private Double shippingCost;
     private Double distance;
     private Double discountAmount;
@@ -24,13 +25,15 @@ public class Order {
     private String cancelReason;
     private Date estimatedDeliveryDate;
     private String delayReason;
-    private Integer driverID;
+    private int driverID;
     private String returnReason;
+    private String paymentMethod;
+    private String paymentStatus;
 
     public Order() {
     }
 
-    public Order(Integer orderID, Integer customerID, Date orderDate, Double totalAmount, Integer statusID, String shippingAddress, Integer shippingMethodID, Double shippingCost, Double distance, Double discountAmount, String status, String cancelReason, Date estimatedDeliveryDate, String delayReason, Integer driverID, String returnReason) {
+    public Order(int orderID, int customerID, Date orderDate, Double totalAmount, int statusID, String shippingAddress, int shippingMethodID, Double shippingCost, Double distance, Double discountAmount, String status, String cancelReason, Date estimatedDeliveryDate, String delayReason, int driverID, String returnReason) {
         this.orderID = orderID;
         this.customerID = customerID;
         this.orderDate = orderDate;
@@ -49,19 +52,19 @@ public class Order {
         this.returnReason = returnReason;
     }
 
-    public Integer getOrderID() {
+    public int getOrderID() {
         return orderID;
     }
 
-    public void setOrderID(Integer orderID) {
+    public void setOrderID(int orderID) {
         this.orderID = orderID;
     }
 
-    public Integer getCustomerID() {
+    public int getCustomerID() {
         return customerID;
     }
 
-    public void setCustomerID(Integer customerID) {
+    public void setCustomerID(int customerID) {
         this.customerID = customerID;
     }
 
@@ -81,11 +84,11 @@ public class Order {
         this.totalAmount = totalAmount;
     }
 
-    public Integer getStatusID() {
+    public int getStatusID() {
         return statusID;
     }
 
-    public void setStatusID(Integer statusID) {
+    public void setStatusID(int statusID) {
         this.statusID = statusID;
     }
 
@@ -97,11 +100,11 @@ public class Order {
         this.shippingAddress = shippingAddress;
     }
 
-    public Integer getShippingMethodID() {
+    public int getShippingMethodID() {
         return shippingMethodID;
     }
 
-    public void setShippingMethodID(Integer shippingMethodID) {
+    public void setShippingMethodID(int shippingMethodID) {
         this.shippingMethodID = shippingMethodID;
     }
 
@@ -161,11 +164,11 @@ public class Order {
         this.delayReason = delayReason;
     }
 
-    public Integer getDriverID() {
+    public int getDriverID() {
         return driverID;
     }
 
-    public void setDriverID(Integer driverID) {
+    public void setDriverID(int driverID) {
         this.driverID = driverID;
     }
 
@@ -176,5 +179,19 @@ public class Order {
     public void setReturnReason(String returnReason) {
         this.returnReason = returnReason;
     }
+
+    public String getPaymentMethod() {
+        return paymentMethod;
+    }
+    public void setPaymentMethod(String paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+    public String getPaymentStatus() {
+        return paymentStatus;
+    }
+    public void setPaymentStatus(String paymentStatus) {
+        this.paymentStatus = paymentStatus;
+    }
+
 }
 
