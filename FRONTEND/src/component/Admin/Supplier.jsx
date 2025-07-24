@@ -376,7 +376,7 @@ const Supplier = () => {
             <footer className="footer">
               <div className="row">
                 <div className="col-md-12 footer-copyright text-center">
-                  <p className="mb-0">Copyright 2022 © Fastkart theme</p>
+                  <p className="mb-0">Copyright 2025 © Clean Food Shop theme by pixelstrap</p>
                 </div>
               </div>
             </footer>

@@ -41,5 +41,6 @@ public interface ProductDAO {
                                          Integer minDiscount,
                                          Pageable pageable) ;
     List<Products> getProductsByCategory(int categoryId);
+    List<Products> getRelatedProducts(int productId);
 
 }

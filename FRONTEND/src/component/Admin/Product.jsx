@@ -311,7 +311,7 @@ const Product = () => {
                                       </li>
 
                                       <li>
-                                        <a href="#" onClick={(e) => { e.preventDefault();handleEditClick(p)}}>
+                                        <a href="#" onClick={(e) => { e.preventDefault(); handleEditClick(p) }}>
                                           <i className="ri-pencil-line"></i>
                                         </a>
                                       </li>
@@ -319,7 +319,7 @@ const Product = () => {
                                       <li>
                                         <a href="javascript:void(0)" data-bs-toggle="modal"
                                           data-bs-target="#exampleModalToggle">
-                                          <a href="#" data-bs-toggle="modal" data-bs-target="#exampleModalToggle" onClick={(e) => {e.preventDefault();setProductToDelete(p)}}>
+                                          <a href="#" data-bs-toggle="modal" data-bs-target="#exampleModalToggle" onClick={(e) => { e.preventDefault(); setProductToDelete(p) }}>
                                             <i className="ri-delete-bin-line"></i>
                                           </a>
                                         </a>
@@ -510,7 +510,7 @@ const Product = () => {
               <footer className="footer">
                 <div className="row">
                   <div className="col-md-12 footer-copyright text-center">
-                    <p className="mb-0">Copyright 2022 © Fastkart theme by pixelstrap</p>
+                    <p className="mb-0">Copyright 2025 © Clean Food Shop theme by pixelstrap</p>
                   </div>
                 </div>
               </footer>

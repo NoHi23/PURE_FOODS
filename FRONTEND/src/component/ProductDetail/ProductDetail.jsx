@@ -1,11 +1,13 @@
-import React, { useEffect, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
-import ProductDetailLayout from "../../layouts/ProductDetailLayout";
-import axios from "axios";
-import { toast } from "react-toastify";
-import "./ProductDetail.css";
-import { useWishlist } from "../../layouts/WishlistContext";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useRef, useState } from 'react'
+import { useParams } from 'react-router-dom';
+import ProductDetailLayout from '../../layouts/ProductDetailLayout'
+import axios from 'axios';
+import { toast } from 'react-toastify';
+import './ProductDetail.css'
+import { useWishlist } from '../../layouts/WishlistContext';
+import { useNavigate } from 'react-router-dom';
+import * as bootstrap from "bootstrap";
+
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -60,24 +62,24 @@ const ProductDetail = () => {
         discount: products.discountPercent
       };
 
-    console.log("🛒 Gửi dữ liệu add to cart:", cartItem);
+      console.log("🛒 Gửi dữ liệu add to cart:", cartItem);
 
-    if (!userId || !products.productId) {
-      toast.error("Thiếu thông tin giỏ hàng!");
-      return;
-    }
+      if (!userId || !products.productId) {
+        toast.error("Thiếu thông tin giỏ hàng!");
+        return;
+      }
 
-    axios
-      .post("http://localhost:8082/PureFoods/api/cart/create", cartItem)
-      .then(() => {
-        toast.success("Đã thêm vào giỏ hàng");
-        window.dispatchEvent(new Event("cartUpdated"));
-        // navigate(`/cart-detail`, { state: { fromAddToCart: true } });
-      })
-      .catch((err) => {
-        console.error("❌ Lỗi khi thêm vào giỏ hàng:", err.response?.data || err.message);
-        toast.error("Thêm vào giỏ thất bại");
-      });
+      axios
+        .post("http://localhost:8082/PureFoods/api/cart/create", cartItem)
+        .then(() => {
+          toast.success("Đã thêm vào giỏ hàng");
+          window.dispatchEvent(new Event("cartUpdated"));
+          // navigate(`/cart-detail`, { state: { fromAddToCart: true } });
+        })
+        .catch((err) => {
+          console.error("❌ Lỗi khi thêm vào giỏ hàng:", err.response?.data || err.message);
+          toast.error("Thêm vào giỏ thất bại");
+        });
       await axios.post('http://localhost:8082/PureFoods/api/cart/create', cartItem);
       toast.success('Đã thêm vào giỏ hàng');
       window.dispatchEvent(new Event('cartUpdated'));
@@ -122,18 +124,32 @@ const ProductDetail = () => {
   const [thumbnailList, setThumbnailList] = useState([]);
 
   useEffect(() => {
-    if (products?.imageURL) {
-      const thumbnails = [
-        products.imageURL,
-        "../assets/images/veg-2/product/22.png",
-        "../assets/images/veg-2/product/23.png",
-        "../assets/images/veg-2/product/24.png",
-        "../assets/images/veg-2/product/21.png",
-        "../assets/images/veg-2/product/25.png",
-      ];
-      setThumbnailList(thumbnails);
-      setSelectedImage(thumbnails[0]);
-    }
+    const fetchThumbnails = async () => {
+      if (products?.productId && products?.imageURL) {
+        try {
+          const response = await axios.get(
+            `http://localhost:8082/PureFoods/api/productImage/all/${products.productId}`
+          );
+
+          const apiThumbnails = response.data.map((img) => img.imageUrl);
+
+          const thumbnails = [products.imageURL, ...apiThumbnails];
+
+          setThumbnailList(thumbnails);
+          setSelectedImage(thumbnails[0]);
+        } catch (error) {
+          console.error("Lỗi khi lấy ảnh sản phẩm:", error);
+
+          const thumbnails = [
+            products.imageURL,
+          ];
+          setThumbnailList(thumbnails);
+          setSelectedImage(thumbnails[0]);
+        }
+      }
+    };
+
+    fetchThumbnails();
   }, [products]);
 
   const zoomRef = useRef();
@@ -153,7 +169,6 @@ const ProductDetail = () => {
     zoomRef.current.style.backgroundSize = "cover";
   };
 
-  //start logic wishlist
   const fetchWishlistStatus = async () => {
     if (!products || !userId) return;
     try {
@@ -244,6 +259,94 @@ const ProductDetail = () => {
       container.removeEventListener("mousemove", handleMouseMove);
     };
   }, []);
+
+
+  const [productsRelated, setProductsRelated] = useState([]);
+
+  useEffect(() => {
+    axios.get(`http://localhost:8082/PureFoods/api/product/related/${id}`)
+      .then(response => {
+        setProductsRelated(response.data.relatedProducts);
+      })
+      .catch(error => {
+        console.error("Error fetching related products:", error);
+      });
+  }, []);
+
+  const [categoryMap, setCategoryMap] = useState({});
+  useEffect(() => {
+    const fetchAllCategories = async () => {
+      const promises = productsRelated.map(async product => {
+        const res = await axios.get(`http://localhost:8082/PureFoods/api/category/${product.categoryId}`);
+        return { productId: product.productId, category: res.data };
+      });
+
+      const results = await Promise.all(promises);
+      const map = {};
+      results.forEach(r => {
+        map[r.productId] = r.category;
+      });
+      setCategoryMap(map);
+    };
+
+    if (productsRelated?.length > 0) {
+      fetchAllCategories();
+    }
+  }, [productsRelated]);
+
+
+  const handleViewDetail = (productId) => {
+    const modalEl = document.getElementById("view");
+    if (modalEl && bootstrap.Modal.getInstance(modalEl)) {
+      bootstrap.Modal.getInstance(modalEl).hide();
+    }
+
+    navigate(`/product/${productId}`);
+  };
+
+  const handleViewProduct = (product) => {
+    setSelectedProduct(product);
+    const modal = new bootstrap.Modal(document.getElementById("view"));
+    modal.show();
+    console.log("hi: " + product);
+  };
+
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [category, setCategory] = useState(null);
+  useEffect(() => {
+    const fetchCategory = async () => {
+      if (selectedProduct?.categoryId) {
+        try {
+          const res = await axios.get(`http://localhost:8082/PureFoods/api/category/${selectedProduct.categoryId}`);
+          setCategory(res.data);
+        } catch (err) {
+          console.error("Không thể lấy danh mục:", err);
+          setCategory(null);
+        }
+      }
+    };
+
+    fetchCategory();
+  }, [selectedProduct]);
+
+  const [supplier, setSupplier] = useState(null);
+  useEffect(() => {
+    const fetchSuppliers = async () => {
+      if (selectedProduct?.supplierId) {
+        try {
+          const res = await axios.get(`http://localhost:8082/PureFoods/api/supplier/${selectedProduct.supplierId}`);
+          setSupplier(res.data);
+        } catch (err) {
+          console.error("Không thể lấy:", err);
+          setSupplier(null);
+        }
+      }
+    };
+
+    fetchSuppliers();
+  }, [selectedProduct]);
+
+
 
   return (
     <ProductDetailLayout>
@@ -627,19 +730,6 @@ const ProductDetail = () => {
                     <li className="nav-item" role="presentation">
                       <button
                         className="nav-link"
-                        id="info-tab"
-                        data-bs-toggle="tab"
-                        data-bs-target="#info"
-                        type="button"
-                        role="tab"
-                      >
-                        Additional info
-                      </button>
-                    </li>
-
-                    <li className="nav-item" role="presentation">
-                      <button
-                        className="nav-link"
                         id="care-tab"
                         data-bs-toggle="tab"
                         data-bs-target="#care"
@@ -673,72 +763,28 @@ const ProductDetail = () => {
                       </div>
                     </div>
 
-                    <div className="tab-pane fade" id="info" role="tabpanel">
-                      <div className="table-responsive">
-                        <table className="table info-table">
-                          <tbody>
-                            <tr>
-                              <td>Specialty</td>
-                              <td>Vegetarian</td>
-                            </tr>
-                            <tr>
-                              <td>Ingredient Type</td>
-                              <td>Vegetarian</td>
-                            </tr>
-                            <tr>
-                              <td>Brand</td>
-                              <td>Lavian Exotique</td>
-                            </tr>
-                            <tr>
-                              <td>Form</td>
-                              <td>Bar Brownie</td>
-                            </tr>
-                            <tr>
-                              <td>Package Information</td>
-                              <td>Box</td>
-                            </tr>
-                            <tr>
-                              <td>Manufacturer</td>
-                              <td>Prayagh Nutri Product Pvt Ltd</td>
-                            </tr>
-                            <tr>
-                              <td>Item part number</td>
-                              <td>LE 014 - 20pcs Crème Bakes (Pack of 2)</td>
-                            </tr>
-                            <tr>
-                              <td>Net Quantity</td>
-                              <td>40.00 count</td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
+
 
                     <div className="tab-pane fade" id="care" role="tabpanel">
                       <div className="information-box">
                         <ul>
-                          <li>
-                            Store cream cakes in a refrigerator. Fondant cakes should be stored in an air conditioned
-                            environment.
-                          </li>
+                          <li>Store clean food in the refrigerator at a temperature between 0°C and 4°C to keep it fresh and prevent bacterial growth.</li>
 
-                          <li>Slice and serve the cake at room temperature and make sure it is not exposed to heat.</li>
+                          <li>Do not store cooked food together with raw food to avoid cross-contamination.</li>
 
-                          <li>Use a serrated knife to cut a fondant cake.</li>
+                          <li>Cooked food should be consumed within 24 hours to ensure safety and quality.</li>
 
-                          <li>
-                            Sculptural elements and figurines may contain wire supports or toothpicks or wooden skewers
-                            for support.
-                          </li>
+                          <li>Wash your hands thoroughly before handling or eating food.</li>
 
-                          <li>Please check the placement of these items before serving to small children.</li>
+                          <li>Seal food containers properly after use and store them in a cool, dry place.</li>
 
-                          <li>The cake should be consumed within 24 hours.</li>
+                          <li>Do not consume expired food or food that shows signs of spoilage such as mold, off smells, or discoloration.</li>
 
-                          <li>Enjoy your cake!</li>
+                          <li>Always wash fruits and vegetables with clean water before consuming or cooking them.</li>
                         </ul>
                       </div>
                     </div>
+
 
                     <div className="tab-pane fade" id="review" role="tabpanel">
                       <div className="review-box">
@@ -1081,699 +1127,97 @@ const ProductDetail = () => {
                 <svg className="icon-width"></svg>
               </span>
             </div>
-            <div className="row">
-              <div className="col-12">
-                <div className="slider-6_1 product-wrapper">
-                  <div>
-                    <div className="product-box-3 wow fadeInUp">
-                      <div className="product-header">
-                        <div className="product-image">
-                          <a href="product-left.htm">
-                            <img
-                              src="../assets/images/cake/product/11.png"
-                              className="img-fluid blur-up lazyload"
-                              alt=""
-                            />
-                          </a>
+            <div className="related-scroll-container">
+              {productsRelated?.map(product => (
+                <div className="product-box" style={{ minWidth: "250px" }} key={product.productId}>
+                  <div className="">
+                    <div className="product-header">
+                      <div className="product-image">
+                        <a href={`/product/${product.productId}`}>
+                          <img
+                            src={product.imageURL}
+                            className="img-fluid blur-up lazyload"
+                            alt={product.productName}
+                          />
+                        </a>
 
-                          <ul className="product-option">
-                            <li data-bs-toggle="tooltip" data-bs-placement="top" title="View">
-                              <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#view">
+                        <ul className="product-option">
+                          <li data-bs-toggle="tooltip" data-bs-placement="top" title="View">
+                            <li data-bs-toggle="tooltip" title="View">
+                              <a href="#" onClick={(e) => { e.preventDefault(); handleViewProduct(product); }}>
                                 <i data-feather="eye"></i>
                               </a>
                             </li>
-
-                            <li data-bs-toggle="tooltip" data-bs-placement="top" title="Compare">
-                              <a href="compare.html">
-                                <i data-feather="refresh-cw"></i>
-                              </a>
-                            </li>
-
+                          </li>
+                          <li data-bs-toggle="tooltip" data-bs-placement="top" title="Compare">
+                            <a >
+                              <i data-feather="refresh-cw"></i>
+                            </a>
+                          </li>
+                          <li data-bs-toggle="tooltip" data-bs-placement="top" title="Wishlist">
                             <li data-bs-toggle="tooltip" data-bs-placement="top" title="Wishlist">
-                              <a href="wishlist.html" className="notifi-wishlist">
-                                <i data-feather="heart"></i>
-                              </a>
+                              <button onClick={toggleWishlist} className="wishlist-btn" style={{ background: 'none', border: 'none' }}>
+                                <i className={`fa${isWished ? 's' : 'r'} fa-heart wishlist-icon ${isWished ? 'text-danger' : ''}`}></i>
+                              </button>
                             </li>
-                          </ul>
-                        </div>
-                      </div>
 
-                      <div className="product-footer">
-                        <div className="product-detail">
-                          <span className="span-name">Cake</span>
-                          <a href="product-left-thumbnail.html">
-                            <h5 className="name">Chocolate Chip Cookies 250 g</h5>
-                          </a>
-                          <div className="product-rating mt-2">
-                            <ul className="rating">
-                              <li>
-                                <i data-feather="star" className="fill"></i>
-                              </li>
-                              <li>
-                                <i data-feather="star" className="fill"></i>
-                              </li>
-                              <li>
-                                <i data-feather="star" className="fill"></i>
-                              </li>
-                              <li>
-                                <i data-feather="star" className="fill"></i>
-                              </li>
-                              <li>
-                                <i data-feather="star" className="fill"></i>
-                              </li>
-                            </ul>
-                            <span>(5.0)</span>
-                          </div>
-                          <h6 className="unit">500 G</h6>
-                          <h5 className="price">
-                            <span className="theme-color">$10.25</span> <del>$12.57</del>
-                          </h5>
-                          <div className="add-to-cart-box bg-white">
-                            <button className="btn btn-add-cart addcart-button">
-                              Add
-                              <span className="add-icon bg-light-gray">
-                                <i className="fa-solid fa-plus"></i>
-                              </span>
-                            </button>
-                            <div className="cart_qty qty-box">
-                              <div className="input-group bg-white">
-                                <button
-                                  type="button"
-                                  className="qty-left-minus bg-gray"
-                                  data-type="minus"
-                                  data-field=""
-                                >
-                                  <i className="fa fa-minus"></i>
-                                </button>
-                                <input
-                                  className="form-control input-number qty-input"
-                                  type="text"
-                                  name="quantity"
-                                  value="0"
-                                />
-                                <button type="button" className="qty-right-plus bg-gray" data-type="plus" data-field="">
-                                  <i className="fa fa-plus"></i>
-                                </button>
-                              </div>
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+
+                    <div className="product-footer">
+                      <div >
+                        <span className="span-name"><span>{categoryMap[product.productId]?.categoryName}</span>
+                        </span>
+                        <a href={`/product/${product.productId}`}>
+                          <h5 className="name">{product.productName}</h5>
+                        </a>
+                        <div className="product-rating mt-2">
+                          <ul className="rating">
+                            {[...Array(5)].map((_, i) => (
+                              <li key={i}><i data-feather="star" className="fill"></i></li>
+                            ))}
+                          </ul>
+                          <span>(5.0)</span>
+                        </div>
+                        <h6 className="unit">500 G</h6>
+                        <h5 className="price">
+                          <span className="theme-color">${product.salePrice} <del>${product.price}</del></span>
+                        </h5>
+                        <div className="add-to-cart-box bg-white">
+                          <button className="btn btn-add-cart addcart-button">
+                            Add
+                            <span className="add-icon bg-light-gray">
+                              <i className="fa-solid fa-plus"></i>
+                            </span>
+                          </button>
+                          <div className="cart_qty qty-box">
+                            <div className="input-group bg-white">
+                              <button type="button" className="qty-left-minus bg-gray">
+                                <i className="fa fa-minus"></i>
+                              </button>
+                              <input className="form-control input-number qty-input" type="text" value="0" readOnly />
+                              <button type="button" className="qty-right-plus bg-gray">
+                                <i className="fa fa-plus"></i>
+                              </button>
                             </div>
                           </div>
                         </div>
                       </div>
                     </div>
-                  </div>
 
-                  <div>
-                    <div className="product-box-3 wow fadeInUp" data-wow-delay="0.05s">
-                      <div className="product-header">
-                        <div className="product-image">
-                          <a href="product-left-thumbnail.html">
-                            <img
-                              src="../assets/images/cake/product/2.png"
-                              className="img-fluid blur-up lazyload"
-                              alt=""
-                            />
-                          </a>
-
-                          <ul className="product-option">
-                            <li data-bs-toggle="tooltip" data-bs-placement="top" title="View">
-                              <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#view">
-                                <i data-feather="eye"></i>
-                              </a>
-                            </li>
-
-                            <li data-bs-toggle="tooltip" data-bs-placement="top" title="Compare">
-                              <a href="compare.html">
-                                <i data-feather="refresh-cw"></i>
-                              </a>
-                            </li>
-
-                            <li data-bs-toggle="tooltip" data-bs-placement="top" title="Wishlist">
-                              <a href="wishlist.html" className="notifi-wishlist">
-                                <i data-feather="heart"></i>
-                              </a>
-                            </li>
-                          </ul>
-                        </div>
-                      </div>
-                      <div className="product-footer">
-                        <div className="product-detail">
-                          <span className="span-name">Vegetable</span>
-                          <a href="product-left-thumbnail.html">
-                            <h5 className="name">Fresh Bread and Pastry Flour 200 g</h5>
-                          </a>
-                          <div className="product-rating mt-2">
-                            <ul className="rating">
-                              <li>
-                                <i data-feather="star" className="fill"></i>
-                              </li>
-                              <li>
-                                <i data-feather="star" className="fill"></i>
-                              </li>
-                              <li>
-                                <i data-feather="star" className="fill"></i>
-                              </li>
-                              <li>
-                                <i data-feather="star" className="fill"></i>
-                              </li>
-                              <li>
-                                <i data-feather="star"></i>
-                              </li>
-                            </ul>
-                            <span>(4.0)</span>
-                          </div>
-                          <h6 className="unit">250 ml</h6>
-                          <h5 className="price">
-                            <span className="theme-color">$08.02</span> <del>$15.15</del>
-                          </h5>
-                          <div className="add-to-cart-box bg-white">
-                            <button className="btn btn-add-cart addcart-button">
-                              Add
-                              <span className="add-icon bg-light-gray">
-                                <i className="fa-solid fa-plus"></i>
-                              </span>
-                            </button>
-                            <div className="cart_qty qty-box">
-                              <div className="input-group bg-white">
-                                <button
-                                  type="button"
-                                  className="qty-left-minus bg-gray"
-                                  data-type="minus"
-                                  data-field=""
-                                >
-                                  <i className="fa fa-minus"></i>
-                                </button>
-                                <input
-                                  className="form-control input-number qty-input"
-                                  type="text"
-                                  name="quantity"
-                                  value="0"
-                                />
-                                <button type="button" className="qty-right-plus bg-gray" data-type="plus" data-field="">
-                                  <i className="fa fa-plus"></i>
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="product-box-3 wow fadeInUp" data-wow-delay="0.1s">
-                      <div className="product-header">
-                        <div className="product-image">
-                          <a href="product-left-thumbnail.html">
-                            <img
-                              src="../assets/images/cake/product/3.png"
-                              className="img-fluid blur-up lazyload"
-                              alt=""
-                            />
-                          </a>
-
-                          <ul className="product-option">
-                            <li data-bs-toggle="tooltip" data-bs-placement="top" title="View">
-                              <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#view">
-                                <i data-feather="eye"></i>
-                              </a>
-                            </li>
-
-                            <li data-bs-toggle="tooltip" data-bs-placement="top" title="Compare">
-                              <a href="compare.html">
-                                <i data-feather="refresh-cw"></i>
-                              </a>
-                            </li>
-
-                            <li data-bs-toggle="tooltip" data-bs-placement="top" title="Wishlist">
-                              <a href="wishlist.html" className="notifi-wishlist">
-                                <i data-feather="heart"></i>
-                              </a>
-                            </li>
-                          </ul>
-                        </div>
-                      </div>
-
-                      <div className="product-footer">
-                        <div className="product-detail">
-                          <span className="span-name">Vegetable</span>
-                          <a href="product-left-thumbnail.html">
-                            <h5 className="name">Peanut Butter Bite Premium Butter Cookies 600 g</h5>
-                          </a>
-                          <div className="product-rating mt-2">
-                            <ul className="rating">
-                              <li>
-                                <i data-feather="star" className="fill"></i>
-                              </li>
-                              <li>
-                                <i data-feather="star" className="fill"></i>
-                              </li>
-                              <li>
-                                <i data-feather="star"></i>
-                              </li>
-                              <li>
-                                <i data-feather="star"></i>
-                              </li>
-                              <li>
-                                <i data-feather="star"></i>
-                              </li>
-                            </ul>
-                            <span>(2.4)</span>
-                          </div>
-                          <h6 className="unit">350 G</h6>
-                          <h5 className="price">
-                            <span className="theme-color">$04.33</span> <del>$10.36</del>
-                          </h5>
-                          <div className="add-to-cart-box bg-white">
-                            <button className="btn btn-add-cart addcart-button">
-                              Add
-                              <span className="add-icon bg-light-gray">
-                                <i className="fa-solid fa-plus"></i>
-                              </span>
-                            </button>
-                            <div className="cart_qty qty-box">
-                              <div className="input-group bg-white">
-                                <button
-                                  type="button"
-                                  className="qty-left-minus bg-gray"
-                                  data-type="minus"
-                                  data-field=""
-                                >
-                                  <i className="fa fa-minus"></i>
-                                </button>
-                                <input
-                                  className="form-control input-number qty-input"
-                                  type="text"
-                                  name="quantity"
-                                  value="0"
-                                />
-                                <button type="button" className="qty-right-plus bg-gray" data-type="plus" data-field="">
-                                  <i className="fa fa-plus"></i>
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="product-box-3 wow fadeInUp" data-wow-delay="0.15s">
-                      <div className="product-header">
-                        <div className="product-image">
-                          <a href="product-left-thumbnail.html">
-                            <img
-                              src="../assets/images/cake/product/4.png"
-                              className="img-fluid blur-up lazyload"
-                              alt=""
-                            />
-                          </a>
-
-                          <ul className="product-option">
-                            <li data-bs-toggle="tooltip" data-bs-placement="top" title="View">
-                              <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#view">
-                                <i data-feather="eye"></i>
-                              </a>
-                            </li>
-
-                            <li data-bs-toggle="tooltip" data-bs-placement="top" title="Compare">
-                              <a href="compare.html">
-                                <i data-feather="refresh-cw"></i>
-                              </a>
-                            </li>
-
-                            <li data-bs-toggle="tooltip" data-bs-placement="top" title="Wishlist">
-                              <a href="wishlist.html" className="notifi-wishlist">
-                                <i data-feather="heart"></i>
-                              </a>
-                            </li>
-                          </ul>
-                        </div>
-                      </div>
-
-                      <div className="product-footer">
-                        <div className="product-detail">
-                          <span className="span-name">Snacks</span>
-                          <a href="product-left-thumbnail.html">
-                            <h5 className="name">SnackAmor Combo Pack of Jowar Stick and Jowar Chips</h5>
-                          </a>
-                          <div className="product-rating mt-2">
-                            <ul className="rating">
-                              <li>
-                                <i data-feather="star" className="fill"></i>
-                              </li>
-                              <li>
-                                <i data-feather="star" className="fill"></i>
-                              </li>
-                              <li>
-                                <i data-feather="star" className="fill"></i>
-                              </li>
-                              <li>
-                                <i data-feather="star" className="fill"></i>
-                              </li>
-                              <li>
-                                <i data-feather="star" className="fill"></i>
-                              </li>
-                            </ul>
-                            <span>(5.0)</span>
-                          </div>
-                          <h6 className="unit">570 G</h6>
-                          <h5 className="price">
-                            <span className="theme-color">$12.52</span> <del>$13.62</del>
-                          </h5>
-                          <div className="add-to-cart-box bg-white">
-                            <button className="btn btn-add-cart addcart-button">
-                              Add
-                              <span className="add-icon bg-light-gray">
-                                <i className="fa-solid fa-plus"></i>
-                              </span>
-                            </button>
-                            <div className="cart_qty qty-box">
-                              <div className="input-group bg-white">
-                                <button
-                                  type="button"
-                                  className="qty-left-minus bg-gray"
-                                  data-type="minus"
-                                  data-field=""
-                                >
-                                  <i className="fa fa-minus"></i>
-                                </button>
-                                <input
-                                  className="form-control input-number qty-input"
-                                  type="text"
-                                  name="quantity"
-                                  value="0"
-                                />
-                                <button type="button" className="qty-right-plus bg-gray" data-type="plus" data-field="">
-                                  <i className="fa fa-plus"></i>
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="product-box-3 wow fadeInUp" data-wow-delay="0.2s">
-                      <div className="product-header">
-                        <div className="product-image">
-                          <a href="product-left-thumbnail.html">
-                            <img
-                              src="../assets/images/cake/product/5.png"
-                              className="img-fluid blur-up lazyload"
-                              alt=""
-                            />
-                          </a>
-
-                          <ul className="product-option">
-                            <li data-bs-toggle="tooltip" data-bs-placement="top" title="View">
-                              <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#view">
-                                <i data-feather="eye"></i>
-                              </a>
-                            </li>
-
-                            <li data-bs-toggle="tooltip" data-bs-placement="top" title="Compare">
-                              <a href="compare.html">
-                                <i data-feather="refresh-cw"></i>
-                              </a>
-                            </li>
-
-                            <li data-bs-toggle="tooltip" data-bs-placement="top" title="Wishlist">
-                              <a href="wishlist.html" className="notifi-wishlist">
-                                <i data-feather="heart"></i>
-                              </a>
-                            </li>
-                          </ul>
-                        </div>
-                      </div>
-
-                      <div className="product-footer">
-                        <div className="product-detail">
-                          <span className="span-name">Snacks</span>
-                          <a href="product-left-thumbnail.html">
-                            <h5 className="name">Yumitos Chilli Sprinkled Potato Chips 100 g</h5>
-                          </a>
-                          <div className="product-rating mt-2">
-                            <ul className="rating">
-                              <li>
-                                <i data-feather="star" className="fill"></i>
-                              </li>
-                              <li>
-                                <i data-feather="star" className="fill"></i>
-                              </li>
-                              <li>
-                                <i data-feather="star" className="fill"></i>
-                              </li>
-                              <li>
-                                <i data-feather="star"></i>
-                              </li>
-                              <li>
-                                <i data-feather="star"></i>
-                              </li>
-                            </ul>
-                            <span>(3.8)</span>
-                          </div>
-                          <h6 className="unit">100 G</h6>
-                          <h5 className="price">
-                            <span className="theme-color">$10.25</span> <del>$12.36</del>
-                          </h5>
-                          <div className="add-to-cart-box bg-white">
-                            <button className="btn btn-add-cart addcart-button">
-                              Add
-                              <span className="add-icon bg-light-gray">
-                                <i className="fa-solid fa-plus"></i>
-                              </span>
-                            </button>
-                            <div className="cart_qty qty-box">
-                              <div className="input-group bg-white">
-                                <button
-                                  type="button"
-                                  className="qty-left-minus bg-gray"
-                                  data-type="minus"
-                                  data-field=""
-                                >
-                                  <i className="fa fa-minus"></i>
-                                </button>
-                                <input
-                                  className="form-control input-number qty-input"
-                                  type="text"
-                                  name="quantity"
-                                  value="0"
-                                />
-                                <button type="button" className="qty-right-plus bg-gray" data-type="plus" data-field="">
-                                  <i className="fa fa-plus"></i>
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="product-box-3 wow fadeInUp" data-wow-delay="0.25s">
-                      <div className="product-header">
-                        <div className="product-image">
-                          <a href="product-left-thumbnail.html">
-                            <img
-                              src="../assets/images/cake/product/6.png"
-                              className="img-fluid blur-up lazyload"
-                              alt=""
-                            />
-                          </a>
-
-                          <ul className="product-option">
-                            <li data-bs-toggle="tooltip" data-bs-placement="top" title="View">
-                              <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#view">
-                                <i data-feather="eye"></i>
-                              </a>
-                            </li>
-
-                            <li data-bs-toggle="tooltip" data-bs-placement="top" title="Compare">
-                              <a href="compare.html">
-                                <i data-feather="refresh-cw"></i>
-                              </a>
-                            </li>
-
-                            <li data-bs-toggle="tooltip" data-bs-placement="top" title="Wishlist">
-                              <a href="wishlist.html" className="notifi-wishlist">
-                                <i data-feather="heart"></i>
-                              </a>
-                            </li>
-                          </ul>
-                        </div>
-                      </div>
-
-                      <div className="product-footer">
-                        <div className="product-detail">
-                          <span className="span-name">Vegetable</span>
-                          <a href="product-left-thumbnail.html">
-                            <h5 className="name">Fantasy Crunchy Choco Chip Cookies</h5>
-                          </a>
-                          <div className="product-rating mt-2">
-                            <ul className="rating">
-                              <li>
-                                <i data-feather="star" className="fill"></i>
-                              </li>
-                              <li>
-                                <i data-feather="star" className="fill"></i>
-                              </li>
-                              <li>
-                                <i data-feather="star" className="fill"></i>
-                              </li>
-                              <li>
-                                <i data-feather="star" className="fill"></i>
-                              </li>
-                              <li>
-                                <i data-feather="star"></i>
-                              </li>
-                            </ul>
-                            <span>(4.0)</span>
-                          </div>
-
-                          <h6 className="unit">550 G</h6>
-
-                          <h5 className="price">
-                            <span className="theme-color">$14.25</span> <del>$16.57</del>
-                          </h5>
-                          <div className="add-to-cart-box bg-white">
-                            <button className="btn btn-add-cart addcart-button">
-                              Add
-                              <span className="add-icon bg-light-gray">
-                                <i className="fa-solid fa-plus"></i>
-                              </span>
-                            </button>
-                            <div className="cart_qty qty-box">
-                              <div className="input-group bg-white">
-                                <button
-                                  type="button"
-                                  className="qty-left-minus bg-gray"
-                                  data-type="minus"
-                                  data-field=""
-                                >
-                                  <i className="fa fa-minus"></i>
-                                </button>
-                                <input
-                                  className="form-control input-number qty-input"
-                                  type="text"
-                                  name="quantity"
-                                  value="0"
-                                />
-                                <button type="button" className="qty-right-plus bg-gray" data-type="plus" data-field="">
-                                  <i className="fa fa-plus"></i>
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="product-box-3 wow fadeInUp" data-wow-delay="0.3s">
-                      <div className="product-header">
-                        <div className="product-image">
-                          <a href="product-left-thumbnail.html">
-                            <img src="../assets/images/cake/product/7.png" className="img-fluid" alt="" />
-                          </a>
-
-                          <ul className="product-option">
-                            <li data-bs-toggle="tooltip" data-bs-placement="top" title="View">
-                              <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#view">
-                                <i data-feather="eye"></i>
-                              </a>
-                            </li>
-
-                            <li data-bs-toggle="tooltip" data-bs-placement="top" title="Compare">
-                              <a href="compare.html">
-                                <i data-feather="refresh-cw"></i>
-                              </a>
-                            </li>
-
-                            <li data-bs-toggle="tooltip" data-bs-placement="top" title="Wishlist">
-                              <a href="wishlist.html" className="notifi-wishlist">
-                                <i data-feather="heart"></i>
-                              </a>
-                            </li>
-                          </ul>
-                        </div>
-                      </div>
-
-                      <div className="product-footer">
-                        <div className="product-detail">
-                          <span className="span-name">Vegetable</span>
-                          <a href="product-left-thumbnail.html">
-                            <h5 className="name">Fresh Bread and Pastry Flour 200 g</h5>
-                          </a>
-                          <div className="product-rating mt-2">
-                            <ul className="rating">
-                              <li>
-                                <i data-feather="star" className="fill"></i>
-                              </li>
-                              <li>
-                                <i data-feather="star" className="fill"></i>
-                              </li>
-                              <li>
-                                <i data-feather="star" className="fill"></i>
-                              </li>
-                              <li>
-                                <i data-feather="star"></i>
-                              </li>
-                              <li>
-                                <i data-feather="star"></i>
-                              </li>
-                            </ul>
-                            <span>(3.8)</span>
-                          </div>
-
-                          <h6 className="unit">1 Kg</h6>
-
-                          <h5 className="price">
-                            <span className="theme-color">$12.68</span> <del>$14.69</del>
-                          </h5>
-                          <div className="add-to-cart-box bg-white">
-                            <button className="btn btn-add-cart addcart-button">
-                              Add
-                              <span className="add-icon bg-light-gray">
-                                <i className="fa-solid fa-plus"></i>
-                              </span>
-                            </button>
-                            <div className="cart_qty qty-box">
-                              <div className="input-group bg-white">
-                                <button
-                                  type="button"
-                                  className="qty-left-minus bg-gray"
-                                  data-type="minus"
-                                  data-field=""
-                                >
-                                  <i className="fa fa-minus"></i>
-                                </button>
-                                <input
-                                  className="form-control input-number qty-input"
-                                  type="text"
-                                  name="quantity"
-                                  value="0"
-                                />
-                                <button type="button" className="qty-right-plus bg-gray" data-type="plus" data-field="">
-                                  <i className="fa fa-plus"></i>
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
                   </div>
                 </div>
-              </div>
+              ))}
             </div>
           </div>
         </section>
-        <div className="modal fade theme-modal view-modal" id="view" tabindex="-1">
+
+
+
+
+        <div className="modal fade theme-modal view-modal" id="view" tabIndex="-1">
           <div className="modal-dialog modal-dialog-centered modal-xl modal-fullscreen-sm-down">
             <div className="modal-content">
               <div className="modal-header p-0">
@@ -1785,18 +1229,18 @@ const ProductDetail = () => {
                 <div className="row g-sm-4 g-2">
                   <div className="col-lg-6">
                     <div className="slider-image">
-                      <img
-                        src="../assets/images/product/category/1.jpg"
-                        className="img-fluid blur-up lazyload"
-                        alt=""
-                      />
+                      <img src={selectedProduct?.imageURL} className="img-fluid blur-up lazyload" alt="" />
                     </div>
                   </div>
 
                   <div className="col-lg-6">
                     <div className="right-sidebar-modal">
-                      <h4 className="title-name">Peanut Butter Bite Premium Butter Cookies 600 g</h4>
-                      <h4 className="price">$36.99</h4>
+                      <h4 className="title-name">{selectedProduct?.productName}</h4>
+                      <h4 className="price theme-color ">
+                        ${selectedProduct?.salePrice?.toFixed(2)}{" "}
+                        <del className="text-muted ">${selectedProduct?.price}</del>
+                      </h4>
+
                       <div className="product-rating">
                         <ul className="rating">
                           <li>
@@ -1820,62 +1264,52 @@ const ProductDetail = () => {
                       </div>
 
                       <div className="product-detail">
-                        <h4>Product Details :</h4>
-                        <p>
-                          Candy canes sugar plum tart cotton candy chupa chups sugar plum chocolate I love. Caramels
-                          marshmallow icing dessert candy canes I love soufflé I love toffee. Marshmallow pie sweet
-                          sweet roll sesame snaps tiramisu jelly bear claw. Bonbon muffin I love carrot cake sugar plum
-                          dessert bonbon.
-                        </p>
+                        <p>{selectedProduct?.description || "No description available."}</p>
                       </div>
 
                       <ul className="brand-list">
                         <li>
                           <div className="brand-box">
-                            <h5>Brand Name:</h5>
-                            <h6>Black Forest</h6>
+                            <h5>Category Name:</h5>
+                            <h6 className="mb-3">{category?.categoryName || "Đang tải..."}</h6>
                           </div>
                         </li>
-
                         <li>
                           <div className="brand-box">
-                            <h5>Product Code:</h5>
-                            <h6>W0690034</h6>
-                          </div>
-                        </li>
-
-                        <li>
-                          <div className="brand-box">
-                            <h5>Product Type:</h5>
-                            <h6>White Cream Cake</h6>
+                            <h5>Supplier Name:</h5>
+                            <h6 className="mb-3">{supplier?.supplierName || "Đang tải..."}</h6>
                           </div>
                         </li>
                       </ul>
 
-                      <div className="select-size">
-                        <h4>Cake Size :</h4>
-                        <select className="form-select select-form-size">
-                          <option selected>Select Size</option>
-                          <option value="1.2">1/2 KG</option>
-                          <option value="0">1 KG</option>
-                          <option value="1.5">1/5 KG</option>
-                          <option value="red">Red Roses</option>
-                          <option value="pink">With Pink Roses</option>
-                        </select>
-                      </div>
+                      <ul className="brand-list">
+                        <li>
+                          <div className="brand-box">
+                            <h5>Stock Quantity:</h5>
+                            <h6 className="mb-3">{selectedProduct?.stockQuantity || "Đang tải..."}</h6>
+                          </div>
+                        </li>
+                        <li>
+                          <div className="brand-box">
+                            <h5>Supplier Name:</h5>
+                            <h6 className="mb-3">{supplier?.supplierName || "Đang tải..."}</h6>
+                          </div>
+                        </li>
+                      </ul>
+
 
                       <div className="modal-button">
                         <button
                           type="button"
-                          onClick={handleAddToCart}
                           className="btn btn-md bg-dark cart-button text-white w-100"
+                          onClick={() => handleAddToCart(selectedProduct)}
                         >
                           Add To Cart
                         </button>
-
                         <button
-                          onclick="location.href = 'product-left-thumbnail.html';"
+                          type="button"
                           className="btn theme-bg-color view-button icon text-white fw-bold btn-md"
+                          onClick={() => handleViewDetail(selectedProduct.productId)}
                         >
                           View More Details
                         </button>
@@ -2267,6 +1701,9 @@ const ProductDetail = () => {
 
         <div className="bg-overlay"></div>
       </div>
+
+
+
     </ProductDetailLayout>
   );
 };

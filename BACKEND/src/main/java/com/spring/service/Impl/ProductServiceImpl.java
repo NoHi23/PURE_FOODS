@@ -283,4 +283,25 @@ public class ProductServiceImpl implements ProductService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public List<ProductDTO> getRelatedProducts(int productId) {
+        List<Products> relatedEntities = productDAO.getRelatedProducts(productId);
+        return relatedEntities.stream().map(product -> {
+            ProductDTO dto = new ProductDTO();
+            dto.setProductId(product.getProductId());
+            dto.setProductName(product.getProductName());
+            dto.setPrice(product.getPrice());
+            dto.setStatus(product.getStatus());
+            dto.setCategoryId(product.getCategoryId());
+            dto.setImageURL(product.getImageURL());
+            dto.setSupplierId(product.getSupplierId());
+            dto.setDiscountPercent(product.getDiscountPercent());
+            dto.setStockQuantity(product.getStockQuantity());
+            dto.setDescription(product.getDescription());
+            dto.setLastUpdatedBy(product.getLastUpdatedBy());
+            dto.setCreatedAt(product.getCreatedAt());
+            dto.setSalePrice(product.getPriceAfterDiscount());
+            return dto;
+        }).collect(Collectors.toList());
+    }
 }

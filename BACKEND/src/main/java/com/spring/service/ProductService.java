@@ -28,5 +28,6 @@ public interface ProductService {
                                     Integer minDiscount,
                                     Pageable pageable) ;
     List<ProductDTO> getProductsByCategory(int categoryId);
+    public List<ProductDTO> getRelatedProducts(int productId);
 
 }
