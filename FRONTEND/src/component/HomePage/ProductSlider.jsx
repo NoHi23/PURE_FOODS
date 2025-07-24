@@ -81,7 +81,7 @@ const ProductSlider = ({ products, handleViewProduct, userId }) => {
     }
   };
 
-  
+
 
   const updateQuantity = async (product, delta) => {
     if (!userId) {
@@ -312,6 +312,7 @@ const ProductSlider = ({ products, handleViewProduct, userId }) => {
                         ? 'Out of Stock'
                         : `${product?.stockQuantity} In Stock`}
                     </h6>                  </div>
+                    
                   <div className="add-to-cart-box">
                     <button
                       className="btn btn-add-cart addcart-button"
@@ -322,7 +323,6 @@ const ProductSlider = ({ products, handleViewProduct, userId }) => {
                         <i className="fa-solid fa-plus"></i>
                       </span>
                     </button>
-
                     <div className="cart_qty qty-box mt-2">
                       <div className="input-group justify-content-center">
                         <button className="qty-left-minus btn btn-sm btn-light"
@@ -344,8 +344,8 @@ const ProductSlider = ({ products, handleViewProduct, userId }) => {
                         </button>
                       </div>
                     </div>
-
                   </div>
+
                 </div>
               </div>
             </div>
