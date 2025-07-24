@@ -17,79 +17,212 @@ const ProductDetail = () => {
   const user = JSON.parse(localStorage.getItem("user"));
   const userId = user?.userId;
   const [selectedImage, setSelectedImage] = useState(null);
-
+  const [cartQuantities, setCartQuantities] = useState({});
   const [quantity, setQuantity] = useState(1);
-  const increaseQty = () => setQuantity((prev) => Math.max(1, prev + 1));
-  const decreaseQty = () => setQuantity((prev) => Math.max(1, prev - 1));
+
+  const increaseQty = () => {
+    if (products && quantity < products.stockQuantity) {
+      setQuantity(prev => prev + 1);
+    } else {
+      toast.warning("Đã đạt số lượng tối đa trong kho");
+    }
+  };
+
+  const decreaseQty = () => {
+    if (quantity > 1) {
+      setQuantity(prev => prev - 1);
+    }
+  };
 
   const navigate = useNavigate();
 
-  const handleAddToCart = async () => {
-    if (!userId || !products) {
+
+  const updateQuantity = async (product, delta) => {
+    if (!userId) {
       toast.error("Vui lòng đăng nhập");
       return;
     }
 
-    if (quantity <= 0) {
-      toast.error("Số lượng phải lớn hơn 0!");
+    try {
+      const res = await axios.get(`http://localhost:8082/PureFoods/api/cart/user/${userId}`);
+      const cartItems = res.data;
+      const existingItem = cartItems.find(item => item.productID === product.productId);
+      const currentQty = existingItem ? existingItem.quantity : 0;
+      const newQty = currentQty + delta;
+
+      if (newQty < 1) return;
+
+      if (newQty > product.stockQuantity) {
+        toast.warning(`Chỉ còn ${product.stockQuantity - currentQty} sản phẩm trong kho`);
+        return;
+      }
+
+      const cartItem = {
+        userID: userId,
+        productID: product.productId,
+        quantity: newQty,
+        priceAfterDiscount: product.salePrice,
+        total: product.salePrice * newQty,
+        imageURL: product.imageURL,
+        productName: product.productName,
+        originalPrice: product.price,
+        discount: product.discountPercent,
+      };
+
+      if (existingItem) {
+        await axios.put(`http://localhost:8082/PureFoods/api/cart/update/${existingItem.cartItemID}`, cartItem);
+      } else {
+        await axios.post(`http://localhost:8082/PureFoods/api/cart/create`, cartItem);
+      }
+
+      setCartQuantities(prev => ({ ...prev, [product.productId]: newQty }));
+      window.dispatchEvent(new Event("cartUpdated"));
+    } catch (err) {
+      toast.error("Cập nhật giỏ hàng thất bại");
+      console.error(err);
+    }
+  };
+
+
+  const handleManualQuantityChange = async (product, value) => {
+    const newQty = parseInt(value);
+
+    if (isNaN(newQty) || newQty < 1) {
+      toast.warning("Số lượng phải ≥ 1");
+      return;
+    }
+
+    if (newQty > product.stockQuantity) {
+      toast.warning(`Chỉ còn ${product.stockQuantity} sản phẩm trong kho`);
       return;
     }
 
     try {
-      //  Kiểm tra số lượng sản phẩm hiện tại trong giỏ hàng
+      // Lấy giỏ hàng hiện tại để kiểm tra đã có sản phẩm chưa
       const res = await axios.get(`http://localhost:8082/PureFoods/api/cart/user/${userId}`);
-      const cartItems = res.data;
+      const existingItem = res.data.find(item => item.productID === product.productId);
 
-      const existingItem = cartItems.find(item => item.productID === products.productId);
-      const currentQtyInCart = existingItem ? existingItem.quantity : 0;
-      const totalAfterAdd = currentQtyInCart + quantity;
-
-      if (totalAfterAdd > products.stockQuantity) {
-        toast.error(`Chỉ còn ${products.stockQuantity - currentQtyInCart} sản phẩm trong kho`);
-        return;
-      }
-
-      //  Gửi API tạo cart item
       const cartItem = {
         userID: userId,
-        productID: products.productId,
-        quantity: quantity,
-        priceAfterDiscount: products.salePrice,
-        total: products.salePrice * quantity,
-        imageURL: products.imageURL,
-        productName: products.productName,
-        originalPrice: products.price,
-        discount: products.discountPercent
+        productID: product.productId,
+        quantity: newQty,
+        priceAfterDiscount: product.salePrice,
+        total: product.salePrice * newQty,
+        imageURL: product.imageURL,
+        productName: product.productName,
+        originalPrice: product.price,
+        discount: product.discountPercent,
       };
 
-      console.log("🛒 Gửi dữ liệu add to cart:", cartItem);
+      if (existingItem) {
+        // 🔁 update
+        await axios.put(`http://localhost:8082/PureFoods/api/cart/update/${existingItem.cartItemID}`, cartItem);
+      } else {
+        // 🆕 create
+        await axios.post("http://localhost:8082/PureFoods/api/cart/create", cartItem);
+      }
 
-      if (!userId || !products.productId) {
-        toast.error("Thiếu thông tin giỏ hàng!");
+      setCartQuantities(prev => ({ ...prev, [product.productId]: newQty }));
+      toast.success("Cập nhật giỏ hàng thành công");
+      window.dispatchEvent(new Event("cartUpdated"));
+
+    } catch (err) {
+      toast.error("Lỗi khi cập nhật giỏ hàng");
+      console.error(err);
+    }
+  };
+
+
+  const handleAddToCart = async (product) => {
+    if (!userId) {
+      toast.error("Vui lòng đăng nhập");
+      return;
+    }
+
+    try {
+      const res = await axios.get(`http://localhost:8082/PureFoods/api/cart/user/${userId}`);
+      const cartItems = res.data;
+      const existingItem = cartItems.find(item => item.productID === product.productId);
+      const currentQty = existingItem ? existingItem.quantity : 0;
+      const newQty = currentQty + 1;
+
+      if (newQty > product.stockQuantity) {
+        toast.warning(`Chỉ còn ${product.stockQuantity - currentQty} sản phẩm trong kho`);
         return;
       }
 
-      axios
-        .post("http://localhost:8082/PureFoods/api/cart/create", cartItem)
-        .then(() => {
-          toast.success("Đã thêm vào giỏ hàng");
-          window.dispatchEvent(new Event("cartUpdated"));
-          // navigate(`/cart-detail`, { state: { fromAddToCart: true } });
-        })
-        .catch((err) => {
-          console.error("❌ Lỗi khi thêm vào giỏ hàng:", err.response?.data || err.message);
-          toast.error("Thêm vào giỏ thất bại");
-        });
-      await axios.post('http://localhost:8082/PureFoods/api/cart/create', cartItem);
-      toast.success('Đã thêm vào giỏ hàng');
-      window.dispatchEvent(new Event('cartUpdated'));
-      //navigate(`/cart-detail`, { state: { fromAddToCart: true } });
+      const cartItem = {
+        userID: userId,
+        productID: product.productId,
+        quantity: newQty,
+        priceAfterDiscount: product.salePrice,
+        total: product.salePrice * newQty,
+        imageURL: product.imageURL,
+        productName: product.productName,
+        originalPrice: product.price,
+        discount: product.discountPercent,
+      };
 
+      if (existingItem) {
+        await axios.put(`http://localhost:8082/PureFoods/api/cart/update/${existingItem.cartItemID}`, cartItem);
+      } else {
+        await axios.post("http://localhost:8082/PureFoods/api/cart/create", cartItem);
+      }
+
+      setCartQuantities(prev => ({ ...prev, [product.productId]: newQty }));
+      toast.success("Đã thêm vào giỏ hàng");
+      window.dispatchEvent(new Event("cartUpdated"));
     } catch (err) {
-      console.error("❌ Lỗi khi thêm vào giỏ hàng:", err.response?.data || err.message);
-      toast.error('Thêm vào giỏ thất bại');
+      toast.error("Thêm vào giỏ hàng thất bại");
+      console.error(err);
     }
   };
+
+
+  const handleAddToCart1 = async (product) => {
+  if (!userId) {
+    toast.error("Vui lòng đăng nhập");
+    return;
+  }
+
+  try {
+    const res = await axios.get(`http://localhost:8082/PureFoods/api/cart/user/${userId}`);
+    const cartItems = res.data;
+    const existingItem = cartItems.find(item => item.productID === product.productId);
+    const currentQty = existingItem ? existingItem.quantity : 0;
+    const totalQty = currentQty + quantity;
+
+    if (totalQty > product.stockQuantity) {
+      toast.warning(`Chỉ còn ${product.stockQuantity - currentQty} sản phẩm trong kho`);
+      return;
+    }
+
+    const cartItem = {
+      userID: userId,
+      productID: product.productId,
+      quantity: totalQty,
+      priceAfterDiscount: product.salePrice,
+      total: product.salePrice * totalQty,
+      imageURL: product.imageURL,
+      productName: product.productName,
+      originalPrice: product.price,
+      discount: product.discountPercent,
+    };
+
+    if (existingItem) {
+      await axios.put(`http://localhost:8082/PureFoods/api/cart/update/${existingItem.cartItemID}`, cartItem);
+    } else {
+      await axios.post("http://localhost:8082/PureFoods/api/cart/create", cartItem);
+    }
+
+    toast.success("Đã thêm vào giỏ hàng");
+    window.dispatchEvent(new Event("cartUpdated"));
+  } catch (err) {
+    toast.error("Thêm vào giỏ hàng thất bại");
+    console.error(err);
+  }
+};
+
 
   useEffect(() => {
     if (quantity < 1 || isNaN(quantity)) {
@@ -102,7 +235,6 @@ const ProductDetail = () => {
     window.scrollTo(0, 0); // Scroll lên đầu
     document.body.style.overflow = 'auto'; // Cho phép cuộn lại nếu bị khoá
   }, []);
-
 
 
   useEffect(() => {
@@ -588,7 +720,7 @@ const ProductDetail = () => {
                           </div>
                         </div>
 
-                        <button onClick={handleAddToCart} className="btn btn-md bg-dark cart-button text-white w-100">
+                        <button onClick={() => handleAddToCart1(products)} className="btn btn-md bg-dark cart-button text-white w-100">
                           Add To Cart
                         </button>
                       </div>
@@ -1185,25 +1317,41 @@ const ProductDetail = () => {
                         <h5 className="price">
                           <span className="theme-color">${product.salePrice} <del>${product.price}</del></span>
                         </h5>
-                        <div className="add-to-cart-box bg-white">
-                          <button className="btn btn-add-cart addcart-button">
+
+                        <div className="add-to-cart-box">
+                          <button
+                            className="btn btn-add-cart addcart-button"
+                            onClick={() => handleAddToCart(product)}
+                          >
                             Add
-                            <span className="add-icon bg-light-gray">
+                            <span className="add-icon">
                               <i className="fa-solid fa-plus"></i>
                             </span>
                           </button>
-                          <div className="cart_qty qty-box">
-                            <div className="input-group bg-white">
-                              <button type="button" className="qty-left-minus bg-gray">
+
+                          <div className="cart_qty qty-box mt-2">
+                            <div className="input-group justify-content-center">
+                              <button className="qty-left-minus btn btn-sm btn-light"
+                                onClick={() => updateQuantity(product, -1)}>
                                 <i className="fa fa-minus"></i>
                               </button>
-                              <input className="form-control input-number qty-input" type="text" value="0" readOnly />
-                              <button type="button" className="qty-right-plus bg-gray">
+                              <input
+                                className="form-control input-number qty-input text-center"
+                                type="number"
+                                min="1"
+                                max={product.stockQuantity}
+                                value={cartQuantities[product.productId] || 1}
+                                onChange={(e) => handleManualQuantityChange(product, e.target.value)}
+                                style={{ width: "60px" }}
+                              />
+                              <button className="qty-right-plus btn btn-sm btn-light"
+                                onClick={() => updateQuantity(product, 1)}>
                                 <i className="fa fa-plus"></i>
                               </button>
                             </div>
                           </div>
                         </div>
+
                       </div>
                     </div>
 
@@ -1211,6 +1359,7 @@ const ProductDetail = () => {
                 </div>
               ))}
             </div>
+            
           </div>
         </section>
 
