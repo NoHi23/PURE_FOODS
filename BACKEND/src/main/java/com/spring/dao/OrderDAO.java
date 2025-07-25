@@ -24,4 +24,7 @@ public interface OrderDAO {
     Optional<Order> findById(int orderId);
 
 
+    boolean hasCustomerBoughtProduct(int customerId, int productId);
+
+
 }

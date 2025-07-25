@@ -177,11 +177,12 @@ const SideBar = () => {
               </li>
 
               <li className="sidebar-list">
-                <a className="sidebar-link sidebar-title link-nav" href="product-review.html">
-                  <i className="ri-star-line"></i>
-                  <span>Product Review</span>
-                </a>
-              </li>
+  <Link to="/admin-product-review" className="sidebar-link sidebar-title link-nav">
+    <i className="ri-star-line"></i>
+    <span>Product Review</span>
+  </Link>
+</li>
+
 
               <li className="sidebar-list">
                 <a className="sidebar-link sidebar-title link-nav" href="support-ticket.html">
