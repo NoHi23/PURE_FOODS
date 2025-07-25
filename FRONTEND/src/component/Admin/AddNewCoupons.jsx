@@ -103,11 +103,11 @@ const AddNewCoupons = () => {
                       <div className="card">
                         <div className="card-body">
                           <div className="title-header option-title">
-                            <h5>Add New Coupon</h5>
+                            <h5>Thêm mới mã giảm giá</h5>
                           </div>
                           <form className="theme-form theme-form-2 mega-form" onSubmit={handleSubmit}>
                             <div className="mb-4 row align-items-center">
-                              <label className="col-lg-2 col-md-3 mb-0">Coupon Code</label>
+                              <label className="col-lg-2 col-md-3 mb-0">Code</label>
                               <div className="col-md-9 col-lg-10">
                                 <input
                                   className="form-control"
@@ -120,7 +120,7 @@ const AddNewCoupons = () => {
                               </div>
                             </div>
                             <div className="mb-4 row align-items-center">
-                              <label className="col-lg-2 col-md-3 mb-0">Description</label>
+                              <label className="col-lg-2 col-md-3 mb-0">Mô tả</label>
                               <div className="col-md-9 col-lg-10">
                                 <input
                                   className="form-control"
@@ -133,7 +133,7 @@ const AddNewCoupons = () => {
                               </div>
                             </div>
                             <div className="mb-4 row align-items-center">
-                              <label className="col-lg-2 col-md-3 mb-0">Discount Type</label>
+                              <label className="col-lg-2 col-md-3 mb-0">Loại giảm giá</label>
                               <div className="col-md-9 col-lg-10">
                                 <select
                                   className="form-control"
@@ -141,13 +141,13 @@ const AddNewCoupons = () => {
                                   value={form.discountType}
                                   onChange={handleChange}
                                 >
-                                  <option value="Percentage">Percentage</option>
-                                  <option value="Fixed">Fixed</option>
+                                  <option value="Percentage">Phần trăm</option>
+                                  <option value="Fixed">Giá cố định</option>
                                 </select>
                               </div>
                             </div>
                             <div className="mb-4 row align-items-center">
-                              <label className="col-lg-2 col-md-3 mb-0">Discount Value</label>
+                              <label className="col-lg-2 col-md-3 mb-0">Giá trị chiết khấu</label>
                               <div className="col-md-9 col-lg-10">
                                 <input
                                   className="form-control"
@@ -162,7 +162,7 @@ const AddNewCoupons = () => {
                               </div>
                             </div>
                             <div className="mb-4 row align-items-center">
-                              <label className="col-lg-2 col-md-3 mb-0">Start Date</label>
+                              <label className="col-lg-2 col-md-3 mb-0">Ngày bắt đầu</label>
                               <div className="col-md-9 col-lg-10">
                                 <input
                                   className="form-control"
@@ -175,7 +175,7 @@ const AddNewCoupons = () => {
                               </div>
                             </div>
                             <div className="mb-4 row align-items-center">
-                              <label className="col-lg-2 col-md-3 mb-0">End Date</label>
+                              <label className="col-lg-2 col-md-3 mb-0">Ngày kết thúc</label>
                               <div className="col-md-9 col-lg-10">
                                 <input
                                   className="form-control"
@@ -188,7 +188,7 @@ const AddNewCoupons = () => {
                               </div>
                             </div>
                             <div className="mb-4 row align-items-center">
-                              <label className="col-lg-2 col-md-3 mb-0">Min Order Amount</label>
+                              <label className="col-lg-2 col-md-3 mb-0">Số lần sử dụng tối thiểu</label>
                               <div className="col-md-9 col-lg-10">
                                 <input
                                   className="form-control"
@@ -202,7 +202,7 @@ const AddNewCoupons = () => {
                               </div>
                             </div>
                             <div className="mb-4 row align-items-center">
-                              <label className="col-lg-2 col-md-3 mb-0">Active</label>
+                              <label className="col-lg-2 col-md-3 mb-0">Hoạt động</label>
                               <div className="col-md-9 col-lg-10 d-flex align-items-center">
                                 <label className="switch">
                                   <input
@@ -222,7 +222,7 @@ const AddNewCoupons = () => {
                             </div>
                             <div className="card-submit-button">
                               <button className="btn btn-animation ms-auto" type="submit">
-                                Submit
+                                Gửi
                               </button>
                             </div>
                           </form>

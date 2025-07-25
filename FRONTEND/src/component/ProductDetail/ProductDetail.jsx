@@ -180,48 +180,48 @@ const ProductDetail = () => {
 
 
   const handleAddToCart1 = async (product) => {
-  if (!userId) {
-    toast.error("Vui lòng đăng nhập");
-    return;
-  }
-
-  try {
-    const res = await axios.get(`http://localhost:8082/PureFoods/api/cart/user/${userId}`);
-    const cartItems = res.data;
-    const existingItem = cartItems.find(item => item.productID === product.productId);
-    const currentQty = existingItem ? existingItem.quantity : 0;
-    const totalQty = currentQty + quantity;
-
-    if (totalQty > product.stockQuantity) {
-      toast.warning(`Chỉ còn ${product.stockQuantity - currentQty} sản phẩm trong kho`);
+    if (!userId) {
+      toast.error("Vui lòng đăng nhập");
       return;
     }
 
-    const cartItem = {
-      userID: userId,
-      productID: product.productId,
-      quantity: totalQty,
-      priceAfterDiscount: product.salePrice,
-      total: product.salePrice * totalQty,
-      imageURL: product.imageURL,
-      productName: product.productName,
-      originalPrice: product.price,
-      discount: product.discountPercent,
-    };
+    try {
+      const res = await axios.get(`http://localhost:8082/PureFoods/api/cart/user/${userId}`);
+      const cartItems = res.data;
+      const existingItem = cartItems.find(item => item.productID === product.productId);
+      const currentQty = existingItem ? existingItem.quantity : 0;
+      const totalQty = currentQty + quantity;
 
-    if (existingItem) {
-      await axios.put(`http://localhost:8082/PureFoods/api/cart/update/${existingItem.cartItemID}`, cartItem);
-    } else {
-      await axios.post("http://localhost:8082/PureFoods/api/cart/create", cartItem);
+      if (totalQty > product.stockQuantity) {
+        toast.warning(`Chỉ còn ${product.stockQuantity - currentQty} sản phẩm trong kho`);
+        return;
+      }
+
+      const cartItem = {
+        userID: userId,
+        productID: product.productId,
+        quantity: totalQty,
+        priceAfterDiscount: product.salePrice,
+        total: product.salePrice * totalQty,
+        imageURL: product.imageURL,
+        productName: product.productName,
+        originalPrice: product.price,
+        discount: product.discountPercent,
+      };
+
+      if (existingItem) {
+        await axios.put(`http://localhost:8082/PureFoods/api/cart/update/${existingItem.cartItemID}`, cartItem);
+      } else {
+        await axios.post("http://localhost:8082/PureFoods/api/cart/create", cartItem);
+      }
+
+      toast.success("Đã thêm vào giỏ hàng");
+      window.dispatchEvent(new Event("cartUpdated"));
+    } catch (err) {
+      toast.error("Thêm vào giỏ hàng thất bại");
+      console.error(err);
     }
-
-    toast.success("Đã thêm vào giỏ hàng");
-    window.dispatchEvent(new Event("cartUpdated"));
-  } catch (err) {
-    toast.error("Thêm vào giỏ hàng thất bại");
-    console.error(err);
-  }
-};
+  };
 
 
   useEffect(() => {
@@ -526,7 +526,7 @@ const ProductDetail = () => {
             <div className="row">
               <div className="col-12">
                 <div className="breadcrumb-contain">
-                  <h2>Creamy Chocolate Cake</h2>
+                  <h2>{products?.productName}</h2>
                   <nav>
                     <ol className="breadcrumb mb-0">
                       <li className="breadcrumb-item">
@@ -535,7 +535,7 @@ const ProductDetail = () => {
                         </a>
                       </li>
 
-                      <li className="breadcrumb-item active">Creamy Chocolate Cake</li>
+                      <li className="breadcrumb-item active">{products?.productName}</li>
                     </ol>
                   </nav>
                 </div>
@@ -661,7 +661,7 @@ const ProductDetail = () => {
                         data-seconds="3"
                       >
                         <div className="product-title">
-                          <h4>Hurry up! Sales Ends In</h4>
+                          <h4>Nhanh lên! Khuyến mại kết thúc vào</h4>
                         </div>
                         <ul>
                           <li>
@@ -669,7 +669,7 @@ const ProductDetail = () => {
                               <div className="days d-block">
                                 <h5></h5>
                               </div>
-                              <h6>Days</h6>
+                              <h6>Ngày</h6>
                             </div>
                           </li>
                           <li>
@@ -677,7 +677,7 @@ const ProductDetail = () => {
                               <div className="hours d-block">
                                 <h5></h5>
                               </div>
-                              <h6>Hours</h6>
+                              <h6>Giờ</h6>
                             </div>
                           </li>
                           <li>
@@ -685,7 +685,7 @@ const ProductDetail = () => {
                               <div className="minutes d-block">
                                 <h5></h5>
                               </div>
-                              <h6>Min</h6>
+                              <h6>Phút</h6>
                             </div>
                           </li>
                           <li>
@@ -693,7 +693,7 @@ const ProductDetail = () => {
                               <div className="seconds d-block">
                                 <h5></h5>
                               </div>
-                              <h6>Sec</h6>
+                              <h6>Giây</h6>
                             </div>
                           </li>
                         </ul>
@@ -721,13 +721,13 @@ const ProductDetail = () => {
                         </div>
 
                         <button onClick={() => handleAddToCart1(products)} className="btn btn-md bg-dark cart-button text-white w-100">
-                          Add To Cart
+                          Thêm vào giỏ hàng
                         </button>
                       </div>
 
                       <div className="payment-option">
                         <div className="product-title">
-                          <h4>Guaranteed Safe Checkout</h4>
+                          <h4>Thanh toán an toàn được đảm bảo</h4>
                         </div>
                         <ul>
                           <li>
@@ -771,7 +771,7 @@ const ProductDetail = () => {
                       </div>
 
                       <div className="vendor-name">
-                        <h5 className="fw-500">Pure Foods</h5>
+                        <h5 className="fw-500">Clean Food Shop</h5>
 
                         <div className="product-rating mt-1">
                           <ul className="rating">
@@ -791,14 +791,13 @@ const ProductDetail = () => {
                               <i data-feather="star"></i>
                             </li>
                           </ul>
-                          <span>(9999+ Reviews)</span>
+                          <span>(9999+ đánh giá)</span>
                         </div>
                       </div>
                     </div>
 
                     <p className="vendor-detail">
-                      Pure Foods is an Vietnamese fast-casual restaurant that offers international and Vietnamese noodle
-                      dishes and pasta.
+                      Clean Food Shop là một nhà hàng Việt Nam bình dân, phục vụ các món mì và mì ống quốc tế và Việt Nam.
                     </p>
 
                     <div className="vendor-list">
@@ -807,7 +806,7 @@ const ProductDetail = () => {
                           <div className="address-contact">
                             <i data-feather="map-pin"></i>
                             <h5>
-                              Address:{" "}
+                              Địa chỉ:{" "}
                               <span className="text-content">
                                 Khu Giáo dục và Đào tạo - Khu Công nghệ cao Hòa Lạc - Km29 Đại lộ Thăng Long, xã Hòa
                                 Lạc, TP. Hà Nội
@@ -820,7 +819,7 @@ const ProductDetail = () => {
                           <div className="address-contact">
                             <i data-feather="headphones"></i>
                             <h5>
-                              Contact Seller: <span className="text-content">1900 6789</span>
+                              Liên hệ người bán: <span className="text-content">1900 6789</span>
                             </h5>
                           </div>
                         </li>
@@ -830,8 +829,8 @@ const ProductDetail = () => {
 
                   <div className="pt-25">
                     <div className="hot-line-number">
-                      <h5>Hotline Order:</h5>
-                      <h6>Mon - Fri: 07:00 am - 08:30PM</h6>
+                      <h5>Hotline đặt hàng:</h5>
+                      <h6>Thứ 2 - Thứ 6: 07:00 sáng - 08:30 tối</h6>
                       <h3>1900 6789</h3>
                     </div>
                   </div>
@@ -855,7 +854,7 @@ const ProductDetail = () => {
                         type="button"
                         role="tab"
                       >
-                        Description
+                        Mô tả
                       </button>
                     </li>
 
@@ -868,7 +867,7 @@ const ProductDetail = () => {
                         type="button"
                         role="tab"
                       >
-                        Care Instructions
+                        Hướng dẫn chăm sóc
                       </button>
                     </li>
 
@@ -881,7 +880,7 @@ const ProductDetail = () => {
                         type="button"
                         role="tab"
                       >
-                        Review
+                        Đánh giá
                       </button>
                     </li>
                   </ul>
@@ -900,19 +899,19 @@ const ProductDetail = () => {
                     <div className="tab-pane fade" id="care" role="tabpanel">
                       <div className="information-box">
                         <ul>
-                          <li>Store clean food in the refrigerator at a temperature between 0°C and 4°C to keep it fresh and prevent bacterial growth.</li>
+                          <li>Bảo quản thực phẩm sạch trong tủ lạnh ở nhiệt độ từ 0°C đến 4°C để giữ thực phẩm tươi ngon và ngăn ngừa vi khuẩn phát triển.</li>
 
-                          <li>Do not store cooked food together with raw food to avoid cross-contamination.</li>
+                          <li>Không bảo quản thực phẩm đã nấu chín chung với thực phẩm sống để tránh lây nhiễm chéo.</li>
 
-                          <li>Cooked food should be consumed within 24 hours to ensure safety and quality.</li>
+                          <li>Thực phẩm đã nấu chín nên được tiêu thụ trong vòng 24 giờ để đảm bảo an toàn và chất lượng.</li>
 
-                          <li>Wash your hands thoroughly before handling or eating food.</li>
+                          <li>Rửa tay kỹ trước khi chế biến hoặc ăn.</li>
 
-                          <li>Seal food containers properly after use and store them in a cool, dry place.</li>
+                          <li>Đậy kín hộp đựng thực phẩm sau khi sử dụng và bảo quản nơi khô ráo, thoáng mát.</li>
 
-                          <li>Do not consume expired food or food that shows signs of spoilage such as mold, off smells, or discoloration.</li>
+                          <li>Không sử dụng thực phẩm hết hạn hoặc thực phẩm có dấu hiệu hư hỏng như nấm mốc, mùi lạ hoặc đổi màu.</li>
 
-                          <li>Always wash fruits and vegetables with clean water before consuming or cooking them.</li>
+                          <li>Luôn rửa sạch trái cây và rau củ bằng nước sạch trước khi ăn hoặc nấu.</li>
                         </ul>
                       </div>
                     </div>
@@ -1254,7 +1253,7 @@ const ProductDetail = () => {
         <section className="product-list-section section-b-space">
           <div className="container-fluid-lg">
             <div className="title">
-              <h2>Related Products</h2>
+              <h2>Sản phẩm liên quan</h2>
               <span className="title-leaf">
                 <svg className="icon-width"></svg>
               </span>
@@ -1313,7 +1312,6 @@ const ProductDetail = () => {
                           </ul>
                           <span>(5.0)</span>
                         </div>
-                        <h6 className="unit">500 G</h6>
                         <h5 className="price">
                           <span className="theme-color">${product.salePrice} <del>${product.price}</del></span>
                         </h5>
@@ -1323,7 +1321,7 @@ const ProductDetail = () => {
                             className="btn btn-add-cart addcart-button"
                             onClick={() => handleAddToCart(product)}
                           >
-                            Add
+                            Thêm
                             <span className="add-icon">
                               <i className="fa-solid fa-plus"></i>
                             </span>
@@ -1359,7 +1357,7 @@ const ProductDetail = () => {
                 </div>
               ))}
             </div>
-            
+
           </div>
         </section>
 
@@ -1408,8 +1406,8 @@ const ProductDetail = () => {
                             <i data-feather="star"></i>
                           </li>
                         </ul>
-                        <span className="ms-2">8 Reviews</span>
-                        <span className="ms-2 text-danger">6 sold in last 16 hours</span>
+                        <span className="ms-2">8 đánh giá</span>
+                        <span className="ms-2 text-danger">6 đã bán trong 16 giờ qua</span>
                       </div>
 
                       <div className="product-detail">
@@ -1419,13 +1417,13 @@ const ProductDetail = () => {
                       <ul className="brand-list">
                         <li>
                           <div className="brand-box">
-                            <h5>Category Name:</h5>
+                            <h5>Tên danh mục:</h5>
                             <h6 className="mb-3">{category?.categoryName || "Đang tải..."}</h6>
                           </div>
                         </li>
                         <li>
                           <div className="brand-box">
-                            <h5>Supplier Name:</h5>
+                            <h5>Tên nhà cung cấp:</h5>
                             <h6 className="mb-3">{supplier?.supplierName || "Đang tải..."}</h6>
                           </div>
                         </li>
@@ -1434,13 +1432,13 @@ const ProductDetail = () => {
                       <ul className="brand-list">
                         <li>
                           <div className="brand-box">
-                            <h5>Stock Quantity:</h5>
+                            <h5>Số lượng hàng tồn kho:</h5>
                             <h6 className="mb-3">{selectedProduct?.stockQuantity || "Đang tải..."}</h6>
                           </div>
                         </li>
                         <li>
                           <div className="brand-box">
-                            <h5>Supplier Name:</h5>
+                            <h5>Tên nhà cung cấp:</h5>
                             <h6 className="mb-3">{supplier?.supplierName || "Đang tải..."}</h6>
                           </div>
                         </li>
@@ -1453,14 +1451,14 @@ const ProductDetail = () => {
                           className="btn btn-md bg-dark cart-button text-white w-100"
                           onClick={() => handleAddToCart(selectedProduct)}
                         >
-                          Add To Cart
+                          Thêm vào giỏ hàng
                         </button>
                         <button
                           type="button"
                           className="btn theme-bg-color view-button icon text-white fw-bold btn-md"
                           onClick={() => handleViewDetail(selectedProduct.productId)}
                         >
-                          View More Details
+                          Xem thêm chi tiết
                         </button>
                       </div>
                     </div>
@@ -1475,9 +1473,9 @@ const ProductDetail = () => {
             <div className="modal-content">
               <div className="modal-header">
                 <h5 className="modal-title" id="exampleModalLabel">
-                  Choose your Delivery Location
+                  Chọn Địa điểm Giao hàng
                 </h5>
-                <p className="mt-1 text-content">Enter your address and we will specify the offer for your area.</p>
+                <p className="mt-1 text-content">Nhập địa chỉ của bạn và chúng tôi sẽ chỉ định ưu đãi cho khu vực của bạn.</p>
                 <button type="button" className="btn-close" data-bs-dismiss="modal">
                   <i className="fa-solid fa-xmark"></i>
                 </button>
@@ -1762,11 +1760,11 @@ const ProductDetail = () => {
                   </div>
                   <div className="add-btn">
                     <a className="btn theme-bg-color text-white wishlist-btn" href="wishlist.html">
-                      <i className="fa fa-bookmark"></i> Wishlist
+                      <i className="fa fa-bookmark"></i> Yêu thích
                     </a>
 
                     <button type="button" onClick={handleAddToCart} className="btn theme-bg-color text-white">
-                      <i className="fas fa-shopping-cart"></i> Add To Cart
+                      <i className="fas fa-shopping-cart"></i> Thêm vào giỏ hàng
                     </button>
                   </div>
                 </div>

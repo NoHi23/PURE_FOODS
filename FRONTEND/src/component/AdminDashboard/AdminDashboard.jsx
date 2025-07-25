@@ -129,8 +129,8 @@ const AdminDashboard = () => {
             .then((res) => {
                 const raw = res.data;
                 const months = [
-                    'Month 1', 'Month 2', 'Month 3', 'Month 4', 'Month 5', 'Month 6',
-                    'Month 7', 'Month 8', 'Month 9', 'Month 10', 'Month 11', 'Month 12'
+                    'Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6',
+                    'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'
                 ];
                 const formatted = months.map((name, index) => ({
                     name,
@@ -159,7 +159,7 @@ const AdminDashboard = () => {
                                         <div className="custome-1-bg b-r-4 card-body">
                                             <div className="media align-items-center static-top-widget">
                                                 <div className="media-body p-0">
-                                                    <span className="m-0">Total Revenue</span>
+                                                    <span className="m-0">Tổng doanh thu</span>
                                                     <h4 className="mb-0 counter">${revenue}
                                                     </h4>
                                                 </div>
@@ -176,7 +176,7 @@ const AdminDashboard = () => {
                                         <div className="custome-2-bg b-r-4 card-body">
                                             <div className="media static-top-widget">
                                                 <div className="media-body p-0">
-                                                    <span className="m-0">Total Orders</span>
+                                                    <span className="m-0">Tổng số đơn hàng</span>
                                                     <h4 className="mb-0 counter">{totalOrder}
                                                     </h4>
                                                 </div>
@@ -193,7 +193,7 @@ const AdminDashboard = () => {
                                         <div className="custome-3-bg b-r-4 card-body">
                                             <div className="media static-top-widget">
                                                 <div className="media-body p-0">
-                                                    <span className="m-0">Total Products</span>
+                                                    <span className="m-0">Tổng số sản phẩm</span>
                                                     <h4 className="mb-0 counter">{totalProduct}
                                                     </h4>
                                                 </div>
@@ -211,7 +211,7 @@ const AdminDashboard = () => {
                                         <div className="custome-4-bg b-r-4 card-body">
                                             <div className="media static-top-widget">
                                                 <div className="media-body p-0">
-                                                    <span className="m-0">Total Customers</span>
+                                                    <span className="m-0">Tổng số người dùng</span>
                                                     <h4 className="mb-0 counter">{totalUser}
                                                     </h4>
                                                 </div>
@@ -228,7 +228,7 @@ const AdminDashboard = () => {
                                     <div className="card o-hidden card-hover">
                                         <div className="card-header border-0 pb-1">
                                             <div className="card-header-title">
-                                                <h4 className='text-dark'>Revenue Report</h4>
+                                                <h4 className='text-dark'>Báo cáo doanh thu</h4>
                                             </div>
                                         </div>
                                         <div className="card-body p-0">
@@ -250,7 +250,7 @@ const AdminDashboard = () => {
                                     <div className="card o-hidden card-hover">
                                         <div className="card-header card-header-top card-header--2 px-0 pt-0">
                                             <div className="card-header-title">
-                                                <h4 className='text-dark'>Best Selling Product</h4>
+                                                <h4 className='text-dark'>Sản phẩm bán chạy nhất</h4>
                                             </div>
 
 
@@ -279,7 +279,7 @@ const AdminDashboard = () => {
 
                                                                     <td>
                                                                         <div className="product-detail-box">
-                                                                            <h6>Price</h6>
+                                                                            <h6>Giá</h6>
                                                                             <div className='d-flex gap-2'>
                                                                                 <h5><strong>${p.product.priceAfterDiscount}</strong></h5>
                                                                                 <h5><del className='text-danger'>${p.product.price}</del></h5>
@@ -320,7 +320,7 @@ const AdminDashboard = () => {
                                     <div className="card o-hidden card-hover">
                                         <div className="card-header card-header-top card-header--2 px-0 pt-0">
                                             <div className="card-header-title">
-                                                <h4 className='text-dark'>Recent Orders</h4>
+                                                <h4 className='text-dark'>Đơn hàng gần đây</h4>
                                             </div>
                                         </div>
 
@@ -334,27 +334,27 @@ const AdminDashboard = () => {
                                                                     <td>
                                                                         <div className="best-product-box">
                                                                             <div className="product-name">
-                                                                                <h5>Order Code</h5>
-                                                                                <h6>#1130{o.orderID}</h6>
+                                                                                <h5>Mã đặt hàng</h5>
+                                                                                <h6>#00{o.orderID}</h6>
                                                                             </div>
                                                                         </div>
                                                                     </td>
                                                                     <td>
                                                                         <div className="product-detail-box">
-                                                                            <h6>Order By</h6>
+                                                                            <h6>Người đặt hàng</h6>
                                                                             <h5>{customerNames[o.customerID] || 'Loading...'}</h5>
                                                                         </div>
                                                                     </td>
                                                                     <td>
                                                                         <div className="product-detail-box">
-                                                                            <h6>Date Placed</h6>
+                                                                            <h6>Ngày đặt</h6>
                                                                             <h5>{new Date(o.orderDate).toLocaleString()}</h5>
                                                                         </div>
                                                                     </td>
 
                                                                     <td>
                                                                         <div className="product-detail-box">
-                                                                            <h6>Price</h6>
+                                                                            <h6>Giá</h6>
                                                                             <h5>${o.totalAmount}</h5>
                                                                         </div>
                                                                     </td>

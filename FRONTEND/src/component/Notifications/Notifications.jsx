@@ -105,7 +105,7 @@ const Notitications = () => {
             <div className="row">
               <div className="col-12">
                 <div className="breadcrumb-contain">
-                  <h2 className="mb-2">Compare</h2>
+                  <h2 className="mb-2">Danh sách thông báo</h2>
                   <nav>
                     <ol className="breadcrumb mb-0">
                       <li className="breadcrumb-item">
@@ -113,8 +113,7 @@ const Notitications = () => {
                           <i className="fa-solid fa-house"></i>
                         </a>
                       </li>
-                      <li className="breadcrumb-item">Shop</li>
-                      <li className="breadcrumb-item active">Compare</li>
+                      <li className="breadcrumb-item active">Danh sách thông báo</li>
                     </ol>
                   </nav>
                 </div>
@@ -131,9 +130,9 @@ const Notitications = () => {
               <div className="col-12">
                 {/* New Notifications */}
                 <div className="card shadow p-3 mb-4">
-                  <h4 className="mb-3">New Notifications</h4>
+                  <h4 className="mb-3">Thông báo mới</h4>
                   {notifications.length === 0 ? (
-                    <p className="text-muted">No new notifications.</p>
+                    <p className="text-muted">Không có thông báo mới</p>
                   ) : (
                     <ul className="list-group">
                       {notifications.map((noti) => (
@@ -149,7 +148,7 @@ const Notitications = () => {
                             className="btn btn-sm btn-outline-success"
                             onClick={() => handleMarkRead(noti.id)}
                           >
-                            Mark as Read
+                            Đánh dấu là đã đọc
                           </button>
                         </li>
                       ))}
@@ -160,16 +159,16 @@ const Notitications = () => {
                 {/* Notification History */}
                 <div className="card shadow p-3">
                   <div className="d-flex justify-content-between align-items-center mb-2">
-                    <h4>Notification History</h4>
+                    <h4>Lịch sử thông báo</h4>
                     <button
                       className="btn btn-sm btn-outline-primary"
                       onClick={loadAllNotifications}
                     >
-                      Reload
+                      Tải lại
                     </button>
                   </div>
                   {history.length === 0 ? (
-                    <p className="text-muted">No read notifications yet.</p>
+                    <p className="text-muted">Chưa có thông báo đọc nào.</p>
                   ) : (
                     <ul className="list-group">
                       {history.map((noti) => (
