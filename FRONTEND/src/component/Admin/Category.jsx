@@ -1,14 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import './Category.css';
 import axios from 'axios';
-import $ from 'jquery';
-import 'datatables.net';
 import TopBar from '../AdminDashboard/TopBar';
 import SideBar from '../AdminDashboard/SideBar';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import * as bootstrap from 'bootstrap';
-import 'datatables.net';
 
 const Category = () => {
   const [categories, setCategories] = useState([]);
@@ -18,6 +14,7 @@ const Category = () => {
   const endIndex = startIndex + itemsPerPage;
   const currentCategories = categories.slice(startIndex, endIndex);
   const totalPages = Math.ceil(categories.length / itemsPerPage);
+
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [editCategory, setEditCategory] = useState({
     categoryName: '',
@@ -27,14 +24,13 @@ const Category = () => {
   });
   const [categoryToDelete, setCategoryToDelete] = useState(null);
 
-  const fetchCategories = () => {
-    axios.get("http://localhost:8082/PureFoods/api/category/getAll")
-      .then(res => {
-        const list = res.data.listCategory || res.data; // handle both structures
-        setCategories(list);
-      })
-      .catch(err => console.error(err));
-  };
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
 
   useEffect(() => {
     const sidebarLinks = document.querySelectorAll('.sidebar-link');
@@ -58,43 +54,29 @@ const Category = () => {
     };
   }, []);
 
-  useEffect(() => {
-    fetchCategories();
-  }, []);
-
-  useEffect(() => {
-    if (categories.length > 0) {
-      const table = $('#category_table').DataTable({
-        paging: false,
-        ordering: false,
-        info: false,
-        destroy: true,
-        responsive: true,
-      });
-      return () => {
-        table.destroy();
-      };
-    }
-  }, [categories]);
-
-  useEffect(() => {
-    // Khởi tạo lại DataTable mỗi lần categories thay đổi
-    const table = $('#categoryTable').DataTable();
-    table.destroy(); // huỷ DataTable cũ
-    setTimeout(() => {
-      $('#categoryTable').DataTable(); // khởi tạo lại
-    }, 0);
-  }, [categories]);
+  const fetchCategories = () => {
+    axios.get("http://localhost:8082/PureFoods/api/category/getAll")
+      .then(res => {
+        const list = res.data.listCategory || res.data;
+        setCategories(list);
+      })
+      .catch(err => console.error(err));
+  };
 
   const handleView = (category) => {
     setSelectedCategory(category);
-    new bootstrap.Modal(document.getElementById("viewModal")).show();
+    setShowViewModal(true);
   };
 
   const handleEdit = (category) => {
     setSelectedCategory(category);
     setEditCategory({ ...category });
-    new bootstrap.Modal(document.getElementById("editModal")).show();
+    setShowEditModal(true);
+  };
+
+  const confirmDelete = (category) => {
+    setCategoryToDelete(category);
+    setShowDeleteModal(true);
   };
 
   const handleInputChange = (e) => {
@@ -108,9 +90,8 @@ const Category = () => {
       const res = await axios.get(`http://localhost:8082/PureFoods/api/category/searchByName`, {
         params: { name: name.trim() }
       });
-
       if (res.data && (!excludeID || res.data.categoryID !== excludeID)) {
-        return true; // Đã tồn tại với ID khác
+        return true;
       }
       return false;
     } catch (err) {
@@ -124,7 +105,6 @@ const Category = () => {
     const trimmedName = editCategory.categoryName.trim();
     const trimmedDesc = editCategory.categoryDescription.trim();
 
-    // Validate cơ bản
     if (!trimmedName) {
       toast.warn("Tên danh mục không được để trống!");
       return;
@@ -135,7 +115,6 @@ const Category = () => {
       return;
     }
 
-    // Kiểm tra trùng tên (trừ chính nó)
     const isDuplicate = await checkCategoryNameExists(trimmedName, editCategory.categoryID);
     if (isDuplicate) {
       toast.error("Tên danh mục đã tồn tại!");
@@ -148,34 +127,33 @@ const Category = () => {
         categoryName: trimmedName,
         categoryDescription: trimmedDesc
       });
-      fetchCategories();
-      bootstrap.Modal.getInstance(document.getElementById("editModal")).hide();
+
+      // Cập nhật trực tiếp danh sách
+      setCategories(prev => prev.map(c =>
+        c.categoryID === editCategory.categoryID ? { ...editCategory, categoryName: trimmedName, categoryDescription: trimmedDesc } : c
+      ));
+
+      setShowEditModal(false);
       toast.success("Cập nhật thành công!");
     } catch (err) {
       toast.error("Lỗi cập nhật!");
     }
   };
 
-  const confirmDelete = (category) => {
-    setCategoryToDelete(category);
-    new bootstrap.Modal(document.getElementById("deleteModal")).show();
-  };
-
   const handleDelete = async () => {
     try {
       await axios.delete(`http://localhost:8082/PureFoods/api/category/delete/${categoryToDelete.categoryID}`);
 
-      // Cập nhật state categories mà không cần fetch lại từ server
       setCategories(prev => prev.filter(c => c.categoryID !== categoryToDelete.categoryID));
-
-      // Đóng modal & thông báo
-      bootstrap.Modal.getInstance(document.getElementById("deleteModal")).hide();
+      setShowDeleteModal(false);
       toast.success("Đã xoá danh mục!");
+
+      // Giảm trang nếu đang ở cuối mà bị rỗng
+      if ((currentPage - 1) * itemsPerPage >= categories.length - 1) {
+        setCurrentPage(prev => Math.max(prev - 1, 1));
+      }
     } catch (err) {
       toast.error("Xoá thất bại!");
-    }
-    if ((currentPage - 1) * itemsPerPage >= categories.length - 1) {
-      setCurrentPage(currentPage - 1);
     }
   };
 
@@ -202,7 +180,7 @@ const Category = () => {
                     </div>
 
                     <div className="table-responsive">
-                      <table className="table theme-table" id="category_table">
+                      <table className="table theme-table">
                         <thead>
                           <tr>
                             <th>ID</th>
@@ -221,42 +199,28 @@ const Category = () => {
                               <td>{c.isOrganic === 1 ? "Yes" : "No"}</td>
                               <td>
                                 <ul className="table-action-icons">
-                                  <li>
-                                    <a href="#" onClick={(e) => { e.preventDefault(); handleView(c); }}>
-                                      <i className="ri-eye-line"></i>
-                                    </a>
-                                  </li>
-                                  <li>
-                                    <a href="#" onClick={(e) => { e.preventDefault(); handleEdit(c); }}>
-                                      <i className="ri-pencil-line"></i>
-                                    </a>
-                                  </li>
-                                  <li>
-                                    <a href="#" onClick={(e) => { e.preventDefault(); confirmDelete(c); }}>
-                                      <i className="ri-delete-bin-line"></i>
-                                    </a>
-                                  </li>
+                                  <li><a href="#" onClick={(e) => { e.preventDefault(); handleView(c); }}><i className="ri-eye-line"></i></a></li>
+                                  <li><a href="#" onClick={(e) => { e.preventDefault(); handleEdit(c); }}><i className="ri-pencil-line"></i></a></li>
+                                  <li><a href="#" onClick={(e) => { e.preventDefault(); confirmDelete(c); }}><i className="ri-delete-bin-line"></i></a></li>
                                 </ul>
                               </td>
                             </tr>
                           ))}
                         </tbody>
                       </table>
+
+                      {/* Pagination */}
                       <div className="pagination-container d-flex justify-content-center mt-3">
                         <nav>
                           <ul className="pagination">
                             <li className={`page-item ${currentPage === 1 && "disabled"}`}>
                               <button className="page-link" onClick={() => setCurrentPage(currentPage - 1)}>Previous</button>
                             </li>
-
                             {[...Array(totalPages)].map((_, index) => (
                               <li key={index} className={`page-item ${currentPage === index + 1 && "active"}`}>
-                                <button className="page-link" onClick={() => setCurrentPage(index + 1)}>
-                                  {index + 1}
-                                </button>
+                                <button className="page-link" onClick={() => setCurrentPage(index + 1)}>{index + 1}</button>
                               </li>
                             ))}
-
                             <li className={`page-item ${currentPage === totalPages && "disabled"}`}>
                               <button className="page-link" onClick={() => setCurrentPage(currentPage + 1)}>Next</button>
                             </li>
@@ -265,76 +229,78 @@ const Category = () => {
                       </div>
                     </div>
 
-                    {/* VIEW MODAL */}
-                    <div className="modal fade" id="viewModal" tabIndex="-1">
-                      <div className="modal-dialog modal-dialog-centered">
-                        <div className="modal-content">
-                          <div className="modal-header">
-                            <h5 className="modal-title">Chi tiết loại sản phẩm</h5>
-                            <button type="button" className="btn-close" data-bs-dismiss="modal"></button>
-                          </div>
-                          <div className="modal-body">
-                            {selectedCategory && (
-                              <>
-                                <p><strong>ID:</strong> {selectedCategory.categoryID}</p>
-                                <p><strong>Tên:</strong> {selectedCategory.categoryName}</p>
-                                <p><strong>Mô tả:</strong> {selectedCategory.categoryDescription}</p>
-                                <p><strong>Là hữu cơ:</strong> {selectedCategory.isOrganic === 1 ? "Yes" : "No"}</p>
-                              </>
-                            )}
+                    {/* View Modal */}
+                    {showViewModal && selectedCategory && (
+                      <div className="modal fade show d-block" tabIndex="-1">
+                        <div className="modal-dialog modal-dialog-centered">
+                          <div className="modal-content">
+                            <div className="modal-header">
+                              <h5 className="modal-title">Chi tiết loại sản phẩm</h5>
+                              <button type="button" className="btn-close" onClick={() => setShowViewModal(false)}></button>
+                            </div>
+                            <div className="modal-body">
+                              <p><strong>ID:</strong> {selectedCategory.categoryID}</p>
+                              <p><strong>Tên:</strong> {selectedCategory.categoryName}</p>
+                              <p><strong>Mô tả:</strong> {selectedCategory.categoryDescription}</p>
+                              <p><strong>Là hữu cơ:</strong> {selectedCategory.isOrganic === 1 ? "Yes" : "No"}</p>
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
+                    )}
 
-                    {/* EDIT MODAL */}
-                    <div className="modal fade" id="editModal" tabIndex="-1">
-                      <div className="modal-dialog modal-dialog-centered">
-                        <div className="modal-content">
-                          <div className="modal-header">
-                            <h5 className="modal-title">Chỉnh sửa loại sản phẩm</h5>
-                            <button type="button" className="btn-close" data-bs-dismiss="modal"></button>
-                          </div>
-                          <div className="modal-body">
-                            <form>
-                              <div className="mb-3">
-                                <label className="form-label">Tên</label>
-                                <input type="text" className="form-control" name="categoryName" value={editCategory.categoryName} onChange={handleInputChange} />
-                              </div>
-                              <div className="mb-3">
-                                <label className="form-label">Mô tả</label>
-                                <textarea className="form-control" name="categoryDescription" value={editCategory.categoryDescription} onChange={handleInputChange}></textarea>
-                              </div>
-                              <div className="mb-3">
-                                <label className="form-label">Là hữu cơ</label>
-                                <input type="checkbox" name="isOrganic" checked={editCategory.isOrganic === 1} onChange={handleInputChange} />
-                              </div>
-                            </form>
-                          </div>
-                          <div className="modal-footer">
-                            <button className="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                            <button className="btn btn-primary" onClick={handleUpdateCategory}>Lưu lại</button>
+                    {/* Edit Modal */}
+                    {showEditModal && (
+                      <div className="modal fade show d-block" tabIndex="-1">
+                        <div className="modal-dialog modal-dialog-centered">
+                          <div className="modal-content">
+                            <div className="modal-header">
+                              <h5 className="modal-title">Chỉnh sửa loại sản phẩm</h5>
+                              <button type="button" className="btn-close" onClick={() => setShowEditModal(false)}></button>
+                            </div>
+                            <div className="modal-body">
+                              <form>
+                                <div className="mb-3">
+                                  <label className="form-label">Tên</label>
+                                  <input type="text" className="form-control" name="categoryName" value={editCategory.categoryName} onChange={handleInputChange} />
+                                </div>
+                                <div className="mb-3">
+                                  <label className="form-label">Mô tả</label>
+                                  <textarea className="form-control" name="categoryDescription" value={editCategory.categoryDescription} onChange={handleInputChange}></textarea>
+                                </div>
+                                <div className="mb-3 form-check">
+                                  <input type="checkbox" className="form-check-input" name="isOrganic" checked={editCategory.isOrganic === 1} onChange={handleInputChange} />
+                                  <label className="form-check-label">Là hữu cơ</label>
+                                </div>
+                              </form>
+                            </div>
+                            <div className="modal-footer">
+                              <button className="btn btn-secondary" onClick={() => setShowEditModal(false)}>Hủy</button>
+                              <button className="btn btn-primary" onClick={handleUpdateCategory}>Lưu lại</button>
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
+                    )}
 
-                    {/* DELETE MODAL */}
-                    <div className="modal fade" id="deleteModal" tabIndex="-1">
-                      <div className="modal-dialog modal-dialog-centered">
-                        <div className="modal-content">
-                          <div className="modal-header text-center">
-                            <h5 className="modal-title w-100">Xác nhận xóa</h5>
-                            <button type="button" className="btn-close" data-bs-dismiss="modal"></button>
-                          </div>
-                          <div className="modal-body text-center">
-                            <p>Bạn có chắc chắn muốn xóa loại sản phẩm này?</p>
-                            <button className="btn btn-danger m-2" onClick={handleDelete}>Xóa</button>
-                            <button className="btn btn-secondary m-2" data-bs-dismiss="modal">Hủy bỏ</button>
+                    {/* Delete Modal */}
+                    {showDeleteModal && (
+                      <div className="modal fade show d-block" tabIndex="-1">
+                        <div className="modal-dialog modal-dialog-centered">
+                          <div className="modal-content">
+                            <div className="modal-header text-center">
+                              <h5 className="modal-title w-100">Xác nhận xóa</h5>
+                              <button type="button" className="btn-close" onClick={() => setShowDeleteModal(false)}></button>
+                            </div>
+                            <div className="modal-body text-center">
+                              <p>Bạn có chắc chắn muốn xóa loại sản phẩm này?</p>
+                              <button className="btn btn-danger m-2" onClick={handleDelete}>Xóa</button>
+                              <button className="btn btn-secondary m-2" onClick={() => setShowDeleteModal(false)}>Hủy bỏ</button>
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
+                    )}
 
                   </div>
                 </div>

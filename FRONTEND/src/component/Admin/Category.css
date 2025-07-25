@@ -1,16 +1,83 @@
-.icon-button {
-  background: none;
+/* Category Table Style */
+.card-table {
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.title-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.theme-table th,
+.theme-table td {
+  text-align: left;
+  vertical-align: middle;
+}
+
+.theme-table th {
+  background-color: #f8f9fa;
+  color: #333;
+}
+
+/* Pagination */
+.pagination .page-link {
+  color: #009688;
+  border: 1px solid #dee2e6;
+}
+
+.pagination .page-item.active .page-link {
+  background-color: #009688;
+  color: #fff;
+  border-color: #009688;
+}
+
+.pagination .page-link:hover {
+  background-color: #00796b;
+  color: white;
+}
+
+/* Button Styles */
+.btn-solid {
+  background-color: #009688;
+  color: white;
   border: none;
-  padding: 0;
-  cursor: pointer;
-  color: #6366f1;
-  font-size: 18px;
+  padding: 6px 14px;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
 }
 
-.icon-button:hover {
-  color: #4f46e5;
+.btn-solid:hover {
+  background-color: #00796b;
 }
 
+/* Modal Backdrop */
+.modal-backdrop.show {
+  opacity: 0.3 !important;
+  background-color: rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Modal Styling */
+.modal-content {
+  border-radius: 8px;
+  box-shadow: 0 5px 25px rgba(0, 0, 0, 0.3);
+  background-color: #fff;
+}
+
+.modal-header {
+  border-bottom: 1px solid #dee2e6;
+}
+
+.modal-title {
+  font-weight: 600;
+}
+
+.modal-footer button {
+  min-width: 100px;
+}
+
+/* Action Icons */
 .table-action-icons {
   display: flex;
   gap: 10px;
@@ -19,29 +86,28 @@
   margin: 0;
 }
 
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
-  z-index: 1050;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-.modal-box {
-  background: white;
-  padding: 20px;
-  border-radius: 10px;
-  width: 500px;
-  max-width: 90%;
-  position: relative;
-}
-.modal-box .btn-close {
-  position: absolute;
-  right: 15px;
-  top: 15px;
+.table-action-icons li {
+  display: inline-block;
 }
 
+.table-action-icons i {
+  font-size: 1.2rem;
+  color: #555;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.table-action-icons i:hover {
+  color: #0d6efd;
+}
+
+/* Responsive table tweaks */
+.table-responsive {
+  overflow-x: auto;
+}
+
+/* Checkbox styling */
+.form-check-input:checked {
+  background-color: #009688;
+  border-color: #009688;
+}
