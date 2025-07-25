@@ -106,17 +106,17 @@ const AddNewCategory = () => {
                 <div className="card">
                   <div className="card-body">
                     <div className="card-header-2">
-                      <h5>Add New Category</h5>
+                      <h5>Thêm mới loại sản phẩm</h5>
                     </div>
                     <form className="theme-form theme-form-2 mega-form" onSubmit={handleSubmit}>
                       <div className="mb-4 row align-items-center">
-                        <label className="form-label-title col-sm-3 mb-0">Category Name</label>
+                        <label className="form-label-title col-sm-3 mb-0">Tên loại sản phẩm</label>
                         <div className="col-sm-9">
                           <input
                             className="form-control"
                             type="text"
                             name="categoryName"
-                            placeholder="Category Name"
+                            placeholder="Tên loại sản phẩm"
                             value={form.categoryName}
                             onChange={handleChange}
                             required
@@ -124,7 +124,7 @@ const AddNewCategory = () => {
                         </div>
                       </div>
                       <div className="mb-4 row align-items-center">
-                        <label className="form-label-title col-sm-3 mb-0">Description</label>
+                        <label className="form-label-title col-sm-3 mb-0">Mô tả</label>
                         <div className="col-sm-9">
                           <textarea
                             className="form-control"
@@ -136,18 +136,18 @@ const AddNewCategory = () => {
                         </div>
                       </div>
                       <div className="mb-4 row align-items-center">
-                        <label className="form-label-title col-sm-3 mb-0">Is Organic</label>
+                        <label className="form-label-title col-sm-3 mb-0">Là hữu cơ</label>
                         <div className="col-sm-9">
                           <input
                             type="checkbox"
                             name="isOrganic"
                             checked={form.isOrganic === 1}
                             onChange={handleChange}
-                          /> Yes
+                          /> Đúng
                         </div>
                       </div>
                       <div className="card-submit-button">
-                        <button className="btn btn-animation ms-auto" type="submit">Submit</button>
+                        <button className="btn btn-animation ms-auto" type="submit">Tạo mới</button>
                       </div>
                     </form>
                   </div>

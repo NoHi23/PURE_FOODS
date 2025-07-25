@@ -209,7 +209,7 @@ const Product = () => {
       const res = await axios.get("http://localhost:8082/PureFoods/api/product/getAll");
       setProducts(res.data.listProduct);
 
-      toast.success("Xóa sản phẩm thành công!");
+      toast.success("Cấm sản phẩm thành công!");
     } catch (err) {
       const errorMessage =
         err.response && err.response.data && err.response.data.message
@@ -247,14 +247,14 @@ const Product = () => {
                   <div className="card card-table">
                     <div className="card-body">
                       <div class="title-header option-title d-sm-flex d-block">
-                        <h5>Products List</h5>
+                        <h5>Danh sách sản phẩm</h5>
                         <div class="right-options">
                           <ul>
                             <li className="mt-5" >
                               <ProductActions setProducts={setProducts} products={products} />
                             </li>
                             <li>
-                              <Link to={'/admin-add-new-product'} className="btn btn-solid">Add Product</Link>
+                              <Link to={'/admin-add-new-product'} className="btn btn-solid">Thêm mới sản phẩm</Link>
                             </li>
                           </ul>
                         </div>
@@ -264,16 +264,16 @@ const Product = () => {
                           <table className="table all-package theme-table table-product" id="table_id">
                             <thead>
                               <tr>
-                                <th>Product Image</th>
-                                <th>Product Name</th>
-                                <th>Category</th>
-                                <th>Supplier</th>
-                                <th>Current Qty</th>
-                                <th>Price</th>
-                                <th>Discount</th>
-                                <th>Price After Discount</th>
-                                <th>Status</th>
-                                <th>Option</th>
+                                <th>Hình ảnh sản phẩm</th>
+                                <th>Tên sản phẩm</th>
+                                <th>Danh mục</th>
+                                <th>Nhà cung cấp</th>
+                                <th>Số lượng hiện có</th>
+                                <th>Giá</th>
+                                <th>Giảm giá</th>
+                                <th>Giá sau giảm</th>
+                                <th>Trạng thái</th>
+                                <th>Tùy chọn</th>
                               </tr>
                             </thead>
                             <tbody>
@@ -299,7 +299,7 @@ const Product = () => {
 
 
                                   <td className={p.status === 1 ? "status-danger" : "status-success"}>
-                                    <span>{p.status === 1 ? "Private" : "Public"}</span>
+                                    <span>{p.status === 1 ? "Riêng tư" : "Công khai"}</span>
                                   </td>
                                   <td>
                                     <ul>
@@ -363,7 +363,7 @@ const Product = () => {
               <div className="modal-dialog modal-dialog-centered modal-lg">
                 <div className="modal-content">
                   <div className="modal-header">
-                    <h5 className="modal-title" style={{ fontWeight: 600 }}>Product Detail</h5>
+                    <h5 className="modal-title" style={{ fontWeight: 600 }}>Chi tiết sản phẩm</h5>
                     <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                   </div>
                   <div className="modal-body">
@@ -374,15 +374,15 @@ const Product = () => {
                             <img src={selectedProduct.imageURL} className="img-fluid" alt="Product" />
                           </div>
                           <div className="col-md-8">
-                            <h4 style={{ fontWeight: 700 }}>Product Name: {selectedProduct.productName}</h4>
-                            <p><strong>Category:</strong> {categoryNames[selectedProduct.categoryId]}</p>
-                            <p><strong>Supplier:</strong> {suppliersName[selectedProduct.supplierId]}</p>
-                            <p><strong>Stock Quantity:</strong> {selectedProduct.stockQuantity}</p>
-                            <p><strong>Price:</strong> ${selectedProduct.price}</p>
-                            <p><strong>Discount:</strong> {selectedProduct.discountPercent || 0}%</p>
-                            <p><strong>Price After Discount:</strong> ${selectedProduct.salePrice != null ? selectedProduct.salePrice.toFixed(2) : "0.00"}</p>
-                            <p><strong>Description:</strong> {selectedProduct.description}</p>
-                            <p><strong>Trạng thái:</strong> {selectedProduct.status === 1 ? "Private" : "Public"}</p>
+                            <h4 style={{ fontWeight: 700 }}>Tên sản phẩm: {selectedProduct.productName}</h4>
+                            <p><strong>Loại:</strong> {categoryNames[selectedProduct.categoryId]}</p>
+                            <p><strong>Nhà cung cấp:</strong> {suppliersName[selectedProduct.supplierId]}</p>
+                            <p><strong>Số lượng:</strong> {selectedProduct.stockQuantity}</p>
+                            <p><strong>Giá:</strong> ${selectedProduct.price}</p>
+                            <p><strong>Phần trăm giảm giá:</strong> {selectedProduct.discountPercent || 0}%</p>
+                            <p><strong>Giá sau khi giảm:</strong> ${selectedProduct.salePrice != null ? selectedProduct.salePrice.toFixed(2) : "0.00"}</p>
+                            <p><strong>Mô tả:</strong> {selectedProduct.description}</p>
+                            <p><strong>Trạng thái:</strong> {selectedProduct.status === 1 ? "Riêng tu" : "Công khai"}</p>
                           </div>
                         </div>
                       </div>
@@ -541,26 +541,25 @@ const Product = () => {
         <div className="modal-dialog modal-dialog-centered">
           <div className="modal-content">
             <div className="modal-header d-block text-center">
-              <h5 className="modal-title w-100" id="exampleModalLabel22">Are You Sure ?</h5>
+              <h5 className="modal-title w-100" id="exampleModalLabel22">Bạn có chắc chắn không?</h5>
               <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close">
                 <i className="fas fa-times"></i>
               </button>
             </div>
             <div className="modal-body">
               <div className="remove-box">
-                <p>The permission for the use/group, preview is inherited from the object, object will create a
-                  new permission for this object</p>
+                <p>Bạn có chắc chắn muốn cấm sản phẩm này được không khai? Nó sẽ ảnh hưởng ít nhiều đến hệ thống của bạn!</p>
               </div>
             </div>
             <div className="modal-footer">
-              <button type="button" className="btn btn-animation btn-md fw-bold" data-bs-dismiss="modal">No</button>
+              <button type="button" className="btn btn-animation btn-md fw-bold" data-bs-dismiss="modal">Hủy bỏ</button>
               <button
                 type="button"
                 className="btn btn-animation btn-md fw-bold"
                 data-bs-dismiss="modal"
                 onClick={handleDeleteProduct}
               >
-                Yes
+                Cấm
               </button>
             </div>
           </div>

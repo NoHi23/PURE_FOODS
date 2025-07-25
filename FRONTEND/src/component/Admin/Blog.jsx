@@ -148,17 +148,17 @@ const Blog = () => {
                 <div className="card">
                   <div className="card-body">
                     <div className="title-header option-title d-sm-flex d-block">
-                      <h5>Blog List</h5>
+                      <h5>Danh sách Blog</h5>
                       <div className="right-options">
                         <ul>
                           <li>
-                            <Link to="/admin-add-new-blog" className="btn btn-animation">Add Blog</Link>
+                            <Link to="/admin-add-new-blog" className="btn btn-animation">Thêm mới Blog</Link>
                           </li>
                         </ul>
                       </div>
                     </div>
                     {loading ? (
-                      <p>Loading...</p>
+                      <p>Đang tải...</p>
                     ) : blogs.length === 0 ? (
                       <p>Không có bài viết nào để hiển thị.</p>
                     ) : (
@@ -167,11 +167,11 @@ const Blog = () => {
                           <thead>
                             <tr>
                               <th>ID</th>
-                              <th>Title</th>
-                              <th>Author ID</th>
-                              <th>Created At</th>
-                              <th>Status</th>
-                              <th>Actions</th>
+                              <th>Tiêu đề</th>
+                              <th>ID tác giả</th>
+                              <th>Ngày tạo</th>
+                              <th>Trạng thái</th>
+                              <th>Tùy chọn</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -183,7 +183,7 @@ const Blog = () => {
                                   <td>{b.userID}</td>
                                   <td>{new Date(b.createdAt).toLocaleDateString()}</td>
                                   <td className={b.status === 1 ? 'status-success' : 'status-danger'}>
-                                    {b.status === 1 ? 'Active' : 'Inactive'}
+                                    {b.status === 1 ? 'Hoạt động' : 'Không hoạt động'}
                                   </td>
                                   <td>
                                     <ul className="table-action-icons">
@@ -219,18 +219,18 @@ const Blog = () => {
                       <div className="modal-dialog modal-dialog-centered">
                         <div className="modal-content">
                           <div className="modal-header">
-                            <h5 className="modal-title">Blog Detail</h5>
+                            <h5 className="modal-title">Chi tiết blog</h5>
                             <button type="button" className="btn-close" data-bs-dismiss="modal"></button>
                           </div>
                           <div className="modal-body">
                             {selectedBlog && (
                               <>
                                 <p><strong>ID:</strong> {selectedBlog.blogID}</p>
-                                <p><strong>Title:</strong> {selectedBlog.title}</p>
-                                <p><strong>Content:</strong> {selectedBlog.content}</p>
-                                <p><strong>Author ID:</strong> {selectedBlog.userID}</p>
-                                <p><strong>Created At:</strong> {new Date(selectedBlog.createdAt).toLocaleDateString()}</p>
-                                <p><strong>Status:</strong> {selectedBlog.status === 1 ? 'Active' : 'Inactive'}</p>
+                                <p><strong>Tiêu đề:</strong> {selectedBlog.title}</p>
+                                <p><strong>Nội dung:</strong> {selectedBlog.content}</p>
+                                <p><strong>ID tác giả:</strong> {selectedBlog.userID}</p>
+                                <p><strong>Ngày tạo:</strong> {new Date(selectedBlog.createdAt).toLocaleDateString()}</p>
+                                <p><strong>Trạng thái:</strong> {selectedBlog.status === 1 ? 'Hoạt động' : 'Không hoạt động'}</p>
                               </>
                             )}
                           </div>
@@ -241,13 +241,13 @@ const Blog = () => {
                       <div className="modal-dialog modal-dialog-centered">
                         <div className="modal-content">
                           <div className="modal-header">
-                            <h5 className="modal-title">Edit Blog</h5>
+                            <h5 className="modal-title">Chỉnh sửa Blog</h5>
                             <button type="button" className="btn-close" data-bs-dismiss="modal"></button>
                           </div>
                           <div className="modal-body">
                             <form onSubmit={(e) => { e.preventDefault(); handleUpdateBlog(); }}>
                               <div className="mb-4 row align-items-center">
-                                <label className="col-lg-2 col-md-3 mb-0">Title</label>
+                                <label className="col-lg-2 col-md-3 mb-0">Tiêu đề</label>
                                 <div className="col-md-9 col-lg-10">
                                   <input
                                     type="text"
@@ -260,7 +260,7 @@ const Blog = () => {
                                 </div>
                               </div>
                               <div className="mb-4 row align-items-center">
-                                <label className="col-lg-2 col-md-3 mb-0">Content</label>
+                                <label className="col-lg-2 col-md-3 mb-0">Nội dung</label>
                                 <div className="col-md-9 col-lg-10">
                                   <textarea
                                     className="form-control"
@@ -273,7 +273,7 @@ const Blog = () => {
                                 </div>
                               </div>
                               <div className="mb-4 row align-items-center">
-                                <label className="col-lg-2 col-md-3 mb-0">Author ID</label>
+                                <label className="col-lg-2 col-md-3 mb-0">ID tác giả</label>
                                 <div className="col-md-9 col-lg-10">
                                   <input
                                     type="number"
@@ -286,7 +286,7 @@ const Blog = () => {
                                 </div>
                               </div>
                               <div className="mb-4 row align-items-center">
-                                <label className="col-lg-2 col-md-3 mb-0">Active</label>
+                                <label className="col-lg-2 col-md-3 mb-0">Hoạt động</label>
                                 <div className="col-md-9 col-lg-10 d-flex align-items-center">
                                   <label className="switch">
                                     <input
@@ -300,8 +300,8 @@ const Blog = () => {
                                 </div>
                               </div>
                               <div className="card-submit-button">
-                                <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                <button type="submit" className="btn btn-animation ms-auto">Save Changes</button>
+                                <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                <button type="submit" className="btn btn-animation ms-auto">Lưu thay đổi</button>
                               </div>
                             </form>
                           </div>
@@ -312,13 +312,13 @@ const Blog = () => {
                       <div className="modal-dialog modal-dialog-centered">
                         <div className="modal-content">
                           <div className="modal-header text-center">
-                            <h5 className="modal-title w-100">Confirm Delete</h5>
+                            <h5 className="modal-title w-100">Xác nhận xóa</h5>
                             <button type="button" className="btn-close" data-bs-dismiss="modal"></button>
                           </div>
                           <div className="modal-body text-center">
-                            <p>Are you sure you want to delete this blog?</p>
-                            <button className="btn btn-danger m-2" onClick={handleDelete}>Yes</button>
-                            <button className="btn btn-secondary m-2" data-bs-dismiss="modal">No</button>
+                            <p>Bạn có chắc chắn muốn xóa Blog này?</p>
+                            <button className="btn btn-danger m-2" onClick={handleDelete}>Xóa</button>
+                            <button className="btn btn-secondary m-2" data-bs-dismiss="modal">Hủy</button>
                           </div>
                         </div>
                       </div>

@@ -157,7 +157,7 @@ export default function Header() {
             <div className="col-xxl-3 d-xxl-block d-none">
               <div className="top-left-header">
                 <i className="iconly-Location icli text-white"></i>
-                <span className="text-white">KM29 Thang Long Boulevard Thach Hoa Commune 10000 Hà Nội</span>
+                <span className="text-white">KM29 Đại lộ Thăng Long Xã Thạch Hòa Hà Nội</span>
               </div>
             </div>
 
@@ -186,7 +186,7 @@ export default function Header() {
             <div className="col-lg-3">
               <ul className="about-list right-nav-about">
                 <li className="right-nav-list">
-                  <div className="dropdown theme-form-select">
+                  {/* <div className="dropdown theme-form-select">
                     <button
                       className="btn dropdown-toggle"
                       type="button"
@@ -232,10 +232,10 @@ export default function Header() {
                         </a>
                       </li>
                     </ul>
-                  </div>
+                  </div> */}
                 </li>
                 <li className="right-nav-list">
-                  <div className="dropdown theme-form-select">
+                  {/* <div className="dropdown theme-form-select">
                     <button
                       className="btn dropdown-toggle"
                       type="button"
@@ -261,7 +261,7 @@ export default function Header() {
                         </a>
                       </li>
                     </ul>
-                  </div>
+                  </div> */}
                 </li>
               </ul>
             </div>
@@ -288,7 +288,7 @@ export default function Header() {
                   <img src="../assets/images/logo/1.png" className="img-fluid blur-up lazyload" alt="" />
                 </a>
 
-                <div className="middle-box">
+                {/* <div className="middle-box">
                   <div className="search-box">
                     <div className="input-group">
                       <input type="search" className="form-control" placeholder="Nhập thứ bạn muốn tìm kiếm" />
@@ -297,7 +297,7 @@ export default function Header() {
                       </button>
                     </div>
                   </div>
-                </div>
+                </div> */}
 
                 <div className="rightside-box">
                   <div className="search-full">
@@ -327,7 +327,7 @@ export default function Header() {
                         <button type="button" className="btn p-0 position-relative header-wishlist">
                           <FiShoppingCart size={20} />
                           <span className="position-absolute top-0 start-100 translate-middle badge"> {cartCount ?? 0}
-                            <span className="visually-hidden">unread messages</span>
+                            <span className="visually-hidden">tin nhắn chưa đọc</span>
                           </span>
                         </button>
 
@@ -389,7 +389,7 @@ export default function Header() {
                           </ul>
 
                           <div className="price-box">
-                            <h5>Total :</h5>
+                            <h5>Tổng :</h5>
                             <h4 className="theme-color fw-bold">
                               {cartItems
                                 .reduce((sum, i) => sum + i.total, 0)
@@ -401,7 +401,7 @@ export default function Header() {
                           </div>
 
                           <div className="button-group justify-content-center">
-                            <a href="/cart-detail" className="btn btn-sm cart-button">View Cart</a>
+                            <a href="/cart-detail" className="btn btn-sm cart-button">Xem giỏ hàng</a>
                           </div>
                         </div>
 
@@ -454,7 +454,7 @@ export default function Header() {
 
                           <div className="button-group d-flex justify-content-center mt-2">
                             <Link to={'/wishlist'} className="btn btn-sm cart-button theme-bg-color text-white">
-                              Detail Wishlist
+                              Chi tiết danh sách yêu thích
                             </Link>
                           </div>
                         </div>
@@ -473,7 +473,7 @@ export default function Header() {
                         <ul className="notification-dropdown onhover-show-div">
                           <li>
                             <i className="ri-notification-line"></i>
-                            <h6 className="f-18 mb-0" style={{ marginLeft: "5px" }}>Notitications</h6>
+                            <h6 className="f-18 mb-0" style={{ marginLeft: "5px" }}>Thông báo</h6>
                           </li>
                           {notifications.slice(0, 5).map(n => (
                             <li key={n.id} onClick={() => handleMarkRead(n.id)}>
@@ -498,16 +498,16 @@ export default function Header() {
                             </li>
                           ))}
                           {notifications.length === 0 && history.length === 0 && (
-                            <li><p>No notification.</p></li>
+                            <li><p>Không có thông báo nào.</p></li>
                           )}
                           <li className="button-group d-flex justify-content-center mt-2">
                             <a className="btn btn-primary" onClick={handleMarkAllRead}>
-                              Check all notification
+                              Đánh giá tất cả là đã đọc
                             </a>
                           </li>
                           <li className="button-group d-flex justify-content-center mt-2">
                             <a href="/notifications" className="btn btn-primary">
-                              View all notifications
+                              Xem tất cả thông báo
                             </a>
                           </li>
                         </ul>
@@ -519,7 +519,7 @@ export default function Header() {
                         <div className="delivery-icon d-flex" style={{ alignItems: "center" }}>
                           <i data-feather="user"></i>
                           <div style={{ marginLeft: "3px" }}>
-                            <h6>Hello,</h6>
+                            <h6>Xin chào,</h6>
                             <h5>{user?.fullName || "My Account"}</h5>
                           </div>
                         </div>
@@ -532,17 +532,17 @@ export default function Header() {
                           {user ? (
                             <>
                               <li className="product-box-contain">
-                                <a href="/customer-profile-update">Profile Setting</a>
+                                <a href="/customer-profile-update">Thiết lập hồ sơ</a>
                               </li>
                               <li className="product-box-contain">
-                                <a href="/my-coupons">My Coupons</a>
+                                <a href="/my-coupons">Mã giảm giá của tôi</a>
                               </li>
                               <li className="product-box-contain">
-                                <a href="/forgot">Forgot Password</a>
+                                <a href="/forgot">Quên mật khẩu</a>
                               </li>
                               <li className="product-box-contain">
                                 <a href="#" onClick={handleLogout}>
-                                  Logout
+                                  Đăng xuất
                                 </a>
                               </li>
                             </>

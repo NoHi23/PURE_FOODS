@@ -210,8 +210,8 @@ const LoginPage = () => {
             <div className="col-xl-5 col-lg-6 me-auto">
               <div className="log-in-box">
                 <div className="log-in-title">
-                  <h3>Welcome To Clean Food Shop</h3>
-                  <h4>Log In Your Account</h4>
+                  <h3>Chào mừng đến với Clean Food Shop</h3>
+                  <h4>Đăng nhập với tài khoản của bạn</h4>
                 </div>
                 <div className="input-box">
                   <form className="row g-4" onSubmit={handleLogin}>
@@ -221,12 +221,12 @@ const LoginPage = () => {
                           type="email"
                           className="form-control"
                           id="email"
-                          placeholder="Email Address"
+                          placeholder="Email"
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
                           required
                         />
-                        <label htmlFor="email">Email Address</label>
+                        <label htmlFor="email">Email</label>
                       </div>
                     </div>
                     <div className="col-12">
@@ -240,7 +240,7 @@ const LoginPage = () => {
                           onChange={(e) => setPassword(e.target.value)}
                           required
                         />
-                        <label htmlFor="password">Password</label>
+                        <label htmlFor="password">Mật khẩu</label>
                       </div>
                     </div>
                     <div className="col-12">
@@ -254,26 +254,26 @@ const LoginPage = () => {
                             onChange={(e) => setRemember(e.target.checked)}
                           />
                           <label className="form-check-label" htmlFor="flexCheckDefault">
-                            Remember me
+                            Ghi nhớ tôi
                           </label>
                         </div>
                         <Link to={"/forgot"} className="forgot-password" style={{ textDecoration: "none", color: "#0DA487" }}>
-                          Forgot Password?
+                          Quên mật khẩu?
                         </Link>
                       </div>
                     </div>
                     <div className="col-12">
-                      <button type="submit" className="btn btn-animation w-100 justify-content-center" style={{ backgroundColor: "#0DA487"}}>
-                        Log In
+                      <button type="submit" className="btn btn-animation w-100 justify-content-center" style={{ backgroundColor: "#0DA487" }}>
+                        Đăng Nhập
                       </button>
                       <h5 className="new-page mt-3 text-center" style={{ fontWeight: "normal", fontSize: "18px" }}>
-                        Don't have an account ? <a href="/signup" style={{color:"#0DA487", textDecoration:"none"}}>Create an account</a>
+                        Không có tài khoản? <a href="/signup" style={{ color: "#0DA487", textDecoration: "none" }}>Đăng ký</a>
                       </h5>
                     </div>
                   </form>
                 </div>
                 <div className="other-log-in">
-                  <h6>or</h6>
+                  <h6>hoặc</h6>
                 </div>
 
                 <div className="log-in-button">

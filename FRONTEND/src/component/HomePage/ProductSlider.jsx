@@ -326,16 +326,16 @@ const ProductSlider = ({ products, handleViewProduct, userId }) => {
                     <StarRating rating={avg} />
                     <h6 className="theme-color">
                       {product?.stockQuantity === 0
-                        ? 'Out of Stock'
-                        : `${product?.stockQuantity} In Stock`}
+                        ? 'Hết hàng'
+                        : `${product?.stockQuantity} trong kho`}
                     </h6>                  </div>
-                    
+
                   <div className="add-to-cart-box">
                     <button
                       className="btn btn-add-cart addcart-button"
                       onClick={() => handleAddToCart(product)}
                     >
-                      Add
+                      Thêm
                       <span className="add-icon">
                         <i className="fa-solid fa-plus"></i>
                       </span>
