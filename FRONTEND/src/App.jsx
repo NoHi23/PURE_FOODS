@@ -41,7 +41,7 @@ import AddNewTax from './component/Admin/AddNewTax';
 import Blog from './component/Admin/Blog';
 import AddNewBlog from './component/Admin/AddNewBlog';
 import ProductReview from './component/AdminDashboard/ProductReview';
-
+import BlogList from './component/Blog/BlogList';
 //import CustomerBlog from './component/CustomerBlog';
 //import BlogDetail from './component/BlogDetail';
 import DashboardCategory from './component/ShopLeftSidebar/DashboardCategory';
@@ -99,7 +99,7 @@ function AppContent() {
         <Route path="/forgot" element={<Forgot />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/verify-otp" element={<VerifyOtp />} />
-
+        <Route path="/blog-list" element={<BlogList />} />
         <Route path="/admin-dashboard" element={
           <PrivateRoute allowedRoles={1}>
             <AdminDashboard />

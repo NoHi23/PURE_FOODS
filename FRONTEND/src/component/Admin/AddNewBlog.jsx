@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import './AddNewBlog.css';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
@@ -84,11 +83,11 @@ const AddNewBlog = () => {
                     <div className="card">
                       <div className="card-body">
                         <div className="title-header option-title">
-                          <h5>Add New Blog</h5>
+                          <h5>Thêm mới bài viết</h5>
                         </div>
                         <form className="theme-form theme-form-2 mega-form" onSubmit={handleSubmit}>
                           <div className="mb-4 row align-items-center">
-                            <label className="col-lg-2 col-md-3 mb-0">Title</label>
+                            <label className="col-lg-2 col-md-3 mb-0" style={{ fontWeight: 600 }}>Tiêu đề</label>
                             <div className="col-md-9 col-lg-10">
                               <input
                                 className="form-control"
@@ -101,7 +100,7 @@ const AddNewBlog = () => {
                             </div>
                           </div>
                           <div className="mb-4 row align-items-center">
-                            <label className="col-lg-2 col-md-3 mb-0">Content</label>
+                            <label className="col-lg-2 col-md-3 mb-0" style={{ fontWeight: 600 }}>Nội dung</label>
                             <div className="col-md-9 col-lg-10">
                               <textarea
                                 className="form-control"
@@ -114,7 +113,7 @@ const AddNewBlog = () => {
                             </div>
                           </div>
                           <div className="mb-4 row align-items-center">
-                            <label className="col-lg-2 col-md-3 mb-0">Author ID</label>
+                            <label className="col-lg-2 col-md-3 mb-0" style={{ fontWeight: 600 }}>ID tác giả</label>
                             <div className="col-md-9 col-lg-10">
                               <input
                                 className="form-control"
@@ -127,7 +126,7 @@ const AddNewBlog = () => {
                             </div>
                           </div>
                           <div className="mb-4 row align-items-center">
-                            <label className="col-lg-2 col-md-3 mb-0">Active</label>
+                            <label className="col-lg-2 col-md-3 mb-0" style={{ fontWeight: 600 }}>Hoạt động</label>
                             <div className="col-md-9 col-lg-10 d-flex align-items-center">
                               <label className="switch">
                                 <input
@@ -141,7 +140,7 @@ const AddNewBlog = () => {
                             </div>
                           </div>
                           <div className="card-submit-button">
-                            <button className="btn btn-animation ms-auto" type="submit">Submit</button>
+                            <button className="btn btn-animation ms-auto" type="submit">Thêm mới</button>
                           </div>
                         </form>
                       </div>
