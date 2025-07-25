@@ -268,7 +268,7 @@ const MyOrders = () => {
         </div>
       </section>
 
-      <Modal show={showModal} onHide={closeModal} size="lg" centered>
+      <Modal  show={showModal} onHide={closeModal} size="xl" centered>
         <Modal.Header closeButton>
           <Modal.Title>Chi tiết đơn hàng #00{modalOrderId}</Modal.Title>
         </Modal.Header>

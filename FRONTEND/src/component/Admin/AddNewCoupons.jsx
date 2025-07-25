@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react';
+import './jquery.dataTables.js'
+import './custom-data-table.js'
 import './AddNewCoupons.css';
 import axios from 'axios';
 import { toast } from 'react-toastify';
