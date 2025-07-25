@@ -17,13 +17,13 @@ const SideBar = () => {
           <div className='logoSide'>
             <div className="logo-wrapper logo-wrapper-center">
               <Link to={'/admin-dashboard'}>
-                <img className="img-fluid for-white" src="../back-end/assets/images/logo/full-white.png" alt="logo" />
+                <img className="img-fluid for-white" src="/assets/images/logo/1.png" alt="logo" />
               </Link>
             </div>
             <div className="logo-icon-wrapper">
               <Link to={'/admin-dashboard'}>
-                <img className="img-fluid main-logo main-white" src="../back-end/assets/images/logo/logo.png" alt="logo" />
-                <img className="img-fluid main-logo main-dark" src="../back-end/assets/images/logo/logo-white.png"
+                <img className="img-fluid main-logo main-white" src="/assets/images/logo/1.png" alt="logo" />
+                <img className="img-fluid main-logo main-dark" src="/assets/images/logo/1.png"
                   alt="logo" />
               </Link>
             </div>
@@ -131,12 +131,6 @@ const SideBar = () => {
                   <li>
                     <Link to={'/admin-order'}>Order List</Link>
                   </li>
-                  <li>
-                    <Link to={'/admin-order-detail/:id'}>Order Detail</Link>
-                  </li>
-                  <li>
-                    <Link to={'/admin-order-tracking/:id'}>Order Tracking</Link>
-                  </li>
                 </ul>
               </li>
               <li className="sidebar-list">
@@ -182,15 +176,13 @@ const SideBar = () => {
                 </ul>
               </li>
 
-
-
-
               <li className="sidebar-list">
-                <a className="sidebar-link sidebar-title link-nav" href="product-review.html">
-                  <i className="ri-star-line"></i>
-                  <span>Product Review</span>
-                </a>
-              </li>
+  <Link to="/admin-product-review" className="sidebar-link sidebar-title link-nav">
+    <i className="ri-star-line"></i>
+    <span>Product Review</span>
+  </Link>
+</li>
+
 
               <li className="sidebar-list">
                 <a className="sidebar-link sidebar-title link-nav" href="support-ticket.html">

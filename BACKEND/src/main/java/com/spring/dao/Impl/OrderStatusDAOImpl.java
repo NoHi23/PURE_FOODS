@@ -2,24 +2,20 @@ package com.spring.dao.Impl;
 
 import com.spring.dao.OrderStatusDAO;
 import com.spring.entity.OrderStatus;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
-import jakarta.transaction.Transactional;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
-import java.util.List;
 
 @Repository
-@Transactional
 public class OrderStatusDAOImpl implements OrderStatusDAO {
 
-    @PersistenceContext
-    private EntityManager entityManager;
+    @Autowired
+    private SessionFactory sessionFactory;
 
-    public List<OrderStatus> findAll() {
-        return entityManager.createQuery("FROM OrderStatus", OrderStatus.class).getResultList();
-    }
-
-    public OrderStatus findById(Integer id) {
-        return entityManager.find(OrderStatus.class, id);
+    @Override
+    public OrderStatus getOrderStatusById(int statusID) {
+        Session session = sessionFactory.getCurrentSession();
+        return session.get(OrderStatus.class, statusID);
     }
 }

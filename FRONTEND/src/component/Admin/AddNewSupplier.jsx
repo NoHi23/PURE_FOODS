@@ -14,7 +14,7 @@ const AddNewSupplier = () => {
     phone: '',
     email: '',
     address: '',
-    organicCertification: '',
+    organicCertification: 0, // 0 = No, 1 = Yes
     certificationExpiry: '',
     status: 1,
   });
@@ -45,15 +45,85 @@ const AddNewSupplier = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validateForm()) return;
+
     try {
-      await axios.post("http://localhost:8082/PureFoods/api/supplier/create", form);
-      toast.success("Thêm nhà cung cấp thành công!");
-      navigate('/admin-supplier');
+      // Kiểm tra tên nhà cung cấp đã tồn tại chưa
+      const res = await axios.get("http://localhost:8082/PureFoods/api/supplier/searchByName", {
+        params: { name: form.supplierName.trim() }
+      });
+
+      if (res.status === 200) {
+        toast.error("Nhà cung cấp này đã tồn tại!");
+        return;
+      }
     } catch (error) {
-      toast.error("Lỗi khi thêm nhà cung cấp!");
-      console.error(error);
+      if (error.response && error.response.status === 404) {
+        //  Tên chưa tồn tại -> tiếp tục tạo
+        try {
+          await axios.post("http://localhost:8082/PureFoods/api/supplier/create", form);
+          toast.success("Thêm nhà cung cấp thành công!");
+          //navigate('/admin-supplier');
+        } catch (err) {
+          toast.error("Lỗi khi thêm nhà cung cấp!");
+          console.error(err);
+        }
+      } else {
+        toast.error("Lỗi khi kiểm tra tên nhà cung cấp!");
+        console.error(error);
+      }
     }
   };
+
+
+  const validateForm = () => {
+    if (!form.supplierName.trim()) {
+      toast.warn("Tên nhà cung cấp không được để trống!");
+      return false;
+    }
+    if (!form.contactName.trim()) {
+      toast.warn("Tên người liên hệ không được để trống!");
+      return false;
+    }
+    if (!form.phone.trim()) {
+      toast.warn("Số điện thoại không được để trống!");
+      return false;
+    }
+    const phoneRegex = /^[0-9]{8,15}$/;
+    if (!phoneRegex.test(form.phone)) {
+      toast.warn("Số điện thoại không hợp lệ (phải là số, từ 8 đến 15 chữ số)!");
+      return false;
+    }
+    if (!form.email.trim()) {
+      toast.warn("Email không được để trống!");
+      return false;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(form.email)) {
+      toast.warn("Email không đúng định dạng!");
+      return false;
+    }
+    if (!form.address.trim()) {
+      toast.warn("Địa chỉ không được để trống!");
+      return false;
+    }
+    if (!form.certificationExpiry.trim()) {
+      toast.warn("Ngày hết hạn chứng nhận không được để trống!");
+      return false;
+    }
+
+    const today = new Date();
+    const expiryDate = new Date(form.certificationExpiry);
+    today.setHours(0, 0, 0, 0);
+
+    if (expiryDate < today) {
+      toast.warn("Ngày hết hạn chứng nhận phải từ hôm nay trở đi!");
+      return false;
+    }
+
+    return true;
+  };
+
 
   return (
     <div className="page-wrapper compact-wrapper" id="pageWrapper">
@@ -93,12 +163,7 @@ const AddNewSupplier = () => {
                       <div className="mb-3">
                         <label className="form-label">Address</label>
                         <textarea className="form-control" name="address" rows="2" value={form.address} onChange={handleChange}></textarea>
-                      </div>
-
-                      <div className="mb-3">
-                        <label className="form-label">OrganicCertification</label>
-                        <input type="text" className="form-control" name="organicCertification" value={form.organicCertification} onChange={handleChange} />
-                      </div>
+                      </div>                  
 
                       <div className="mb-3">
                         <label className="form-label">CertificationExpiry</label>
@@ -106,17 +171,17 @@ const AddNewSupplier = () => {
                       </div>
 
                       <div className="mb-4 row align-items-center">
-                        <label className="col-sm-3 col-form-label form-label-title">Status</label>
+                        <label className="form-label-title col-sm-3 mb-0">OrganicCertification</label>
                         <div className="col-sm-9">
-                          <label className="switch">
-                            <input
-                              type="checkbox"
-                              name="status"
-                              checked={form.status === 1}
-                              onChange={handleCheckboxChange}
-                            />
-                            <span className="switch-state"></span>
-                          </label>
+                          <input
+                            type="checkbox"
+                            name="organicCertification"
+                            checked={form.organicCertification === 1}
+                            onChange={(e) =>
+                              setForm({ ...form, organicCertification: e.target.checked ? 1 : 0 })
+                            }
+                          />{" "}
+                          Yes
                         </div>
                       </div>
 
@@ -136,7 +201,7 @@ const AddNewSupplier = () => {
             <footer className="footer">
               <div className="row">
                 <div className="col-md-12 footer-copyright text-center">
-                  <p className="mb-0">© 2022 Fastkart Theme</p>
+                  <p className="mb-0">Copyright 2025 © Clean Food Shop theme by pixelstrap</p>
                 </div>
               </div>
             </footer>

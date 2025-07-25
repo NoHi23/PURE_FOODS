@@ -31,7 +31,7 @@ const ProductListItem = ({ product, handleViewProduct, userId }) => {
       .then(() => {
         toast.success("Đã thêm vào giỏ hàng");
         window.dispatchEvent(new Event("cartUpdated"));
-        navigate("/cart-detail", { state: { fromAddToCart: true } });
+      //  navigate("/cart-detail", { state: { fromAddToCart: true } });
       })
       .catch((err) => {
         console.error("❌ Lỗi khi thêm vào giỏ hàng:", err.response?.data || err.message);

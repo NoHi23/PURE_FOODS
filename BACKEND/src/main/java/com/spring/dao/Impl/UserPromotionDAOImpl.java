@@ -9,6 +9,7 @@ import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.util.List;
 
 
@@ -45,6 +46,17 @@ public class UserPromotionDAOImpl implements UserPromotionDAO {
         Session session = sessionFactory.getCurrentSession();
         String hql = "FROM UserPromotion WHERE status = 'active'";
         return session.createQuery(hql, UserPromotion.class).getResultList();
+    }
+
+    @Override
+    public boolean existsByUserIdAndDate(int userId, LocalDate date) {
+        Session session = sessionFactory.getCurrentSession();
+        Long count = session.createQuery(
+                        "SELECT COUNT(up) FROM UserPromotion up WHERE up.userId = :userId AND up.assignedDate = :date", Long.class)
+                .setParameter("userId", userId)
+                .setParameter("date", date)
+                .uniqueResult();
+        return count != null && count > 0;
     }
 
 }

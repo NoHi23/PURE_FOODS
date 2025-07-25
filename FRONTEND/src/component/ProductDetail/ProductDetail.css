@@ -109,3 +109,20 @@
   opacity: 0;
   pointer-events: none;
 }
+
+.related-scroll-container {
+  display: flex;
+  overflow-x: auto;
+  gap: 20px;
+  padding-bottom: 10px;
+  scroll-behavior: smooth;
+}
+
+.related-scroll-container::-webkit-scrollbar {
+  height: 6px;
+}
+
+.related-scroll-container::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 3px;
+}
