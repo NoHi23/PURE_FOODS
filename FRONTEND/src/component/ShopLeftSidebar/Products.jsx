@@ -9,10 +9,12 @@ import ProductListItem from "./ProductListItem";
 import Pagination from "../../layouts/Pagination";
 import ProductDetailModal from "./ProductDetailModal";
 import { usePriceFilter } from "./PriceFilterContext";
+import { useDiscountFilter } from "./DiscountFilterContext";
 
-const Products = ({ products, isLoading, userId }) => {
+const Products = ({ products, isLoading, userId, selectedRatings }) => {
   const { priceRange } = usePriceFilter();
-  const [sortOption, setSortOption] = useState("Most Popular");
+  const { discountRange } = useDiscountFilter();
+  const [sortOption, setSortOption] = useState("Phổ biến nhất");
   const [sortedProducts, setSortedProducts] = useState([]);
   const [viewMode, setViewMode] = useState("grid-4"); // Mặc định là grid-4
   const [currentPage, setCurrentPage] = useState(1); // Trang hiện tại
@@ -26,21 +28,27 @@ const Products = ({ products, isLoading, userId }) => {
   }, [products]);
 
   useEffect(() => {
-    // Lọc sản phẩm dựa trên priceRange
+    // Lọc sản phẩm dựa trên priceRange và discountRange
     let filtered = [...products].filter(
-      (product) => product.salePrice >= priceRange[0] && product.salePrice <= priceRange[1]
+      (product) =>
+        product.salePrice >= priceRange[0] &&
+        product.salePrice <= priceRange[1] &&
+        (product.discountPercent || 0) >= discountRange[0] &&
+        (product.discountPercent || 0) <= discountRange[1]
     );
     setSortedProducts(filtered);
-    setCurrentPage(1); // Reset về trang 1 khi thay đổi priceRange
-  }, [priceRange, products]);
+    setCurrentPage(1); // Reset về trang 1 khi thay đổi priceRange hoặc discountRange
+  }, [priceRange, discountRange, products]);
 
   const handleSortChange = (option) => {
     setSortOption(option);
     let sorted = [...sortedProducts]; // Lọc dựa trên sản phẩm đã lọc bởi priceRange
-    if (option === "Low - High Price") {
+    if (option === "Giá: Thấp đến Cao") {
       sorted.sort((a, b) => a.salePrice - b.salePrice);
-    } else if (option === "High - Low Price") {
+    } else if (option === "Giá: Cao đến Thấp") {
       sorted.sort((a, b) => b.salePrice - a.salePrice);
+    } else if (option === "Rating: Cao đến Thấp") {
+      sorted.sort((a, b) => (b.averageRating || 0) - (a.averageRating || 0));
     }
     setSortedProducts(sorted);
     setCurrentPage(1); // Reset về trang 1 sau khi sort
@@ -66,6 +74,10 @@ const Products = ({ products, isLoading, userId }) => {
     }
     // Nếu là chữ thì lọc theo tên sản phẩm
     return product.productName.toLowerCase().includes(query);
+  }).filter((product) => {
+    // Lọc theo rating (exact match nếu selected, else all)
+    const roundedRating = Math.round(product.averageRating || 0);
+    return selectedRatings.length === 0 || selectedRatings.includes(roundedRating);
   });
 
   // Tính toán số trang và phân trang sản phẩm
@@ -95,15 +107,16 @@ const Products = ({ products, isLoading, userId }) => {
           {/* Phần filter trên đầu các sản phẩm */}
           <div className="top-filter-menu d-flex justify-content-between align-items-center">
             <div className="category-dropdown d-flex align-items-center gap-4 mb-3">
-              <h5 className="text-content fw-bold fs-5">Sort By :</h5>
+              <h5 className="text-content fw-bold fs-5">Sắp xếp :</h5>
               <Dropdown>
                 <Dropdown.Toggle variant="light" id="dropdownMenuButton1">
                   <span>{sortOption}</span>
                 </Dropdown.Toggle>
                 <Dropdown.Menu>
-                  <Dropdown.Item onClick={() => handleSortChange("All")}>All</Dropdown.Item>
-                  <Dropdown.Item onClick={() => handleSortChange("Low - High Price")}>Low - High Price</Dropdown.Item>
-                  <Dropdown.Item onClick={() => handleSortChange("High - Low Price")}>High - Low Price</Dropdown.Item>
+                  <Dropdown.Item onClick={() => handleSortChange("Tất cả")}>Tất cả</Dropdown.Item>
+                  <Dropdown.Item onClick={() => handleSortChange("Giá: Thấp đến Cao")}>Giá: Thấp đến Cao</Dropdown.Item>
+                  <Dropdown.Item onClick={() => handleSortChange("Giá: Cao đến Thấp")}>Giá: Cao đến Thấp</Dropdown.Item>
+                  <Dropdown.Item onClick={() => handleSortChange("Rating: Cao đến Thấp")}>Rating: Cao đến Thấp</Dropdown.Item>
                 </Dropdown.Menu>
               </Dropdown>
             </div>

@@ -27,15 +27,15 @@ const HeaderCategory = () => {
             <Col>
               <div className="d-flex justify-content-between align-items-center flex-wrap gap-2 px-4">
                 <h4 className="mb-0 fw-bold" style={{ fontSize: "30px", color: "black" }}>
-                  Shop Left Sidebar
+                  Sản phẩm theo danh mục
                 </h4>
                 <Breadcrumb className="mb-0">
                   <Breadcrumb.Item href="/" className="d-flex align-items-center gap-1">
                     <FaHome style={{ fontSize: "25px", marginRight: "10px" }} />
-                    <span style={{ fontSize: "25px" }}>Home</span>
+                    <span style={{ fontSize: "25px" }}>Trang chủ</span>
                   </Breadcrumb.Item>
                   <Breadcrumb.Item active style={{ fontSize: "25px" }}>
-                    Shop Left Sidebar
+                    Sản phẩm theo danh mục
                   </Breadcrumb.Item>
                 </Breadcrumb>
               </div>
@@ -60,8 +60,8 @@ const HeaderCategory = () => {
                           className="carousel-image"
                         />
                         <div className="carousel-caption">
-                          <h2 className="mb-1">Healthy, nutritious & Tasty Fruits & Veggies</h2>
-                          <h5>Save up to 50%</h5>
+                          <h2 className="mb-1">Trái cây và rau củ lành mạnh, bổ dưỡng và ngon miệng</h2>
+                          <h5>Tiết kiệm tới 50%</h5>
                         </div>
                       </div>
                     </div>
