@@ -78,8 +78,11 @@ const Checkout = () => {
 
       if (response.data.redirectUrl) {
         window.location.href = response.data.redirectUrl;
-      } else {
-        toast.success('Đơn hàng thanh toán khi nhận hàng đã được tạo thành công.');
+      } else if (paymentMethod === 'COD') {
+        const orderId = response.data.orderID || id; // Lấy từ phản hồi hoặc params
+        window.location.href = `http://localhost:3000/order-success/${orderId}`;
+        toast.success("Chúc mừng bạn đã đặt hàng thành công!");
+
       }
     } catch (error) {
       console.error('Lỗi tạo đơn hàng:', error);

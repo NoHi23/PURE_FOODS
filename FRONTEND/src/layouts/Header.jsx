@@ -538,6 +538,9 @@ export default function Header() {
                                 <a href="/my-coupons">Mã giảm giá của tôi</a>
                               </li>
                               <li className="product-box-contain">
+                                <a href="/my-orders">Đơn hàng</a>
+                              </li>
+                              <li className="product-box-contain">
                                 <a href="/forgot">Quên mật khẩu</a>
                               </li>
                               <li className="product-box-contain">
