@@ -15,13 +15,13 @@ import feather from 'feather-icons'; // Install nếu chưa: npm i feather-icons
 const ProductDetail = () => {
   const { id } = useParams();
   const [products, setProducts] = useState(null);
- const [avgRating, setAvgRating] = useState(null);
-const [reviewCount, setReviewCount] = useState(0);
-const [reviews, setReviews] = useState([]);
-const [selectedRating, setSelectedRating] = useState(0); // Rating chọn (1-5)
-const [reviewComment, setReviewComment] = useState(''); // Nội dung comment
-const [isSubmitting, setIsSubmitting] = useState(false); // Loading state khi submit
-const [refreshReviews, setRefreshReviews] = useState(0);
+  const [avgRating, setAvgRating] = useState(null);
+  const [reviewCount, setReviewCount] = useState(0);
+  const [reviews, setReviews] = useState([]);
+  const [selectedRating, setSelectedRating] = useState(0); // Rating chọn (1-5)
+  const [reviewComment, setReviewComment] = useState(''); // Nội dung comment
+  const [isSubmitting, setIsSubmitting] = useState(false); // Loading state khi submit
+  const [refreshReviews, setRefreshReviews] = useState(0);
 
   const { wishlistMap, setWishlistMap, fetchWishlistCount, refreshWishlist } = useWishlist();
   const [isWished, setIsWished] = useState(false);
@@ -264,31 +264,31 @@ const [refreshReviews, setRefreshReviews] = useState(0);
       });
   }, [id]);
 
-useEffect(() => {
-  if (products?.productId) {
-    axios
-      .get(`http://localhost:8082/PureFoods/api/review/product?productId=${products.productId}`)
-      .then(res => {
-        const reviewList = res.data || [];
-        setReviews(reviewList);
-        setReviewCount(reviewList.length);
+  useEffect(() => {
+    if (products?.productId) {
+      axios
+        .get(`http://localhost:8082/PureFoods/api/review/product?productId=${products.productId}`)
+        .then(res => {
+          const reviewList = res.data || [];
+          setReviews(reviewList);
+          setReviewCount(reviewList.length);
 
-        if (reviewList.length > 0) {
-          const total = reviewList.reduce((acc, r) => acc + r.rating, 0);
-          const avg = total / reviewList.length;
-          setAvgRating(Number(avg.toFixed(2)));
-        } else {
+          if (reviewList.length > 0) {
+            const total = reviewList.reduce((acc, r) => acc + r.rating, 0);
+            const avg = total / reviewList.length;
+            setAvgRating(Number(avg.toFixed(2)));
+          } else {
+            setAvgRating(0);
+          }
+        })
+        .catch(err => {
+          console.error("❌ Lỗi khi lấy đánh giá:", err);
+          setReviews([]);
+          setReviewCount(0);
           setAvgRating(0);
-        }
-      })
-      .catch(err => {
-        console.error("❌ Lỗi khi lấy đánh giá:", err);
-        setReviews([]);
-        setReviewCount(0);
-        setAvgRating(0);
-      });
-  }
-}, [products, refreshReviews]); // Thêm refreshReviews để reload
+        });
+    }
+  }, [products, refreshReviews]); // Thêm refreshReviews để reload
 
 
   const [thumbnailList, setThumbnailList] = useState([]);
@@ -516,52 +516,52 @@ useEffect(() => {
     fetchSuppliers();
   }, [selectedProduct]);
 
-const handleSubmitReview = async () => {
-  let hasError = false;
-  if (selectedRating < 1) {
-    toast.warning("Vui lòng chọn rating");
-    hasError = true;
-  }
-  if (reviewComment.trim() === '') {
-    toast.warning("Vui lòng viết nội dung");
-    hasError = true;
-  }
-  if (hasError) return;
-
-  setIsSubmitting(true);
-  try {
-    const reviewData = {
-      productId: products.productId,
-      customerId: userId,
-      rating: selectedRating,
-      comment: reviewComment,
-    };
-
-    await axios.post('http://localhost:8082/PureFoods/api/review/create', reviewData);
-    toast.success("Đánh giá đã được gửi thành công!");
-
-    // Reset form
-    setSelectedRating(0);
-    setReviewComment('');
-
-    // Đóng modal
-    const modalEl = document.getElementById('writereview');
-    if (modalEl) {
-      bootstrap.Modal.getInstance(modalEl).hide();
+  const handleSubmitReview = async () => {
+    let hasError = false;
+    if (selectedRating < 1) {
+      toast.warning("Vui lòng chọn rating");
+      hasError = true;
     }
+    if (reviewComment.trim() === '') {
+      toast.warning("Vui lòng viết nội dung");
+      hasError = true;
+    }
+    if (hasError) return;
 
-    // Reload reviews
-    setRefreshReviews(prev => prev + 1);
-  } catch (err) {
-    toast.error("Gửi đánh giá thất bại");
-    console.error(err);
-  } finally {
-    setIsSubmitting(false);
-  }
-};
-useEffect(() => {
-  feather.replace(); // Re-render icons khi rating change
-}, [selectedRating]);
+    setIsSubmitting(true);
+    try {
+      const reviewData = {
+        productId: products.productId,
+        customerId: userId,
+        rating: selectedRating,
+        comment: reviewComment,
+      };
+
+      await axios.post('http://localhost:8082/PureFoods/api/review/create', reviewData);
+      toast.success("Đánh giá đã được gửi thành công!");
+
+      // Reset form
+      setSelectedRating(0);
+      setReviewComment('');
+
+      // Đóng modal
+      const modalEl = document.getElementById('writereview');
+      if (modalEl) {
+        bootstrap.Modal.getInstance(modalEl).hide();
+      }
+
+      // Reload reviews
+      setRefreshReviews(prev => prev + 1);
+    } catch (err) {
+      toast.error("Gửi đánh giá thất bại");
+      console.error(err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+  useEffect(() => {
+    feather.replace(); // Re-render icons khi rating change
+  }, [selectedRating]);
   return (
     <ProductDetailLayout>
       <div>
@@ -694,14 +694,13 @@ useEffect(() => {
                           ${products?.salePrice} <del className="text-content">${products?.price}</del>
                         </h3>
                         {avgRating !== null && (
-  <div className="d-flex align-items-center gap-2">
-    <StarRating rating={avgRating} />
-    <span className="text-muted small">
-      {avgRating.toFixed(1)} / 5 ({reviewCount} đánh giá)
-    </span>
-  </div>
-)}
-
+                          <div className="d-flex align-items-center gap-2">
+                            <StarRating rating={avgRating} />
+                            <span className="text-muted small">
+                              {avgRating.toFixed(1)} / 5 ({reviewCount} đánh giá)
+                            </span>
+                          </div>
+                        )}
 
 
                       </div>
@@ -958,147 +957,147 @@ useEffect(() => {
                     </li>
                   </ul>
 
-               <div className="tab-pane fade" id="review" role="tabpanel">
-  <div className="review-box">
-    <div className="row">
-      {/* Cột trái: Tổng kết đánh giá */}
-      <div className="col-xl-5">
-        <div className="product-rating-box">
-          <div className="row">
-            <div className="col-xl-12">
-              <div className="product-main-rating d-flex align-items-center gap-2">
-                {avgRating !== null ? (
-                  <>
-                    <StarRating rating={avgRating} />
-                    <h2>{avgRating.toFixed(1)} / 5</h2>
-                  </>
-                ) : (
-                  <h2>0.00 / 5 <i data-feather="star"></i></h2>
-                )}
-                <h5>({reviewCount} đánh giá)</h5>
-              </div>
-            </div>
+                  <div className="tab-pane fade" id="review" role="tabpanel">
+                    <div className="review-box">
+                      <div className="row">
+                        {/* Cột trái: Tổng kết đánh giá */}
+                        <div className="col-xl-5">
+                          <div className="product-rating-box">
+                            <div className="row">
+                              <div className="col-xl-12">
+                                <div className="product-main-rating d-flex align-items-center gap-2">
+                                  {avgRating !== null ? (
+                                    <>
+                                      <StarRating rating={avgRating} />
+                                      <h2>{avgRating.toFixed(1)} / 5</h2>
+                                    </>
+                                  ) : (
+                                    <h2>0.00 / 5 <i data-feather="star"></i></h2>
+                                  )}
+                                  <h5>({reviewCount} đánh giá)</h5>
+                                </div>
+                              </div>
 
-            <div className="col-xl-12">
-              <ul className="product-rating-list">
-                {[5, 4, 3, 2, 1].map((star) => {
-                  const count = reviews.filter((r) => (r.rating || 0) === star).length;
-                  const percentage = reviewCount > 0 ? (count / reviewCount) * 100 : 0;
-                  return (
-                    <li key={star}>
-                      <div className="rating-product d-flex align-items-center">
-                        <h5 className="me-2">
-                          {star}
-                        </h5>
-                        <i data-feather="star" className="fill me-2"></i> {/* Icon sao cho trực quan */}
-                        <div className="progress flex-grow-1">
-                          <div className="progress-bar" style={{ width: `${percentage}%` }}></div>
+                              <div className="col-xl-12">
+                                <ul className="product-rating-list">
+                                  {[5, 4, 3, 2, 1].map((star) => {
+                                    const count = reviews.filter((r) => (r.rating || 0) === star).length;
+                                    const percentage = reviewCount > 0 ? (count / reviewCount) * 100 : 0;
+                                    return (
+                                      <li key={star}>
+                                        <div className="rating-product d-flex align-items-center">
+                                          <h5 className="me-2">
+                                            {star}
+                                          </h5>
+                                          <i data-feather="star" className="fill me-2"></i> {/* Icon sao cho trực quan */}
+                                          <div className="progress flex-grow-1">
+                                            <div className="progress-bar" style={{ width: `${percentage}%` }}></div>
+                                          </div>
+                                          <h5 className="total ms-2">{count}</h5>
+                                        </div>
+                                      </li>
+                                    );
+                                  })}
+                                </ul>
+
+                                <div className="review-title-2">
+                                  <h4 className="fw-bold">Đánh giá sản phẩm</h4>
+                                  <p>Hãy để lại cảm nhận của bạn về sản phẩm</p>
+                                  <button
+                                    className="btn"
+                                    type="button"
+                                    onClick={() => {
+                                      const modal = new bootstrap.Modal(document.getElementById('writereview'));
+                                      modal.show();
+                                    }}
+                                  >
+                                    Viết đánh giá
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
                         </div>
-                        <h5 className="total ms-2">{count}</h5>
-                      </div>
-                    </li>
-                  );
-                })}
-              </ul>
 
-              <div className="review-title-2">
-                <h4 className="fw-bold">Đánh giá sản phẩm</h4>
-                <p>Hãy để lại cảm nhận của bạn về sản phẩm</p>
-                <button
-  className="btn"
-  type="button"
-  onClick={() => {
-    const modal = new bootstrap.Modal(document.getElementById('writereview'));
-    modal.show();
-  }}
->
-  Viết đánh giá
-</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+                        {/* Cột phải: Danh sách đánh giá */}
+                        <div className="col-xl-7">
+                          <div className="review-people">
+                            <ul className="review-list">
+                              {reviews.length === 0 && (
+                                <p className="text-muted">Chưa có đánh giá nào cho sản phẩm này.</p>
+                              )}
+                              {reviews.map((review, index) => {
+                                // Helper để format createdAt từ mảng thành Date
+                                let formattedDate = "Không xác định thời gian";
+                                if (Array.isArray(review.createdAt) && review.createdAt.length >= 6) {
+                                  const [year, month, day, hour, min, sec, nano = 0] = review.createdAt;
+                                  const millis = Math.floor(nano / 1000000); // Chuyển nano sang milli
+                                  const reviewDate = new Date(year, month - 1, day, hour, min, sec, millis); // Tháng trừ 1 (0-based)
+                                  if (!isNaN(reviewDate)) {
+                                    // Format absolute
+                                    const absoluteDate = new Intl.DateTimeFormat("vi-VN", {
+                                      year: "numeric",
+                                      month: "2-digit",
+                                      day: "2-digit",
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                    }).format(reviewDate);
 
-      {/* Cột phải: Danh sách đánh giá */}
-      <div className="col-xl-7">
-        <div className="review-people">
-          <ul className="review-list">
-            {reviews.length === 0 && (
-              <p className="text-muted">Chưa có đánh giá nào cho sản phẩm này.</p>
-            )}
-            {reviews.map((review, index) => {
-              // Helper để format createdAt từ mảng thành Date
-              let formattedDate = "Không xác định thời gian";
-              if (Array.isArray(review.createdAt) && review.createdAt.length >= 6) {
-                const [year, month, day, hour, min, sec, nano = 0] = review.createdAt;
-                const millis = Math.floor(nano / 1000000); // Chuyển nano sang milli
-                const reviewDate = new Date(year, month - 1, day, hour, min, sec, millis); // Tháng trừ 1 (0-based)
-                if (!isNaN(reviewDate)) {
-                  // Format absolute
-                  const absoluteDate = new Intl.DateTimeFormat("vi-VN", {
-                    year: "numeric",
-                    month: "2-digit",
-                    day: "2-digit",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  }).format(reviewDate);
-                  
-                  // Tính relative time dựa trên current date July 25, 2025 (chi tiết hơn)
-                  const currentDate = new Date(2025, 6, 25); // July là month 6 (0-based)
-                  const timeDiff = currentDate - reviewDate;
-                  const daysAgo = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
-                  const relative = daysAgo > 0 ? `(${daysAgo} ngày trước)` : "(Mới đây)";
-                  
-                  formattedDate = `${absoluteDate} ${relative}`;
-                }
-              }
+                                    // Tính relative time dựa trên current date July 25, 2025 (chi tiết hơn)
+                                    const currentDate = new Date(2025, 6, 25); // July là month 6 (0-based)
+                                    const timeDiff = currentDate - reviewDate;
+                                    const daysAgo = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+                                    const relative = daysAgo > 0 ? `(${daysAgo} ngày trước)` : "(Mới đây)";
 
-              return (
-                <li key={review.reviewId || index}>
-                  <div className="people-box">
-                    <div>
-                      <div className="people-image people-text">
-                        <img
-                          alt="user"
-                          className="img-fluid"
-                          src="/assets/images/review/default.jpg"
-                        />
-                      </div>
-                    </div>
-                    <div className="people-comment">
-                      <div className="people-name">
-                        <span className="name fw-bold">{review.customerName || "Ẩn danh"}</span>
-                        <div className="date-time">
-                          <h6 className="text-content">{formattedDate}</h6>
-                          <div className="product-rating">
-                            <ul className="rating">
-                              {[1, 2, 3, 4, 5].map((star) => (
-                                <li key={star}>
-                                  <i
-                                    data-feather="star"
-                                    className={(review.rating || 0) >= star ? "fill" : ""}
-                                  ></i>
-                                </li>
-                              ))}
+                                    formattedDate = `${absoluteDate} ${relative}`;
+                                  }
+                                }
+
+                                return (
+                                  <li key={review.reviewId || index}>
+                                    <div className="people-box">
+                                      <div>
+                                        <div className="people-image people-text">
+                                          <img
+                                            alt="user"
+                                            className="img-fluid"
+                                            src="/assets/images/review/default.jpg"
+                                          />
+                                        </div>
+                                      </div>
+                                      <div className="people-comment">
+                                        <div className="people-name">
+                                          <span className="name fw-bold">{review.customerName || "Ẩn danh"}</span>
+                                          <div className="date-time">
+                                            <h6 className="text-content">{formattedDate}</h6>
+                                            <div className="product-rating">
+                                              <ul className="rating">
+                                                {[1, 2, 3, 4, 5].map((star) => (
+                                                  <li key={star}>
+                                                    <i
+                                                      data-feather="star"
+                                                      className={(review.rating || 0) >= star ? "fill" : ""}
+                                                    ></i>
+                                                  </li>
+                                                ))}
+                                              </ul>
+                                            </div>
+                                          </div>
+                                        </div>
+                                        <div className="reply">
+                                          <p>{review?.comment || "Không có nội dung đánh giá."}</p>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </li>
+                                );
+                              })}
                             </ul>
                           </div>
                         </div>
                       </div>
-                      <div className="reply">
-                        <p>{review?.comment || "Không có nội dung đánh giá."}</p>
-                      </div>
                     </div>
                   </div>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
 
 
                 </div>
@@ -1628,71 +1627,71 @@ useEffect(() => {
             </div>
           </div>
         </div>
-       <div className="modal fade theme-modal question-modal" id="writereview" tabIndex="-1">
-  <div className="modal-dialog modal-dialog-centered">
-    <div className="modal-content">
-      <div className="modal-header">
-        <h1 className="modal-title fs-5" id="exampleModalLabel">
-          Write a review
-        </h1>
-        <button type="button" className="btn-close" data-bs-dismiss="modal">
-          <i className="fa-solid fa-xmark"></i>
-        </button>
-      </div>
-      <div className="modal-body pt-0">
-        <form className="product-review-form" onSubmit={(e) => e.preventDefault()}>
-          <div className="product-wrapper">
-            <div className="product-image">
-              <img
-                className="img-fluid"
-                alt="Solid Collared Tshirts"
-                src="../assets/images/fashion/product/26.jpg"
-              />
-            </div>
-            <div className="product-content">
-              <h5 className="name">Solid Collared Tshirts</h5>
-              <div className="product-review-rating">
-                <div className="product-rating">
-                  <h6 className="price-number">$16.00</h6>
-                </div>
+        <div className="modal fade theme-modal question-modal" id="writereview" tabIndex="-1">
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h1 className="modal-title fs-5" id="exampleModalLabel">
+                  Write a review
+                </h1>
+                <button type="button" className="btn-close" data-bs-dismiss="modal">
+                  <i className="fa-solid fa-xmark"></i>
+                </button>
+              </div>
+              <div className="modal-body pt-0">
+                <form className="product-review-form" onSubmit={(e) => e.preventDefault()}>
+                  <div className="product-wrapper">
+                    <div className="product-image">
+                      <img
+                        className="img-fluid"
+                        alt="Solid Collared Tshirts"
+                        src="../assets/images/fashion/product/26.jpg"
+                      />
+                    </div>
+                    <div className="product-content">
+                      <h5 className="name">Solid Collared Tshirts</h5>
+                      <div className="product-review-rating">
+                        <div className="product-rating">
+                          <h6 className="price-number">$16.00</h6>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="review-box">
+                    <div className="product-review-rating">
+                      <label>Rating</label>
+                      <div className="product-rating">
+                        <ul className="rating">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <li key={star} onClick={() => setSelectedRating(star)} style={{ cursor: 'pointer' }}>
+                              <i data-feather="star" style={{ color: selectedRating >= star ? 'gold' : 'gray' }}></i> {/* Dynamic color để hiển thị màu khi ấn */}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                      {selectedRating < 1 && <small className="text-danger d-block mt-1">Vui lòng chọn rating *</small>} {/* Inline message cho validation */}
+                    </div>
+                  </div>
+                  <div className="review-box">
+                    <label htmlFor="content" className="form-label">
+                      Nội dung đánh giá *
+                    </label>
+                    <textarea id="content" rows="3" className="form-control" placeholder="Your Question" value={reviewComment} onChange={(e) => setReviewComment(e.target.value)}></textarea>
+                    {reviewComment.trim() === '' && <small className="text-danger d-block mt-1">Vui lòng viết nội dung *</small>}
+                  </div>
+                </form>
+              </div>
+              <div className="modal-footer">
+                <button type="button" className="btn btn-md btn-theme-outline fw-bold" data-bs-dismiss="modal">
+                  Close
+                </button>
+                <button type="button" className="btn btn-md fw-bold text-light theme-bg-color" onClick={handleSubmitReview} disabled={isSubmitting || selectedRating < 1 || reviewComment.trim() === ''}>
+                  {isSubmitting ? 'Sending...' : 'Save changes'}
+                </button>
               </div>
             </div>
           </div>
-          <div className="review-box">
-            <div className="product-review-rating">
-              <label>Rating</label>
-              <div className="product-rating">
-                <ul className="rating">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <li key={star} onClick={() => setSelectedRating(star)} style={{ cursor: 'pointer' }}>
-                      <i data-feather="star" style={{ color: selectedRating >= star ? 'gold' : 'gray' }}></i> {/* Dynamic color để hiển thị màu khi ấn */}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              {selectedRating < 1 && <small className="text-danger d-block mt-1">Vui lòng chọn rating *</small>} {/* Inline message cho validation */}
-            </div>
-          </div>
-          <div className="review-box">
-            <label htmlFor="content" className="form-label">
-              Nội dung đánh giá *
-            </label>
-            <textarea id="content" rows="3" className="form-control" placeholder="Your Question" value={reviewComment} onChange={(e) => setReviewComment(e.target.value)}></textarea>
-            {reviewComment.trim() === '' && <small className="text-danger d-block mt-1">Vui lòng viết nội dung *</small>}
-          </div>
-        </form>
-      </div>
-      <div className="modal-footer">
-        <button type="button" className="btn btn-md btn-theme-outline fw-bold" data-bs-dismiss="modal">
-          Close
-        </button>
-        <button type="button" className="btn btn-md fw-bold text-light theme-bg-color" onClick={handleSubmitReview} disabled={isSubmitting || selectedRating < 1 || reviewComment.trim() === ''}>
-          {isSubmitting ? 'Sending...' : 'Save changes'}
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
+        </div>
 
         <div className="bg-overlay"></div>
       </div>
