@@ -10,13 +10,13 @@ const TraderReturnRequests = ({ traderId }) => {
   const [loading, setLoading] = useState(true);
   const [imageLoading, setImageLoading] = useState({});
   const [activeTab, setActiveTab] = useState("pending");
-
   const [searchTerm, setSearchTerm] = useState("");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
-
+  const [statusFilter, setStatusFilter] = useState(""); // New state for status filter
   const [currentPage, setCurrentPage] = useState(1);
   const [logsPerPage] = useState(5);
+  const [selectedLogs, setSelectedLogs] = useState([]);
 
   const fetchProductDetails = async (productId) => {
     try {
@@ -130,6 +130,7 @@ const TraderReturnRequests = ({ traderId }) => {
         { withCredentials: true }
       );
       toast.success("✅ Đã chấp nhận đơn trả hàng.");
+      setSelectedLogs((prev) => prev.filter((id) => id !== logId));
       fetchReturnRequests();
     } catch (err) {
       toast.error("❌ Lỗi xác nhận: " + (err.response?.data?.message || "Không xác định"));
@@ -153,9 +154,80 @@ const TraderReturnRequests = ({ traderId }) => {
         { withCredentials: true }
       );
       toast.success("🚫 Đã từ chối đơn trả hàng.");
+      setSelectedLogs((prev) => prev.filter((id) => id !== logId));
       fetchReturnRequests();
     } catch (err) {
       toast.error("❌ Lỗi từ chối: " + (err.response?.data?.message || "Không xác định"));
+    }
+  };
+
+  const handleBulkConfirm = async () => {
+    if (selectedLogs.length === 0) {
+      toast.warn("Vui lòng chọn ít nhất một đơn trả hàng để chấp nhận.");
+      return;
+    }
+    try {
+      await Promise.all(
+        selectedLogs.map((logId) =>
+          axios.post(
+            `http://localhost:8082/PureFoods/api/trader/inventory/confirm-return?userId=${traderId}&logId=${logId}`,
+            null,
+            { withCredentials: true }
+          )
+        )
+      );
+      toast.success(`✅ Đã chấp nhận ${selectedLogs.length} đơn trả hàng.`);
+      setSelectedLogs([]);
+      fetchReturnRequests();
+    } catch (err) {
+      toast.error("❌ Lỗi xác nhận hàng loạt: " + (err.response?.data?.message || "Không xác định"));
+    }
+  };
+
+  const handleBulkReject = async () => {
+    if (selectedLogs.length === 0) {
+      toast.warn("Vui lòng chọn ít nhất một đơn trả hàng để từ chối.");
+      return;
+    }
+    const reason = prompt("Nhập lý do từ chối cho các đơn trả hàng:");
+    if (reason === null) {
+      toast.warn("Hủy từ chối đơn trả hàng.");
+      return;
+    }
+    if (!reason.trim()) {
+      toast.warn("Vui lòng nhập lý do từ chối hợp lệ.");
+      return;
+    }
+    try {
+      await Promise.all(
+        selectedLogs.map((logId) =>
+          axios.post(
+            `http://localhost:8082/PureFoods/api/trader/inventory/reject-return?userId=${traderId}&logId=${logId}&reason=${encodeURIComponent(reason.trim())}`,
+            null,
+            { withCredentials: true }
+          )
+        )
+      );
+      toast.success(`🚫 Đã từ chối ${selectedLogs.length} đơn trả hàng.`);
+      setSelectedLogs([]);
+      fetchReturnRequests();
+    } catch (err) {
+      toast.error("❌ Lỗi từ chối hàng loạt: " + (err.response?.data?.message || "Không xác định"));
+    }
+  };
+
+  const handleSelectLog = (logId) => {
+    setSelectedLogs((prev) =>
+      prev.includes(logId) ? prev.filter((id) => id !== logId) : [...prev, logId]
+    );
+  };
+
+  const handleSelectAll = (e) => {
+    if (e.target.checked) {
+      const currentPageLogIds = currentLogs.map((log) => log.logId);
+      setSelectedLogs(currentPageLogIds);
+    } else {
+      setSelectedLogs([]);
     }
   };
 
@@ -208,13 +280,17 @@ const TraderReturnRequests = ({ traderId }) => {
     const date = log.createdAt ? new Date(log.createdAt) : null;
     const from = dateFrom ? new Date(dateFrom) : null;
     const to = dateTo ? new Date(dateTo) : null;
+    const statusMatch =
+      activeTab === "processed" && statusFilter
+        ? log.status === parseInt(statusFilter)
+        : true;
 
     const dateMatch =
       date &&
       (!from || date >= from) &&
       (!to || date <= new Date(to.getTime() + 86400000));
 
-    return nameMatch && dateMatch;
+    return nameMatch && dateMatch && statusMatch;
   });
 
   const indexOfLastLog = currentPage * logsPerPage;
@@ -230,13 +306,15 @@ const TraderReturnRequests = ({ traderId }) => {
       <h4 className="mb-4">📦 Yêu cầu trả hàng</h4>
 
       {/* Tabs */}
-      <ul className="nav nav-tabs">
+      <ul className="nav nav-tabs mb-4">
         <li className="nav-item">
           <button
             className={`nav-link ${activeTab === "pending" ? "active" : ""}`}
             onClick={() => {
               setActiveTab("pending");
               setCurrentPage(1);
+              setSelectedLogs([]);
+              setStatusFilter("");
             }}
           >
             Đang chờ xử lý
@@ -248,6 +326,8 @@ const TraderReturnRequests = ({ traderId }) => {
             onClick={() => {
               setActiveTab("processed");
               setCurrentPage(1);
+              setSelectedLogs([]);
+              setStatusFilter("");
             }}
           >
             Đã xử lý
@@ -255,9 +335,9 @@ const TraderReturnRequests = ({ traderId }) => {
         </li>
       </ul>
 
-      {/* Filter */}
-      <div className="row mt-3 mb-3">
-        <div className="col-md-4">
+      {/* Filter and Bulk Actions */}
+      <div className="row mt-3 mb-3 align-items-center">
+        <div className="col-md-3">
           <input
             type="text"
             className="form-control"
@@ -266,6 +346,7 @@ const TraderReturnRequests = ({ traderId }) => {
             onChange={(e) => {
               setSearchTerm(e.target.value);
               setCurrentPage(1);
+              setSelectedLogs([]);
             }}
           />
         </div>
@@ -277,6 +358,7 @@ const TraderReturnRequests = ({ traderId }) => {
             onChange={(e) => {
               setDateFrom(e.target.value);
               setCurrentPage(1);
+              setSelectedLogs([]);
             }}
           />
         </div>
@@ -288,21 +370,80 @@ const TraderReturnRequests = ({ traderId }) => {
             onChange={(e) => {
               setDateTo(e.target.value);
               setCurrentPage(1);
+              setSelectedLogs([]);
             }}
           />
         </div>
-        <div className="col-md-2 text-end">
+        {activeTab === "processed" && (
+          <div className="col-md-2">
+            <select
+              className="form-control"
+              value={statusFilter}
+              onChange={(e) => {
+                setStatusFilter(e.target.value);
+                setCurrentPage(1);
+                setSelectedLogs([]);
+              }}
+            >
+              <option value="">Tất cả trạng thái</option>
+              <option value="6">Đã chấp nhận</option>
+              <option value="7">Đã từ chối</option>
+            </select>
+          </div>
+        )}
+        <div className={activeTab === "processed" ? "col-md-1 text-end" : "col-md-3 text-end"}>
           <button className="btn btn-outline-success w-100" onClick={handleExportExcel}>
             📤 Xuất Excel
           </button>
         </div>
       </div>
 
+      {/* Bulk Actions for Pending Tab */}
+      {activeTab === "pending" && (
+        <div className="mb-3 d-flex align-items-center justify-content-between">
+          <div>
+            <input
+              type="checkbox"
+              className="form-check-input me-2"
+              checked={selectedLogs.length === currentLogs.length && currentLogs.length > 0}
+              onChange={handleSelectAll}
+            />
+            <span>Chọn tất cả ({selectedLogs.length} được chọn)</span>
+          </div>
+          <div className="d-flex gap-2">
+            <button
+              className="btn btn-success"
+              onClick={handleBulkConfirm}
+              disabled={selectedLogs.length === 0}
+            >
+              ✅ Chấp nhận nhiều
+            </button>
+            <button
+              className="btn btn-danger"
+              onClick={handleBulkReject}
+              disabled={selectedLogs.length === 0}
+            >
+              ❌ Từ chối nhiều
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Table */}
       <div className="table-responsive">
         <table className="table table-hover table-bordered align-middle">
           <thead className="table-light">
             <tr>
+              {activeTab === "pending" && (
+                <th>
+                  <input
+                    type="checkbox"
+                    className="form-check-input"
+                    checked={selectedLogs.length === currentLogs.length && currentLogs.length > 0}
+                    onChange={handleSelectAll}
+                  />
+                </th>
+              )}
               <th>#</th>
               <th>Hình ảnh</th>
               <th>Tên sản phẩm</th>
@@ -315,13 +456,23 @@ const TraderReturnRequests = ({ traderId }) => {
           <tbody>
             {currentLogs.length === 0 ? (
               <tr>
-                <td colSpan="7" className="text-center text-muted">
+                <td colSpan={activeTab === "pending" ? 8 : 7} className="text-center text-muted">
                   Không có đơn trả hàng.
                 </td>
               </tr>
             ) : (
               currentLogs.map((log, index) => (
                 <tr key={log.logId}>
+                  {activeTab === "pending" && (
+                    <td>
+                      <input
+                        type="checkbox"
+                        className="form-check-input"
+                        checked={selectedLogs.includes(log.logId)}
+                        onChange={() => handleSelectLog(log.logId)}
+                      />
+                    </td>
+                  )}
                   <td>{indexOfFirstLog + index + 1}</td>
                   <td className="text-center">
                     {imageLoading[log.logId] ? (

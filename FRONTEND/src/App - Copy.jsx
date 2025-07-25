@@ -40,6 +40,7 @@ import Taxes from './component/Admin/Taxes';
 import AddNewTax from './component/Admin/AddNewTax';
 import Blog from './component/Admin/Blog';
 import AddNewBlog from './component/Admin/AddNewBlog';
+import ProductReview from './component/Admin/ProductReview';
 {/*import CustomerBlog from './component/CustomerBlog';
 import BlogDetail from './component/BlogDetail';*/}
 
@@ -175,6 +176,11 @@ function AppContent() {
             <AddNewBlog />
           </PrivateRoute>
         } />
+           <Route path="/admin-product-review" element={
+  <PrivateRoute allowedRoles={1}>
+    <ProductReview />
+  </PrivateRoute>
+} />
 
         {/* Customer Routes 
         <Route path="/wishlist" element={

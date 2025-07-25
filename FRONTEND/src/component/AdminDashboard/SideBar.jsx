@@ -176,6 +176,32 @@ const SideBar = () => {
                 </ul>
               </li>
 
+              <li className="sidebar-list">
+  <Link to="/admin-product-review" className="sidebar-link sidebar-title link-nav">
+    <i className="ri-star-line"></i>
+    <span>Product Review</span>
+  </Link>
+</li>
+
+
+              <li className="sidebar-list">
+                <a className="sidebar-link sidebar-title link-nav" href="support-ticket.html">
+                  <i className="ri-phone-line"></i>
+                  <span>Support Ticket</span>
+                </a>
+              </li>
+
+              <li className="sidebar-list">
+                <a className="linear-icon-link sidebar-link sidebar-title" href="javascript:void(0)">
+                  <i className="ri-settings-line"></i>
+                  <span>Settings</span>
+                </a>
+                <ul className="sidebar-submenu">
+                  <li>
+                    <a href="profile-setting.html">Profile Setting</a>
+                  </li>
+                </ul>
+              </li>
 
               <li className="sidebar-list">
                 <a className="sidebar-link sidebar-title link-nav" href="reports.html">
