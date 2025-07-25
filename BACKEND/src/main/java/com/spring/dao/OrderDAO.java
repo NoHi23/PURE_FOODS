@@ -5,6 +5,7 @@ import com.spring.entity.Order;
 import com.spring.entity.Products;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface OrderDAO {
     void saveOrder(Order order);
@@ -20,6 +21,8 @@ public interface OrderDAO {
     List<Order> getOrdersByStatusID(int statusID);
     List<BestSellingProductDTO> getTop5BestSellingProductsWithStats();
     List<Order> getTop5RecentOrders();
+    Optional<Order> findById(int orderId);
+
 
     boolean hasCustomerBoughtProduct(int customerId, int productId);
 

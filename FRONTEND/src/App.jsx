@@ -42,6 +42,14 @@ import Blog from './component/Admin/Blog';
 import AddNewBlog from './component/Admin/AddNewBlog';
 import ProductReview from './component/AdminDashboard/ProductReview';
 
+//import CustomerBlog from './component/CustomerBlog';
+//import BlogDetail from './component/BlogDetail';
+import DashboardCategory from './component/ShopLeftSidebar/DashboardCategory';
+import OrderSuccess from './component/OrderSuccess/OrderSuccess';
+import SpinWheelButton from './component/SpinWheelPage/SpinWheelButton';
+import AllProducts from './component/All Products/AllProducts';
+import MyCouponsPage from './component/MyCouponsPage/MyCouponsPage';
+import Notitications from './component/Notifications/Notifications';
 {/*import CustomerBlog from './component/CustomerBlog';
 import BlogDetail from './component/BlogDetail';*/}
 
@@ -65,21 +73,26 @@ function AppContent() {
 
   const backToTopPaths = [
     '/login', '/signup', '/forgot', '/reset-password', '/verify-otp',
-    '/', '/wishlist'
+    '/', '/wishlist', '/order-success', "/my-coupons"
   ];
 
-  const aiChatPaths = ['/', '/wishlist'];
+  const aiChatPaths = ['/', '/wishlist', '/my-coupons'];
 
   const shouldHideHeader = hideHeaderPaths.includes(location.pathname);
   const shouldHideFooter = hideFooterPaths.includes(location.pathname);
   const shouldHideBackToTop = backToTopPaths.includes(location.pathname) || isProductDetail || isCheckout;
   const shouldShowAIChat = aiChatPaths.includes(location.pathname) || isProductDetail || isCheckout;
 
+  const spinPaths = ['/', '/wishlist', '/cart-detail', '/my-coupons'];
+  const shouldShowSpin = spinPaths.includes(location.pathname);
+
+
   return (
     <>
       {!shouldHideHeader && <Header />}
       <Routes>
         <Route path="/" element={<HomePage />} />
+        <Route path="/category" element={<DashboardCategory />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/forgot" element={<Forgot />} />
@@ -191,13 +204,6 @@ function AppContent() {
           </PrivateRoute>
         } />
 
-        {/* Importer Routes 
-        <Route path="/importer" element={
-          <PrivateRoute allowedRoles={4}>
-            <ImporterDashboard />
-          </PrivateRoute>
-        } /> */}
-
         {/* Trader Routes 
         <Route path="/wholesaler" element={
           <PrivateRoute allowedRoles={3}>
@@ -205,11 +211,29 @@ function AppContent() {
           </PrivateRoute>
         } /> */}
 
+        <Route path="/all-products" element={
+          <PrivateRoute allowedRoles={2}>
+            <AllProducts />
+          </PrivateRoute>
+        } />
+        <Route path="/my-coupons" element={
+          <PrivateRoute allowedRoles={2}>
+            <MyCouponsPage />
+          </PrivateRoute>
+        } />
+
         <Route path="/cart-detail" element={
           <PrivateRoute allowedRoles={2}>
             <CartDetail />
           </PrivateRoute>
         } />
+
+        <Route path="/notifications" element={
+          <PrivateRoute allowedRoles={2}>
+            <Notitications />
+          </PrivateRoute>
+        } />
+
         <Route path="/customer-profile-update" element={
           <PrivateRoute allowedRoles={2}>
             <CustomerProfileUpdate />
@@ -228,6 +252,12 @@ function AppContent() {
           </PrivateRoute>
         } />
 
+        <Route path="/order-success/:id" element={
+          <PrivateRoute allowedRoles={2}>
+            <OrderSuccess />
+          </PrivateRoute>
+        } />
+
         <Route path="/importer" element={
           <PrivateRoute allowedRoles={4}>
             <ImporterDashboard />
@@ -242,6 +272,8 @@ function AppContent() {
       {!shouldHideFooter && <Footer />}
       {!shouldHideBackToTop && <BackToTopButton />}
       {shouldShowAIChat && <AIChatWidget />}
+      {shouldShowSpin && <SpinWheelButton />}
+
     </>
   );
 }
@@ -263,6 +295,7 @@ function App() {
           pauseOnHover={false}
           theme="light"
           transition={Bounce}
+          style={{ zIndex: 99999 }}
         />
       </WishlistProvider>
     </BrowserRouter>

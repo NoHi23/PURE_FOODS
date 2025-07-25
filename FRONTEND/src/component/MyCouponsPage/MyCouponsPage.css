@@ -1,0 +1,12 @@
+.card .badge-success {
+  background-color: #28a745;
+  font-size: 0.9rem;
+  padding: 5px 10px;
+}
+
+.card .card-body {
+  transition: transform 0.3s ease;
+}
+.card:hover .card-body {
+  transform: scale(1.02);
+}

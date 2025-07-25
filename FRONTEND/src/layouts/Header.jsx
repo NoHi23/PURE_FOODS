@@ -131,20 +131,6 @@ export default function Header() {
     }
   };
 
-  // Định nghĩa trước khi dùng handleRemoveCart
-  const fetchCart = async () => {
-    try {
-      const user = JSON.parse(localStorage.getItem("user"));
-      const userId = user?.userId;
-      if (!userId) return;
-
-      const res = await axios.get(`http://localhost:8082/PureFoods/api/cart/user/${userId}`);
-      setCartItems(res.data); // nhớ khai báo state cartItems
-    } catch (err) {
-      console.error("Lỗi khi lấy giỏ hàng:", err);
-    }
-  };
-
 
   const handleRemoveCart = async (cartItemID) => {
     if (!cartItemID) {
@@ -154,7 +140,8 @@ export default function Header() {
 
     try {
       await axios.delete(`http://localhost:8082/PureFoods/api/cart/delete/${cartItemID}`);
-      await fetchCart(); // gọi lại API để làm mới giỏ hàng
+      await fetchCartItems(); //  gọi lại để cập nhật
+      window.dispatchEvent(new Event("cartUpdated"));
     } catch (error) {
       console.error("Lỗi xoá sản phẩm trong giỏ hàng:", error);
       toast.error("Xoá sản phẩm thất bại");
@@ -170,7 +157,7 @@ export default function Header() {
             <div className="col-xxl-3 d-xxl-block d-none">
               <div className="top-left-header">
                 <i className="iconly-Location icli text-white"></i>
-                <span className="text-white">1418 Riverwood Drive, CA 96052, US</span>
+                <span className="text-white">KM29 Thang Long Boulevard Thach Hoa Commune 10000 Hà Nội</span>
               </div>
             </div>
 
@@ -179,15 +166,15 @@ export default function Header() {
                 <div className="notification-slider">
                   <div className="timer-notification">
                     <h6>
-                      <strong className="me-1">Chào mừng bạn đến với PURE FOOD!</strong>
+                      <strong className="me-1">Chào mừng bạn đến với Clean Food Shop!</strong>
                       Tặng các ưu đãi mới vào ngày cuối tuần.
-                      <strong className="ms-1">Mã giảm giá mới: Fast024</strong>
+                      <strong className="ms-1">Mã giảm giá mới: CLEANFOODSHOP</strong>
                     </h6>
                   </div>
                   <div className="timer-notification">
                     <h6>
                       Một thứ gì đó bạn yêu thích có thể đang được bán{" "}
-                      <a href="/shop-left-sidebar" className="text-white">
+                      <a href="/" className="text-white">
                         Mua ngay!
                       </a>
                     </h6>
@@ -413,9 +400,8 @@ export default function Header() {
                             </h4>
                           </div>
 
-                          <div className="button-group">
+                          <div className="button-group justify-content-center">
                             <a href="/cart-detail" className="btn btn-sm cart-button">View Cart</a>
-                            <a href="/checkout" className="btn btn-sm cart-button theme-bg-color text-white">Checkout</a>
                           </div>
                         </div>
 
@@ -489,7 +475,7 @@ export default function Header() {
                             <i className="ri-notification-line"></i>
                             <h6 className="f-18 mb-0" style={{ marginLeft: "5px" }}>Notitications</h6>
                           </li>
-                          {notifications.map(n => (
+                          {notifications.slice(0, 5).map(n => (
                             <li key={n.id} onClick={() => handleMarkRead(n.id)}>
                               <p>
                                 <i className="fa fa-circle me-2 font-primary"></i>
@@ -500,7 +486,7 @@ export default function Header() {
                               </p>
                             </li>
                           ))}
-                          {history.map(h => (
+                          {history.slice(0, 5).map(h => (
                             <li key={h.id}>
                               <p style={{ opacity: .6 }}>
                                 <i className="fa fa-circle me-2 font-secondary"></i>
@@ -514,9 +500,14 @@ export default function Header() {
                           {notifications.length === 0 && history.length === 0 && (
                             <li><p>No notification.</p></li>
                           )}
-                          <li>
+                          <li className="button-group d-flex justify-content-center mt-2">
                             <a className="btn btn-primary" onClick={handleMarkAllRead}>
                               Check all notification
+                            </a>
+                          </li>
+                          <li className="button-group d-flex justify-content-center mt-2">
+                            <a href="/notifications" className="btn btn-primary">
+                              View all notifications
                             </a>
                           </li>
                         </ul>
@@ -544,12 +535,15 @@ export default function Header() {
                                 <a href="/customer-profile-update">Profile Setting</a>
                               </li>
                               <li className="product-box-contain">
-                                <a href="#" onClick={handleLogout}>
-                                  Logout
-                                </a>
+                                <a href="/my-coupons">My Coupons</a>
                               </li>
                               <li className="product-box-contain">
                                 <a href="/forgot">Forgot Password</a>
+                              </li>
+                              <li className="product-box-contain">
+                                <a href="#" onClick={handleLogout}>
+                                  Logout
+                                </a>
                               </li>
                             </>
                           ) : (

@@ -1,21 +1,24 @@
 import React, { useEffect, useState } from "react";
 import HomepageLayout from "../../layouts/HomepageLayout";
 import axios from "axios";
-import * as bootstrap from 'bootstrap';
+import * as bootstrap from "bootstrap";
 import feather from "feather-icons";
 import ProductSlider from "./ProductSlider";
 import CookieConsent from "./CookieConsent";
-import { useNavigate } from 'react-router-dom';
+import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { toast } from 'react-toastify';
+import UpdateInfoModal from "../Login/UpdateInfoModal";
+import ProductDropdown from "./ProductDropdown";
 
 
 const getOrUpdateExpiryTime = () => {
-  let expiry = localStorage.getItem('countdownExpiry');
+  let expiry = localStorage.getItem("countdownExpiry");
   const now = new Date().getTime();
 
   if (!expiry || now >= Number(expiry)) {
     const newExpiry = now + 15 * 24 * 60 * 60 * 1000; // 15 ngày
-    localStorage.setItem('countdownExpiry', newExpiry);
+    localStorage.setItem("countdownExpiry", newExpiry);
     expiry = newExpiry;
   }
 
@@ -35,49 +38,73 @@ const HomePage = () => {
   const [quantity, setQuantity] = useState(1);
   const navigate = useNavigate();
 
-  const handleAddToCart = (product) => {
+  const handleAddToCart = async (product) => {
     if (!userId) {
-      toast.error('Vui lòng đăng nhập');
+      toast.error("Vui lòng đăng nhập");
       return;
     }
 
     // Nếu đang mở modal => đóng trước
-    const modalEl = document.getElementById('view');
+    const modalEl = document.getElementById("view");
     if (modalEl && bootstrap.Modal.getInstance(modalEl)) {
       bootstrap.Modal.getInstance(modalEl).hide();
     }
 
+    if (quantity <= 0) {
+      toast.error("Số lượng phải lớn hơn 0");
+      return;
+    }
+
+    // Kiểm tra số lượng trong giỏ hàng hiện tại
+    try {
+      const res = await axios.get(`http://localhost:8082/PureFoods/api/cart/user/${userId}`);
+      const cartItems = res.data;
+
+      const existingItem = cartItems.find((item) => item.productID === product.productId);
+      const currentQuantityInCart = existingItem ? existingItem.quantity : 0;
+
+      if (currentQuantityInCart + quantity > product.stockQuantity) {
+        toast.error(`Chỉ còn ${product.stockQuantity - currentQuantityInCart} sản phẩm trong kho`);
+        return;
+      }
+    } catch (err) {
+      console.error("❌ Lỗi khi kiểm tra giỏ hàng:", err);
+      toast.error("Không thể kiểm tra số lượng trong kho");
+      return;
+    }
+
+    // Tiếp tục thêm vào giỏ hàng nếu đủ stock
     const cartItem = {
       userID: userId,
       productID: product.productId,
-      quantity,
+      quantity: quantity,
       priceAfterDiscount: product.salePrice,
       total: product.salePrice * quantity,
       imageURL: product.imageURL,
       productName: product.productName,
       originalPrice: product.price,
-      discount: product.discountPercent
+      discount: product.discountPercent,
     };
-
-    axios.post('http://localhost:8082/PureFoods/api/cart/create', cartItem)
-      .then(() => {
-        toast.success('Đã thêm vào giỏ hàng');
-        window.dispatchEvent(new Event('cartUpdated'));
-        navigate(`/cart-detail`, { state: { fromAddToCart: true } });
-      })
-      .catch((err) => {
-        console.error("❌ Lỗi khi thêm vào giỏ hàng:", err.response?.data || err.message);
-        toast.error('Thêm vào giỏ thất bại');
-      });
+    try {
+      await axios.post('http://localhost:8082/PureFoods/api/cart/create', cartItem);
+      toast.success('Đã thêm vào giỏ hàng');
+      window.dispatchEvent(new Event('cartUpdated'));
+      //navigate(`/cart-detail`, { state: { fromAddToCart: true } });
+    } catch (err) {
+      console.error("❌ Lỗi khi thêm vào giỏ hàng:", err.response?.data || err.message);
+      toast.error('Thêm vào giỏ thất bại');
+    }
   };
 
 
+
   useEffect(() => {
-    axios.get('http://localhost:8082/PureFoods/api/product/getAll/status0')
+    axios
+      .get("http://localhost:8082/PureFoods/api/product/getAll/status0")
       .then((res) => {
         const productList = res.data.listProduct;
         if (productList && productList.length > 0) {
-          setProducts(productList[0]);  //  Gán sản phẩm đầu tiên để Add to Cart dùng
+          setProducts(productList[0]); //  Gán sản phẩm đầu tiên để Add to Cart dùng
           setDealProduct(productList); // hoặc gán vào dealProduct để dùng cho slider, v.v.
         }
       })
@@ -87,12 +114,11 @@ const HomePage = () => {
       });
   }, []);
 
-
   useEffect(() => {
     // Xử lý sự cố còn sót modal hoặc lớp backdrop
     const cleanupModal = () => {
-      document.body.classList.remove('modal-open');
-      const backdrops = document.querySelectorAll('.modal-backdrop');
+      document.body.classList.remove("modal-open");
+      const backdrops = document.querySelectorAll(".modal-backdrop");
       backdrops.forEach((bd) => bd.remove());
     };
 
@@ -101,10 +127,9 @@ const HomePage = () => {
     return cleanupModal;
   }, []);
 
-
   const handleViewDetail = (productId) => {
     // Nếu modal đang mở => đóng trước
-    const modalEl = document.getElementById('view');
+    const modalEl = document.getElementById("view");
     if (modalEl && bootstrap.Modal.getInstance(modalEl)) {
       bootstrap.Modal.getInstance(modalEl).hide();
     }
@@ -112,8 +137,6 @@ const HomePage = () => {
     // Navigate sang trang chi tiết
     navigate(`/product/${productId}`);
   };
-
-
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -136,21 +159,18 @@ const HomePage = () => {
     return () => clearInterval(timer);
   }, []);
   useEffect(() => {
-    axios.get('http://localhost:8082/PureFoods/api/product/top-discount')
-      .then((res) => setDealProduct(res.data))
+    axios.get("http://localhost:8082/PureFoods/api/product/top-discount").then((res) => setDealProduct(res.data));
 
-    axios.get('http://localhost:8082/PureFoods/api/product/top-save')
-      .then((res) => setSaveProduct(res.data))
-  }, [])
+    axios.get("http://localhost:8082/PureFoods/api/product/top-save").then((res) => setSaveProduct(res.data));
+  }, []);
   const [selectedProduct, setSelectedProduct] = useState(null);
 
   const handleViewProduct = (product) => {
     setSelectedProduct(product);
-    const modal = new bootstrap.Modal(document.getElementById('view'));
+    const modal = new bootstrap.Modal(document.getElementById("view"));
     modal.show();
     console.log("hi: " + product);
   };
-
 
   const [wishlistMap, setWishlistMap] = useState({});
   useEffect(() => {
@@ -166,9 +186,7 @@ const HomePage = () => {
 
   useEffect(() => feather.replace(), [wishlistMap]);
 
-
-
-  const [category, setCategory] = useState(null)
+  const [category, setCategory] = useState(null);
   useEffect(() => {
     const fetchCategory = async () => {
       if (selectedProduct?.categoryId) {
@@ -185,8 +203,7 @@ const HomePage = () => {
     fetchCategory();
   }, [selectedProduct]);
 
-
-  const [supplier, setSupplier] = useState(null)
+  const [supplier, setSupplier] = useState(null);
   useEffect(() => {
     const fetchSuppliers = async () => {
       if (selectedProduct?.supplierId) {
@@ -202,6 +219,31 @@ const HomePage = () => {
 
     fetchSuppliers();
   }, [selectedProduct]);
+
+  const [categories, setCategories] = useState([]);
+
+  useEffect(() => {
+    axios
+      .get("http://localhost:8082/PureFoods/api/category/getAll")
+      .then((response) => {
+        console.log("Dữ liệu categories:", response.data);
+        setCategories(response.data);
+      })
+      .catch((error) => {
+        console.error("Error fetching categories:", error);
+      });
+  }, []);
+
+  const [showUpdateModal, setShowUpdateModal] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (user && (!user.phone || !user.address)) {
+      setCurrentUser(user);
+      setShowUpdateModal(true);
+    }
+  }, []);
 
   return (
     <HomepageLayout>
@@ -226,398 +268,25 @@ const HomePage = () => {
                           </button>
                         </div>
 
-                        <ul className="category-list">
-                          <li className="onhover-category-list">
-                            <a href="javascript:void(0)" className="category-name">
-                              <img src="../assets/svg/1/vegetable.svg" alt="" />
-                              <h6>Vegetables & Fruit</h6>
-                              <i className="fa-solid fa-angle-right"></i>
-                            </a>
-
-                            <div className="onhover-category-box">
-                              <div className="list-1">
-                                <div className="category-title-box">
-                                  <h5>Organic Vegetables</h5>
-                                </div>
-                                <ul>
-                                  <li>
-                                    <a href="javascript:void(0)">Potato & Tomato</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Cucumber & Capsicum</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Leafy Vegetables</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Root Vegetables</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Beans & Okra</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Cabbage & Cauliflower</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Gourd & Drumstick</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Specialty</a>
-                                  </li>
-                                </ul>
-                                <div className="category-title-box">
-                                  <h5>Organic Vegetables</h5>
-                                </div>
-                                <ul>
-                                  <li>
-                                    <a href="javascript:void(0)">Potato & Tomato</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Cucumber & Capsicum</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Leafy Vegetables</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Root Vegetables</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Beans & Okra</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Cabbage & Cauliflower</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Gourd & Drumstick</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Specialty</a>
-                                  </li>
-                                </ul>
+                        {/* Bắt đầu category header từ đây */}
+                        <ul>
+                          {categories.map((category) => (
+                            <li
+                              key={category.categoryID}
+                              style={{ display: "block" }}
+                              className={`onhover-category-list ${categories.length - 1 ? "pb-30" : ""}`}
+                            >
+                              <div className="category-list">
+                                <h5 style={{ fontSize: "18px" }}>
+                                  <Link to={`/category?cate=${category.categoryID}`}>
+                                    {category.categoryName} <i className="fa-solid fa-angle-right"></i>
+                                  </Link>
+                                </h5>
                               </div>
-                            </div>
-                          </li>
-
-                          <li className="onhover-category-list">
-                            <a href="javascript:void(0)" className="category-name">
-                              <img src="../assets/svg/1/cup.svg" alt="" />
-                              <h6>Beverages</h6>
-                              <i className="fa-solid fa-angle-right"></i>
-                            </a>
-
-                            <div className="onhover-category-box w-100">
-                              <div className="list-1">
-                                <div className="category-title-box">
-                                  <h5>Energy & Soft Drinks</h5>
-                                </div>
-                                <ul>
-                                  <li>
-                                    <a href="javascript:void(0)">Soda & Cocktail Mix</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Soda & Cocktail Mix</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Sports & Energy Drinks</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Non Alcoholic Drinks</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Packaged Water</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Spring Water</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Flavoured Water</a>
-                                  </li>
-                                </ul>
-                              </div>
-                            </div>
-                          </li>
-
-                          <li className="onhover-category-list">
-                            <a href="javascript:void(0)" className="category-name">
-                              <img src="../assets/svg/1/meats.svg" alt="" />
-                              <h6>Meats & Seafood</h6>
-                              <i className="fa-solid fa-angle-right"></i>
-                            </a>
-
-                            <div className="onhover-category-box">
-                              <div className="list-1">
-                                <div className="category-title-box">
-                                  <h5>Meat</h5>
-                                </div>
-                                <ul>
-                                  <li>
-                                    <a href="javascript:void(0)">Fresh Meat</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Frozen Meat</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Marinated Meat</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Fresh & Frozen Meat</a>
-                                  </li>
-                                </ul>
-                              </div>
-
-                              <div className="list-2">
-                                <div className="category-title-box">
-                                  <h5>Seafood</h5>
-                                </div>
-                                <ul>
-                                  <li>
-                                    <a href="javascript:void(0)">Fresh Water Fish</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Dry Fish</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Frozen Fish & Seafood</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Marine Water Fish</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Canned Seafood</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Prawans & Shrimps</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Other Seafood</a>
-                                  </li>
-                                </ul>
-                              </div>
-                            </div>
-                          </li>
-
-                          <li className="onhover-category-list">
-                            <a href="javascript:void(0)" className="category-name">
-                              <img src="../assets/svg/1/breakfast.svg" alt="" />
-                              <h6>Breakfast & Dairy</h6>
-                              <i className="fa-solid fa-angle-right"></i>
-                            </a>
-
-                            <div className="onhover-category-box">
-                              <div className="list-1">
-                                <div className="category-title-box">
-                                  <h5>Breakfast Cereals</h5>
-                                </div>
-                                <ul>
-                                  <li>
-                                    <a href="javascript:void(0)">Oats & Porridge</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Kids Cereal</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Muesli</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Flakes</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Granola & Cereal Bars</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Instant Noodles</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Pasta & Macaroni</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Frozen Non-Veg Snacks</a>
-                                  </li>
-                                </ul>
-                              </div>
-
-                              <div className="list-2">
-                                <div className="category-title-box">
-                                  <h5>Dairy</h5>
-                                </div>
-                                <ul>
-                                  <li>
-                                    <a href="javascript:void(0)">Milk</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Curd</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Paneer, Tofu & Cream</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Butter & Margarine</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Condensed, Powdered Milk</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Buttermilk & Lassi</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Yogurt & Shrikhand</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Flavoured, Soya Milk</a>
-                                  </li>
-                                </ul>
-                              </div>
-                            </div>
-                          </li>
-
-                          <li className="onhover-category-list">
-                            <a href="javascript:void(0)" className="category-name">
-                              <img src="../assets/svg/1/frozen.svg" alt="" />
-                              <h6>Frozen Foods</h6>
-                              <i className="fa-solid fa-angle-right"></i>
-                            </a>
-
-                            <div className="onhover-category-box w-100">
-                              <div className="list-1">
-                                <div className="category-title-box">
-                                  <h5>Noodle, Pasta</h5>
-                                </div>
-                                <ul>
-                                  <li>
-                                    <a href="javascript:void(0)">Instant Noodles</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Hakka Noodles</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Cup Noodles</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Vermicelli</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Instant Pasta</a>
-                                  </li>
-                                </ul>
-                              </div>
-                            </div>
-                          </li>
-
-                          <li className="onhover-category-list">
-                            <a href="javascript:void(0)" className="category-name">
-                              <img src="../assets/svg/1/biscuit.svg" alt="" />
-                              <h6>Biscuits & Snacks</h6>
-                              <i className="fa-solid fa-angle-right"></i>
-                            </a>
-
-                            <div className="onhover-category-box">
-                              <div className="list-1">
-                                <div className="category-title-box">
-                                  <h5>Biscuits & Cookies</h5>
-                                </div>
-                                <ul>
-                                  <li>
-                                    <a href="javascript:void(0)">Salted Biscuits</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Marie, Health, Digestive</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Cream Biscuits & Wafers</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Glucose & Milk Biscuits</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Cookies</a>
-                                  </li>
-                                </ul>
-                              </div>
-
-                              <div className="list-2">
-                                <div className="category-title-box">
-                                  <h5>Bakery Snacks</h5>
-                                </div>
-                                <ul>
-                                  <li>
-                                    <a href="javascript:void(0)">Bread Sticks & Lavash</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Cheese & Garlic Bread</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Puffs, Patties, Sandwiches</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Breadcrumbs & Croutons</a>
-                                  </li>
-                                </ul>
-                              </div>
-                            </div>
-                          </li>
-
-                          <li className="onhover-category-list">
-                            <a href="javascript:void(0)" className="category-name">
-                              <img src="../assets/svg/1/grocery.svg" alt="" />
-                              <h6>Grocery & Staples</h6>
-                              <i className="fa-solid fa-angle-right"></i>
-                            </a>
-
-                            <div className="onhover-category-box">
-                              <div className="list-1">
-                                <div className="category-title-box">
-                                  <h5>Grocery</h5>
-                                </div>
-                                <ul>
-                                  <li>
-                                    <a href="javascript:void(0)">Lemon, Ginger & Garlic</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Indian & Exotic Herbs</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Organic Vegetables</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Organic Fruits</a>
-                                  </li>
-                                </ul>
-                              </div>
-
-                              <div className="list-2">
-                                <div className="category-title-box">
-                                  <h5>Organic Staples</h5>
-                                </div>
-                                <ul>
-                                  <li>
-                                    <a href="javascript:void(0)">Organic Dry Fruits</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Organic Dals & Pulses</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Organic Millet & Flours</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Organic Sugar, Jaggery</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Organic Masalas & Spices</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Organic Rice, Other Rice</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Organic Flours</a>
-                                  </li>
-                                  <li>
-                                    <a href="javascript:void(0)">Organic Edible Oil, Ghee</a>
-                                  </li>
-                                </ul>
-                              </div>
-                            </div>
-                          </li>
+                            </li>
+                          ))}
                         </ul>
+                        {/* Kết thúc ở đây */}
                       </div>
                     </div>
 
@@ -630,72 +299,10 @@ const HomePage = () => {
                           </div>
                           <div className="offcanvas-body">
                             <ul className="navbar-nav">
-                              <li className="nav-item dropdown">
-                                <a
-                                  className="nav-link dropdown-toggle"
-                                  href="javascript:void(0)"
-                                  data-bs-toggle="dropdown"
-                                >
+                              <li className="nav-item">
+                                <Link className="nav-link" to="/">
                                   Home
-                                </a>
-
-                                <ul className="dropdown-menu">
-                                  <li>
-                                    <a className="dropdown-item" href="index.html">
-                                      Kartshop
-                                    </a>
-                                  </li>
-                                  <li>
-                                    <a className="dropdown-item" href="index-2.html">
-                                      Sweetshop
-                                    </a>
-                                  </li>
-                                  <li>
-                                    <a className="dropdown-item" href="index-3.html">
-                                      Organic
-                                    </a>
-                                  </li>
-                                  <li>
-                                    <a className="dropdown-item" href="index-4.html">
-                                      Supershop
-                                    </a>
-                                  </li>
-                                  <li>
-                                    <a className="dropdown-item" href="index-5.html">
-                                      classNameic shop
-                                    </a>
-                                  </li>
-                                  <li>
-                                    <a className="dropdown-item" href="index-6.html">
-                                      Furniture
-                                    </a>
-                                  </li>
-                                  <li>
-                                    <a className="dropdown-item" href="index-7.html">
-                                      Search Oriented
-                                    </a>
-                                  </li>
-                                  <li>
-                                    <a className="dropdown-item" href="index-8.html">
-                                      Category Focus
-                                    </a>
-                                  </li>
-                                  <li>
-                                    <a className="dropdown-item" href="index-9.html">
-                                      Fashion
-                                    </a>
-                                  </li>
-                                  <li>
-                                    <a className="dropdown-item" href="index-10.html">
-                                      Book
-                                    </a>
-                                  </li>
-                                  <li>
-                                    <a className="dropdown-item" href="index-11.html">
-                                      Digital
-                                    </a>
-                                  </li>
-                                </ul>
+                                </Link>
                               </li>
 
                               <li className="nav-item dropdown">
@@ -724,7 +331,7 @@ const HomePage = () => {
                                     </a>
                                   </li>
                                   <li>
-                                    <a className="dropdown-item" href="shop-left-sidebar.html">
+                                    <a className="dropdown-item" href="/all-products">
                                       Shop Left Sidebar
                                     </a>
                                   </li>
@@ -745,156 +352,8 @@ const HomePage = () => {
                                   </li>
                                 </ul>
                               </li>
-
-                              <li className="nav-item dropdown">
-                                <a
-                                  className="nav-link dropdown-toggle"
-                                  href="#"
-                                  role="button"
-                                  data-bs-toggle="dropdown"
-                                  aria-expanded="false"
-                                >
-                                  Product
-                                </a>
-                                <ul className="dropdown-menu">
-                                  <li><a className="dropdown-item" href="/all-products">All Products</a></li>
-                                  <li><a className="dropdown-item" href="/top-discount">Top Discount</a></li>
-                                  <li><a className="dropdown-item" href="/organic-products">Organic Products</a></li>
-                                </ul>
-
-                                <div className="dropdown-menu dropdown-menu-3 dropdown-menu-2">
-                                  <div className="row">
-                                    <div className="col-xl-3">
-                                      <div className="dropdown-column m-0">
-                                        <h5 className="dropdown-header">Product Pages </h5>
-                                        <a className="dropdown-item" href="product-left-thumbnail.html">
-                                          Product Thumbnail
-                                        </a>
-                                        <a className="dropdown-item" href="product-4-image.html">
-                                          Product Images
-                                        </a>
-                                        <a className="dropdown-item" href="product-slider.html">
-                                          Product Slider
-                                        </a>
-                                        <a className="dropdown-item" href="product-sticky.html">
-                                          Product Sticky
-                                        </a>
-                                        <a className="dropdown-item" href="product-accordion.html">
-                                          Product Accordion
-                                        </a>
-                                        <a className="dropdown-item" href="product-circle.html">
-                                          Product Tab
-                                        </a>
-                                        <a className="dropdown-item" href="product-digital.html">
-                                          Product Digital
-                                        </a>
-
-                                        <h5 className="custom-mt dropdown-header">Product Features</h5>
-                                        <a className="dropdown-item" href="product-circle.html">
-                                          Bundle (Cross Sale)
-                                        </a>
-                                        <a className="dropdown-item" href="product-left-thumbnail.html">
-                                          Hot Stock Progress <label className="menu-label">New</label>
-                                        </a>
-                                        <a className="dropdown-item" href="product-sold-out.html">
-                                          SOLD OUT
-                                        </a>
-                                        <a className="dropdown-item" href="product-circle.html">
-                                          Sale Countdown
-                                        </a>
-                                      </div>
-                                    </div>
-                                    <div className="col-xl-3">
-                                      <div className="dropdown-column m-0">
-                                        <h5 className="dropdown-header">Product Variants Style </h5>
-                                        <a className="dropdown-item" href="product-rectangle.html">
-                                          Variant Rectangle
-                                        </a>
-                                        <a className="dropdown-item" href="product-circle.html">
-                                          Variant Circle <label className="menu-label">New</label>
-                                        </a>
-                                        <a className="dropdown-item" href="product-color-image.html">
-                                          Variant Image Swatch
-                                        </a>
-                                        <a className="dropdown-item" href="product-color.html">
-                                          Variant Color
-                                        </a>
-                                        <a className="dropdown-item" href="product-radio.html">
-                                          Variant Radio Button
-                                        </a>
-                                        <a className="dropdown-item" href="product-dropdown.html">
-                                          Variant Dropdown
-                                        </a>
-                                        <h5 className="custom-mt dropdown-header">Product Features</h5>
-                                        <a className="dropdown-item" href="product-left-thumbnail.html">
-                                          Sticky Checkout
-                                        </a>
-                                        <a className="dropdown-item" href="product-dynamic.html">
-                                          Dynamic Checkout
-                                        </a>
-                                        <a className="dropdown-item" href="product-sticky.html">
-                                          Secure Checkout
-                                        </a>
-                                        <a className="dropdown-item" href="product-bundle.html">
-                                          Active Product view
-                                        </a>
-                                        <a className="dropdown-item" href="product-bundle.html">
-                                          Active Last Orders
-                                        </a>
-                                      </div>
-                                    </div>
-                                    <div className="col-xl-3">
-                                      <div className="dropdown-column m-0">
-                                        <h5 className="dropdown-header">Product Features </h5>
-                                        <a className="dropdown-item" href="product-image.html">
-                                          Product Simple
-                                        </a>
-                                        <a className="dropdown-item" href="product-rectangle.html">
-                                          Product classNameified <label className="menu-label">New</label>
-                                        </a>
-                                        <a className="dropdown-item" href="product-size-chart.html">
-                                          Size Chart <label className="menu-label">New</label>
-                                        </a>
-                                        <a className="dropdown-item" href="product-size-chart.html">
-                                          Delivery & Return
-                                        </a>
-                                        <a className="dropdown-item" href="product-size-chart.html">
-                                          Product Review
-                                        </a>
-                                        <a className="dropdown-item" href="product-expert.html">
-                                          Ask an Expert
-                                        </a>
-                                        <h5 className="custom-mt dropdown-header">Product Features</h5>
-                                        <a className="dropdown-item" href="product-bottom-thumbnail.html">
-                                          Product Tags
-                                        </a>
-                                        <a className="dropdown-item" href="product-image.html">
-                                          Store Information
-                                        </a>
-                                        <a className="dropdown-item" href="product-image.html">
-                                          Social Share <label className="menu-label warning-label">Hot</label>
-                                        </a>
-                                        <a className="dropdown-item" href="product-left-thumbnail.html">
-                                          Related Products
-                                          <label className="menu-label warning-label">Hot</label>
-                                        </a>
-                                        <a className="dropdown-item" href="product-right-thumbnail.html">
-                                          Wishlist & Compare
-                                        </a>
-                                      </div>
-                                    </div>
-                                    <div className="col-xl-3 d-xl-block d-none">
-                                      <div className="dropdown-column m-0">
-                                        <div className="menu-img-banner">
-                                          <a className="text-title" href="product-circle.html">
-                                            <img src="../assets/images/mega-menu.png" alt="banner" />
-                                          </a>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                              </li>
+                       
+                              <ProductDropdown />
 
                               <li className="nav-item dropdown dropdown-mega">
                                 <a
@@ -909,27 +368,27 @@ const HomePage = () => {
                                   <div className="row">
                                     <div className="dropdown-column col-xl-3">
                                       <h5 className="dropdown-header">Daily Vegetables</h5>
-                                      <a className="dropdown-item" href="shop-left-sidebar.html">
+                                      <a className="dropdown-item" href="/all-products">
                                         Beans & Brinjals
                                       </a>
 
-                                      <a className="dropdown-item" href="shop-left-sidebar.html">
+                                      <a className="dropdown-item" href="/all-products">
                                         Broccoli & Cauliflower
                                       </a>
 
-                                      <a href="shop-left-sidebar.html" className="dropdown-item">
+                                      <a href="/all-products" className="dropdown-item">
                                         Chilies, Garlic
                                       </a>
 
-                                      <a className="dropdown-item" href="shop-left-sidebar.html">
+                                      <a className="dropdown-item" href="/all-products">
                                         Vegetables & Salads
                                       </a>
 
-                                      <a className="dropdown-item" href="shop-left-sidebar.html">
+                                      <a className="dropdown-item" href="/all-products">
                                         Gourd, Cucumber
                                       </a>
 
-                                      <a className="dropdown-item" href="shop-left-sidebar.html">
+                                      <a className="dropdown-item" href="/all-products">
                                         Herbs & Sprouts
                                       </a>
 
@@ -940,54 +399,54 @@ const HomePage = () => {
 
                                     <div className="dropdown-column col-xl-3">
                                       <h5 className="dropdown-header">Baby Tender</h5>
-                                      <a className="dropdown-item" href="shop-left-sidebar.html">
+                                      <a className="dropdown-item" href="/all-products">
                                         Beans & Brinjals
                                       </a>
 
-                                      <a className="dropdown-item" href="shop-left-sidebar.html">
+                                      <a className="dropdown-item" href="/all-products">
                                         Broccoli & Cauliflower
                                       </a>
 
-                                      <a className="dropdown-item" href="shop-left-sidebar.html">
+                                      <a className="dropdown-item" href="/all-products">
                                         Chilies, Garlic
                                       </a>
 
-                                      <a className="dropdown-item" href="shop-left-sidebar.html">
+                                      <a className="dropdown-item" href="/all-products">
                                         Vegetables & Salads
                                       </a>
 
-                                      <a className="dropdown-item" href="shop-left-sidebar.html">
+                                      <a className="dropdown-item" href="/all-products">
                                         Gourd, Cucumber
                                       </a>
 
-                                      <a className="dropdown-item" href="shop-left-sidebar.html">
+                                      <a className="dropdown-item" href="/all-products">
                                         Potatoes & Tomatoes
                                       </a>
 
-                                      <a href="shop-left-sidebar.html" className="dropdown-item">
+                                      <a href="/all-products" className="dropdown-item">
                                         Peas & Corn
                                       </a>
                                     </div>
 
                                     <div className="dropdown-column col-xl-3">
                                       <h5 className="dropdown-header">Exotic Vegetables</h5>
-                                      <a className="dropdown-item" href="shop-left-sidebar.html">
+                                      <a className="dropdown-item" href="/all-products">
                                         Asparagus & Artichokes
                                       </a>
 
-                                      <a className="dropdown-item" href="shop-left-sidebar.html">
+                                      <a className="dropdown-item" href="/all-products">
                                         Avocados & Peppers
                                       </a>
 
-                                      <a className="dropdown-item" href="shop-left-sidebar.html">
+                                      <a className="dropdown-item" href="/all-products">
                                         Broccoli & Zucchini
                                       </a>
 
-                                      <a className="dropdown-item" href="shop-left-sidebar.html">
+                                      <a className="dropdown-item" href="/all-products">
                                         Celery, Fennel & Leeks
                                       </a>
 
-                                      <a className="dropdown-item" href="shop-left-sidebar.html">
+                                      <a className="dropdown-item" href="/all-products">
                                         Chilies & Lime
                                       </a>
                                     </div>
@@ -1269,11 +728,11 @@ const HomePage = () => {
                         </p>
                         <button
                           onClick={() => {
-                            window.location.href = "shop-left-sidebar.html";
+                            window.location.href = "/all-products";
                           }}
                           className="btn btn-animation mt-xxl-4 mt-2 home-button mend-auto"
                         >
-                          Shop Now <i className="fa-solid fa-right-long icon"></i>
+                          Shop Now<i className="fa-solid fa-right-long icon"></i>
                         </button>
                       </div>
                     </div>
@@ -1292,7 +751,7 @@ const HomePage = () => {
                             </h2>
                             <h3 className="theme-color">Nut Collection</h3>
                             <p className="w-75">We deliver organic vegetables & fruits</p>
-                            <a href="shop-left-sidebar.html" className="shop-button">
+                            <a href="/all-products" className="shop-button">
                               Shop Now <i className="fa-solid fa-right-long"></i>
                             </a>
                           </div>
@@ -1308,7 +767,7 @@ const HomePage = () => {
                             <h3 className="mt-0 theme-color fw-bold">Healthy Food</h3>
                             <h4 className="text-danger">Organic Market</h4>
                             <p className="organic">Start your daily shopping with some Organic food</p>
-                            <a href="shop-left-sidebar.html" className="shop-button">
+                            <a href="/all-products" className="shop-button">
                               Shop Now <i className="fa-solid fa-right-long"></i>
                             </a>
                           </div>
@@ -1332,7 +791,7 @@ const HomePage = () => {
                         <h5>Hot Deals on New Items</h5>
                         <h6 className="text-content">Daily Essentials Eggs & Dairy</h6>
                       </div>
-                      <a href="shop-left-sidebar.html" className="banner-button text-white">
+                      <a href="/all-products" className="banner-button text-white">
                         Shop Now <i className="fa-solid fa-right-long ms-2"></i>
                       </a>
                     </div>
@@ -1348,7 +807,7 @@ const HomePage = () => {
                         <h5>Buy More & Save More</h5>
                         <h6 className="text-content">Fresh Vegetables</h6>
                       </div>
-                      <a href="shop-left-sidebar.html" className="banner-button text-white">
+                      <a href="/all-products" className="banner-button text-white">
                         Shop Now <i className="fa-solid fa-right-long ms-2"></i>
                       </a>
                     </div>
@@ -1364,7 +823,7 @@ const HomePage = () => {
                         <h5>Organic Meat Prepared</h5>
                         <h6 className="text-content">Delivered to Your Home</h6>
                       </div>
-                      <a href="shop-left-sidebar.html" className="banner-button text-white">
+                      <a href="/all-products" className="banner-button text-white">
                         Shop Now <i className="fa-solid fa-right-long ms-2"></i>
                       </a>
                     </div>
@@ -1380,7 +839,7 @@ const HomePage = () => {
                         <h5>Buy More & Save More</h5>
                         <h6 className="text-content">Nuts & Snacks</h6>
                       </div>
-                      <a href="shop-left-sidebar.html" className="banner-button text-white">
+                      <a href="/all-products" className="banner-button text-white">
                         Shop Now <i className="fa-solid fa-right-long ms-2"></i>
                       </a>
                     </div>
@@ -1394,115 +853,31 @@ const HomePage = () => {
               <div className="row g-sm-4 g-3">
                 <div className="col-xxl-3 col-xl-4 d-none d-xl-block">
                   <div className="p-sticky">
+                    {/* Bắt đầu filter category */}
+
+                    {/* Bắt đầu filter category */}
                     <div className="category-menu">
                       <h3>Category</h3>
                       <ul>
-                        <li>
-                          <div className="category-list">
-                            <img src="../assets/svg/1/vegetable.svg" className="blur-up lazyload" alt="" />
-                            <h5>
-                              <a href="shop-left-sidebar.html">Vegetables & Fruit</a>
-                            </h5>
-                          </div>
-                        </li>
-                        <li>
-                          <div className="category-list">
-                            <img src="../assets/svg/1/cup.svg" className="blur-up lazyload" alt="" />
-                            <h5>
-                              <a href="shop-left-sidebar.html">Beverages</a>
-                            </h5>
-                          </div>
-                        </li>
-                        <li>
-                          <div className="category-list">
-                            <img src="../assets/svg/1/meats.svg" className="blur-up lazyload" alt="" />
-                            <h5>
-                              <a href="shop-left-sidebar.html">Meats & Seafood</a>
-                            </h5>
-                          </div>
-                        </li>
-                        <li>
-                          <div className="category-list">
-                            <img src="../assets/svg/1/breakfast.svg" className="blur-up lazyload" alt="" />
-                            <h5>
-                              <a href="shop-left-sidebar.html">Breakfast & Dairy</a>
-                            </h5>
-                          </div>
-                        </li>
-                        <li>
-                          <div className="category-list">
-                            <img src="../assets/svg/1/frozen.svg" className="blur-up lazyload" alt="" />
-                            <h5>
-                              <a href="shop-left-sidebar.html">Frozen Foods</a>
-                            </h5>
-                          </div>
-                        </li>
-                        <li>
-                          <div className="category-list">
-                            <img src="../assets/svg/1/biscuit.svg" className="blur-up lazyload" alt="" />
-                            <h5>
-                              <a href="shop-left-sidebar.html">Biscuits & Snacks</a>
-                            </h5>
-                          </div>
-                        </li>
-                        <li>
-                          <div className="category-list">
-                            <img src="../assets/svg/1/grocery.svg" className="blur-up lazyload" alt="" />
-                            <h5>
-                              <a href="shop-left-sidebar.html">Grocery & Staples</a>
-                            </h5>
-                          </div>
-                        </li>
-                        <li>
-                          <div className="category-list">
-                            <img src="../assets/svg/1/drink.svg" className="blur-up lazyload" alt="" />
-                            <h5>
-                              <a href="shop-left-sidebar.html">Wines & Alcohol Drinks</a>
-                            </h5>
-                          </div>
-                        </li>
-                        <li>
-                          <div className="category-list">
-                            <img src="../assets/svg/1/milk.svg" className="blur-up lazyload" alt="" />
-                            <h5>
-                              <a href="shop-left-sidebar.html">Milk & Dairies</a>
-                            </h5>
-                          </div>
-                        </li>
-                        <li className="pb-30">
-                          <div className="category-list">
-                            <img src="../assets/svg/1/pet.svg" className="blur-up lazyload" alt="" />
-                            <h5>
-                              <a href="shop-left-sidebar.html">Pet Foods</a>
-                            </h5>
-                          </div>
-                        </li>
-                      </ul>
-
-                      <ul className="value-list">
-                        <li>
-                          <div className="category-list">
-                            <h5 className="ms-0 text-title">
-                              <a href="shop-left-sidebar.html">Value of the Day</a>
-                            </h5>
-                          </div>
-                        </li>
-                        <li>
-                          <div className="category-list">
-                            <h5 className="ms-0 text-title">
-                              <a href="shop-left-sidebar.html">Top 50 Offers</a>
-                            </h5>
-                          </div>
-                        </li>
-                        <li className="mb-0">
-                          <div className="category-list">
-                            <h5 className="ms-0 text-title">
-                              <a href="shop-left-sidebar.html">New Arrivals</a>
-                            </h5>
-                          </div>
-                        </li>
+                        {categories.map((category) => (
+                          <li key={category.categoryID} className={categories.length - 1 ? "pb-30" : ""}>
+                            <div className="category-list">
+                              <img
+                                src={`../assets/svg/1/vegetable.svg`}
+                                className="blur-up lazyload"
+                                alt={category.categoryName}
+                              />
+                              <h5 style={{ fontSize: "18px" }}>
+                                <Link to={`/category?cate=${category.categoryID}`}>{category.categoryName}</Link>
+                              </h5>
+                            </div>
+                          </li>
+                        ))}
                       </ul>
                     </div>
+                    {/* Hết filter category */}
+
+                    {/* Hết filter category */}
 
                     <div className="ratio_156 section-t-space">
                       <div className="home-contain hover-effect">
@@ -1516,7 +891,7 @@ const HomePage = () => {
                             <h3 className="fw-light">every hour</h3>
                             <button
                               onClick={() => {
-                                window.location.href = "shop-left-sidebar.html";
+                                window.location.href = "/all-products";
                               }}
                               className="btn btn-animation btn-md mend-auto"
                             >
@@ -1529,11 +904,7 @@ const HomePage = () => {
 
                     <div className="ratio_medium section-t-space">
                       <div className="home-contain hover-effect">
-                        <img
-                          src="11.jpg"
-                          className="img-fluid blur-up lazyload"
-                          alt=""
-                        />
+                        <img src="11.jpg" className="img-fluid blur-up lazyload" alt="" />
                         <div className="home-detail p-top-left home-p-medium">
                           <div>
                             <h4 className="text-yellow text-exo home-banner">Organic</h4>
@@ -1542,7 +913,7 @@ const HomePage = () => {
                             <p className="mb-3">Super Offer to 50% Off</p>
                             <button
                               onClick={() => {
-                                window.location.href = "shop-left-sidebar.html";
+                                window.location.href = "/all-products";
                               }}
                               className="btn btn-animation btn-md mend-auto"
                             >
@@ -1709,21 +1080,21 @@ const HomePage = () => {
                             <li>
                               <div className="counter">
                                 <div className="hours">
-                                  <h6>{timeObj.hours.toString().padStart(2, '0')}h</h6>
+                                  <h6>{timeObj.hours.toString().padStart(2, "0")}h</h6>
                                 </div>
                               </div>
                             </li>
                             <li>
                               <div className="counter">
                                 <div className="minutes">
-                                  <h6>{timeObj.minutes.toString().padStart(2, '0')}m</h6>
+                                  <h6>{timeObj.minutes.toString().padStart(2, "0")}m</h6>
                                 </div>
                               </div>
                             </li>
                             <li>
                               <div className="counter">
                                 <div className="seconds">
-                                  <h6>{timeObj.seconds.toString().padStart(2, '0')}s</h6>
+                                  <h6>{timeObj.seconds.toString().padStart(2, "0")}s</h6>
                                 </div>
                               </div>
                             </li>
@@ -1734,11 +1105,7 @@ const HomePage = () => {
                   </div>
 
                   <div className="section-b-space">
-                    <ProductSlider
-                      products={saveProduct}
-                      handleViewProduct={handleViewProduct}
-                      userId={userId}
-                    />
+                    <ProductSlider products={saveProduct} handleViewProduct={handleViewProduct} userId={userId} />
                   </div>
 
                   <div className="title">
@@ -1753,7 +1120,7 @@ const HomePage = () => {
 
                   <div className="category-slider-2 product-wrapper no-arrow">
                     <div>
-                      <a href="shop-left-sidebar.html" className="category-box category-dark">
+                      <a href="/category?cate=1%2C2&page=1" className="category-box category-dark">
                         <div>
                           <img src="../assets/svg/1/vegetable.svg" className="blur-up lazyload" alt="" />
                           <h5>Vegetables & Fruit</h5>
@@ -1762,7 +1129,7 @@ const HomePage = () => {
                     </div>
 
                     <div>
-                      <a href="shop-left-sidebar.html" className="category-box category-dark">
+                      <a href="/category?cate=5&page=1" className="category-box category-dark">
                         <div>
                           <img src="../assets/svg/1/cup.svg" className="blur-up lazyload" alt="" />
                           <h5>Beverages</h5>
@@ -1771,7 +1138,7 @@ const HomePage = () => {
                     </div>
 
                     <div>
-                      <a href="shop-left-sidebar.html" className="category-box category-dark">
+                      <a href="/category?cate=4" className="category-box category-dark">
                         <div>
                           <img src="../assets/svg/1/meats.svg" className="blur-up lazyload" alt="" />
                           <h5>Meats & Seafood</h5>
@@ -1780,7 +1147,7 @@ const HomePage = () => {
                     </div>
 
                     <div>
-                      <a href="shop-left-sidebar.html" className="category-box category-dark">
+                      <a href="/all-products" className="category-box category-dark">
                         <div>
                           <img src="../assets/svg/1/breakfast.svg" className="blur-up lazyload" alt="" />
                           <h5>Breakfast</h5>
@@ -1789,7 +1156,7 @@ const HomePage = () => {
                     </div>
 
                     <div>
-                      <a href="shop-left-sidebar.html" className="category-box category-dark">
+                      <a href="/category?cate=3" className="category-box category-dark">
                         <div>
                           <img src="../assets/svg/1/frozen.svg" className="blur-up lazyload" alt="" />
                           <h5>Frozen Foods</h5>
@@ -1798,7 +1165,7 @@ const HomePage = () => {
                     </div>
 
                     <div>
-                      <a href="shop-left-sidebar.html" className="category-box category-dark">
+                      <a href="/category?cate=5&page=1" className="category-box category-dark">
                         <div>
                           <img src="../assets/svg/1/milk.svg" className="blur-up lazyload" alt="" />
                           <h5>Milk & Dairies</h5>
@@ -1807,7 +1174,7 @@ const HomePage = () => {
                     </div>
 
                     <div>
-                      <a href="shop-left-sidebar.html" className="category-box category-dark">
+                      <a href="/category?cate=6" className="category-box category-dark">
                         <div>
                           <img src="../assets/svg/1/pet.svg" className="blur-up lazyload" alt="" />
                           <h5>Pet Food</h5>
@@ -1820,18 +1187,14 @@ const HomePage = () => {
                     <div className="row g-md-4 g-3">
                       <div className="col-md-6">
                         <div className="banner-contain hover-effect">
-                          <img
-                            src="9.jpg"
-                            className="bg-img blur-up lazyload"
-                            alt=""
-                          />
+                          <img src="9.jpg" className="bg-img blur-up lazyload" alt="" />
                           <div className="banner-details p-center-left p-4">
                             <div>
                               <h3 className="text-exo">50% offer</h3>
                               <h4 className="text-russo fw-normal theme-color mb-2">Testy Mushrooms</h4>
                               <button
                                 onClick={() => {
-                                  window.location.href = "shop-left-sidebar.html";
+                                  window.location.href = "/all-products";
                                 }}
                                 className="btn btn-animation btn-sm mend-auto"
                               >
@@ -1843,18 +1206,14 @@ const HomePage = () => {
                       </div>
                       <div className="col-md-6">
                         <div className="banner-contain hover-effect">
-                          <img
-                            src="10.jpg"
-                            className="bg-img blur-up lazyload"
-                            alt=""
-                          />
+                          <img src="10.jpg" className="bg-img blur-up lazyload" alt="" />
                           <div className="banner-details p-center-left p-4">
                             <div>
                               <h3 className="text-exo">50% offer</h3>
                               <h4 className="text-russo fw-normal theme-color mb-2">Fresh MEAT</h4>
                               <button
                                 onClick={() => {
-                                  window.location.href = "shop-left-sidebar.html";
+                                  window.location.href = "/all-products";
                                 }}
                                 className="btn btn-animation btn-sm mend-auto"
                               >
@@ -1867,594 +1226,17 @@ const HomePage = () => {
                     </div>
                   </div>
 
-                  <div className="title d-block">
-                    <h2>Food Cupboard</h2>
-                    <span className="title-leaf">
-                      <svg className="icon-width">
-                        <use href="../assets/svg/leaf.svg#leaf" />
-                      </svg>
-                    </span>
-                    <p>A virtual assistant collects the products from your list</p>
-                  </div>
+                  
 
-                  <div className="product-border overflow-hidden wow fadeInUp">
-                    <div className="product-box-slider no-arrow">
-                      <div>
-                        <div className="row m-0">
-                          <div className="col-12 px-0">
-                            <div className="product-box">
-                              <div className="product-image">
-                                <a href="product-left-thumbnail.html">
-                                  <img
-                                    src="../assets/images/vegetable/product/1.png"
-                                    className="img-fluid blur-up lazyload"
-                                    alt=""
-                                  />
-                                </a>
-                                <ul className="product-option">
-                                  <li data-bs-toggle="tooltip" data-bs-placement="top" title="View">
-                                    <a href="#" onClick={(e) => {
-                                      e.preventDefault();
-                                      handleViewProduct(saveProduct?.[12]);
-                                    }}>
-                                      <i data-feather="eye"></i>
-                                    </a>
-                                  </li>
-
-                                  <li data-bs-toggle="tooltip" data-bs-placement="top" title="Compare">
-                                    <a href="compare.html">
-                                      <i data-feather="refresh-cw"></i>
-                                    </a>
-                                  </li>
-
-                                  <li data-bs-toggle="tooltip" data-bs-placement="top" title="Wishlist">
-                                    <a href="wishlist.html" className="notifi-wishlist">
-                                      <i data-feather="heart"></i>
-                                    </a>
-                                  </li>
-                                </ul>
-                              </div>
-                              <div className="product-detail">
-                                <a href="product-left-thumbnail.html">
-                                  <h6 className="name h-100">Chocolate Powder</h6>
-                                </a>
-
-                                <h5 className="sold text-content">
-                                  <span className="theme-color price">$26.69</span>
-                                  <del>28.56</del>
-                                </h5>
-
-                                <div className="product-rating mt-sm-2 mt-1">
-                                  <ul className="rating">
-                                    <li>
-                                      <i data-feather="star" className="fill"></i>
-                                    </li>
-                                    <li>
-                                      <i data-feather="star" className="fill"></i>
-                                    </li>
-                                    <li>
-                                      <i data-feather="star" className="fill"></i>
-                                    </li>
-                                    <li>
-                                      <i data-feather="star" className="fill"></i>
-                                    </li>
-                                    <li>
-                                      <i data-feather="star"></i>
-                                    </li>
-                                  </ul>
-
-                                  <h6 className="theme-color">In Stock</h6>
-                                </div>
-
-                                <div className="add-to-cart-box">
-                                  <button className="btn btn-add-cart addcart-button">
-                                    Add
-                                    <span className="add-icon">
-                                      <i className="fa-solid fa-plus"></i>
-                                    </span>
-                                  </button>
-                                  <div className="cart_qty qty-box">
-                                    <div className="input-group">
-                                      <button type="button" className="qty-left-minus" data-type="minus" data-field="">
-                                        <i className="fa fa-minus"></i>
-                                      </button>
-                                      <input
-                                        className="form-control input-number qty-input"
-                                        type="text"
-                                        name="quantity"
-                                        defaultValue="0"
-                                      />
-                                      <button type="button" className="qty-right-plus" data-type="plus" data-field="">
-                                        <i className="fa fa-plus"></i>
-                                      </button>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div>
-                        <div className="row m-0">
-                          <div className="col-12 px-0">
-                            <div className="product-box">
-                              <div className="product-image">
-                                <a href="product-left-thumbnail.html">
-                                  <img
-                                    src="../assets/images/vegetable/product/2.png"
-                                    className="img-fluid blur-up lazyload"
-                                    alt=""
-                                  />
-                                </a>
-                                <ul className="product-option">
-                                  <li data-bs-toggle="tooltip" data-bs-placement="top" title="View">
-                                    <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#view">
-                                      <i data-feather="eye"></i>
-                                    </a>
-                                  </li>
-
-                                  <li data-bs-toggle="tooltip" data-bs-placement="top" title="Compare">
-                                    <a href="compare.html">
-                                      <i data-feather="refresh-cw"></i>
-                                    </a>
-                                  </li>
-
-                                  <li data-bs-toggle="tooltip" data-bs-placement="top" title="Wishlist">
-                                    <a href="wishlist.html" className="notifi-wishlist">
-                                      <i data-feather="heart"></i>
-                                    </a>
-                                  </li>
-                                </ul>
-                              </div>
-                              <div className="product-detail">
-                                <a href="product-left-thumbnail.html">
-                                  <h6 className="name h-100">Sandwich Cookies</h6>
-                                </a>
-
-                                <h5 className="sold text-content">
-                                  <span className="theme-color price">$26.69</span>
-                                  <del>28.56</del>
-                                </h5>
-
-                                <div className="product-rating mt-sm-2 mt-1">
-                                  <ul className="rating">
-                                    <li>
-                                      <i data-feather="star" className="fill"></i>
-                                    </li>
-                                    <li>
-                                      <i data-feather="star" className="fill"></i>
-                                    </li>
-                                    <li>
-                                      <i data-feather="star" className="fill"></i>
-                                    </li>
-                                    <li>
-                                      <i data-feather="star" className="fill"></i>
-                                    </li>
-                                    <li>
-                                      <i data-feather="star"></i>
-                                    </li>
-                                  </ul>
-
-                                  <h6 className="theme-color">In Stock</h6>
-                                </div>
-
-                                <div className="add-to-cart-box">
-                                  <button className="btn btn-add-cart addcart-button">
-                                    Add
-                                    <span className="add-icon">
-                                      <i className="fa-solid fa-plus"></i>
-                                    </span>
-                                  </button>
-                                  <div className="cart_qty qty-box">
-                                    <div className="input-group">
-                                      <button type="button" className="qty-left-minus" data-type="minus" data-field="">
-                                        <i className="fa fa-minus"></i>
-                                      </button>
-                                      <input
-                                        className="form-control input-number qty-input"
-                                        type="text"
-                                        name="quantity"
-                                        defaultValue="0"
-                                      />
-                                      <button type="button" className="qty-right-plus" data-type="plus" data-field="">
-                                        <i className="fa fa-plus"></i>
-                                      </button>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div>
-                        <div className="row m-0">
-                          <div className="col-12 px-0">
-                            <div className="product-box">
-                              <div className="product-image">
-                                <a href="product-left-thumbnail.html">
-                                  <img
-                                    src="../assets/images/vegetable/product/3.png"
-                                    className="img-fluid blur-up lazyload"
-                                    alt=""
-                                  />
-                                </a>
-                                <ul className="product-option">
-                                  <li data-bs-toggle="tooltip" data-bs-placement="top" title="View">
-                                    <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#view">
-                                      <i data-feather="eye"></i>
-                                    </a>
-                                  </li>
-
-                                  <li data-bs-toggle="tooltip" data-bs-placement="top" title="Compare">
-                                    <a href="compare.html">
-                                      <i data-feather="refresh-cw"></i>
-                                    </a>
-                                  </li>
-
-                                  <li data-bs-toggle="tooltip" data-bs-placement="top" title="Wishlist">
-                                    <a href="wishlist.html" className="notifi-wishlist">
-                                      <i data-feather="heart"></i>
-                                    </a>
-                                  </li>
-                                </ul>
-                              </div>
-                              <div className="product-detail">
-                                <a href="product-left-thumbnail.html">
-                                  <h6 className="name h-100">Butter Croissant</h6>
-                                </a>
-
-                                <h5 className="sold text-content">
-                                  <span className="theme-color price">$26.69</span>
-                                  <del>28.56</del>
-                                </h5>
-
-                                <div className="product-rating mt-sm-2 mt-1">
-                                  <ul className="rating">
-                                    <li>
-                                      <i data-feather="star" className="fill"></i>
-                                    </li>
-                                    <li>
-                                      <i data-feather="star" className="fill"></i>
-                                    </li>
-                                    <li>
-                                      <i data-feather="star" className="fill"></i>
-                                    </li>
-                                    <li>
-                                      <i data-feather="star" className="fill"></i>
-                                    </li>
-                                    <li>
-                                      <i data-feather="star"></i>
-                                    </li>
-                                  </ul>
-
-                                  <h6 className="theme-color">In Stock</h6>
-                                </div>
-
-                                <div className="add-to-cart-box">
-                                  <button className="btn btn-add-cart addcart-button">
-                                    Add
-                                    <span className="add-icon">
-                                      <i className="fa-solid fa-plus"></i>
-                                    </span>
-                                  </button>
-                                  <div className="cart_qty qty-box">
-                                    <div className="input-group">
-                                      <button type="button" className="qty-left-minus" data-type="minus" data-field="">
-                                        <i className="fa fa-minus"></i>
-                                      </button>
-                                      <input
-                                        className="form-control input-number qty-input"
-                                        type="text"
-                                        name="quantity"
-                                        defaultValue="0"
-                                      />
-                                      <button type="button" className="qty-right-plus" data-type="plus" data-field="">
-                                        <i className="fa fa-plus"></i>
-                                      </button>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div>
-                        <div className="row m-0">
-                          <div className="col-12 px-0">
-                            <div className="product-box">
-                              <div className="product-image">
-                                <a href="product-left-thumbnail.html">
-                                  <img
-                                    src="../assets/images/vegetable/product/4.png"
-                                    className="img-fluid blur-up lazyload"
-                                    alt=""
-                                  />
-                                </a>
-                                <ul className="product-option">
-                                  <li data-bs-toggle="tooltip" data-bs-placement="top" title="View">
-                                    <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#view">
-                                      <i data-feather="eye"></i>
-                                    </a>
-                                  </li>
-
-                                  <li data-bs-toggle="tooltip" data-bs-placement="top" title="Compare">
-                                    <a href="compare.html">
-                                      <i data-feather="refresh-cw"></i>
-                                    </a>
-                                  </li>
-
-                                  <li data-bs-toggle="tooltip" data-bs-placement="top" title="Wishlist">
-                                    <a href="wishlist.html" className="notifi-wishlist">
-                                      <i data-feather="heart"></i>
-                                    </a>
-                                  </li>
-                                </ul>
-                              </div>
-                              <div className="product-detail">
-                                <a href="product-left-thumbnail.html">
-                                  <h6 className="name h-100">Dark Chocolate</h6>
-                                </a>
-
-                                <h5 className="sold text-content">
-                                  <span className="theme-color price">$26.69</span>
-                                  <del>28.56</del>
-                                </h5>
-
-                                <div className="product-rating mt-sm-2 mt-1">
-                                  <ul className="rating">
-                                    <li>
-                                      <i data-feather="star" className="fill"></i>
-                                    </li>
-                                    <li>
-                                      <i data-feather="star" className="fill"></i>
-                                    </li>
-                                    <li>
-                                      <i data-feather="star" className="fill"></i>
-                                    </li>
-                                    <li>
-                                      <i data-feather="star" className="fill"></i>
-                                    </li>
-                                    <li>
-                                      <i data-feather="star"></i>
-                                    </li>
-                                  </ul>
-
-                                  <h6 className="theme-color">In Stock</h6>
-                                </div>
-
-                                <div className="add-to-cart-box">
-                                  <button className="btn btn-add-cart addcart-button">
-                                    Add
-                                    <span className="add-icon">
-                                      <i className="fa-solid fa-plus"></i>
-                                    </span>
-                                  </button>
-                                  <div className="cart_qty qty-box">
-                                    <div className="input-group">
-                                      <button type="button" className="qty-left-minus" data-type="minus" data-field="">
-                                        <i className="fa fa-minus"></i>
-                                      </button>
-                                      <input
-                                        className="form-control input-number qty-input"
-                                        type="text"
-                                        name="quantity"
-                                        defaultValue="0"
-                                      />
-                                      <button type="button" className="qty-right-plus" data-type="plus" data-field="">
-                                        <i className="fa fa-plus"></i>
-                                      </button>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div>
-                        <div className="row m-0">
-                          <div className="col-12 px-0">
-                            <div className="product-box">
-                              <div className="product-image">
-                                <a href="product-left-thumbnail.html">
-                                  <img
-                                    src="../assets/images/vegetable/product/5.png"
-                                    className="img-fluid blur-up lazyload"
-                                    alt=""
-                                  />
-                                </a>
-                                <ul className="product-option">
-                                  <li data-bs-toggle="tooltip" data-bs-placement="top" title="View">
-                                    <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#view">
-                                      <i data-feather="eye"></i>
-                                    </a>
-                                  </li>
-
-                                  <li data-bs-toggle="tooltip" data-bs-placement="top" title="Compare">
-                                    <a href="compare.html">
-                                      <i data-feather="refresh-cw"></i>
-                                    </a>
-                                  </li>
-
-                                  <li data-bs-toggle="tooltip" data-bs-placement="top" title="Wishlist">
-                                    <a href="wishlist.html" className="notifi-wishlist">
-                                      <i data-feather="heart"></i>
-                                    </a>
-                                  </li>
-                                </ul>
-                              </div>
-                              <div className="product-detail">
-                                <a href="product-left-thumbnail.html">
-                                  <h6 className="name h-100">Mix-sweet-food</h6>
-                                </a>
-
-                                <h5 className="sold text-content">
-                                  <span className="theme-color price">$26.69</span>
-                                  <del>28.56</del>
-                                </h5>
-
-                                <div className="product-rating mt-sm-2 mt-1">
-                                  <ul className="rating">
-                                    <li>
-                                      <i data-feather="star" className="fill"></i>
-                                    </li>
-                                    <li>
-                                      <i data-feather="star" className="fill"></i>
-                                    </li>
-                                    <li>
-                                      <i data-feather="star" className="fill"></i>
-                                    </li>
-                                    <li>
-                                      <i data-feather="star" className="fill"></i>
-                                    </li>
-                                    <li>
-                                      <i data-feather="star"></i>
-                                    </li>
-                                  </ul>
-
-                                  <h6 className="theme-color">In Stock</h6>
-                                </div>
-
-                                <div className="add-to-cart-box">
-                                  <button className="btn btn-add-cart addcart-button">
-                                    Add
-                                    <span className="add-icon">
-                                      <i className="fa-solid fa-plus"></i>
-                                    </span>
-                                  </button>
-                                  <div className="cart_qty qty-box">
-                                    <div className="input-group">
-                                      <button type="button" className="qty-left-minus" data-type="minus" data-field="">
-                                        <i className="fa fa-minus"></i>
-                                      </button>
-                                      <input
-                                        className="form-control input-number qty-input"
-                                        type="text"
-                                        name="quantity"
-                                        defaultValue="0"
-                                      />
-                                      <button type="button" className="qty-right-plus" data-type="plus" data-field="">
-                                        <i className="fa fa-plus"></i>
-                                      </button>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div>
-                        <div className="row m-0">
-                          <div className="col-12 px-0">
-                            <div className="product-box">
-                              <div className="product-image">
-                                <a href="product-left-thumbnail.html">
-                                  <img
-                                    src="../assets/images/vegetable/product/4.png"
-                                    className="img-fluid blur-up lazyload"
-                                    alt=""
-                                  />
-                                </a>
-                                <ul className="product-option">
-                                  <li data-bs-toggle="tooltip" data-bs-placement="top" title="View">
-                                    <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#view">
-                                      <i data-feather="eye"></i>
-                                    </a>
-                                  </li>
-
-                                  <li data-bs-toggle="tooltip" data-bs-placement="top" title="Compare">
-                                    <a href="compare.html">
-                                      <i data-feather="refresh-cw"></i>
-                                    </a>
-                                  </li>
-
-                                  <li data-bs-toggle="tooltip" data-bs-placement="top" title="Wishlist">
-                                    <a href="wishlist.html" className="notifi-wishlist">
-                                      <i data-feather="heart"></i>
-                                    </a>
-                                  </li>
-                                </ul>
-                              </div>
-                              <div className="product-detail">
-                                <a href="product-left-thumbnail.html">
-                                  <h6 className="name h-100">Dark Chocolate</h6>
-                                </a>
-
-                                <h5 className="sold text-content">
-                                  <span className="theme-color price">$26.69</span>
-                                  <del>28.56</del>
-                                </h5>
-
-                                <div className="product-rating mt-sm-2 mt-1">
-                                  <ul className="rating">
-                                    <li>
-                                      <i data-feather="star" className="fill"></i>
-                                    </li>
-                                    <li>
-                                      <i data-feather="star" className="fill"></i>
-                                    </li>
-                                    <li>
-                                      <i data-feather="star" className="fill"></i>
-                                    </li>
-                                    <li>
-                                      <i data-feather="star" className="fill"></i>
-                                    </li>
-                                    <li>
-                                      <i data-feather="star"></i>
-                                    </li>
-                                  </ul>
-
-                                  <h6 className="theme-color">In Stock</h6>
-                                </div>
-
-                                <div className="add-to-cart-box">
-                                  <button className="btn btn-add-cart addcart-button">
-                                    Add
-                                    <span className="add-icon">
-                                      <i className="fa-solid fa-plus"></i>
-                                    </span>
-                                  </button>
-                                  <div className="cart_qty qty-box">
-                                    <div className="input-group">
-                                      <button type="button" className="qty-left-minus" data-type="minus" data-field="">
-                                        <i className="fa fa-minus"></i>
-                                      </button>
-                                      <input
-                                        className="form-control input-number qty-input"
-                                        type="text"
-                                        name="quantity"
-                                        defaultValue="0"
-                                      />
-                                      <button type="button" className="qty-right-plus" data-type="plus" data-field="">
-                                        <i className="fa fa-plus"></i>
-                                      </button>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                  
 
                   <div className="section-t-space">
                     <div className="banner-contain">
                       <img src="15.jpg" className="bg-img blur-up lazyload" alt="" />
                       <div className="banner-details p-center p-4 text-white text-center">
                         <div>
-                          <h3 className="lh-base fw-bold offer-text">Get $3 Cashback! Min Order of $30</h3>
-                          <h6 className="coupon-code">Use Code : GROCERY1920</h6>
+                          <h3 className="lh-base fw-bold offer-text text-white">Get $20 Coupon Code - Limited Time!</h3>
+                          <h6 className="coupon-code">Use Code : CLEANFOODSHOP</h6>
                         </div>
                       </div>
                     </div>
@@ -2464,11 +1246,7 @@ const HomePage = () => {
                     <div className="row g-md-4 g-3">
                       <div className="col-xxl-8 col-xl-12 col-md-7">
                         <div className="banner-contain hover-effect">
-                          <img
-                            src="12.jpg"
-                            className="bg-img blur-up lazyload"
-                            alt=""
-                          />
+                          <img src="12.jpg" className="bg-img blur-up lazyload" alt="" />
                           <div className="banner-details p-center-left p-4">
                             <div>
                               <h2 className="text-kaushan fw-normal theme-color">Get Ready To</h2>
@@ -2479,7 +1257,7 @@ const HomePage = () => {
                               </p>
                               <button
                                 onClick={() => {
-                                  window.location.href = "shop-left-sidebar.html";
+                                  window.location.href = "/all-products";
                                 }}
                                 className="btn btn-animation btn-sm mend-auto"
                               >
@@ -2491,12 +1269,8 @@ const HomePage = () => {
                       </div>
 
                       <div className="col-xxl-4 col-xl-12 col-md-5">
-                        <a href="shop-left-sidebar.html" className="banner-contain hover-effect h-100">
-                          <img
-                            src="13.jpg"
-                            className="bg-img blur-up lazyload"
-                            alt=""
-                          />
+                        <a href="/all-products" className="banner-contain hover-effect h-100">
+                          <img src="13.jpg" className="bg-img blur-up lazyload" alt="" />
                           <div className="banner-details p-center-left p-4 h-100">
                             <div>
                               <h2 className="text-kaushan fw-normal text-danger">20% Off</h2>
@@ -2809,7 +1583,7 @@ const HomePage = () => {
                           <h5 className="lh-sm mx-auto mt-1 text-content">Save up to 5% OFF</h5>
                           <button
                             onClick={() => {
-                              window.location.href = "shop-left-sidebar.html";
+                              window.location.href = "/all-products";
                             }}
                             className="btn btn-animation btn-sm mx-auto mt-sm-3 mt-2"
                           >
@@ -2944,7 +1718,6 @@ const HomePage = () => {
           </section>
 
           <div className="modal fade theme-modal view-modal" id="view" tabIndex="-1">
-
             <div className="modal-dialog modal-dialog-centered modal-xl modal-fullscreen-sm-down">
               <div className="modal-content">
                 <div className="modal-header p-0">
@@ -2956,11 +1729,7 @@ const HomePage = () => {
                   <div className="row g-sm-4 g-2">
                     <div className="col-lg-6">
                       <div className="slider-image">
-                        <img
-                          src={selectedProduct?.imageURL}
-                          className="img-fluid blur-up lazyload"
-                          alt=""
-                        />
+                        <img src={selectedProduct?.imageURL} className="img-fluid blur-up lazyload" alt="" />
                       </div>
                     </div>
 
@@ -2974,11 +1743,21 @@ const HomePage = () => {
 
                         <div className="product-rating">
                           <ul className="rating">
-                            <li><i data-feather="star" className="fill"></i></li>
-                            <li><i data-feather="star" className="fill"></i></li>
-                            <li><i data-feather="star" className="fill"></i></li>
-                            <li><i data-feather="star" className="fill"></i></li>
-                            <li><i data-feather="star"></i></li>
+                            <li>
+                              <i data-feather="star" className="fill"></i>
+                            </li>
+                            <li>
+                              <i data-feather="star" className="fill"></i>
+                            </li>
+                            <li>
+                              <i data-feather="star" className="fill"></i>
+                            </li>
+                            <li>
+                              <i data-feather="star" className="fill"></i>
+                            </li>
+                            <li>
+                              <i data-feather="star"></i>
+                            </li>
                           </ul>
                           <span className="ms-2">8 Reviews</span>
                           <span className="ms-2 text-danger">6 sold in last 16 hours</span>
@@ -3017,7 +1796,8 @@ const HomePage = () => {
                             </div>
                           </li>
                         </ul>
-                        
+
+
 
                         <div className="modal-button">
                           <button
@@ -3035,8 +1815,6 @@ const HomePage = () => {
                             View More Details
                           </button>
                         </div>
-
-
                       </div>
                     </div>
                   </div>
@@ -3164,18 +1942,19 @@ const HomePage = () => {
                       {dealProduct?.map((dp, i) => (
                         <li className={`list-${(i % 3) + 1}`} key={i}>
                           <div className="deal-offer-contain">
-                            <a href="/" className="deal-image">
+                            <a href={`/product/${dp.productId}`} className="deal-image">
                               <img src={dp.imageURL} className="blur-up lazyload" alt="" />
                             </a>
 
-                            <a href="shop-left-sidebar.html" className="deal-contain">
+                            <a href={`/product/${dp.productId}`} className="deal-contain">
                               <h5>{dp.productName}</h5>
                               <h6>
                                 {dp.salePrice.toLocaleString("en-US", {
                                   style: "currency",
                                   currency: "USD",
                                   minimumFractionDigits: 0,
-                                })} <del>${dp.price}</del> <span>-{dp.discountPercent}%</span>
+                                })}{" "}
+                                <del>${dp.price}</del> <span>-{dp.discountPercent}%</span>
                               </h6>
                             </a>
                           </div>
@@ -3198,7 +1977,18 @@ const HomePage = () => {
           </div>
           <div className="bg-overlay"></div>
         </div>
-      </div >
+      </div>
+      {showUpdateModal && currentUser && (
+        <UpdateInfoModal
+          isOpen={showUpdateModal}
+          user={currentUser}
+          onClose={() => setShowUpdateModal(false)}
+          onSuccess={(updatedUser) => {
+            setCurrentUser(updatedUser);
+            localStorage.setItem("user", JSON.stringify(updatedUser));
+          }}
+        />
+      )}
     </HomepageLayout >
   );
 };

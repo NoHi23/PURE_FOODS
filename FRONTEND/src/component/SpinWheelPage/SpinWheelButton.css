@@ -1,0 +1,25 @@
+.floating-spin-btn {
+  position: fixed;
+  bottom: 80px;
+  right: 20px;
+  width: 40px;
+  height: 40px; 
+  border-radius: 50%;
+  background-color: var(--theme-color, #0da487); 
+  color: white;
+  font-size: 24px; 
+  border: none;
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); 
+  cursor: pointer;
+  transition: all 0.3s ease; 
+}
+
+.floating-spin-btn:hover {
+  transform: scale(1.1); 
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3); 
+  background-color: #0b8c6a; 
+}

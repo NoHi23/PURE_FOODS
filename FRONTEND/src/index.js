@@ -4,6 +4,9 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import '@fortawesome/fontawesome-free/css/all.min.css';
+import $ from 'jquery';
+window.$ = $;
+window.jQuery = $;
 
 
 const root = ReactDOM.createRoot(document.getElementById('root'));

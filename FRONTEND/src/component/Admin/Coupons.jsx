@@ -15,6 +15,7 @@ const Coupons = () => {
   const [editCoupon, setEditCoupon] = useState({
     promotionID: '',
     promotionCode: '',
+    description: '',
     discountType: 'Percentage',
     discountValue: '',
     startDate: '',
@@ -69,13 +70,16 @@ const Coupons = () => {
 
   const handleEdit = (coupon) => {
     setSelectedCoupon(coupon);
+    const startDate = coupon.startDate ? new Date(coupon.startDate).toISOString().split('T')[0] : '';
+    const endDate = coupon.endDate ? new Date(coupon.endDate).toISOString().split('T')[0] : '';
     setEditCoupon({
       promotionID: coupon.promotionID,
       promotionCode: coupon.promotionCode,
+      description: coupon.description || '',
       discountType: coupon.discountType,
       discountValue: coupon.discountValue,
-      startDate: coupon.startDate.split('T')[0],
-      endDate: coupon.endDate.split('T')[0],
+      startDate,
+      endDate,
       minOrderAmount: coupon.minOrderAmount || '',
       status: coupon.status,
     });
@@ -92,13 +96,14 @@ const Coupons = () => {
 
   const handleUpdateCoupon = async (e) => {
     e.preventDefault();
-    if (!editCoupon.promotionCode || !editCoupon.discountValue || !editCoupon.startDate || !editCoupon.endDate) {
-      toast.error('Vui lòng nhập đầy đủ (Mã, Giá trị giảm, Ngày bắt đầu, Ngày kết thúc)');
+    if (!editCoupon.promotionCode || !editCoupon.description || !editCoupon.discountValue || !editCoupon.startDate || !editCoupon.endDate) {
+      toast.error('Vui lòng nhập đầy đủ (Mã, Mô tả, Giá trị giảm, Ngày bắt đầu, Ngày kết thúc)');
       return;
     }
     try {
       const payload = {
         promotionCode: editCoupon.promotionCode,
+        description: editCoupon.description,
         discountType: editCoupon.discountType,
         discountValue: parseFloat(editCoupon.discountValue) || 0,
         startDate: new Date(editCoupon.startDate).toISOString().split('T')[0],
@@ -180,7 +185,6 @@ const Coupons = () => {
                                 Add New Coupon
                               </Link>
                             </div>
-
                           </div>
                           {loading ? (
                             <p>Loading...</p>
@@ -193,6 +197,7 @@ const Coupons = () => {
                                   <tr>
                                     <th>ID</th>
                                     <th>Code</th>
+                                    <th>Description</th>
                                     <th>Discount Type</th>
                                     <th>Discount Value</th>
                                     <th>Start Date</th>
@@ -207,6 +212,7 @@ const Coupons = () => {
                                     <tr key={i}>
                                       <td>{c.promotionID}</td>
                                       <td>{c.promotionCode}</td>
+                                      <td>{c.description || '-'}</td>
                                       <td>{c.discountType}</td>
                                       <td>{c.discountValue}</td>
                                       <td>{new Date(c.startDate).toLocaleDateString()}</td>
@@ -280,6 +286,9 @@ const Coupons = () => {
                                         <strong>Code:</strong> {selectedCoupon.promotionCode}
                                       </p>
                                       <p>
+                                        <strong>Description:</strong> {selectedCoupon.description || '-'}
+                                      </p>
+                                      <p>
                                         <strong>Discount Type:</strong> {selectedCoupon.discountType}
                                       </p>
                                       <p>
@@ -328,6 +337,19 @@ const Coupons = () => {
                                           className="form-control"
                                           name="promotionCode"
                                           value={editCoupon.promotionCode}
+                                          onChange={handleInputChange}
+                                          required
+                                        />
+                                      </div>
+                                    </div>
+                                    <div className="mb-4 row align-items-center">
+                                      <label className="col-lg-2 col-md-3 mb-0">Description</label>
+                                      <div className="col-md-9 col-lg-10">
+                                        <input
+                                          type="text"
+                                          className="form-control"
+                                          name="description"
+                                          value={editCoupon.description}
                                           onChange={handleInputChange}
                                           required
                                         />
@@ -469,7 +491,7 @@ const Coupons = () => {
               <footer className="footer">
                 <div className="row">
                   <div className="col-md-12 footer-copyright text-center">
-                    <p className="mb-0">Copyright 2025 © Fastkart Theme</p>
+                    <p className="mb-0">Copyright 2025 © Clean Food Shop theme by pixelstrap</p>
                   </div>
                 </div>
               </footer>

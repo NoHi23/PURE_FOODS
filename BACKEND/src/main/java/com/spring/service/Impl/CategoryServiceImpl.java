@@ -6,6 +6,7 @@ import com.spring.dto.CategoryDTO;
 import com.spring.dto.ProductDTO;
 import com.spring.entity.Category;
 import com.spring.entity.Products;
+import com.spring.entity.Suppliers;
 import com.spring.service.CategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -88,4 +89,20 @@ public class CategoryServiceImpl implements CategoryService {
         category.setStatus(dto.getStatus());
         return category;
     }
+
+    @Override
+    public String findNameById(Integer id) {
+        Category category = categoryDAO.getCategoryById(id);
+        if (category != null) {
+            return category.getCategoryName();
+        }
+        return "Không rõ";
+    }
+
+
+    @Override
+    public Category findByName(String name) {
+        return categoryDAO.getCategoryByName(name);
+    }
+
 }

@@ -66,6 +66,8 @@ public class CartItemServiceImpl implements CartItemService {
 
             float total = product.getPriceAfterDiscount() * cartItem.getQuantity();
             dto.setTotal(total);
+            dto.setStock(product.getStockQuantity()); //  Cập nhật tồn kho
+
             return dto;
 
         }).filter(dto -> dto != null).collect(Collectors.toList());
@@ -146,6 +148,7 @@ public class CartItemServiceImpl implements CartItemService {
             dto.setQuantity(quantity);
             dto.setTotal(total);
             dto.setUserID(item.getUserID());
+            dto.setStock(product.getStockQuantity()); // Thêm stock từ entity Products
 
             return dto;
 
@@ -165,4 +168,10 @@ public class CartItemServiceImpl implements CartItemService {
         item.setUserID(dto.getUserID());
         return item;
     }
+
+    @Override
+    public void clearCartByUserId(int userId) {
+        cartItemDAO.deleteByUserId(userId);
+    }
+
 }

@@ -112,4 +112,18 @@ public class SuppliersServiceImpl implements SuppliersService {
         return suppliersDAO.countSuppliers();
     }
 
+
+    @Override
+    public String findNameById(Integer id) {
+        Suppliers supplier = suppliersDAO.getSuppliersById(id);
+        if (supplier != null) {
+            return supplier.getSupplierName();
+        }
+        return "Không rõ";
+    }
+
+    @Override
+    public Suppliers findByName(String name) {
+        return suppliersDAO.getSupplierByName(name);
+    }
 }

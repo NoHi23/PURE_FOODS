@@ -23,14 +23,12 @@ const HomepageLayout = ({ children }) => {
       return link;
     });
 
-
-    // JS
     const jsScripts = [
       "/assets/js/jquery-3.6.0.min.js",
       "/assets/js/jquery-ui.min.js",
       "/assets/js/bootstrap/bootstrap.bundle.min.js",
       "/assets/js/bootstrap/bootstrap-notify.min.js",
-      "assets/js/bootstrap/popper.min.js",
+      "/assets/js/bootstrap/popper.min.js", // đã sửa đường dẫn
       "/assets/js/feather/feather.min.js",
       "/assets/js/feather/feather-icon.js",
       "/assets/js/lazysizes.min.js",
@@ -44,13 +42,14 @@ const HomepageLayout = ({ children }) => {
     const scripts = jsScripts.map((src) => {
       const script = document.createElement("script");
       script.src = src;
-      script.async = true;
+      script.defer = true; // hoặc bỏ async để giữ thứ tự
       document.body.appendChild(script);
       return script;
     });
-    
+
     return () => {
       links.forEach((link) => document.head.removeChild(link));
+      scripts.forEach((script) => document.body.removeChild(script));
     };
   }, []);
 

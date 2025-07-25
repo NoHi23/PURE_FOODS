@@ -2,6 +2,7 @@ package com.spring.dao.Impl;
 
 import com.spring.dao.CartItemDAO;
 import com.spring.entity.CartItem;
+import jakarta.transaction.Transactional;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.query.Query;
@@ -62,6 +63,15 @@ public class CartItemDAOImpl implements CartItemDAO {
 
         List<CartItem> results = query.getResultList();
         return results.isEmpty() ? null : results.get(0);
+    }
+
+    @Override
+    @Transactional
+    public void deleteByUserId(int userId) {
+        Session session = sessionFactory.getCurrentSession();
+        Query<?> query = session.createQuery("DELETE FROM CartItem WHERE userID = :userId");
+        query.setParameter("userId", userId);
+        query.executeUpdate();
     }
 
 }
