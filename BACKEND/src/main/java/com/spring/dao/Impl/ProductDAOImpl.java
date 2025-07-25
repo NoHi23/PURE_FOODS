@@ -183,7 +183,7 @@ public class ProductDAOImpl implements ProductDAO {
     @Override
     public List<Products> getProductsByCategory(int categoryId) {
         Session session = sessionFactory.getCurrentSession();
-        String hql = "FROM Products WHERE categoryId = :categoryId";
+        String hql = "FROM Products WHERE categoryId = :categoryId AND status = 0";
         Query query = session.createQuery(hql);
         query.setParameter("categoryId", categoryId);
         return query.getResultList();

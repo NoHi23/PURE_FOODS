@@ -162,6 +162,11 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    public List<BestSellingProductDTO> getTop12BestSellingProductsWithStats() {
+        return orderDAO.getTop12BestSellingProductsWithStats();
+    }
+
+    @Override
     public List<Order> getTop5RecentOrders() {
         return orderDAO.getTop5RecentOrders();
     }

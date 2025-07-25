@@ -166,6 +166,14 @@ public class OrderController {
         return ResponseEntity.ok(list);
     }
 
+    @GetMapping("/top12-best-selling")
+    public ResponseEntity<List<BestSellingProductDTO>> getTop12BestSellingProductsWithStats() {
+        List<BestSellingProductDTO> list = orderService.getTop12BestSellingProductsWithStats();
+        if (list.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(list);
+    }
     @GetMapping("/top5-recent-orders")
     public ResponseEntity<List<Order>> getTop5RecentOrders() {
         List<Order> orders = orderService.getTop5RecentOrders();
@@ -174,6 +182,8 @@ public class OrderController {
         }
         return ResponseEntity.ok(orders);
     }
+
+
 
     @Autowired
     private VnpayService vnpayService;
