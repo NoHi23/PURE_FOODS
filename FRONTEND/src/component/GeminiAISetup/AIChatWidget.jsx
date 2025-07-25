@@ -61,10 +61,11 @@ Các trường được hỗ trợ:
 
 Nếu không biết supplierId hoặc categoryId, hãy trả về "supplierName" hoặc "categoryName" thay thế để hệ thống xử lý sau.
 
-🎯 Nếu người dùng chỉ nhập một từ (ví dụ: "Vinamilk", "Fresh", "Rau", "Trái cây", "Thịt", "Bánh kẹo"):
-- Nếu là tên thương hiệu hoặc nhà cung cấp → gán vào "supplierName"
-- Nếu là loại hàng, nhóm thực phẩm → gán vào "categoryName"
-- Nếu không chắc → gán vào "q"
+🎯 🎯 Nếu người dùng nhập một từ hoặc cụm từ (ví dụ: "Vinamilk", "Fresh Produce B", "Rau", "Trái cây"):
+- Nếu nó giống tên nhà cung cấp → gán vào "supplierName"
+- Nếu giống tên danh mục sản phẩm → gán vào "categoryName"
+- Nếu không chắc chắn → vẫn ưu tiên gán vào "supplierName", sau đó là "categoryName", sau cùng mới là "q"
+
 
 Các API liên quan:
 1. [Tìm sản phẩm theo tiêu chí]:
@@ -99,46 +100,44 @@ Ví dụ:
 `;
 
 
-
   async function resolveMissingIds(criteria) {
     const updated = { ...criteria };
 
     // Lấy supplierId nếu chỉ có supplierName
-    if (updated.supplierName && !updated.supplierId) {
+    // Nếu chỉ có "q", thử kiểm tra xem nó có khớp supplierName không
+    if (!updated.supplierId && !updated.supplierName && updated.q) {
       try {
-        const res = await fetch(`http://localhost:8082/PureFoods/api/supplier/searchByName?name=${encodeURIComponent(updated.supplierName)}`);
-
-        if (res.ok) {
-          const data = await res.json();
-          if (data?.supplierId) {
-            updated.supplierId = data.supplierId;
-            delete updated.supplierName;
-          } else {
-            console.warn("Không tìm thấy supplierId trong response", data);
-          }
-        } else {
-          console.warn("Không tìm thấy nhà cung cấp:", updated.supplierName);
+        const res = await fetch(`http://localhost:8082/PureFoods/api/supplier/searchByName?name=${encodeURIComponent(updated.q)}`);
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0 && data[0].supplierId) {
+          updated.supplierId = data[0].supplierId;
+          delete updated.q;
         }
       } catch (e) {
-        console.warn("Lỗi khi lấy supplierId:", e);
+        console.warn("Lỗi khi kiểm tra q là supplier:", e);
       }
     }
 
-    if (updated.categoryName && !updated.categoryId) {
+    // Nếu không phải supplier, thử kiểm tra category
+    if (!updated.categoryId && !updated.categoryName && updated.q) {
       try {
-        const res = await fetch(`http://localhost:8082/PureFoods/api/category/searchByName?name=${encodeURIComponent(updated.categoryName)}`);
+        const res = await fetch(`http://localhost:8082/PureFoods/api/category/searchByName?name=${encodeURIComponent(updated.q)}`);
         const data = await res.json();
-        if (data?.categoryId) {
-          updated.categoryId = data.categoryId;
-          delete updated.categoryName;
+        if (Array.isArray(data) && data.length > 0 && data[0].categoryId) {
+          updated.categoryId = data[0].categoryId;
+          delete updated.q;
         }
       } catch (e) {
-        console.warn("Không thể lấy categoryId:", e);
+        console.warn("Lỗi khi kiểm tra q là category:", e);
       }
     }
 
     return updated;
   }
+
+
+
+
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!inputValue.trim() || isLoading) return;
@@ -148,17 +147,48 @@ Ví dụ:
     setInputValue('');
     setIsLoading(true);
 
-    const prompt = `${systemInstruction}\nUser: "${inputValue}"`;
+    const inputTextLower = inputValue.toLowerCase();
 
+    // ✅ Nếu có từ "rẻ" thì gọi API /cheapest-list
+    if (inputTextLower.includes("rẻ")) {
+      try {
+        const res = await fetch(`http://localhost:8082/PureFoods/api/product/cheapest`);
+        const data = await res.json();
+        if (data && data.products && data.products.length > 0) {
+          setMessages(m => [
+            ...m,
+            { id: Date.now() + 1, text: `Đây là những sản phẩm giá rẻ nhất hiện có:`, sender: 'ai' },
+            { id: Date.now() + 2, sender: 'products', products: data.products }
+          ]);
+        } else {
+          setMessages(m => [
+            ...m,
+            { id: Date.now() + 1, text: 'Không tìm thấy sản phẩm giá rẻ nào.', sender: 'ai' }
+          ]);
+        }
+      } catch (error) {
+        console.error("Lỗi khi gọi API giá rẻ:", error);
+        setMessages(m => [
+          ...m,
+          { id: Date.now() + 1, text: 'Xin lỗi, có lỗi xảy ra khi lấy danh sách sản phẩm giá rẻ.', sender: 'ai' }
+        ]);
+      } finally {
+        setIsLoading(false);
+      }
+      return; // 🔚 không tiếp tục gọi Gemini nếu đã match từ "rẻ"
+    }
+
+    // Nếu không có từ "rẻ" → tiếp tục xử lý AI như cũ
+    const prompt = `${systemInstruction}\nUser: "${inputValue}"`;
     try {
       const geminiRes = await model.generateContent(prompt);
       const responseText = geminiRes.response.text();
-
       const cleanedJsonString = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
       const rawCriteria = JSON.parse(cleanedJsonString);
       const jsonCriteria = await resolveMissingIds(rawCriteria);
       const apiResponse = await findProductsByCriteria(jsonCriteria);
-
+      console.log("📦 rawCriteria từ Gemini:", rawCriteria);
+      console.log("✅ jsonCriteria sau khi resolve:", jsonCriteria);
       if (apiResponse && apiResponse.products && apiResponse.products.length > 0) {
         setMessages(m => [
           ...m,
@@ -171,7 +201,6 @@ Ví dụ:
           { id: Date.now() + 1, text: 'Xin lỗi, không tìm được sản phẩm nào phù hợp với yêu cầu của bạn.', sender: 'ai' }
         ]);
       }
-
     } catch (err) {
       console.error("Đã xảy ra lỗi:", err);
       setMessages(m => [
@@ -182,6 +211,7 @@ Ví dụ:
       setIsLoading(false);
     }
   };
+
 
   return (
     <div className={`ai-chat-widget ${isOpen ? 'active' : ''}`}>

@@ -160,8 +160,7 @@ const AdminDashboard = () => {
                                             <div className="media align-items-center static-top-widget">
                                                 <div className="media-body p-0">
                                                     <span className="m-0">Tổng doanh thu</span>
-                                                    <h4 className="mb-0 counter">${revenue}
-                                                    </h4>
+                                                    <h4 className="mb-0 counter">${revenue.toFixed(2)}</h4>
                                                 </div>
                                                 <div className="align-self-center text-center">
                                                     <i className="ri-database-2-line"></i>
