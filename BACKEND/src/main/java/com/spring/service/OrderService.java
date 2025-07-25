@@ -19,6 +19,8 @@ public interface OrderService {
     double calculateTotalRevenue();
     Map<Integer, Double> calculateMonthlyRevenue();
     List<BestSellingProductDTO> getTop5BestSellingProductsWithStats();
+    List<BestSellingProductDTO> getTop12BestSellingProductsWithStats();
+
     List<Order> getTop5RecentOrders();
     void updateOrder(Order order);
     Order getOrderEntityById(int orderId);

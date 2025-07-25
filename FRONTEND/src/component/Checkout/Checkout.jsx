@@ -122,11 +122,12 @@ const Checkout = () => {
           axios.get(`http://localhost:8082/PureFoods/api/product/getById/${detail.productID}`)
             .then(res => ({
               ...detail,
-              product: res.data
+              product: res.data.product
             }))
         );
 
         const results = await Promise.all(productPromises);
+
         setProductDetails(results);
       })
       .catch(err => console.error("❌ Lỗi khi lấy order detail:", err));
@@ -351,13 +352,11 @@ const Checkout = () => {
                     {productDetails.map((item, idx) => (
 
                       <li key={idx}>
-                        <img src={item.imageURL}
+                        <img src={item.product.imageURL}
                           className="img-fluid blur-up lazyloaded checkout-image" alt="" />
-                        <h4>{item.productName} <span>X {item.quantity}</span></h4>
+                        <h4>{item.product.productName} <span>X {item.quantity}</span></h4>
                         <h4 className="price">${item.unitPrice}</h4>
                       </li>
-
-
                     ))}
 
                   </ul>
