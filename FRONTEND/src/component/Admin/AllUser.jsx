@@ -168,7 +168,7 @@ const AllUser = () => {
       const res = await axios.get("http://localhost:8082/PureFoods/api/users/getAll");
       setUsers(res.data.userList);
 
-      toast.success('Block User Successfull!');
+      toast.success('Cấm tài khoản người dùng thành công!');
     } catch (err) {
       const errorMessage =
         err.response && err.response.data && err.response.data.message
@@ -202,10 +202,10 @@ const AllUser = () => {
                   <div className="card card-table">
                     <div className="card-body">
                       <div className="title-header option-title">
-                        <h5>All Users</h5>
+                        <h5>Danh sách người dùng</h5>
                         <form className="d-inline-flex">
                           <Link to={"/add-new-user"} className="align-items-center btn btn-theme d-flex">
-                            <i data-feather="plus"></i>Add New
+                            <i data-feather="plus"></i>Thêm mới người dùng
                           </Link>
                         </form>
                       </div>
@@ -214,14 +214,14 @@ const AllUser = () => {
                         <table className="table all-package theme-table" id="table_id">
                           <thead>
                             <tr>
-                              <th>User</th>
-                              <th>Name</th>
-                              <th>Phone</th>
+                              <th>ID</th>
+                              <th>Tên</th>
+                              <th>Số điện thoại</th>
                               <th>Email</th>
-                              <th>Address</th>
-                              <th>Role</th>
-                              <th>Status</th>
-                              <th>Option</th>
+                              <th>Địa chỉ</th>
+                              <th>Vai trò</th>
+                              <th>Trạng thái</th>
+                              <th>Tùy chọn</th>
                             </tr>
                           </thead>
 
@@ -229,9 +229,8 @@ const AllUser = () => {
                             {currentUser?.map((u, i) => (
                               <tr key={i}>
                                 <td>
-                                  <div className="table-image">
-                                    <img src="/back-end/assets/images/users/1.jpg" className="img-fluid"
-                                      alt="" />
+                                  <div className='text-center'>
+                                    <span>#00{u.userId}</span>
                                   </div>
                                 </td>
 
@@ -247,7 +246,7 @@ const AllUser = () => {
                                 <td>{u.address}</td>
                                 <td>{roleName[u.roleID]}</td>
                                 <td className={u.status === 1 ? "status-danger" : "status-success"}>
-                                  <span>{u.status === 1 ? "Private" : "Public"}</span>
+                                  <span>{u.status === 1 ? "Đã bị chặn" : "Công khai"}</span>
                                 </td>
                                 <td>
                                   <ul>
@@ -312,7 +311,7 @@ const AllUser = () => {
               <div className="modal-dialog modal-dialog-centered modal-lg">
                 <div className="modal-content">
                   <div className="modal-header">
-                    <h5 className="modal-title" style={{ fontWeight: 600 }}>User Detail</h5>
+                    <h5 className="modal-title" style={{ fontWeight: 600 }}>Chi tiết người dùng</h5>
                     <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                   </div>
                   <div className="modal-body">
@@ -324,12 +323,12 @@ const AllUser = () => {
                               alt="" />
                           </div>
                           <div className="col-md-8">
-                            <h4 style={{ fontWeight: 700 }}>Name: {selectedUsers.fullName}</h4> <br />
+                            <h4 style={{ fontWeight: 700 }}>Tên: {selectedUsers.fullName}</h4> <br />
                             <p><strong>Email:</strong> {selectedUsers.email}</p>
-                            <p><strong>Phone:</strong> {selectedUsers.phone}</p>
-                            <p><strong>Role:</strong> {roleName[selectedUsers.roleID]}</p>
-                            <p><strong>Address:</strong>{selectedUsers.address}</p>
-                            <p><strong>Trạng thái:</strong> {selectedUsers.status === 1 ? "Private" : "Public"}</p>
+                            <p><strong>Số điện thoại:</strong> {selectedUsers.phone}</p>
+                            <p><strong>Vai trò:</strong> {roleName[selectedUsers.roleID]}</p>
+                            <p><strong>Địa chỉ:</strong>{selectedUsers.address}</p>
+                            <p><strong>Trạng thái:</strong> {selectedUsers.status === 1 ? "Đã bị chặn" : "Công khai"}</p>
                           </div>
                         </div>
                       </div>
@@ -344,13 +343,13 @@ const AllUser = () => {
               <div className="modal-dialog modal-dialog-centered modal-lg">
                 <div className="modal-content">
                   <div className="modal-header">
-                    <h5 className="modal-title">Update User</h5>
+                    <h5 className="modal-title">Chỉnh sửa thông tin người dùng</h5>
                     <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close" />
                   </div>
                   <div className="modal-body">
                     <form>
                       <div className="mb-3">
-                        <label className="form-label">FullName</label>
+                        <label className="form-label">Họ và tên</label>
                         <input type="text" className="form-control" name="fullName" value={editForm.fullName} onChange={handleInputChange} />
                       </div>
                       <div className="mb-3">
@@ -358,7 +357,7 @@ const AllUser = () => {
                         <input type="text" className="form-control" name="email" value={editForm.email} onChange={handleInputChange} min={0} />
                       </div>
                       <div className="mb-3">
-                        <label className="form-label">Role</label>
+                        <label className="form-label">Vai trò</label>
                         <select className="form-control" name="roleID" value={editForm.roleID} onChange={handleInputChange}>
                           {role.map(r => (
                             <option key={r.roleID} value={r.roleID}>{r.roleName}</option>
@@ -366,12 +365,12 @@ const AllUser = () => {
                         </select>
                       </div>
                       <div className="mb-3">
-                        <label className="form-label">Phone</label>
+                        <label className="form-label">Số điện thoại</label>
                         <input type="number" className="form-control" name="phone" value={editForm.phone} onChange={handleInputChange} min={0} />
                       </div>
 
                       <div className="mb-3">
-                        <label className="form-label">Address</label>
+                        <label className="form-label">Địa chỉ</label>
                         <input type="text" className="form-control" name="address" value={editForm.address} onChange={handleInputChange} min={0} />
                       </div>
 
@@ -397,8 +396,8 @@ const AllUser = () => {
                       <div className="mb-3">
                         <label className="form-label">Trạng thái</label>
                         <select className="form-control" name="status" value={editForm.status} onChange={handleInputChange}>
-                          <option value={0}>Public</option>
-                          <option value={1}>Private</option>
+                          <option value={0}>Công khai</option>
+                          <option value={1}>Chặn</option>
                         </select>
                       </div>
                     </form>
@@ -443,26 +442,25 @@ const AllUser = () => {
         <div className="modal-dialog modal-dialog-centered">
           <div className="modal-content">
             <div className="modal-header d-block text-center">
-              <h5 className="modal-title w-100" id="exampleModalLabel22">Are You Sure ?</h5>
+              <h5 className="modal-title w-100" id="exampleModalLabel22">Bạn đã chắc chắn chưa?</h5>
               <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close">
                 <i className="fas fa-times"></i>
               </button>
             </div>
             <div className="modal-body">
               <div className="remove-box">
-                <p>The permission for the use/group, preview is inherited from the object, object will create a
-                  new permission for this object</p>
+                <p>Bạn sẽ cấm người dùng này được truy cập vào hệ thống. Chỉ khi bạn mở khóa, họ mới có thể sử dụng.</p>
               </div>
             </div>
             <div className="modal-footer">
-              <button type="button" className="btn btn-animation btn-md fw-bold" data-bs-dismiss="modal">No</button>
+              <button type="button" className="btn btn-animation btn-md fw-bold" data-bs-dismiss="modal">Hủy</button>
               <button
                 type="button"
                 className="btn btn-animation btn-md fw-bold"
                 data-bs-dismiss="modal"
                 onClick={handleDeleteUser}
               >
-                Yes
+                Chặn
               </button>
             </div>
           </div>

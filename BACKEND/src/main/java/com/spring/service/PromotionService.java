@@ -19,4 +19,6 @@ public interface PromotionService {
     PromotionDTO getPromotionByCode(String code);
     Map<String, Object> spinWheel(int userId);
     void expireOldUserPromotions();
+    List<PromotionDTO> getPromotionsByUserId(int userId);
+
 }

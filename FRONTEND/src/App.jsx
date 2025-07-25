@@ -40,12 +40,17 @@ import Taxes from './component/Admin/Taxes';
 import AddNewTax from './component/Admin/AddNewTax';
 import Blog from './component/Admin/Blog';
 import AddNewBlog from './component/Admin/AddNewBlog';
+import ProductReview from './component/AdminDashboard/ProductReview';
+
 //import CustomerBlog from './component/CustomerBlog';
 //import BlogDetail from './component/BlogDetail';
 import DashboardCategory from './component/ShopLeftSidebar/DashboardCategory';
 import OrderSuccess from './component/OrderSuccess/OrderSuccess';
 import SpinWheelButton from './component/SpinWheelPage/SpinWheelButton';
 import AllProducts from './component/All Products/AllProducts';
+import MyCouponsPage from './component/MyCouponsPage/MyCouponsPage';
+import Notitications from './component/Notifications/Notifications';
+import MyOrders from './component/MyOrders/MyOrders';
 {/*import CustomerBlog from './component/CustomerBlog';
 import BlogDetail from './component/BlogDetail';*/}
 
@@ -61,7 +66,7 @@ function AppContent() {
     '/admin-add-new-supplier', '/all-user', '/all-role', '/add-new-user',
     '/add-new-role', '/admin-order',
     '/admin-coupons', '/admin-add-new-coupons', '/admin-taxes',
-    '/admin-add-new-tax', '/admin-blog', '/admin-add-new-blog',
+    '/admin-add-new-tax', '/admin-blog', '/admin-add-new-blog','/admin-product-review'
 
   ];
 
@@ -69,17 +74,17 @@ function AppContent() {
 
   const backToTopPaths = [
     '/login', '/signup', '/forgot', '/reset-password', '/verify-otp',
-    '/', '/wishlist', '/order-success'
+    '/', '/wishlist', '/order-success', "/my-coupons"
   ];
 
-  const aiChatPaths = ['/', '/wishlist'];
+  const aiChatPaths = ['/', '/wishlist', '/my-coupons'];
 
   const shouldHideHeader = hideHeaderPaths.includes(location.pathname);
   const shouldHideFooter = hideFooterPaths.includes(location.pathname);
   const shouldHideBackToTop = backToTopPaths.includes(location.pathname) || isProductDetail || isCheckout;
   const shouldShowAIChat = aiChatPaths.includes(location.pathname) || isProductDetail || isCheckout;
 
-  const spinPaths = ['/', '/wishlist', '/cart-detail'];
+  const spinPaths = ['/', '/wishlist', '/cart-detail', '/my-coupons'];
   const shouldShowSpin = spinPaths.includes(location.pathname);
 
 
@@ -186,6 +191,12 @@ function AppContent() {
             <AddNewBlog />
           </PrivateRoute>
         } />
+        <Route path="/admin-product-review" element={
+  <PrivateRoute allowedRoles={1}>
+    <ProductReview />
+  </PrivateRoute>
+} />
+
 
         {/* Customer Routes 
         <Route path="/wishlist" element={
@@ -206,12 +217,29 @@ function AppContent() {
             <AllProducts />
           </PrivateRoute>
         } />
+        <Route path="/my-orders" element={
+          <PrivateRoute allowedRoles={2}>
+            <MyOrders />
+          </PrivateRoute>
+        } />
+        <Route path="/my-coupons" element={
+          <PrivateRoute allowedRoles={2}>
+            <MyCouponsPage />
+          </PrivateRoute>
+        } />
 
         <Route path="/cart-detail" element={
           <PrivateRoute allowedRoles={2}>
             <CartDetail />
           </PrivateRoute>
         } />
+
+        <Route path="/notifications" element={
+          <PrivateRoute allowedRoles={2}>
+            <Notitications />
+          </PrivateRoute>
+        } />
+
         <Route path="/customer-profile-update" element={
           <PrivateRoute allowedRoles={2}>
             <CustomerProfileUpdate />

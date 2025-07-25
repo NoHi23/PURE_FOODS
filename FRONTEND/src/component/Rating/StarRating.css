@@ -1,0 +1,22 @@
+.star-rating {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 16px;
+}
+
+.text-warning {
+  color: #ffc107; /* Màu vàng mặc định cho sao khi có đánh giá */
+}
+
+.text-muted {
+  color: #6c757d; /* Màu xám cho sao khi chưa có đánh giá; bạn có thể điều chỉnh mã màu nếu cần */
+}
+
+.star.full {
+  color: #ffc107; /* Giữ nguyên nếu cần override, nhưng không bắt buộc vì đã dùng colorClass */
+}
+
+.star.empty {
+  color: #ccc; /* Giữ nguyên, nhưng component đã dùng colorClass nên có thể không cần */
+}

@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
+
 import { useParams } from 'react-router-dom';
 import ProductDetailLayout from '../../layouts/ProductDetailLayout'
 import axios from 'axios';
@@ -7,11 +8,21 @@ import './ProductDetail.css'
 import { useWishlist } from '../../layouts/WishlistContext';
 import { useNavigate } from 'react-router-dom';
 import * as bootstrap from "bootstrap";
+import StarRating from "../Rating/StarRating";
+import feather from 'feather-icons'; // Install nếu chưa: npm i feather-icons
 
 
 const ProductDetail = () => {
   const { id } = useParams();
   const [products, setProducts] = useState(null);
+ const [avgRating, setAvgRating] = useState(null);
+const [reviewCount, setReviewCount] = useState(0);
+const [reviews, setReviews] = useState([]);
+const [selectedRating, setSelectedRating] = useState(0); // Rating chọn (1-5)
+const [reviewComment, setReviewComment] = useState(''); // Nội dung comment
+const [isSubmitting, setIsSubmitting] = useState(false); // Loading state khi submit
+const [refreshReviews, setRefreshReviews] = useState(0);
+
   const { wishlistMap, setWishlistMap, fetchWishlistCount, refreshWishlist } = useWishlist();
   const [isWished, setIsWished] = useState(false);
   const user = JSON.parse(localStorage.getItem("user"));
@@ -180,48 +191,48 @@ const ProductDetail = () => {
 
 
   const handleAddToCart1 = async (product) => {
-  if (!userId) {
-    toast.error("Vui lòng đăng nhập");
-    return;
-  }
-
-  try {
-    const res = await axios.get(`http://localhost:8082/PureFoods/api/cart/user/${userId}`);
-    const cartItems = res.data;
-    const existingItem = cartItems.find(item => item.productID === product.productId);
-    const currentQty = existingItem ? existingItem.quantity : 0;
-    const totalQty = currentQty + quantity;
-
-    if (totalQty > product.stockQuantity) {
-      toast.warning(`Chỉ còn ${product.stockQuantity - currentQty} sản phẩm trong kho`);
+    if (!userId) {
+      toast.error("Vui lòng đăng nhập");
       return;
     }
 
-    const cartItem = {
-      userID: userId,
-      productID: product.productId,
-      quantity: totalQty,
-      priceAfterDiscount: product.salePrice,
-      total: product.salePrice * totalQty,
-      imageURL: product.imageURL,
-      productName: product.productName,
-      originalPrice: product.price,
-      discount: product.discountPercent,
-    };
+    try {
+      const res = await axios.get(`http://localhost:8082/PureFoods/api/cart/user/${userId}`);
+      const cartItems = res.data;
+      const existingItem = cartItems.find(item => item.productID === product.productId);
+      const currentQty = existingItem ? existingItem.quantity : 0;
+      const totalQty = currentQty + quantity;
 
-    if (existingItem) {
-      await axios.put(`http://localhost:8082/PureFoods/api/cart/update/${existingItem.cartItemID}`, cartItem);
-    } else {
-      await axios.post("http://localhost:8082/PureFoods/api/cart/create", cartItem);
+      if (totalQty > product.stockQuantity) {
+        toast.warning(`Chỉ còn ${product.stockQuantity - currentQty} sản phẩm trong kho`);
+        return;
+      }
+
+      const cartItem = {
+        userID: userId,
+        productID: product.productId,
+        quantity: totalQty,
+        priceAfterDiscount: product.salePrice,
+        total: product.salePrice * totalQty,
+        imageURL: product.imageURL,
+        productName: product.productName,
+        originalPrice: product.price,
+        discount: product.discountPercent,
+      };
+
+      if (existingItem) {
+        await axios.put(`http://localhost:8082/PureFoods/api/cart/update/${existingItem.cartItemID}`, cartItem);
+      } else {
+        await axios.post("http://localhost:8082/PureFoods/api/cart/create", cartItem);
+      }
+
+      toast.success("Đã thêm vào giỏ hàng");
+      window.dispatchEvent(new Event("cartUpdated"));
+    } catch (err) {
+      toast.error("Thêm vào giỏ hàng thất bại");
+      console.error(err);
     }
-
-    toast.success("Đã thêm vào giỏ hàng");
-    window.dispatchEvent(new Event("cartUpdated"));
-  } catch (err) {
-    toast.error("Thêm vào giỏ hàng thất bại");
-    console.error(err);
-  }
-};
+  };
 
 
   useEffect(() => {
@@ -252,6 +263,33 @@ const ProductDetail = () => {
         toast.error("Error loading product");
       });
   }, [id]);
+
+useEffect(() => {
+  if (products?.productId) {
+    axios
+      .get(`http://localhost:8082/PureFoods/api/review/product?productId=${products.productId}`)
+      .then(res => {
+        const reviewList = res.data || [];
+        setReviews(reviewList);
+        setReviewCount(reviewList.length);
+
+        if (reviewList.length > 0) {
+          const total = reviewList.reduce((acc, r) => acc + r.rating, 0);
+          const avg = total / reviewList.length;
+          setAvgRating(Number(avg.toFixed(2)));
+        } else {
+          setAvgRating(0);
+        }
+      })
+      .catch(err => {
+        console.error("❌ Lỗi khi lấy đánh giá:", err);
+        setReviews([]);
+        setReviewCount(0);
+        setAvgRating(0);
+      });
+  }
+}, [products, refreshReviews]); // Thêm refreshReviews để reload
+
 
   const [thumbnailList, setThumbnailList] = useState([]);
 
@@ -478,8 +516,52 @@ const ProductDetail = () => {
     fetchSuppliers();
   }, [selectedProduct]);
 
+const handleSubmitReview = async () => {
+  let hasError = false;
+  if (selectedRating < 1) {
+    toast.warning("Vui lòng chọn rating");
+    hasError = true;
+  }
+  if (reviewComment.trim() === '') {
+    toast.warning("Vui lòng viết nội dung");
+    hasError = true;
+  }
+  if (hasError) return;
 
+  setIsSubmitting(true);
+  try {
+    const reviewData = {
+      productId: products.productId,
+      customerId: userId,
+      rating: selectedRating,
+      comment: reviewComment,
+    };
 
+    await axios.post('http://localhost:8082/PureFoods/api/review/create', reviewData);
+    toast.success("Đánh giá đã được gửi thành công!");
+
+    // Reset form
+    setSelectedRating(0);
+    setReviewComment('');
+
+    // Đóng modal
+    const modalEl = document.getElementById('writereview');
+    if (modalEl) {
+      bootstrap.Modal.getInstance(modalEl).hide();
+    }
+
+    // Reload reviews
+    setRefreshReviews(prev => prev + 1);
+  } catch (err) {
+    toast.error("Gửi đánh giá thất bại");
+    console.error(err);
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+useEffect(() => {
+  feather.replace(); // Re-render icons khi rating change
+}, [selectedRating]);
   return (
     <ProductDetailLayout>
       <div>
@@ -526,7 +608,7 @@ const ProductDetail = () => {
             <div className="row">
               <div className="col-12">
                 <div className="breadcrumb-contain">
-                  <h2>Creamy Chocolate Cake</h2>
+                  <h2>{products?.productName}</h2>
                   <nav>
                     <ol className="breadcrumb mb-0">
                       <li className="breadcrumb-item">
@@ -535,7 +617,7 @@ const ProductDetail = () => {
                         </a>
                       </li>
 
-                      <li className="breadcrumb-item active">Creamy Chocolate Cake</li>
+                      <li className="breadcrumb-item active">{products?.productName}</li>
                     </ol>
                   </nav>
                 </div>
@@ -611,26 +693,17 @@ const ProductDetail = () => {
                         <h3 className="theme-color price">
                           ${products?.salePrice} <del className="text-content">${products?.price}</del>
                         </h3>
-                        <div className="product-rating custom-rate">
-                          <ul className="rating">
-                            <li>
-                              <i data-feather="star" className="fill"></i>
-                            </li>
-                            <li>
-                              <i data-feather="star" className="fill"></i>
-                            </li>
-                            <li>
-                              <i data-feather="star" className="fill"></i>
-                            </li>
-                            <li>
-                              <i data-feather="star" className="fill"></i>
-                            </li>
-                            <li>
-                              <i data-feather="star"></i>
-                            </li>
-                          </ul>
-                          <span className="review">23 Customer Review</span>
-                        </div>
+                        {avgRating !== null && (
+  <div className="d-flex align-items-center gap-2">
+    <StarRating rating={avgRating} />
+    <span className="text-muted small">
+      {avgRating.toFixed(1)} / 5 ({reviewCount} đánh giá)
+    </span>
+  </div>
+)}
+
+
+
                       </div>
 
                       <div className="product-contain">
@@ -661,7 +734,7 @@ const ProductDetail = () => {
                         data-seconds="3"
                       >
                         <div className="product-title">
-                          <h4>Hurry up! Sales Ends In</h4>
+                          <h4>Nhanh lên! Khuyến mại kết thúc vào</h4>
                         </div>
                         <ul>
                           <li>
@@ -669,7 +742,7 @@ const ProductDetail = () => {
                               <div className="days d-block">
                                 <h5></h5>
                               </div>
-                              <h6>Days</h6>
+                              <h6>Ngày</h6>
                             </div>
                           </li>
                           <li>
@@ -677,7 +750,7 @@ const ProductDetail = () => {
                               <div className="hours d-block">
                                 <h5></h5>
                               </div>
-                              <h6>Hours</h6>
+                              <h6>Giờ</h6>
                             </div>
                           </li>
                           <li>
@@ -685,7 +758,7 @@ const ProductDetail = () => {
                               <div className="minutes d-block">
                                 <h5></h5>
                               </div>
-                              <h6>Min</h6>
+                              <h6>Phút</h6>
                             </div>
                           </li>
                           <li>
@@ -693,7 +766,7 @@ const ProductDetail = () => {
                               <div className="seconds d-block">
                                 <h5></h5>
                               </div>
-                              <h6>Sec</h6>
+                              <h6>Giây</h6>
                             </div>
                           </li>
                         </ul>
@@ -721,13 +794,13 @@ const ProductDetail = () => {
                         </div>
 
                         <button onClick={() => handleAddToCart1(products)} className="btn btn-md bg-dark cart-button text-white w-100">
-                          Add To Cart
+                          Thêm vào giỏ hàng
                         </button>
                       </div>
 
                       <div className="payment-option">
                         <div className="product-title">
-                          <h4>Guaranteed Safe Checkout</h4>
+                          <h4>Thanh toán an toàn được đảm bảo</h4>
                         </div>
                         <ul>
                           <li>
@@ -771,7 +844,7 @@ const ProductDetail = () => {
                       </div>
 
                       <div className="vendor-name">
-                        <h5 className="fw-500">Pure Foods</h5>
+                        <h5 className="fw-500">Clean Food Shop</h5>
 
                         <div className="product-rating mt-1">
                           <ul className="rating">
@@ -791,14 +864,13 @@ const ProductDetail = () => {
                               <i data-feather="star"></i>
                             </li>
                           </ul>
-                          <span>(9999+ Reviews)</span>
+                          <span>(9999+ đánh giá)</span>
                         </div>
                       </div>
                     </div>
 
                     <p className="vendor-detail">
-                      Pure Foods is an Vietnamese fast-casual restaurant that offers international and Vietnamese noodle
-                      dishes and pasta.
+                      Clean Food Shop là một nhà hàng Việt Nam bình dân, phục vụ các món mì và mì ống quốc tế và Việt Nam.
                     </p>
 
                     <div className="vendor-list">
@@ -807,7 +879,7 @@ const ProductDetail = () => {
                           <div className="address-contact">
                             <i data-feather="map-pin"></i>
                             <h5>
-                              Address:{" "}
+                              Địa chỉ:{" "}
                               <span className="text-content">
                                 Khu Giáo dục và Đào tạo - Khu Công nghệ cao Hòa Lạc - Km29 Đại lộ Thăng Long, xã Hòa
                                 Lạc, TP. Hà Nội
@@ -820,7 +892,7 @@ const ProductDetail = () => {
                           <div className="address-contact">
                             <i data-feather="headphones"></i>
                             <h5>
-                              Contact Seller: <span className="text-content">1900 6789</span>
+                              Liên hệ người bán: <span className="text-content">1900 6789</span>
                             </h5>
                           </div>
                         </li>
@@ -830,8 +902,8 @@ const ProductDetail = () => {
 
                   <div className="pt-25">
                     <div className="hot-line-number">
-                      <h5>Hotline Order:</h5>
-                      <h6>Mon - Fri: 07:00 am - 08:30PM</h6>
+                      <h5>Hotline đặt hàng:</h5>
+                      <h6>Thứ 2 - Thứ 6: 07:00 sáng - 08:30 tối</h6>
                       <h3>1900 6789</h3>
                     </div>
                   </div>
@@ -855,7 +927,7 @@ const ProductDetail = () => {
                         type="button"
                         role="tab"
                       >
-                        Description
+                        Mô tả
                       </button>
                     </li>
 
@@ -868,7 +940,7 @@ const ProductDetail = () => {
                         type="button"
                         role="tab"
                       >
-                        Care Instructions
+                        Hướng dẫn chăm sóc
                       </button>
                     </li>
 
@@ -881,371 +953,154 @@ const ProductDetail = () => {
                         type="button"
                         role="tab"
                       >
-                        Review
+                        Đánh giá
                       </button>
                     </li>
                   </ul>
 
-                  <div className="tab-content custom-tab" id="myTabContent">
-                    <div className="tab-pane fade show active" id="description" role="tabpanel">
-                      <div className="product-description">
-                        <div className="nav-desh">
-                          <p>{products?.description}</p>
+               <div className="tab-pane fade" id="review" role="tabpanel">
+  <div className="review-box">
+    <div className="row">
+      {/* Cột trái: Tổng kết đánh giá */}
+      <div className="col-xl-5">
+        <div className="product-rating-box">
+          <div className="row">
+            <div className="col-xl-12">
+              <div className="product-main-rating d-flex align-items-center gap-2">
+                {avgRating !== null ? (
+                  <>
+                    <StarRating rating={avgRating} />
+                    <h2>{avgRating.toFixed(1)} / 5</h2>
+                  </>
+                ) : (
+                  <h2>0.00 / 5 <i data-feather="star"></i></h2>
+                )}
+                <h5>({reviewCount} đánh giá)</h5>
+              </div>
+            </div>
+
+            <div className="col-xl-12">
+              <ul className="product-rating-list">
+                {[5, 4, 3, 2, 1].map((star) => {
+                  const count = reviews.filter((r) => (r.rating || 0) === star).length;
+                  const percentage = reviewCount > 0 ? (count / reviewCount) * 100 : 0;
+                  return (
+                    <li key={star}>
+                      <div className="rating-product d-flex align-items-center">
+                        <h5 className="me-2">
+                          {star}
+                        </h5>
+                        <i data-feather="star" className="fill me-2"></i> {/* Icon sao cho trực quan */}
+                        <div className="progress flex-grow-1">
+                          <div className="progress-bar" style={{ width: `${percentage}%` }}></div>
                         </div>
+                        <h5 className="total ms-2">{count}</h5>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+
+              <div className="review-title-2">
+                <h4 className="fw-bold">Đánh giá sản phẩm</h4>
+                <p>Hãy để lại cảm nhận của bạn về sản phẩm</p>
+                <button
+  className="btn"
+  type="button"
+  onClick={() => {
+    const modal = new bootstrap.Modal(document.getElementById('writereview'));
+    modal.show();
+  }}
+>
+  Viết đánh giá
+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Cột phải: Danh sách đánh giá */}
+      <div className="col-xl-7">
+        <div className="review-people">
+          <ul className="review-list">
+            {reviews.length === 0 && (
+              <p className="text-muted">Chưa có đánh giá nào cho sản phẩm này.</p>
+            )}
+            {reviews.map((review, index) => {
+              // Helper để format createdAt từ mảng thành Date
+              let formattedDate = "Không xác định thời gian";
+              if (Array.isArray(review.createdAt) && review.createdAt.length >= 6) {
+                const [year, month, day, hour, min, sec, nano = 0] = review.createdAt;
+                const millis = Math.floor(nano / 1000000); // Chuyển nano sang milli
+                const reviewDate = new Date(year, month - 1, day, hour, min, sec, millis); // Tháng trừ 1 (0-based)
+                if (!isNaN(reviewDate)) {
+                  // Format absolute
+                  const absoluteDate = new Intl.DateTimeFormat("vi-VN", {
+                    year: "numeric",
+                    month: "2-digit",
+                    day: "2-digit",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  }).format(reviewDate);
+                  
+                  // Tính relative time dựa trên current date July 25, 2025 (chi tiết hơn)
+                  const currentDate = new Date(2025, 6, 25); // July là month 6 (0-based)
+                  const timeDiff = currentDate - reviewDate;
+                  const daysAgo = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+                  const relative = daysAgo > 0 ? `(${daysAgo} ngày trước)` : "(Mới đây)";
+                  
+                  formattedDate = `${absoluteDate} ${relative}`;
+                }
+              }
+
+              return (
+                <li key={review.reviewId || index}>
+                  <div className="people-box">
+                    <div>
+                      <div className="people-image people-text">
+                        <img
+                          alt="user"
+                          className="img-fluid"
+                          src="/assets/images/review/default.jpg"
+                        />
                       </div>
                     </div>
-
-
-
-                    <div className="tab-pane fade" id="care" role="tabpanel">
-                      <div className="information-box">
-                        <ul>
-                          <li>Store clean food in the refrigerator at a temperature between 0°C and 4°C to keep it fresh and prevent bacterial growth.</li>
-
-                          <li>Do not store cooked food together with raw food to avoid cross-contamination.</li>
-
-                          <li>Cooked food should be consumed within 24 hours to ensure safety and quality.</li>
-
-                          <li>Wash your hands thoroughly before handling or eating food.</li>
-
-                          <li>Seal food containers properly after use and store them in a cool, dry place.</li>
-
-                          <li>Do not consume expired food or food that shows signs of spoilage such as mold, off smells, or discoloration.</li>
-
-                          <li>Always wash fruits and vegetables with clean water before consuming or cooking them.</li>
-                        </ul>
-                      </div>
-                    </div>
-
-
-                    <div className="tab-pane fade" id="review" role="tabpanel">
-                      <div className="review-box">
-                        <div className="row">
-                          <div className="col-xl-5">
-                            <div className="product-rating-box">
-                              <div className="row">
-                                <div className="col-xl-12">
-                                  <div className="product-main-rating">
-                                    <h2>
-                                      3.40
-                                      <i data-feather="star"></i>
-                                    </h2>
-
-                                    <h5>5 Overall Rating</h5>
-                                  </div>
-                                </div>
-
-                                <div className="col-xl-12">
-                                  <ul className="product-rating-list">
-                                    <li>
-                                      <div className="rating-product">
-                                        <h5>
-                                          5<i data-feather="star"></i>
-                                        </h5>
-                                        <div className="progress">
-                                          <div className="progress-bar" style={{ width: "40%" }}></div>
-                                        </div>
-                                        <h5 className="total">2</h5>
-                                      </div>
-                                    </li>
-                                    <li>
-                                      <div className="rating-product">
-                                        <h5>
-                                          4<i data-feather="star"></i>
-                                        </h5>
-                                        <div className="progress">
-                                          <div className="progress-bar" style={{ width: "20%" }}></div>
-                                        </div>
-                                        <h5 className="total">1</h5>
-                                      </div>
-                                    </li>
-                                    <li>
-                                      <div className="rating-product">
-                                        <h5>
-                                          3<i data-feather="star"></i>
-                                        </h5>
-                                        <div className="progress">
-                                          <div className="progress-bar" style={{ width: "0%" }}></div>
-                                        </div>
-                                        <h5 className="total">0</h5>
-                                      </div>
-                                    </li>
-                                    <li>
-                                      <div className="rating-product">
-                                        <h5>
-                                          2<i data-feather="star"></i>
-                                        </h5>
-                                        <div className="progress">
-                                          <div className="progress-bar" style={{ width: "20%" }}></div>
-                                        </div>
-                                        <h5 className="total">1</h5>
-                                      </div>
-                                    </li>
-                                    <li>
-                                      <div className="rating-product">
-                                        <h5>
-                                          1<i data-feather="star"></i>
-                                        </h5>
-                                        <div className="progress">
-                                          <div className="progress-bar" style={{ width: "20%" }}></div>
-                                        </div>
-                                        <h5 className="total">1</h5>
-                                      </div>
-                                    </li>
-                                  </ul>
-
-                                  <div className="review-title-2">
-                                    <h4 className="fw-bold">Review this product</h4>
-                                    <p>Let other customers know what you think</p>
-                                    <button
-                                      className="btn"
-                                      type="button"
-                                      data-bs-toggle="modal"
-                                      data-bs-target="#writereview"
-                                    >
-                                      Write a review
-                                    </button>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="col-xl-7">
-                            <div className="review-people">
-                              <ul className="review-list">
-                                <li>
-                                  <div className="people-box">
-                                    <div>
-                                      <div className="people-image people-text">
-                                        <img alt="user" className="img-fluid " src="../assets/images/review/1.jpg" />
-                                      </div>
-                                    </div>
-                                    <div className="people-comment">
-                                      <div className="people-name">
-                                        <a href="javascript:void(0)" className="name">
-                                          Jack Doe
-                                        </a>
-                                        <div className="date-time">
-                                          <h6 className="text-content"> 29 Sep 2023 06:40:PM</h6>
-                                          <div className="product-rating">
-                                            <ul className="rating">
-                                              <li>
-                                                <i data-feather="star" className="fill"></i>
-                                              </li>
-                                              <li>
-                                                <i data-feather="star" className="fill"></i>
-                                              </li>
-                                              <li>
-                                                <i data-feather="star" className="fill"></i>
-                                              </li>
-                                              <li>
-                                                <i data-feather="star" className="fill"></i>
-                                              </li>
-                                              <li>
-                                                <i data-feather="star"></i>
-                                              </li>
-                                            </ul>
-                                          </div>
-                                        </div>
-                                      </div>
-                                      <div className="reply">
-                                        <p>
-                                          Avoid this product. The quality is terrible, and it started falling apart
-                                          almost immediately. I wish I had read more reviews before buying. Lesson
-                                          learned.
-                                        </p>
-                                      </div>
-                                    </div>
-                                  </div>
+                    <div className="people-comment">
+                      <div className="people-name">
+                        <span className="name fw-bold">{review.customerName || "Ẩn danh"}</span>
+                        <div className="date-time">
+                          <h6 className="text-content">{formattedDate}</h6>
+                          <div className="product-rating">
+                            <ul className="rating">
+                              {[1, 2, 3, 4, 5].map((star) => (
+                                <li key={star}>
+                                  <i
+                                    data-feather="star"
+                                    className={(review.rating || 0) >= star ? "fill" : ""}
+                                  ></i>
                                 </li>
-                                <li>
-                                  <div className="people-box">
-                                    <div>
-                                      <div className="people-image people-text">
-                                        <img alt="user" className="img-fluid " src="../assets/images/review/2.jpg" />
-                                      </div>
-                                    </div>
-                                    <div className="people-comment">
-                                      <div className="people-name">
-                                        <a href="javascript:void(0)" className="name">
-                                          Jessica Miller
-                                        </a>
-                                        <div className="date-time">
-                                          <h6 className="text-content"> 29 Sep 2023 06:34:PM</h6>
-                                          <div className="product-rating">
-                                            <div className="product-rating">
-                                              <ul className="rating">
-                                                <li>
-                                                  <i data-feather="star" className="fill"></i>
-                                                </li>
-                                                <li>
-                                                  <i data-feather="star" className="fill"></i>
-                                                </li>
-                                                <li>
-                                                  <i data-feather="star" className="fill"></i>
-                                                </li>
-                                                <li>
-                                                  <i data-feather="star" className="fill"></i>
-                                                </li>
-                                                <li>
-                                                  <i data-feather="star"></i>
-                                                </li>
-                                              </ul>
-                                            </div>
-                                          </div>
-                                        </div>
-                                      </div>
-                                      <div className="reply">
-                                        <p>
-                                          Honestly, I regret buying this item. The quality is subpar, and it feels like
-                                          a waste of money. I wouldn't recommend it to anyone.
-                                        </p>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </li>
-                                <li>
-                                  <div className="people-box">
-                                    <div>
-                                      <div className="people-image people-text">
-                                        <img alt="user" className="img-fluid " src="../assets/images/review/3.jpg" />
-                                      </div>
-                                    </div>
-                                    <div className="people-comment">
-                                      <div className="people-name">
-                                        <a href="javascript:void(0)" className="name">
-                                          Rome Doe
-                                        </a>
-                                        <div className="date-time">
-                                          <h6 className="text-content"> 29 Sep 2023 06:18:PM</h6>
-                                          <div className="product-rating">
-                                            <ul className="rating">
-                                              <li>
-                                                <i data-feather="star" className="fill"></i>
-                                              </li>
-                                              <li>
-                                                <i data-feather="star" className="fill"></i>
-                                              </li>
-                                              <li>
-                                                <i data-feather="star" className="fill"></i>
-                                              </li>
-                                              <li>
-                                                <i data-feather="star" className="fill"></i>
-                                              </li>
-                                              <li>
-                                                <i data-feather="star"></i>
-                                              </li>
-                                            </ul>
-                                          </div>
-                                        </div>
-                                      </div>
-                                      <div className="reply">
-                                        <p>
-                                          I am extremely satisfied with this purchase. The item arrived promptly, and
-                                          the quality is exceptional. It's evident that the makers paid attention to
-                                          detail. Overall, a fantastic buy!
-                                        </p>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </li>
-                                <li>
-                                  <div className="people-box">
-                                    <div>
-                                      <div className="people-image people-text">
-                                        <img alt="user" className="img-fluid " src="../assets/images/review/4.jpg" />
-                                      </div>
-                                    </div>
-                                    <div className="people-comment">
-                                      <div className="people-name">
-                                        <a href="javascript:void(0)" className="name">
-                                          Sarah Davis
-                                        </a>
-                                        <div className="date-time">
-                                          <h6 className="text-content"> 29 Sep 2023 05:58:PM</h6>
-                                          <div className="product-rating">
-                                            <ul className="rating">
-                                              <li>
-                                                <i data-feather="star" className="fill"></i>
-                                              </li>
-                                              <li>
-                                                <i data-feather="star" className="fill"></i>
-                                              </li>
-                                              <li>
-                                                <i data-feather="star" className="fill"></i>
-                                              </li>
-                                              <li>
-                                                <i data-feather="star" className="fill"></i>
-                                              </li>
-                                              <li>
-                                                <i data-feather="star"></i>
-                                              </li>
-                                            </ul>
-                                          </div>
-                                        </div>
-                                      </div>
-                                      <div className="reply">
-                                        <p>
-                                          I am genuinely delighted with this item. It's a total winner! The quality is
-                                          superb, and it has added so much convenience to my daily routine. Highly
-                                          satisfied customer!
-                                        </p>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </li>
-                                <li>
-                                  <div className="people-box">
-                                    <div>
-                                      <div className="people-image people-text">
-                                        <img alt="user" className="img-fluid " src="../assets/images/review/5.jpg" />
-                                      </div>
-                                    </div>
-                                    <div className="people-comment">
-                                      <div className="people-name">
-                                        <a href="javascript:void(0)" className="name">
-                                          John Doe
-                                        </a>
-                                        <div className="date-time">
-                                          <h6 className="text-content"> 29 Sep 2023 05:22:PM</h6>
-                                          <div className="product-rating">
-                                            <ul className="rating">
-                                              <li>
-                                                <i data-feather="star" className="fill"></i>
-                                              </li>
-                                              <li>
-                                                <i data-feather="star" className="fill"></i>
-                                              </li>
-                                              <li>
-                                                <i data-feather="star" className="fill"></i>
-                                              </li>
-                                              <li>
-                                                <i data-feather="star" className="fill"></i>
-                                              </li>
-                                              <li>
-                                                <i data-feather="star"></i>
-                                              </li>
-                                            </ul>
-                                          </div>
-                                        </div>
-                                      </div>
-                                      <div className="reply">
-                                        <p>
-                                          Very impressed with this purchase. The item is of excellent quality, and it
-                                          has exceeded my expectations.
-                                        </p>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </li>
-                              </ul>
-                            </div>
+                              ))}
+                            </ul>
                           </div>
                         </div>
+                      </div>
+                      <div className="reply">
+                        <p>{review?.comment || "Không có nội dung đánh giá."}</p>
                       </div>
                     </div>
                   </div>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
                 </div>
               </div>
             </div>
@@ -1254,7 +1109,7 @@ const ProductDetail = () => {
         <section className="product-list-section section-b-space">
           <div className="container-fluid-lg">
             <div className="title">
-              <h2>Related Products</h2>
+              <h2>Sản phẩm liên quan</h2>
               <span className="title-leaf">
                 <svg className="icon-width"></svg>
               </span>
@@ -1313,7 +1168,6 @@ const ProductDetail = () => {
                           </ul>
                           <span>(5.0)</span>
                         </div>
-                        <h6 className="unit">500 G</h6>
                         <h5 className="price">
                           <span className="theme-color">${product.salePrice} <del>${product.price}</del></span>
                         </h5>
@@ -1323,7 +1177,7 @@ const ProductDetail = () => {
                             className="btn btn-add-cart addcart-button"
                             onClick={() => handleAddToCart(product)}
                           >
-                            Add
+                            Thêm
                             <span className="add-icon">
                               <i className="fa-solid fa-plus"></i>
                             </span>
@@ -1359,7 +1213,7 @@ const ProductDetail = () => {
                 </div>
               ))}
             </div>
-            
+
           </div>
         </section>
 
@@ -1408,8 +1262,8 @@ const ProductDetail = () => {
                             <i data-feather="star"></i>
                           </li>
                         </ul>
-                        <span className="ms-2">8 Reviews</span>
-                        <span className="ms-2 text-danger">6 sold in last 16 hours</span>
+                        <span className="ms-2">8 đánh giá</span>
+                        <span className="ms-2 text-danger">6 đã bán trong 16 giờ qua</span>
                       </div>
 
                       <div className="product-detail">
@@ -1419,13 +1273,13 @@ const ProductDetail = () => {
                       <ul className="brand-list">
                         <li>
                           <div className="brand-box">
-                            <h5>Category Name:</h5>
+                            <h5>Tên danh mục:</h5>
                             <h6 className="mb-3">{category?.categoryName || "Đang tải..."}</h6>
                           </div>
                         </li>
                         <li>
                           <div className="brand-box">
-                            <h5>Supplier Name:</h5>
+                            <h5>Tên nhà cung cấp:</h5>
                             <h6 className="mb-3">{supplier?.supplierName || "Đang tải..."}</h6>
                           </div>
                         </li>
@@ -1434,13 +1288,13 @@ const ProductDetail = () => {
                       <ul className="brand-list">
                         <li>
                           <div className="brand-box">
-                            <h5>Stock Quantity:</h5>
+                            <h5>Số lượng hàng tồn kho:</h5>
                             <h6 className="mb-3">{selectedProduct?.stockQuantity || "Đang tải..."}</h6>
                           </div>
                         </li>
                         <li>
                           <div className="brand-box">
-                            <h5>Supplier Name:</h5>
+                            <h5>Tên nhà cung cấp:</h5>
                             <h6 className="mb-3">{supplier?.supplierName || "Đang tải..."}</h6>
                           </div>
                         </li>
@@ -1453,14 +1307,14 @@ const ProductDetail = () => {
                           className="btn btn-md bg-dark cart-button text-white w-100"
                           onClick={() => handleAddToCart(selectedProduct)}
                         >
-                          Add To Cart
+                          Thêm vào giỏ hàng
                         </button>
                         <button
                           type="button"
                           className="btn theme-bg-color view-button icon text-white fw-bold btn-md"
                           onClick={() => handleViewDetail(selectedProduct.productId)}
                         >
-                          View More Details
+                          Xem thêm chi tiết
                         </button>
                       </div>
                     </div>
@@ -1475,9 +1329,9 @@ const ProductDetail = () => {
             <div className="modal-content">
               <div className="modal-header">
                 <h5 className="modal-title" id="exampleModalLabel">
-                  Choose your Delivery Location
+                  Chọn Địa điểm Giao hàng
                 </h5>
-                <p className="mt-1 text-content">Enter your address and we will specify the offer for your area.</p>
+                <p className="mt-1 text-content">Nhập địa chỉ của bạn và chúng tôi sẽ chỉ định ưu đãi cho khu vực của bạn.</p>
                 <button type="button" className="btn-close" data-bs-dismiss="modal">
                   <i className="fa-solid fa-xmark"></i>
                 </button>
@@ -1762,7 +1616,7 @@ const ProductDetail = () => {
                   </div>
                   <div className="add-btn">
                     <a className="btn theme-bg-color text-white wishlist-btn" href="wishlist.html">
-                      <i className="fa fa-bookmark"></i> Wishlist
+                      <i className="fa fa-bookmark"></i> Yêu thích
                     </a>
 
                     <button type="button" onClick={() => handleAddToCart1(products)} className="btn theme-bg-color text-white">
@@ -1774,79 +1628,71 @@ const ProductDetail = () => {
             </div>
           </div>
         </div>
-        <div className="modal fade theme-modal question-modal" id="writereview" tabindex="-1">
-          <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h1 className="modal-title fs-5" id="exampleModalLabel">
-                  Write a review
-                </h1>
-                <button type="button" className="btn-close" data-bs-dismiss="modal">
-                  <i className="fa-solid fa-xmark"></i>
-                </button>
-              </div>
-              <div className="modal-body pt-0">
-                <form className="product-review-form">
-                  <div className="product-wrapper">
-                    <div className="product-image">
-                      <img
-                        className="img-fluid"
-                        alt="Solid Collared Tshirts"
-                        src="../assets/images/fashion/product/26.jpg"
-                      />
-                    </div>
-                    <div className="product-content">
-                      <h5 className="name">Solid Collared Tshirts</h5>
-                      <div className="product-review-rating">
-                        <div className="product-rating">
-                          <h6 className="price-number">$16.00</h6>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="review-box">
-                    <div className="product-review-rating">
-                      <label>Rating</label>
-                      <div className="product-rating">
-                        <ul className="rating">
-                          <li>
-                            <i data-feather="star" className="fill"></i>
-                          </li>
-                          <li>
-                            <i data-feather="star" className="fill"></i>
-                          </li>
-                          <li>
-                            <i data-feather="star" className="fill"></i>
-                          </li>
-                          <li>
-                            <i data-feather="star" className="fill"></i>
-                          </li>
-                          <li>
-                            <i data-feather="star"></i>
-                          </li>
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="review-box">
-                    <label for="content" className="form-label">
-                      Your Question *
-                    </label>
-                    <textarea id="content" rows="3" className="form-control" placeholder="Your Question"></textarea>
-                  </div>
-                </form>
-              </div>
-              <div className="modal-footer">
-                <button type="button" className="btn btn-md btn-theme-outline fw-bold" data-bs-dismiss="modal">
-                  Close
-                </button>
-                <button type="button" className="btn btn-md fw-bold text-light theme-bg-color">
-                  Save changes
-                </button>
+       <div className="modal fade theme-modal question-modal" id="writereview" tabIndex="-1">
+  <div className="modal-dialog modal-dialog-centered">
+    <div className="modal-content">
+      <div className="modal-header">
+        <h1 className="modal-title fs-5" id="exampleModalLabel">
+          Write a review
+        </h1>
+        <button type="button" className="btn-close" data-bs-dismiss="modal">
+          <i className="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div className="modal-body pt-0">
+        <form className="product-review-form" onSubmit={(e) => e.preventDefault()}>
+          <div className="product-wrapper">
+            <div className="product-image">
+              <img
+                className="img-fluid"
+                alt="Solid Collared Tshirts"
+                src="../assets/images/fashion/product/26.jpg"
+              />
+            </div>
+            <div className="product-content">
+              <h5 className="name">Solid Collared Tshirts</h5>
+              <div className="product-review-rating">
+                <div className="product-rating">
+                  <h6 className="price-number">$16.00</h6>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+          <div className="review-box">
+            <div className="product-review-rating">
+              <label>Rating</label>
+              <div className="product-rating">
+                <ul className="rating">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <li key={star} onClick={() => setSelectedRating(star)} style={{ cursor: 'pointer' }}>
+                      <i data-feather="star" style={{ color: selectedRating >= star ? 'gold' : 'gray' }}></i> {/* Dynamic color để hiển thị màu khi ấn */}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              {selectedRating < 1 && <small className="text-danger d-block mt-1">Vui lòng chọn rating *</small>} {/* Inline message cho validation */}
+            </div>
+          </div>
+          <div className="review-box">
+            <label htmlFor="content" className="form-label">
+              Nội dung đánh giá *
+            </label>
+            <textarea id="content" rows="3" className="form-control" placeholder="Your Question" value={reviewComment} onChange={(e) => setReviewComment(e.target.value)}></textarea>
+            {reviewComment.trim() === '' && <small className="text-danger d-block mt-1">Vui lòng viết nội dung *</small>}
+          </div>
+        </form>
+      </div>
+      <div className="modal-footer">
+        <button type="button" className="btn btn-md btn-theme-outline fw-bold" data-bs-dismiss="modal">
+          Close
+        </button>
+        <button type="button" className="btn btn-md fw-bold text-light theme-bg-color" onClick={handleSubmitReview} disabled={isSubmitting || selectedRating < 1 || reviewComment.trim() === ''}>
+          {isSubmitting ? 'Sending...' : 'Save changes'}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 
         <div className="bg-overlay"></div>
       </div>

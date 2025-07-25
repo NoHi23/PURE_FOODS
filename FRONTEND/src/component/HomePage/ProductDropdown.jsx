@@ -50,7 +50,7 @@ const ProductDropdown = () => {
 
     return (
         <li className="nav-item dropdown dropdown-mega">
-            <Link className="nav-link" to="/all-products">Product</Link>
+            <Link className="nav-link" to="/all-products">Sản phẩm</Link>
             <div className="dropdown-menu dropdown-menu-2">
                 <div className="row">
                     {categories.slice(0, 10).map((cat) => (

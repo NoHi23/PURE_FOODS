@@ -86,4 +86,12 @@ public class PromotionDAOImpl implements PromotionDAO {
             session.save(history);
         }
 
+    @Override
+    public List<String> findPromotionCodesByUserId(int userId) {
+        Session session = sessionFactory.getCurrentSession();
+        String hql = "SELECT up.promotionCode FROM UserPromotion up WHERE up.userId = :userId";
+        return session.createQuery(hql, String.class)
+                .setParameter("userId", userId)
+                .getResultList();
+    }
 }

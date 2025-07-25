@@ -165,6 +165,15 @@ public class OrderController {
         }
         return ResponseEntity.ok(list);
     }
+
+    @GetMapping("/top12-best-selling")
+    public ResponseEntity<List<BestSellingProductDTO>> getTop12BestSellingProductsWithStats() {
+        List<BestSellingProductDTO> list = orderService.getTop12BestSellingProductsWithStats();
+        if (list.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(list);
+    }
     @GetMapping("/top5-recent-orders")
     public ResponseEntity<List<Order>> getTop5RecentOrders() {
         List<Order> orders = orderService.getTop5RecentOrders();
@@ -173,6 +182,8 @@ public class OrderController {
         }
         return ResponseEntity.ok(orders);
     }
+
+
 
     @Autowired
     private VnpayService vnpayService;
@@ -224,7 +235,7 @@ public class OrderController {
             // ✅ Lấy Order để lấy ra userId (customerId)
             Order order = orderService.getOrderEntityById(Integer.parseInt(orderId));
 
-            order.setStatusID(4);
+            order.setStatusID(2);
             orderService.updateOrder(order);
 
             int userId = order.getCustomerID();
@@ -281,11 +292,68 @@ public class OrderController {
                 String vnpayUrl = vnpayService.createPaymentUrl(orderDTO);
                 return ResponseEntity.ok(Map.of("redirectUrl", vnpayUrl));
             }
+            if ("COD".equalsIgnoreCase(existingOrder.getPaymentMethod())) {
+                // xử lý sau khi cập nhật COD
+                existingOrder.setStatusID(4); // Đặt hàng thành công
+                orderService.updateOrder(existingOrder);
+
+                orderService.decreaseProductQuantitiesByOrderId(orderId);
+                cartItemService.clearCartByUserId(existingOrder.getCustomerID());
+
+                Notifications notify = new Notifications();
+                notify.setUserId(existingOrder.getCustomerID());
+                notify.setTitle("Đặt hàng thành công!");
+                notify.setContent("Đơn hàng #" + existingOrder.getOrderID() + " của bạn đã được đặt thành công.");
+                notificationService.saveNotification(notify);
+            }
 
             return ResponseEntity.ok(existingOrder);
 
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Update failed");
+        }
+    }
+
+    @PutMapping("/{orderId}/status")
+    public ResponseEntity<?> updateOrderStatus(
+            @PathVariable("orderId") int orderId,
+            @RequestBody Map<String, Integer> request
+    ) {
+        try {
+            int newStatusId = request.get("statusID");
+
+            Order order = orderService.getOrderEntityById(orderId);
+            if (order == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Order not found");
+            }
+
+            order.setStatusID(newStatusId);
+            orderService.updateOrder(order);
+
+            return ResponseEntity.ok(Map.of(
+                    "message", "Order status updated successfully!",
+                    "status", 200
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "Update status failed", "status", 500));
+        }
+    }
+
+    @GetMapping("/hasPurchased")
+    public ResponseEntity<?> hasPurchased(@RequestParam("userId") int userId, @RequestParam("productId") int productId) {
+        try {
+            boolean hasPurchased = orderService.hasCustomerBoughtProduct(userId, productId); // Gọi method mới
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Check purchased successfully!");
+            response.put("status", 200);
+            response.put("hasPurchased", hasPurchased);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("message", e.getMessage());
+            errorResponse.put("status", 400);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
     }
 

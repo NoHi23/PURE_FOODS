@@ -65,7 +65,7 @@ const Checkout = () => {
     try {
       const response = await axios.put(`http://localhost:8082/PureFoods/api/orders/updateOrder/${id}`, {
         customerID: user?.userId,
-        totalAmount: totalAmount, 
+        totalAmount: totalAmount,
         shippingAddress: address,
         shippingMethodID: 1, // nếu chỉ có 1 shipping method
         paymentMethod: paymentMethod === 'VNPAY' ? 'VNPAY' : 'COD',
@@ -78,8 +78,11 @@ const Checkout = () => {
 
       if (response.data.redirectUrl) {
         window.location.href = response.data.redirectUrl;
-      } else {
-        toast.success('Đơn hàng thanh toán khi nhận hàng đã được tạo thành công.');
+      } else if (paymentMethod === 'COD') {
+        const orderId = response.data.orderID || id; // Lấy từ phản hồi hoặc params
+        window.location.href = `http://localhost:3000/order-success/${orderId}`;
+        toast.success("Chúc mừng bạn đã đặt hàng thành công!");
+
       }
     } catch (error) {
       console.error('Lỗi tạo đơn hàng:', error);
@@ -119,11 +122,12 @@ const Checkout = () => {
           axios.get(`http://localhost:8082/PureFoods/api/product/getById/${detail.productID}`)
             .then(res => ({
               ...detail,
-              product: res.data
+              product: res.data.product
             }))
         );
 
         const results = await Promise.all(productPromises);
+
         setProductDetails(results);
       })
       .catch(err => console.error("❌ Lỗi khi lấy order detail:", err));
@@ -175,7 +179,7 @@ const Checkout = () => {
           <div className="row">
             <div className="col-12">
               <div className="breadcrumb-contain">
-                <h2>Checkout</h2>
+                <h2>Thanh toán</h2>
                 <nav>
                   <ol className="breadcrumb mb-0">
                     <li className="breadcrumb-item">
@@ -183,7 +187,7 @@ const Checkout = () => {
                         <i className="fa-solid fa-house"></i>
                       </a>
                     </li>
-                    <li className="breadcrumb-item active">Checkout</li>
+                    <li className="breadcrumb-item active">Thanh toán</li>
                   </ol>
                 </nav>
               </div>
@@ -208,7 +212,7 @@ const Checkout = () => {
                       </div>
                       <div className="checkout-box">
                         <div className="checkout-title">
-                          <h4>Delivery Address</h4>
+                          <h4>Địa chỉ giao hàng</h4>
                         </div>
 
                         <div className="checkout-detail">
@@ -227,12 +231,12 @@ const Checkout = () => {
                                         onChange={() => setSelectedAddressIndex(index)}
                                       />                                    </div>
                                     <div className="label">
-                                      <label>{index === 0 ? "Home" : `Địa chỉ ${index + 1}`}</label>
+                                      <label>{index === 0 ? "Nhà" : `Địa chỉ ${index + 1}`}</label>
                                     </div>
                                     <ul className="delivery-address-detail">
                                       <li><h4 className="fw-500">{address.fullName}</h4></li>
-                                      <li><p className="text-content"><span className="text-title">Address: </span>{address.address}</p></li>
-                                      <li><h6 className="text-content mb-0"><span className="text-title">Phone:</span>{address.phone}</h6></li>
+                                      <li><p className="text-content"><span className="text-title">Địa chỉ: </span>{address.address}</p></li>
+                                      <li><h6 className="text-content mb-0"><span className="text-title">Số điện thoại:</span>{address.phone}</h6></li>
                                     </ul>
                                   </div>
                                   {index !== 0 && (
@@ -259,89 +263,7 @@ const Checkout = () => {
                       </div>
                     </li>
 
-                    <li>
-                      <div className="checkout-icon">
-                        <lord-icon target=".nav-item" src="https://cdn.lordicon.com/oaflahpk.json"
-                          trigger="loop-on-hover" colors="primary:#0baf9a" className="lord-icon">
-                        </lord-icon>
-                      </div>
-                      <div className="checkout-box">
-                        <div className="checkout-title">
-                          <h4>Delivery Option</h4>
-                        </div>
 
-                        <div className="checkout-detail">
-                          <div className="row g-4">
-                            <div className="col-xxl-6">
-                              <div className="delivery-option">
-                                <div className="delivery-category">
-                                  <div className="shipment-detail">
-                                    <div
-                                      className="form-check custom-form-check hide-check-box">
-                                      <input className="form-check-input" type="radio"
-                                        name="standard" id="standard" checked />
-                                      <label className="form-check-label"
-                                        for="standard">Standard
-                                        Delivery Option</label>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-
-                            <div className="col-xxl-6">
-                              <div className="delivery-option">
-                                <div className="delivery-category">
-                                  <div className="shipment-detail">
-                                    <div
-                                      className="form-check mb-0 custom-form-check show-box-checked">
-                                      <input className="form-check-input" type="radio"
-                                        name="standard" id="future" />
-                                      <label className="form-check-label" for="future">Future
-                                        Delivery Option</label>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-
-                            <div className="col-12 future-box">
-                              <div className="future-option">
-                                <div className="row g-md-0 gy-4">
-                                  <div className="col-md-6">
-                                    <div className="delivery-items">
-                                      <div>
-                                        <h5 className="items text-content"><span>3
-                                          Items</span>@
-                                          $693.48</h5>
-                                        <h5 className="charge text-content">Delivery Charge
-                                          $34.67
-                                          <button type="button" className="btn p-0"
-                                            data-bs-toggle="tooltip"
-                                            data-bs-placement="top"
-                                            title="Extra Charge">
-                                            <i
-                                              className="fa-solid fa-circle-exclamation"></i>
-                                          </button>
-                                        </h5>
-                                      </div>
-                                    </div>
-                                  </div>
-
-                                  <div className="col-md-6">
-                                    <form
-                                      className="form-floating theme-form-floating date-box">
-                                      <input type="date" className="form-control" />
-                                      <label>Select Date</label>
-                                    </form>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </li>
 
                     <li>
                       <div className="checkout-icon">
@@ -352,7 +274,7 @@ const Checkout = () => {
                       </div>
                       <div className="checkout-box">
                         <div className="checkout-title">
-                          <h4>Payment Option</h4>
+                          <h4>Tùy chọn thanh toán</h4>
                         </div>
                         <div className="checkout-detail">
                           <div className="accordion accordion-flush custom-accordion" id="accordionFlushExample">
@@ -369,7 +291,7 @@ const Checkout = () => {
                                         checked={paymentMethod === 'COD'}
                                         onChange={() => setPaymentMethod('COD')}
                                       />
-                                      Cash On Delivery
+                                      Thanh toán khi nhận hàng
                                     </label>
                                   </div>
                                 </div>
@@ -377,8 +299,9 @@ const Checkout = () => {
                               <div id="flush-collapseFour" className="accordion-collapse collapse show" data-bs-parent="#accordionFlushExample">
                                 <div className="accordion-body">
                                   <p className="cod-review">
-                                    Pay digitally with SMS Pay Link. Cash may not be accepted in COVID restricted areas.
-                                    <a href="#">Know more.</a>
+
+                                    Thanh toán kỹ thuật số bằng SMS Pay Link. Tiền mặt có thể không được chấp nhận tại các khu vực bị hạn chế do COVID.
+                                    <a href="#">Tìm hiểu thêm.</a>
                                   </p>
                                 </div>
                               </div>
@@ -404,7 +327,7 @@ const Checkout = () => {
                               </div>
                               <div id="flush-collapseVnpay" className="accordion-collapse collapse" data-bs-parent="#accordionFlushExample">
                                 <div className="accordion-body">
-                                  <p className="cod-review">After clicking to order, you will be redirected to the VNPay payment gateway to scan the QR code or pay by ATM.</p>
+                                  <p className="cod-review">Sau khi nhấp vào đặt hàng, bạn sẽ được chuyển hướng đến cổng thanh toán VNPay để quét mã QR hoặc thanh toán bằng ATM.</p>
                                 </div>
                               </div>
                             </div>
@@ -423,36 +346,34 @@ const Checkout = () => {
               <div className="right-side-summery-box">
                 <div className="summery-box-2">
                   <div className="summery-header">
-                    <h3>Order Summery</h3>
+                    <h3>Tóm tắt đơn hàng</h3>
                   </div>
                   <ul className="summery-contain" >
                     {productDetails.map((item, idx) => (
 
                       <li key={idx}>
-                        <img src={item.imageURL}
+                        <img src={item.product.imageURL}
                           className="img-fluid blur-up lazyloaded checkout-image" alt="" />
-                        <h4>{item.productName} <span>X {item.quantity}</span></h4>
+                        <h4>{item.product.productName} <span>X {item.quantity}</span></h4>
                         <h4 className="price">${item.unitPrice}</h4>
                       </li>
-
-
                     ))}
 
                   </ul>
 
                   <ul className="summery-total">
                     <li>
-                      <h4>Subtotal</h4>
+                      <h4>Tổng phụ</h4>
                       <h4 className="price">${subtotal.toFixed(2)}</h4>
                     </li>
 
                     <li>
-                      <h4>Coupon/Code</h4>
+                      <h4>Phiếu giảm giá/Mã giảm giá</h4>
                       <h4 className="price">-${(discount > 0 ? discount.toFixed(2) : '0.00')}</h4>
                     </li>
 
                     <li className="list-total">
-                      <h4>Total (USD)</h4>
+                      <h4>Tổng cộng (USD)</h4>
                       <h4 className="price">${totalAmount.toFixed(2)}</h4>
                     </li>
                   </ul>
@@ -464,22 +385,21 @@ const Checkout = () => {
                       <img src="../assets/images/inner-page/offer.svg" className="img-fluid" alt="" />
                     </div>
                     <div className="offer-name">
-                      <h6>Available Offers</h6>
+                      <h6>Ưu đãi hiện có</h6>
                     </div>
                   </div>
 
                   <ul className="offer-detail">
                     <li>
-                      <p>Combo: BB Royal Almond/Badam Californian, Extra Bold 100 gm...</p>
+                      <p>Combo: Hạt điều Hoàng gia BB/Hạnh nhân Badam Californian, vị đậm đà 100g...</p>
                     </li>
                     <li>
-                      <p>combo: Royal Cashew Californian, Extra Bold 100 gm + BB Royal Honey 500 gm</p>
+                      <p>Combo: Hạt điều Hoàng gia Californian, vị đậm đà 100g + Mật ong Hoàng gia BB 500g</p>
                     </li>
                   </ul>
                 </div>
 
-                <button className="btn theme-bg-color text-white btn-md w-100 mt-4 fw-bold" onClick={handlePlaceOrder}>Place Order</button>
-              </div>
+                <button className="btn theme-bg-color text-white btn-md w-100 mt-4 fw-bold" onClick={handlePlaceOrder}>Đặt hàng</button>              </div>
             </div>
           </div>
         </div>

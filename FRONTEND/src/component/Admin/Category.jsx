@@ -191,11 +191,11 @@ const Category = () => {
                 <div className="card card-table">
                   <div className="card-body">
                     <div className="title-header option-title d-sm-flex d-block">
-                      <h5>Category List</h5>
+                      <h5>Danh sách loại sản phẩm</h5>
                       <div className="right-options">
                         <ul>
                           <li>
-                            <Link to="/admin-add-new-category" className="btn btn-solid">Add Category</Link>
+                            <Link to="/admin-add-new-category" className="btn btn-solid">Thêm mới loại sản phẩm</Link>
                           </li>
                         </ul>
                       </div>
@@ -206,10 +206,10 @@ const Category = () => {
                         <thead>
                           <tr>
                             <th>ID</th>
-                            <th>Name</th>
-                            <th>Description</th>
-                            <th>Organic</th>
-                            <th>Actions</th>
+                            <th>Tên</th>
+                            <th>Mô tả</th>
+                            <th>Là hữu cơ</th>
+                            <th>Tùy chọn</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -270,16 +270,16 @@ const Category = () => {
                       <div className="modal-dialog modal-dialog-centered">
                         <div className="modal-content">
                           <div className="modal-header">
-                            <h5 className="modal-title">Category Detail</h5>
+                            <h5 className="modal-title">Chi tiết loại sản phẩm</h5>
                             <button type="button" className="btn-close" data-bs-dismiss="modal"></button>
                           </div>
                           <div className="modal-body">
                             {selectedCategory && (
                               <>
                                 <p><strong>ID:</strong> {selectedCategory.categoryID}</p>
-                                <p><strong>Name:</strong> {selectedCategory.categoryName}</p>
-                                <p><strong>Description:</strong> {selectedCategory.categoryDescription}</p>
-                                <p><strong>Organic:</strong> {selectedCategory.isOrganic === 1 ? "Yes" : "No"}</p>
+                                <p><strong>Tên:</strong> {selectedCategory.categoryName}</p>
+                                <p><strong>Mô tả:</strong> {selectedCategory.categoryDescription}</p>
+                                <p><strong>Là hữu cơ:</strong> {selectedCategory.isOrganic === 1 ? "Yes" : "No"}</p>
                               </>
                             )}
                           </div>
@@ -292,28 +292,28 @@ const Category = () => {
                       <div className="modal-dialog modal-dialog-centered">
                         <div className="modal-content">
                           <div className="modal-header">
-                            <h5 className="modal-title">Edit Category</h5>
+                            <h5 className="modal-title">Chỉnh sửa loại sản phẩm</h5>
                             <button type="button" className="btn-close" data-bs-dismiss="modal"></button>
                           </div>
                           <div className="modal-body">
                             <form>
                               <div className="mb-3">
-                                <label className="form-label">Name</label>
+                                <label className="form-label">Tên</label>
                                 <input type="text" className="form-control" name="categoryName" value={editCategory.categoryName} onChange={handleInputChange} />
                               </div>
                               <div className="mb-3">
-                                <label className="form-label">Description</label>
+                                <label className="form-label">Mô tả</label>
                                 <textarea className="form-control" name="categoryDescription" value={editCategory.categoryDescription} onChange={handleInputChange}></textarea>
                               </div>
                               <div className="mb-3">
-                                <label className="form-label">Is Organic</label>
+                                <label className="form-label">Là hữu cơ</label>
                                 <input type="checkbox" name="isOrganic" checked={editCategory.isOrganic === 1} onChange={handleInputChange} />
                               </div>
                             </form>
                           </div>
                           <div className="modal-footer">
-                            <button className="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                            <button className="btn btn-primary" onClick={handleUpdateCategory}>Save Changes</button>
+                            <button className="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                            <button className="btn btn-primary" onClick={handleUpdateCategory}>Lưu lại</button>
                           </div>
                         </div>
                       </div>
@@ -324,13 +324,13 @@ const Category = () => {
                       <div className="modal-dialog modal-dialog-centered">
                         <div className="modal-content">
                           <div className="modal-header text-center">
-                            <h5 className="modal-title w-100">Confirm Delete</h5>
+                            <h5 className="modal-title w-100">Xác nhận xóa</h5>
                             <button type="button" className="btn-close" data-bs-dismiss="modal"></button>
                           </div>
                           <div className="modal-body text-center">
-                            <p>Are you sure you want to delete this category?</p>
-                            <button className="btn btn-danger m-2" onClick={handleDelete}>Yes</button>
-                            <button className="btn btn-secondary m-2" data-bs-dismiss="modal">No</button>
+                            <p>Bạn có chắc chắn muốn xóa loại sản phẩm này?</p>
+                            <button className="btn btn-danger m-2" onClick={handleDelete}>Xóa</button>
+                            <button className="btn btn-secondary m-2" data-bs-dismiss="modal">Hủy bỏ</button>
                           </div>
                         </div>
                       </div>

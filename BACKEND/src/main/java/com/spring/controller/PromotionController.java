@@ -115,4 +115,17 @@ public class PromotionController {
         boolean alreadySpun = userPromotionDAO.existsByUserIdAndDate(userId, LocalDate.now());
         return ResponseEntity.ok(Map.of("alreadySpun", alreadySpun));
     }
+
+
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<?> getCouponsByUserId(@PathVariable("userId") int userId) {
+        try {
+            List<PromotionDTO> userPromotions = promotionService.getPromotionsByUserId(userId);
+            return ResponseEntity.ok(Map.of("coupons", userPromotions, "status", 200));
+        } catch (RuntimeException e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "Lỗi khi lấy mã giảm giá của người dùng", "status", 500));
+        }
+    }
 }

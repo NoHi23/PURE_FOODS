@@ -133,7 +133,6 @@
                 line-height: 1.4;
 
                 a {
-                    text-decoration: underline;
                     margin-left: 5px;
                 }
             }
@@ -614,7 +613,6 @@
                             white-space: nowrap;
                             font-size: 16px;
                             display: block;
-                            text-decoration: underline;
 
                             &:hover {
                                 color: var(--theme-color);
@@ -625,7 +623,6 @@
                             font-weight: 400;
                             font-size: 15px;
                             color: #bf2020;
-                            text-decoration: underline;
                         }
                     }
                 }
@@ -1350,7 +1347,6 @@
                     }
 
                     span {
-                        text-decoration: underline;
                     }
                 }
 
@@ -1875,7 +1871,7 @@
                                                 }
 
                                                 span {
-                                                    text-decoration: underline;
+                                                
                                                 }
                                             }
 

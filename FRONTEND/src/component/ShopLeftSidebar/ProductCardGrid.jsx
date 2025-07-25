@@ -31,7 +31,7 @@ const ProductCardGrid = ({ product, handleViewProduct, userId }) => {
       .then(() => {
         toast.success("Đã thêm vào giỏ hàng");
         window.dispatchEvent(new Event("cartUpdated"));
-       // navigate("/cart-detail", { state: { fromAddToCart: true } });
+        // navigate("/cart-detail", { state: { fromAddToCart: true } });
       })
       .catch((err) => {
         console.error("❌ Lỗi khi thêm vào giỏ hàng:", err.response?.data || err.message);
@@ -52,13 +52,18 @@ const ProductCardGrid = ({ product, handleViewProduct, userId }) => {
         </Link>
         <ul className="product-option">
           <li data-bs-toggle="tooltip" title="View">
-            <a href="#" onClick={(e) => { e.preventDefault(); handleViewProduct(product); }}>
+            <a
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                handleViewProduct(product);
+              }}
+            >
               <Eye size={16} />
             </a>
           </li>
         </ul>
       </div>
-      <span className="span-name d-block">vegatable</span>
       <Link to={`/product/${product.productId}`}>
         <h5 className="name">{product.productName || "Fresh Bread and Pastry Flour 200 g"}</h5>
       </Link>
@@ -78,16 +83,20 @@ const ProductCardGrid = ({ product, handleViewProduct, userId }) => {
         </ul>
         <span className="text-muted d-block mt-1">({product.rating || 4}.0)</span>
       </div>
-      <h5 className="price mt-2">
+      <h5 className="price mt-2 gap-2 d-flex justify-content-center align-items-cneter">
         <span className="theme-color">${(product.salePrice || 8.02).toFixed(2)}</span>{" "}
         <del>${(product.price || 15.15).toFixed(2)}</del>
+        <span style={{ backgroundColor: "#e65353ff", borderRadius: "5px", padding: "3px", color: "white" }}>
+          - {product.discountPercent}%
+        </span>{" "}
       </h5>
+
       <div className="add-to-cart-box mt-3">
         <button
           className="btn btn-add-cart btn-primary addcart-button w-80 d-flex justify-content-center align-items-center"
           onClick={handleAddToCart}
         >
-          Add To Cart
+          Thêm vào giỏ hàng
         </button>
       </div>
     </div>

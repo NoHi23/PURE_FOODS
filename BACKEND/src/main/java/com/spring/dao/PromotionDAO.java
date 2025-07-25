@@ -15,4 +15,6 @@ public interface PromotionDAO {
     Promotions getPromotionByCode(String code);
     boolean existsByUserIdAndDate(int userId, LocalDate date);
     void saveSpinHistory(int userId, LocalDate date, String promotionCode);
+    List<String> findPromotionCodesByUserId(int userId);
+
 }

@@ -28,11 +28,11 @@ function CookieConsent() {
           <h2>Cookies!</h2>
         </div>
         <div className="cookie-contain">
-          <h5 className="text-content">We use cookies to make your experience better</h5>
+          <h5 className="text-content">Chúng tôi sử dụng cookie để cải thiện trải nghiệm của bạn</h5>
         </div>
       </div>
       <div className="button-group">
-        <button className="btn privacy-button">Privacy Policy</button>
+        <button className="btn privacy-button">Chính sách bảo mật</button>
         <button className="btn ok-button" onClick={handleAcceptCookies}>
           OK
         </button>

@@ -155,17 +155,17 @@ const Taxes = () => {
                 <div className="card">
                   <div className="card-body">
                     <div className="title-header option-title d-sm-flex d-block">
-                      <h5>Tax List</h5>
+                      <h5>Danh sách thuế</h5>
                       <div className="right-options">
                         <ul>
                           <li>
-                            <Link to="/admin-add-new-tax" className="btn btn-animation">Add Tax</Link>
+                            <Link to="/admin-add-new-tax" className="btn btn-animation">Thêm mới thuế</Link>
                           </li>
                         </ul>
                       </div>
                     </div>
                     {loading ? (
-                      <p>Loading...</p>
+                      <p>Đang tải...</p>
                     ) : taxes.length === 0 ? (
                       <p>Không có thuế nào để hiển thị.</p>
                     ) : (
@@ -174,12 +174,12 @@ const Taxes = () => {
                           <thead>
                             <tr>
                               <th>ID</th>
-                              <th>Name</th>
-                              <th>Tax Rate (%)</th>
-                              <th>Description</th>
-                              <th>Effective Date</th>
-                              <th>Status</th>
-                              <th>Actions</th>
+                              <th>Tên</th>
+                              <th>Thuế suất (%)</th>
+                              <th>Mô tả</th>
+                              <th>Ngày có hiệu lực</th>
+                              <th>Trạng thái</th>
+                              <th>Tùy chọn</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -191,7 +191,7 @@ const Taxes = () => {
                                 <td>{t.description || '-'}</td>
                                 <td>{new Date(t.effectiveDate).toLocaleDateString()}</td>
                                 <td className={t.status === 1 ? 'status-success' : 'status-danger'}>
-                                  {t.status === 1 ? 'Active' : 'Inactive'}
+                                  {t.status === 1 ? 'Hoạt động' : 'Không hoạt động'}
                                 </td>
                                 <td>
                                   <ul className="table-action-icons">
@@ -229,11 +229,11 @@ const Taxes = () => {
                             {selectedTax && (
                               <>
                                 <p><strong>ID:</strong> {selectedTax.taxID}</p>
-                                <p><strong>Name:</strong> {selectedTax.taxName}</p>
-                                <p><strong>Tax Rate:</strong> {selectedTax.taxRate}%</p>
-                                <p><strong>Description:</strong> {selectedTax.description || '-'}</p>
-                                <p><strong>Effective Date:</strong> {new Date(selectedTax.effectiveDate).toLocaleDateString()}</p>
-                                <p><strong>Status:</strong> {selectedTax.status === 1 ? 'Active' : 'Inactive'}</p>
+                                <p><strong>Tên:</strong> {selectedTax.taxName}</p>
+                                <p><strong>Mức thuế:</strong> {selectedTax.taxRate}%</p>
+                                <p><strong>Mô tả:</strong> {selectedTax.description || '-'}</p>
+                                <p><strong>Ngày có hiệu lực:</strong> {new Date(selectedTax.effectiveDate).toLocaleDateString()}</p>
+                                <p><strong>Trạng thái:</strong> {selectedTax.status === 1 ? 'Hoạt động' : 'Không hoạt động'}</p>
                               </>
                             )}
                           </div>
@@ -244,13 +244,13 @@ const Taxes = () => {
                       <div className="modal-dialog modal-dialog-centered">
                         <div className="modal-content">
                           <div className="modal-header">
-                            <h5 className="modal-title">Edit Tax</h5>
+                            <h5 className="modal-title">Chỉnh sửa Thuế</h5>
                             <button type="button" className="btn-close" data-bs-dismiss="modal"></button>
                           </div>
                           <div className="modal-body">
                             <form onSubmit={handleUpdateTax}>
                               <div className="mb-4 row align-items-center">
-                                <label className="col-lg-2 col-md-3 mb-0">Name</label>
+                                <label className="col-lg-2 col-md-3 mb-0">Tên</label>
                                 <div className="col-md-9 col-lg-10">
                                   <input
                                     type="text"
@@ -263,7 +263,7 @@ const Taxes = () => {
                                 </div>
                               </div>
                               <div className="mb-4 row align-items-center">
-                                <label className="col-lg-2 col-md-3 mb-0">Tax Rate (%)</label>
+                                <label className="col-lg-2 col-md-3 mb-0">Thuế suất (%)</label>
                                 <div className="col-md-9 col-lg-10">
                                   <input
                                     type="number"
@@ -277,7 +277,7 @@ const Taxes = () => {
                                 </div>
                               </div>
                               <div className="mb-4 row align-items-center">
-                                <label className="col-lg-2 col-md-3 mb-0">Description</label>
+                                <label className="col-lg-2 col-md-3 mb-0">Mô tả</label>
                                 <div className="col-md-9 col-lg-10">
                                   <textarea
                                     className="form-control"
@@ -288,7 +288,7 @@ const Taxes = () => {
                                 </div>
                               </div>
                               <div className="mb-4 row align-items-center">
-                                <label className="col-lg-2 col-md-3 mb-0">Effective Date</label>
+                                <label className="col-lg-2 col-md-3 mb-0">Ngày có hiệu lực</label>
                                 <div className="col-md-9 col-lg-10">
                                   <input
                                     type="date"
@@ -301,7 +301,7 @@ const Taxes = () => {
                                 </div>
                               </div>
                               <div className="mb-4 row align-items-center">
-                                <label className="col-lg-2 col-md-3 mb-0">Active</label>
+                                <label className="col-lg-2 col-md-3 mb-0">Hoạt động</label>
                                 <div className="col-md-9 col-lg-10 d-flex align-items-center">
                                   <label className="switch">
                                     <input
@@ -315,8 +315,8 @@ const Taxes = () => {
                                 </div>
                               </div>
                               <div className="card-submit-button">
-                                <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                <button type="submit" className="btn btn-animation ms-auto">Save Changes</button>
+                                <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                <button type="submit" className="btn btn-animation ms-auto">Lưu thay đổi</button>
                               </div>
                             </form>
                           </div>
@@ -327,13 +327,13 @@ const Taxes = () => {
                       <div className="modal-dialog modal-dialog-centered">
                         <div className="modal-content">
                           <div className="modal-header text-center">
-                            <h5 className="modal-title w-100">Confirm Delete</h5>
+                            <h5 className="modal-title w-100">Xác nhận xóa</h5>
                             <button type="button" className="btn-close" data-bs-dismiss="modal"></button>
                           </div>
                           <div className="modal-body text-center">
-                            <p>Are you sure you want to delete this tax?</p>
-                            <button className="btn btn-danger m-2" onClick={handleDelete}>Yes</button>
-                            <button className="btn btn-secondary m-2" data-bs-dismiss="modal">No</button>
+                            <p>Bạn có chắc chắn muốn xóa thuế này?</p>
+                            <button className="btn btn-danger m-2" onClick={handleDelete}>Xóa</button>
+                            <button className="btn btn-secondary m-2" data-bs-dismiss="modal">Hủy</button>
                           </div>
                         </div>
                       </div>

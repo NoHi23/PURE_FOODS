@@ -44,15 +44,15 @@ const SideBar = () => {
               <li className="sidebar-list">
                 <a className="linear-icon-link sidebar-link sidebar-title" href="javascript:void(0)">
                   <i className="ri-store-3-line"></i>
-                  <span>Product</span>
+                  <span>Sản phẩm</span>
                 </a>
                 <ul className="sidebar-submenu">
                   <li>
-                    <Link to={'/admin-product'}>Products</Link>
+                    <Link to={'/admin-product'}>Danh sách sản phẩm</Link>
                   </li>
 
                   <li>
-                    <Link to={'/admin-add-new-product'}>Add New Products</Link>
+                    <Link to={'/admin-add-new-product'}>Thêm sản phẩm mới</Link>
                   </li>
                 </ul>
               </li>
@@ -60,15 +60,15 @@ const SideBar = () => {
               <li className="sidebar-list">
                 <a className="linear-icon-link sidebar-link sidebar-title" href="javascript:void(0)">
                   <i className="ri-list-check-2"></i>
-                  <span>Category</span>
+                  <span>Loại sản phẩm</span>
                 </a>
                 <ul className="sidebar-submenu">
                   <li>
-                    <Link to={'/admin-category'}>Category List</Link>
+                    <Link to={'/admin-category'}>Danh sách loại sản phẩm</Link>
                   </li>
 
                   <li>
-                    <a href='/admin-add-new-category'>Add New Category</a>
+                    <a href='/admin-add-new-category'>Thêm mới loại sản phẩm</a>
                   </li>
                 </ul>
               </li>
@@ -76,15 +76,15 @@ const SideBar = () => {
               <li className="sidebar-list">
                 <a className="linear-icon-link sidebar-link sidebar-title" href="javascript:void(0)">
                   <i className="ri-list-check-2"></i>
-                  <span>Supplier</span>
+                  <span>Nhà cung cấp</span>
                 </a>
                 <ul className="sidebar-submenu">
                   <li>
-                    <Link to={'/admin-supplier'}>Supplier List</Link>
+                    <Link to={'/admin-supplier'}>Danh sách nhà cung cấp</Link>
                   </li>
 
                   <li>
-                    <a href='/admin-add-new-supplier'>Add New Supplier</a>
+                    <a href='/admin-add-new-supplier'>Thêm mới nhà cung cấp</a>
                   </li>
                 </ul>
               </li>
@@ -92,14 +92,14 @@ const SideBar = () => {
               <li className="sidebar-list">
                 <a className="sidebar-link sidebar-title" href="javascript:void(0)">
                   <i className="ri-user-3-line"></i>
-                  <span>Users</span>
+                  <span>Người dùng</span>
                 </a>
                 <ul className="sidebar-submenu">
                   <li>
-                    <Link to={"/all-user"}>All users</Link>
+                    <Link to={"/all-user"}>Danh sách người dùng</Link>
                   </li>
                   <li>
-                    <Link to={"/add-new-user"}>Add new user</Link>
+                    <Link to={"/add-new-user"}>Thêm mới người dùng</Link>
                   </li>
                 </ul>
               </li>
@@ -107,14 +107,14 @@ const SideBar = () => {
               <li className="sidebar-list">
                 <a className="sidebar-link sidebar-title" href="javascript:void(0)">
                   <i className="ri-user-3-line"></i>
-                  <span>Roles</span>
+                  <span>Vai trò</span>
                 </a>
                 <ul className="sidebar-submenu">
                   <li>
-                    <Link to={'/all-role'}>All roles</Link>
+                    <Link to={'/all-role'}>Danh sách vai trò</Link>
                   </li>
                   <li>
-                    <Link to={"/add-new-role"}>Create Role</Link>
+                    <Link to={"/add-new-role"}>Tạo mới vai trò</Link>
                   </li>
                 </ul>
               </li>
@@ -125,45 +125,39 @@ const SideBar = () => {
               <li className="sidebar-list">
                 <a className="sidebar-link sidebar-title" href="javascript:void(0)">
                   <i className="ri-archive-line"></i>
-                  <span>Orders</span>
+                  <span>Đơn hàng</span>
                 </a>
                 <ul className="sidebar-submenu">
                   <li>
-                    <Link to={'/admin-order'}>Order List</Link>
-                  </li>
-                  <li>
-                    <Link to={'/admin-order-detail/:id'}>Order Detail</Link>
-                  </li>
-                  <li>
-                    <Link to={'/admin-order-tracking/:id'}>Order Tracking</Link>
+                    <Link to={'/admin-order'}>Danh sách đơn hàng</Link>
                   </li>
                 </ul>
               </li>
               <li className="sidebar-list">
                 <a className="linear-icon-link sidebar-link sidebar-title" href="javascript:void(0)">
                   <i className="ri-price-tag-3-line"></i>
-                  <span>Coupon</span>
+                  <span>Mã giảm giá</span>
                 </a>
                 <ul className="sidebar-submenu">
                   <li>
-                    <Link to={'/admin-coupons'}>Coupon List</Link>
+                    <Link to={'/admin-coupons'}>Danh sách mã giảm giá</Link>
                   </li>
                   <li>
-                    <Link to={'/admin-add-new-coupons'}>Add New Coupon</Link>
+                    <Link to={'/admin-add-new-coupons'}>Thêm mới mã giảm giá</Link>
                   </li>
                 </ul>
               </li>
               <li className="sidebar-list">
                 <a className="linear-icon-link sidebar-link sidebar-title" href="javascript:void(0)">
                   <i className="ri-price-tag-3-line"></i>
-                  <span>Tax</span>
+                  <span>Thuế</span>
                 </a>
                 <ul className="sidebar-submenu">
                   <li>
-                    <Link to={'/admin-taxes'}>Tax List</Link>
+                    <Link to={'/admin-taxes'}>Danh sách thuế</Link>
                   </li>
                   <li>
-                    <Link to={'/admin-add-new-tax'}>Add New Tax</Link>
+                    <Link to={'/admin-add-new-tax'}>Thêm mới thuế</Link>
                   </li>
                 </ul>
               </li>
@@ -174,23 +168,21 @@ const SideBar = () => {
                 </a>
                 <ul className="sidebar-submenu">
                   <li>
-                    <Link to={'/admin-blog'}>Blog List</Link>
+                    <Link to={'/admin-blog'}>Danh sách Blog</Link>
                   </li>
                   <li>
-                    <Link to={'/admin-add-new-blog'}>Add New Blog</Link>
+                    <Link to={'/admin-add-new-blog'}>Thêm mới Blog</Link>
                   </li>
                 </ul>
               </li>
 
-
-
-
               <li className="sidebar-list">
-                <a className="sidebar-link sidebar-title link-nav" href="product-review.html">
-                  <i className="ri-star-line"></i>
-                  <span>Product Review</span>
-                </a>
-              </li>
+  <Link to="/admin-product-review" className="sidebar-link sidebar-title link-nav">
+    <i className="ri-star-line"></i>
+    <span>Product Review</span>
+  </Link>
+</li>
+
 
               <li className="sidebar-list">
                 <a className="sidebar-link sidebar-title link-nav" href="support-ticket.html">
@@ -214,7 +206,7 @@ const SideBar = () => {
               <li className="sidebar-list">
                 <a className="sidebar-link sidebar-title link-nav" href="reports.html">
                   <i className="ri-file-chart-line"></i>
-                  <span>Reports</span>
+                  <span>Báo cáo</span>
                 </a>
               </li>
 

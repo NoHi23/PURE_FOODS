@@ -20,8 +20,12 @@ public interface OrderDAO {
     int countOrder();
     List<Order> getOrdersByStatusID(int statusID);
     List<BestSellingProductDTO> getTop5BestSellingProductsWithStats();
+    List<BestSellingProductDTO> getTop12BestSellingProductsWithStats();
     List<Order> getTop5RecentOrders();
     Optional<Order> findById(int orderId);
+
+
+    boolean hasCustomerBoughtProduct(int customerId, int productId);
 
 
 }

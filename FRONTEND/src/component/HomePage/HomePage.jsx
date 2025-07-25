@@ -28,6 +28,7 @@ const getOrUpdateExpiryTime = () => {
 const HomePage = () => {
   const [dealProduct, setDealProduct] = useState([]);
   const [saveProduct, setSaveProduct] = useState([]);
+  const [bestSellingProducts, setBestSellingProducts] = useState([]);
 
   const [timeLeft, setTimeLeft] = useState(getOrUpdateExpiryTime());
   const [timeObj, setTimeObj] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
@@ -68,7 +69,7 @@ const HomePage = () => {
         return;
       }
     } catch (err) {
-      console.error("❌ Lỗi khi kiểm tra giỏ hàng:", err);
+      console.error(" Lỗi khi kiểm tra giỏ hàng:", err);
       toast.error("Không thể kiểm tra số lượng trong kho");
       return;
     }
@@ -91,7 +92,7 @@ const HomePage = () => {
       window.dispatchEvent(new Event('cartUpdated'));
       //navigate(`/cart-detail`, { state: { fromAddToCart: true } });
     } catch (err) {
-      console.error("❌ Lỗi khi thêm vào giỏ hàng:", err.response?.data || err.message);
+      console.error("Lỗi khi thêm vào giỏ hàng:", err.response?.data || err.message);
       toast.error('Thêm vào giỏ thất bại');
     }
   };
@@ -109,7 +110,7 @@ const HomePage = () => {
         }
       })
       .catch((err) => {
-        console.error("❌ Lỗi khi lấy sản phẩm:", err);
+        console.error("Lỗi khi lấy sản phẩm:", err);
         toast.error("Không thể lấy danh sách sản phẩm");
       });
   }, []);
@@ -245,6 +246,44 @@ const HomePage = () => {
     }
   }, []);
 
+  useEffect(() => {
+    axios
+      .get("http://localhost:8082/PureFoods/api/orders/top5-best-selling")
+      .then((res) => {
+        if (Array.isArray(res.data)) {
+          setBestSellingProducts(res.data);
+        }
+      })
+      .catch((err) => {
+        console.error("Lỗi khi lấy sản phẩm thịnh hành:", err);
+        toast.error("Không thể lấy sản phẩm thịnh hành");
+      });
+  }, []);
+
+  const [top12SellingProducts, setTop12SellingProducts] = useState([]);
+
+  useEffect(() => {
+    axios
+      .get("http://localhost:8082/PureFoods/api/orders/top12-best-selling")
+      .then((res) => {
+        if (Array.isArray(res.data)) {
+          setTop12SellingProducts(res.data);
+        }
+      })
+      .catch((err) => {
+        console.error("Lỗi khi lấy sản phẩm bán chạy nhất:", err);
+        toast.error("Không thể lấy sản phẩm bán chạy nhất");
+      });
+  }, []);
+
+  const chunkArray = (array, chunkSize) => {
+    const result = [];
+    for (let i = 0; i < array.length; i += chunkSize) {
+      result.push(array.slice(i, i + chunkSize));
+    }
+    return result;
+  };
+
   return (
     <HomepageLayout>
       <div>
@@ -257,12 +296,12 @@ const HomePage = () => {
                     <div className="header-nav-left">
                       <button className="dropdown-category">
                         <i data-feather="align-left"></i>
-                        <span>All Categories</span>
+                        <span>Tất cả các danh mục</span>
                       </button>
 
                       <div className="category-dropdown">
                         <div className="category-title">
-                          <h5>Categories</h5>
+                          <h5>Danh mục</h5>
                           <button type="button" className="btn p-0 close-button text-content">
                             <i className="fa-solid fa-xmark"></i>
                           </button>
@@ -301,58 +340,11 @@ const HomePage = () => {
                             <ul className="navbar-nav">
                               <li className="nav-item">
                                 <Link className="nav-link" to="/">
-                                  Home
+                                  Trang chủ
                                 </Link>
                               </li>
 
-                              <li className="nav-item dropdown">
-                                <a
-                                  className="nav-link dropdown-toggle"
-                                  href="javascript:void(0)"
-                                  data-bs-toggle="dropdown"
-                                >
-                                  Shop
-                                </a>
 
-                                <ul className="dropdown-menu">
-                                  <li>
-                                    <a className="dropdown-item" href="shop-category-slider.html">
-                                      Shop Category Slider
-                                    </a>
-                                  </li>
-                                  <li>
-                                    <a className="dropdown-item" href="shop-category.html">
-                                      Shop Category Sidebar
-                                    </a>
-                                  </li>
-                                  <li>
-                                    <a className="dropdown-item" href="shop-banner.html">
-                                      Shop Banner
-                                    </a>
-                                  </li>
-                                  <li>
-                                    <a className="dropdown-item" href="/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1">
-                                      Shop Left Sidebar
-                                    </a>
-                                  </li>
-                                  <li>
-                                    <a className="dropdown-item" href="shop-list.html">
-                                      Shop List
-                                    </a>
-                                  </li>
-                                  <li>
-                                    <a className="dropdown-item" href="shop-right-sidebar.html">
-                                      Shop Right Sidebar
-                                    </a>
-                                  </li>
-                                  <li>
-                                    <a className="dropdown-item" href="shop-top-filter.html">
-                                      Shop Top Filter
-                                    </a>
-                                  </li>
-                                </ul>
-                              </li>
-                       
                               <ProductDropdown />
 
                               <li className="nav-item dropdown dropdown-mega">
@@ -368,27 +360,27 @@ const HomePage = () => {
                                   <div className="row">
                                     <div className="dropdown-column col-xl-3">
                                       <h5 className="dropdown-header">Daily Vegetables</h5>
-                                      <a className="dropdown-item" href="/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1">
+                                      <a className="dropdown-item" href="/all-products">
                                         Beans & Brinjals
                                       </a>
 
-                                      <a className="dropdown-item" href="/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1">
+                                      <a className="dropdown-item" href="/all-products">
                                         Broccoli & Cauliflower
                                       </a>
 
-                                      <a href="/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1" className="dropdown-item">
+                                      <a href="/all-products" className="dropdown-item">
                                         Chilies, Garlic
                                       </a>
 
-                                      <a className="dropdown-item" href="/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1">
+                                      <a className="dropdown-item" href="/all-products">
                                         Vegetables & Salads
                                       </a>
 
-                                      <a className="dropdown-item" href="/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1">
+                                      <a className="dropdown-item" href="/all-products">
                                         Gourd, Cucumber
                                       </a>
 
-                                      <a className="dropdown-item" href="/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1">
+                                      <a className="dropdown-item" href="/all-products">
                                         Herbs & Sprouts
                                       </a>
 
@@ -399,54 +391,54 @@ const HomePage = () => {
 
                                     <div className="dropdown-column col-xl-3">
                                       <h5 className="dropdown-header">Baby Tender</h5>
-                                      <a className="dropdown-item" href="/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1">
+                                      <a className="dropdown-item" href="/all-products">
                                         Beans & Brinjals
                                       </a>
 
-                                      <a className="dropdown-item" href="/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1">
+                                      <a className="dropdown-item" href="/all-products">
                                         Broccoli & Cauliflower
                                       </a>
 
-                                      <a className="dropdown-item" href="/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1">
+                                      <a className="dropdown-item" href="/all-products">
                                         Chilies, Garlic
                                       </a>
 
-                                      <a className="dropdown-item" href="/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1">
+                                      <a className="dropdown-item" href="/all-products">
                                         Vegetables & Salads
                                       </a>
 
-                                      <a className="dropdown-item" href="/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1">
+                                      <a className="dropdown-item" href="/all-products">
                                         Gourd, Cucumber
                                       </a>
 
-                                      <a className="dropdown-item" href="/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1">
+                                      <a className="dropdown-item" href="/all-products">
                                         Potatoes & Tomatoes
                                       </a>
 
-                                      <a href="/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1" className="dropdown-item">
+                                      <a href="/all-products" className="dropdown-item">
                                         Peas & Corn
                                       </a>
                                     </div>
 
                                     <div className="dropdown-column col-xl-3">
                                       <h5 className="dropdown-header">Exotic Vegetables</h5>
-                                      <a className="dropdown-item" href="/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1">
+                                      <a className="dropdown-item" href="/all-products">
                                         Asparagus & Artichokes
                                       </a>
 
-                                      <a className="dropdown-item" href="/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1">
+                                      <a className="dropdown-item" href="/all-products">
                                         Avocados & Peppers
                                       </a>
 
-                                      <a className="dropdown-item" href="/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1">
+                                      <a className="dropdown-item" href="/all-products">
                                         Broccoli & Zucchini
                                       </a>
 
-                                      <a className="dropdown-item" href="/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1">
+                                      <a className="dropdown-item" href="/all-products">
                                         Celery, Fennel & Leeks
                                       </a>
 
-                                      <a className="dropdown-item" href="/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1">
+                                      <a className="dropdown-item" href="/all-products">
                                         Chilies & Lime
                                       </a>
                                     </div>
@@ -661,7 +653,7 @@ const HomePage = () => {
                     <div className="header-nav-right">
                       <button className="btn deal-button" data-bs-toggle="modal" data-bs-target="#deal-box">
                         <i data-feather="zap"></i>
-                        <span>Deal Today</span>
+                        <span>Ưu đãi hôm nay</span>
                       </button>
                     </div>
                   </div>
@@ -718,21 +710,21 @@ const HomePage = () => {
                     <div className="home-detail p-center-left w-75">
                       <div>
                         <h6>
-                          Exclusive offer <span>30% Off</span>
+                          Ưu đãi độc quyền <span>Giảm giá 30%</span>
                         </h6>
                         <h1 className="text-uppercase">
-                          Stay home & delivered your <span className="daily">Daily Needs</span>
+                          Ở nhà và nhận <span className="daily">Nhu cầu hàng ngày</span>
                         </h1>
                         <p className="w-75 d-none d-sm-block">
-                          Vegetables contain many vitamins and minerals that are good for your health.
+                          Rau củ chứa nhiều vitamin và khoáng chất tốt cho sức khỏe.
                         </p>
                         <button
                           onClick={() => {
-                            window.location.href = "/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1";
+                            window.location.href = "/all-products";
                           }}
                           className="btn btn-animation mt-xxl-4 mt-2 home-button mend-auto"
                         >
-                          Shop Now<i className="fa-solid fa-right-long icon"></i>
+                          Mua ngay<i className="fa-solid fa-right-long icon"></i>
                         </button>
                       </div>
                     </div>
@@ -747,12 +739,13 @@ const HomePage = () => {
                         <div className="home-detail p-center-left home-p-sm w-75">
                           <div>
                             <h2 className="mt-0 text-danger">
-                              45% <span className="discount text-title">OFF</span>
+
+                              Giảm giá 45% <span className="discount text-title"></span>
                             </h2>
-                            <h3 className="theme-color">Nut Collection</h3>
-                            <p className="w-75">We deliver organic vegetables & fruits</p>
-                            <a href="/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1" className="shop-button">
-                              Shop Now <i className="fa-solid fa-right-long"></i>
+                            <h3 className="theme-color">Bộ sưu tập các loại hạt</h3>
+                            <p className="w-75">Chúng tôi cung cấp rau củ quả hữu cơ</p>
+                            <a href="/all-products" className="shop-button">
+                              Mua ngay <i className="fa-solid fa-right-long"></i>
                             </a>
                           </div>
                         </div>
@@ -764,11 +757,11 @@ const HomePage = () => {
                         <img src="3.jpg" className="bg-img blur-up lazyload" alt="" />
                         <div className="home-detail p-center-left home-p-sm w-75">
                           <div>
-                            <h3 className="mt-0 theme-color fw-bold">Healthy Food</h3>
-                            <h4 className="text-danger">Organic Market</h4>
-                            <p className="organic">Start your daily shopping with some Organic food</p>
-                            <a href="/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1" className="shop-button">
-                              Shop Now <i className="fa-solid fa-right-long"></i>
+                            <h3 className="mt-0 theme-color fw-bold">Thực phẩm lành mạnh</h3>
+                            <h4 className="text-danger">Chợ hữu cơ</h4>
+                            <p className="organic">Bắt đầu mua sắm hàng ngày với thực phẩm hữu cơ</p>
+                            <a href="/all-products" className="shop-button">
+                              Mua ngay <i className="fa-solid fa-right-long"></i>
                             </a>
                           </div>
                         </div>
@@ -787,12 +780,12 @@ const HomePage = () => {
                     <img src="4.jpg" className="bg-img blur-up lazyload" alt="" />
                     <div className="banner-details">
                       <div className="banner-box">
-                        <h6 className="text-danger">5% OFF</h6>
-                        <h5>Hot Deals on New Items</h5>
-                        <h6 className="text-content">Daily Essentials Eggs & Dairy</h6>
+                        <h6 className="text-danger">GIẢM 5%</h6>
+                        <h5>Ưu đãi hấp dẫn cho các mặt hàng mới</h5>
+                        <h6 className="text-content">Thực phẩm thiết yếu hàng ngày Trứng & Sữa</h6>
                       </div>
-                      <a href="/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1" className="banner-button text-white">
-                        Shop Now <i className="fa-solid fa-right-long ms-2"></i>
+                      <a href="/all-products" className="banner-button text-white">
+                        Mua ngay <i className="fa-solid fa-right-long ms-2"></i>
                       </a>
                     </div>
                   </div>
@@ -803,12 +796,12 @@ const HomePage = () => {
                     <img src="5.jpg" className="bg-img blur-up lazyload" alt="" />
                     <div className="banner-details">
                       <div className="banner-box">
-                        <h6 className="text-danger">5% OFF</h6>
-                        <h5>Buy More & Save More</h5>
-                        <h6 className="text-content">Fresh Vegetables</h6>
+                        <h6 className="text-danger">GIẢM 5%</h6>
+                        <h5>Mua càng nhiều, tiết kiệm càng nhiều</h5>
+                        <h6 className="text-content">Rau củ tươi</h6>
                       </div>
-                      <a href="/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1" className="banner-button text-white">
-                        Shop Now <i className="fa-solid fa-right-long ms-2"></i>
+                      <a href="/all-products" className="banner-button text-white">
+                        Mua ngay <i className="fa-solid fa-right-long ms-2"></i>
                       </a>
                     </div>
                   </div>
@@ -819,12 +812,12 @@ const HomePage = () => {
                     <img src="6.jpg" className="bg-img blur-up lazyload" alt="" />
                     <div className="banner-details">
                       <div className="banner-box">
-                        <h6 className="text-danger">5% OFF</h6>
-                        <h5>Organic Meat Prepared</h5>
-                        <h6 className="text-content">Delivered to Your Home</h6>
+                        <h6 className="text-danger">GIẢM 5%</h6>
+                        <h5>Thịt hữu cơ chế biến sẵn</h5>
+                        <h6 className="text-content">Giao hàng tận nhà</h6>
                       </div>
-                      <a href="/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1" className="banner-button text-white">
-                        Shop Now <i className="fa-solid fa-right-long ms-2"></i>
+                      <a href="/all-products" className="banner-button text-white">
+                        Mua ngay <i className="fa-solid fa-right-long ms-2"></i>
                       </a>
                     </div>
                   </div>
@@ -835,12 +828,12 @@ const HomePage = () => {
                     <img src="7.jpg" className="bg-img blur-up lazyload" alt="" />
                     <div className="banner-details">
                       <div className="banner-box">
-                        <h6 className="text-danger">5% OFF</h6>
-                        <h5>Buy More & Save More</h5>
-                        <h6 className="text-content">Nuts & Snacks</h6>
+                        <h6 className="text-danger">GIẢM 5%</h6>
+                        <h5>Mua càng nhiều, tiết kiệm càng nhiều</h5>
+                        <h6 className="text-content">Các loại hạt & đồ ăn vặt</h6>
                       </div>
-                      <a href="/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1" className="banner-button text-white">
-                        Shop Now <i className="fa-solid fa-right-long ms-2"></i>
+                      <a href="/all-products" className="banner-button text-white">
+                        Mua ngay <i className="fa-solid fa-right-long ms-2"></i>
                       </a>
                     </div>
                   </div>
@@ -857,7 +850,7 @@ const HomePage = () => {
 
                     {/* Bắt đầu filter category */}
                     <div className="category-menu">
-                      <h3>Category</h3>
+                      <h3>Danh mục</h3>
                       <ul>
                         {categories.map((category) => (
                           <li key={category.categoryID} className={categories.length - 1 ? "pb-30" : ""}>
@@ -884,18 +877,19 @@ const HomePage = () => {
                         <img src="8.jpg" className="bg-img blur-up lazyload" alt="" />
                         <div className="home-detail p-top-left home-p-medium">
                           <div>
-                            <h6 className="text-yellow home-banner">Seafood</h6>
+                            <h6 className="text-yellow home-banner">Hải sản</h6>
                             <h3 className="text-uppercase fw-normal">
-                              <span className="theme-color fw-bold">Freshes</span> Products
+                              <span className="theme-color fw-bold">Sản phẩm tươi mới</span>
                             </h3>
-                            <h3 className="fw-light">every hour</h3>
+                            <h3 className="fw-light">mỗi giờ</h3>
                             <button
                               onClick={() => {
-                                window.location.href = "/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1";
+                                window.location.href = "/all-products";
+
                               }}
                               className="btn btn-animation btn-md mend-auto"
                             >
-                              Shop Now <i className="fa-solid fa-arrow-right icon"></i>
+                              Mua ngay <i className="fa-solid fa-arrow-right icon"></i>
                             </button>
                           </div>
                         </div>
@@ -907,17 +901,18 @@ const HomePage = () => {
                         <img src="11.jpg" className="img-fluid blur-up lazyload" alt="" />
                         <div className="home-detail p-top-left home-p-medium">
                           <div>
-                            <h4 className="text-yellow text-exo home-banner">Organic</h4>
-                            <h2 className="text-uppercase fw-normal mb-0 text-russo theme-color">fresh</h2>
-                            <h2 className="text-uppercase fw-normal text-title">Vegetables</h2>
-                            <p className="mb-3">Super Offer to 50% Off</p>
+                            <h4 className="text-yellow text-exo home-banner">Hữu cơ</h4>
+                            <h2 className="text-uppercase fw-normal mb-0 text-russo theme-color">tươi</h2>
+                            <h2 className="text-uppercase fw-normal text-title">Rau củ</h2>
+                            <p className="mb-3">Ưu đãi đặc biệt giảm giá 50%</p>
                             <button
                               onClick={() => {
-                                window.location.href = "/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1";
+                                window.location.href = "/all-products";
+
                               }}
                               className="btn btn-animation btn-md mend-auto"
                             >
-                              Shop Now <i className="fa-solid fa-arrow-right icon"></i>
+                              Mua ngay <i className="fa-solid fa-arrow-right icon"></i>
                             </button>
                           </div>
                         </div>
@@ -926,111 +921,49 @@ const HomePage = () => {
 
                     <div className="section-t-space">
                       <div className="category-menu">
-                        <h3>Trending Products</h3>
+                        <h3>Sản phẩm thịnh hành</h3>
 
                         <ul className="product-list border-0 p-0 d-block">
-                          <li>
-                            <div className="offer-product">
-                              <a href="product-left-thumbnail.html" className="offer-image">
-                                <img
-                                  src="../assets/images/vegetable/product/23.png"
-                                  className="blur-up lazyload"
-                                  alt=""
-                                />
-                              </a>
+                          {bestSellingProducts?.map((b, i) => (
+                            <li key={i}>
+                              <div className="offer-product">
+                                <a href="product-left-thumbnail.html" className="offer-image">
+                                  <img
+                                    src={b?.product.imageURL}
+                                    className="blur-up lazyload"
+                                    alt=""
+                                  />
+                                </a>
 
-                              <div className="offer-detail">
-                                <div>
-                                  <a href="product-left-thumbnail.html" className="text-title">
-                                    <h6 className="name">Meatigo Premium Goat Curry</h6>
-                                  </a>
-                                  <span>450 G</span>
-                                  <h6 className="price theme-color">$ 70.00</h6>
+                                <div className="offer-detail">
+                                  <div>
+                                    <a href="product-left-thumbnail.html" className="text-title">
+                                      <h6 className="name">{b?.product.productName}</h6>
+                                    </a>
+                                    <span>còn {b?.product.stockQuantity} trong kho</span>
+                                    <h6 className="price theme-color">${b?.product.priceAfterDiscount} <del className="text-danger">${b?.product.price}</del></h6>
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                          </li>
+                            </li>
+                          ))}
 
-                          <li>
-                            <div className="offer-product">
-                              <a href="product-left-thumbnail.html" className="offer-image">
-                                <img
-                                  src="../assets/images/vegetable/product/24.png"
-                                  className="blur-up lazyload"
-                                  alt=""
-                                />
-                              </a>
 
-                              <div className="offer-detail">
-                                <div>
-                                  <a href="product-left-thumbnail.html" className="text-title">
-                                    <h6 className="name">Dates Medjoul Premium Imported</h6>
-                                  </a>
-                                  <span>450 G</span>
-                                  <h6 className="price theme-color">$ 40.00</h6>
-                                </div>
-                              </div>
-                            </div>
-                          </li>
 
-                          <li>
-                            <div className="offer-product">
-                              <a href="product-left-thumbnail.html" className="offer-image">
-                                <img
-                                  src="../assets/images/vegetable/product/25.png"
-                                  className="blur-up lazyload"
-                                  alt=""
-                                />
-                              </a>
-
-                              <div className="offer-detail">
-                                <div>
-                                  <a href="product-left-thumbnail.html" className="text-title">
-                                    <h6 className="name">Good Life Walnut Kernels</h6>
-                                  </a>
-                                  <span>200 G</span>
-                                  <h6 className="price theme-color">$ 52.00</h6>
-                                </div>
-                              </div>
-                            </div>
-                          </li>
-
-                          <li className="mb-0">
-                            <div className="offer-product">
-                              <a href="product-left-thumbnail.html" className="offer-image">
-                                <img
-                                  src="../assets/images/vegetable/product/26.png"
-                                  className="blur-up lazyload"
-                                  alt=""
-                                />
-                              </a>
-
-                              <div className="offer-detail">
-                                <div>
-                                  <a href="product-left-thumbnail.html" className="text-title">
-                                    <h6 className="name">Apple Red Premium Imported</h6>
-                                  </a>
-                                  <span>1 KG</span>
-                                  <h6 className="price theme-color">$ 80.00</h6>
-                                </div>
-                              </div>
-                            </div>
-                          </li>
                         </ul>
                       </div>
                     </div>
 
                     <div className="section-t-space">
                       <div className="category-menu">
-                        <h3>Customer Comment</h3>
+                        <h3>Nhận xét của khách hàng</h3>
 
                         <div className="review-box">
                           <div className="review-contain">
-                            <h5 className="w-75">We Care About Our Customer Experience</h5>
+                            <h5 className="w-75">Chúng tôi quan tâm đến trải nghiệm của khách hàng</h5>
                             <p>
-                              In publishing and graphic design, Lorem ipsum is a placeholder text commonly used to
-                              demonstrate the visual form of a document or a typeface without relying on meaningful
-                              content.
+                              Trong xuất bản và thiết kế đồ họa, Lorem ipsum là một đoạn văn bản giữ chỗ thường được sử dụng để
+                              thể hiện hình thức trực quan của một tài liệu hoặc một kiểu chữ mà không cần dựa vào nội dung có ý nghĩa.
                             </p>
                           </div>
 
@@ -1044,7 +977,7 @@ const HomePage = () => {
                             </div>
                             <div className="review-detail">
                               <h5>Tina Mcdonnale</h5>
-                              <h6>Sale Manager</h6>
+                              <h6>Quản lý bán hàng</h6>
                             </div>
                           </div>
                         </div>
@@ -1056,18 +989,18 @@ const HomePage = () => {
                 <div className="col-xxl-9 col-xl-8">
                   <div className="title title-flex">
                     <div>
-                      <h2>Top Save Today</h2>
+                      <h2>Tiết kiệm hàng đầu hôm nay</h2>
                       <span className="title-leaf">
                         <svg className="icon-width">
                           <use href="../assets/svg/leaf.svg#leaf" />
                         </svg>
                       </span>
-                      <p>Don't miss this opportunity at a special discount just for this week.</p>
+                      <p>Đừng bỏ lỡ cơ hội giảm giá đặc biệt chỉ trong tuần này.</p>
                     </div>
                     <div className="timing-box">
                       <div className="timing">
                         <i data-feather="clock"></i>
-                        <h6 className="name">Expires in :</h6>
+                        <h6 className="name">Hết hạn sau:</h6>
                         <div className="time" id="clockdiv-1">
                           <ul>
                             <li>
@@ -1109,13 +1042,13 @@ const HomePage = () => {
                   </div>
 
                   <div className="title">
-                    <h2>Bowse by Categories</h2>
+                    <h2>Phân loại theo danh mục</h2>
                     <span className="title-leaf">
                       <svg className="icon-width">
                         <use href="../assets/svg/leaf.svg#leaf" />
                       </svg>
                     </span>
-                    <p>Top Categories Of The Week</p>
+                    <p>Danh mục hàng đầu trong tuần</p>
                   </div>
 
                   <div className="category-slider-2 product-wrapper no-arrow">
@@ -1123,7 +1056,7 @@ const HomePage = () => {
                       <a href="/category?cate=1%2C2&page=1" className="category-box category-dark">
                         <div>
                           <img src="../assets/svg/1/vegetable.svg" className="blur-up lazyload" alt="" />
-                          <h5>Vegetables & Fruit</h5>
+                          <h5>Rau củ & Trái cây</h5>
                         </div>
                       </a>
                     </div>
@@ -1132,7 +1065,7 @@ const HomePage = () => {
                       <a href="/category?cate=5&page=1" className="category-box category-dark">
                         <div>
                           <img src="../assets/svg/1/cup.svg" className="blur-up lazyload" alt="" />
-                          <h5>Beverages</h5>
+                          <h5>Đồ uống</h5>
                         </div>
                       </a>
                     </div>
@@ -1141,16 +1074,16 @@ const HomePage = () => {
                       <a href="/category?cate=4" className="category-box category-dark">
                         <div>
                           <img src="../assets/svg/1/meats.svg" className="blur-up lazyload" alt="" />
-                          <h5>Meats & Seafood</h5>
+                          <h5>Thịt & Hải sản</h5>
                         </div>
                       </a>
                     </div>
 
                     <div>
-                      <a href="/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1" className="category-box category-dark">
+                      <a href="/all-products" className="category-box category-dark">
                         <div>
                           <img src="../assets/svg/1/breakfast.svg" className="blur-up lazyload" alt="" />
-                          <h5>Breakfast</h5>
+                          <h5>Bữa sáng</h5>
                         </div>
                       </a>
                     </div>
@@ -1159,7 +1092,7 @@ const HomePage = () => {
                       <a href="/category?cate=3" className="category-box category-dark">
                         <div>
                           <img src="../assets/svg/1/frozen.svg" className="blur-up lazyload" alt="" />
-                          <h5>Frozen Foods</h5>
+                          <h5>Thực phẩm đông lạnh</h5>
                         </div>
                       </a>
                     </div>
@@ -1168,7 +1101,7 @@ const HomePage = () => {
                       <a href="/category?cate=5&page=1" className="category-box category-dark">
                         <div>
                           <img src="../assets/svg/1/milk.svg" className="blur-up lazyload" alt="" />
-                          <h5>Milk & Dairies</h5>
+                          <h5>Sữa & Sản phẩm từ sữa</h5>
                         </div>
                       </a>
                     </div>
@@ -1177,7 +1110,7 @@ const HomePage = () => {
                       <a href="/category?cate=6" className="category-box category-dark">
                         <div>
                           <img src="../assets/svg/1/pet.svg" className="blur-up lazyload" alt="" />
-                          <h5>Pet Food</h5>
+                          <h5>Thức ăn cho thú cưng</h5>
                         </div>
                       </a>
                     </div>
@@ -1190,34 +1123,37 @@ const HomePage = () => {
                           <img src="9.jpg" className="bg-img blur-up lazyload" alt="" />
                           <div className="banner-details p-center-left p-4">
                             <div>
-                              <h3 className="text-exo">50% offer</h3>
-                              <h4 className="text-russo fw-normal theme-color mb-2">Testy Mushrooms</h4>
+                              <h3 className="text-exo">Ưu đãi 50%</h3>
+                              <h4 className="text-russo fw-normal theme-color mb-2">Nấm Testy</h4>
                               <button
                                 onClick={() => {
-                                  window.location.href = "/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1";
+                                  window.location.href = "/all-products";
+
                                 }}
                                 className="btn btn-animation btn-sm mend-auto"
                               >
-                                Shop Now <i className="fa-solid fa-arrow-right icon"></i>
+                                Mua ngay <i className="fa-solid fa-arrow-right icon"></i>
                               </button>
                             </div>
                           </div>
                         </div>
                       </div>
+
                       <div className="col-md-6">
                         <div className="banner-contain hover-effect">
                           <img src="10.jpg" className="bg-img blur-up lazyload" alt="" />
                           <div className="banner-details p-center-left p-4">
                             <div>
-                              <h3 className="text-exo">50% offer</h3>
-                              <h4 className="text-russo fw-normal theme-color mb-2">Fresh MEAT</h4>
+                              <h3 className="text-exo">Ưu đãi 50%</h3>
+                              <h4 className="text-russo fw-normal theme-color mb-2">Thịt tươi</h4>
                               <button
                                 onClick={() => {
-                                  window.location.href = "/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1";
+                                  window.location.href = "/all-products";
+
                                 }}
                                 className="btn btn-animation btn-sm mend-auto"
                               >
-                                Shop Now <i className="fa-solid fa-arrow-right icon"></i>
+                                Mua ngay <i className="fa-solid fa-arrow-right icon"></i>
                               </button>
                             </div>
                           </div>
@@ -1226,597 +1162,17 @@ const HomePage = () => {
                     </div>
                   </div>
 
-                  <div className="title d-block">
-                    <h2>Food Cupboard</h2>
-                    <span className="title-leaf">
-                      <svg className="icon-width">
-                        <use href="../assets/svg/leaf.svg#leaf" />
-                      </svg>
-                    </span>
-                    <p>A virtual assistant collects the products from your list</p>
-                  </div>
 
-                  <div className="product-border overflow-hidden wow fadeInUp">
-                    <div className="product-box-slider no-arrow">
-                      <div>
-                        <div className="row m-0">
-                          <div className="col-12 px-0">
-                            <div className="product-box">
-                              <div className="product-image">
-                                <a href="product-left-thumbnail.html">
-                                  <img
-                                    src="../assets/images/vegetable/product/1.png"
-                                    className="img-fluid blur-up lazyload"
-                                    alt=""
-                                  />
-                                </a>
-                                <ul className="product-option">
-                                  <li data-bs-toggle="tooltip" data-bs-placement="top" title="View">
-                                    <a
-                                      href="#"
-                                      onClick={(e) => {
-                                        e.preventDefault();
-                                        handleViewProduct(saveProduct?.[12]);
-                                      }}
-                                    >
-                                      <i data-feather="eye"></i>
-                                    </a>
-                                  </li>
 
-                                  <li data-bs-toggle="tooltip" data-bs-placement="top" title="Compare">
-                                    <a href="compare.html">
-                                      <i data-feather="refresh-cw"></i>
-                                    </a>
-                                  </li>
 
-                                  <li data-bs-toggle="tooltip" data-bs-placement="top" title="Wishlist">
-                                    <a href="wishlist.html" className="notifi-wishlist">
-                                      <i data-feather="heart"></i>
-                                    </a>
-                                  </li>
-                                </ul>
-                              </div>
-                              <div className="product-detail">
-                                <a href="product-left-thumbnail.html">
-                                  <h6 className="name h-100">Chocolate Powder</h6>
-                                </a>
-
-                                <h5 className="sold text-content">
-                                  <span className="theme-color price">$26.69</span>
-                                  <del>28.56</del>
-                                </h5>
-
-                                <div className="product-rating mt-sm-2 mt-1">
-                                  <ul className="rating">
-                                    <li>
-                                      <i data-feather="star" className="fill"></i>
-                                    </li>
-                                    <li>
-                                      <i data-feather="star" className="fill"></i>
-                                    </li>
-                                    <li>
-                                      <i data-feather="star" className="fill"></i>
-                                    </li>
-                                    <li>
-                                      <i data-feather="star" className="fill"></i>
-                                    </li>
-                                    <li>
-                                      <i data-feather="star"></i>
-                                    </li>
-                                  </ul>
-
-                                  <h6 className="theme-color">In Stock</h6>
-                                </div>
-
-                                <div className="add-to-cart-box">
-                                  <button className="btn btn-add-cart addcart-button">
-                                    Add
-                                    <span className="add-icon">
-                                      <i className="fa-solid fa-plus"></i>
-                                    </span>
-                                  </button>
-                                  <div className="cart_qty qty-box">
-                                    <div className="input-group">
-                                      <button type="button" className="qty-left-minus" data-type="minus" data-field="">
-                                        <i className="fa fa-minus"></i>
-                                      </button>
-                                      <input
-                                        className="form-control input-number qty-input"
-                                        type="text"
-                                        name="quantity"
-                                        defaultValue="0"
-                                      />
-                                      <button type="button" className="qty-right-plus" data-type="plus" data-field="">
-                                        <i className="fa fa-plus"></i>
-                                      </button>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div>
-                        <div className="row m-0">
-                          <div className="col-12 px-0">
-                            <div className="product-box">
-                              <div className="product-image">
-                                <a href="product-left-thumbnail.html">
-                                  <img
-                                    src="../assets/images/vegetable/product/2.png"
-                                    className="img-fluid blur-up lazyload"
-                                    alt=""
-                                  />
-                                </a>
-                                <ul className="product-option">
-                                  <li data-bs-toggle="tooltip" data-bs-placement="top" title="View">
-                                    <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#view">
-                                      <i data-feather="eye"></i>
-                                    </a>
-                                  </li>
-
-                                  <li data-bs-toggle="tooltip" data-bs-placement="top" title="Compare">
-                                    <a href="compare.html">
-                                      <i data-feather="refresh-cw"></i>
-                                    </a>
-                                  </li>
-
-                                  <li data-bs-toggle="tooltip" data-bs-placement="top" title="Wishlist">
-                                    <a href="wishlist.html" className="notifi-wishlist">
-                                      <i data-feather="heart"></i>
-                                    </a>
-                                  </li>
-                                </ul>
-                              </div>
-                              <div className="product-detail">
-                                <a href="product-left-thumbnail.html">
-                                  <h6 className="name h-100">Sandwich Cookies</h6>
-                                </a>
-
-                                <h5 className="sold text-content">
-                                  <span className="theme-color price">$26.69</span>
-                                  <del>28.56</del>
-                                </h5>
-
-                                <div className="product-rating mt-sm-2 mt-1">
-                                  <ul className="rating">
-                                    <li>
-                                      <i data-feather="star" className="fill"></i>
-                                    </li>
-                                    <li>
-                                      <i data-feather="star" className="fill"></i>
-                                    </li>
-                                    <li>
-                                      <i data-feather="star" className="fill"></i>
-                                    </li>
-                                    <li>
-                                      <i data-feather="star" className="fill"></i>
-                                    </li>
-                                    <li>
-                                      <i data-feather="star"></i>
-                                    </li>
-                                  </ul>
-
-                                  <h6 className="theme-color">In Stock</h6>
-                                </div>
-
-                                <div className="add-to-cart-box">
-                                  <button className="btn btn-add-cart addcart-button">
-                                    Add
-                                    <span className="add-icon">
-                                      <i className="fa-solid fa-plus"></i>
-                                    </span>
-                                  </button>
-                                  <div className="cart_qty qty-box">
-                                    <div className="input-group">
-                                      <button type="button" className="qty-left-minus" data-type="minus" data-field="">
-                                        <i className="fa fa-minus"></i>
-                                      </button>
-                                      <input
-                                        className="form-control input-number qty-input"
-                                        type="text"
-                                        name="quantity"
-                                        defaultValue="0"
-                                      />
-                                      <button type="button" className="qty-right-plus" data-type="plus" data-field="">
-                                        <i className="fa fa-plus"></i>
-                                      </button>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div>
-                        <div className="row m-0">
-                          <div className="col-12 px-0">
-                            <div className="product-box">
-                              <div className="product-image">
-                                <a href="product-left-thumbnail.html">
-                                  <img
-                                    src="../assets/images/vegetable/product/3.png"
-                                    className="img-fluid blur-up lazyload"
-                                    alt=""
-                                  />
-                                </a>
-                                <ul className="product-option">
-                                  <li data-bs-toggle="tooltip" data-bs-placement="top" title="View">
-                                    <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#view">
-                                      <i data-feather="eye"></i>
-                                    </a>
-                                  </li>
-
-                                  <li data-bs-toggle="tooltip" data-bs-placement="top" title="Compare">
-                                    <a href="compare.html">
-                                      <i data-feather="refresh-cw"></i>
-                                    </a>
-                                  </li>
-
-                                  <li data-bs-toggle="tooltip" data-bs-placement="top" title="Wishlist">
-                                    <a href="wishlist.html" className="notifi-wishlist">
-                                      <i data-feather="heart"></i>
-                                    </a>
-                                  </li>
-                                </ul>
-                              </div>
-                              <div className="product-detail">
-                                <a href="product-left-thumbnail.html">
-                                  <h6 className="name h-100">Butter Croissant</h6>
-                                </a>
-
-                                <h5 className="sold text-content">
-                                  <span className="theme-color price">$26.69</span>
-                                  <del>28.56</del>
-                                </h5>
-
-                                <div className="product-rating mt-sm-2 mt-1">
-                                  <ul className="rating">
-                                    <li>
-                                      <i data-feather="star" className="fill"></i>
-                                    </li>
-                                    <li>
-                                      <i data-feather="star" className="fill"></i>
-                                    </li>
-                                    <li>
-                                      <i data-feather="star" className="fill"></i>
-                                    </li>
-                                    <li>
-                                      <i data-feather="star" className="fill"></i>
-                                    </li>
-                                    <li>
-                                      <i data-feather="star"></i>
-                                    </li>
-                                  </ul>
-
-                                  <h6 className="theme-color">In Stock</h6>
-                                </div>
-
-                                <div className="add-to-cart-box">
-                                  <button className="btn btn-add-cart addcart-button">
-                                    Add
-                                    <span className="add-icon">
-                                      <i className="fa-solid fa-plus"></i>
-                                    </span>
-                                  </button>
-                                  <div className="cart_qty qty-box">
-                                    <div className="input-group">
-                                      <button type="button" className="qty-left-minus" data-type="minus" data-field="">
-                                        <i className="fa fa-minus"></i>
-                                      </button>
-                                      <input
-                                        className="form-control input-number qty-input"
-                                        type="text"
-                                        name="quantity"
-                                        defaultValue="0"
-                                      />
-                                      <button type="button" className="qty-right-plus" data-type="plus" data-field="">
-                                        <i className="fa fa-plus"></i>
-                                      </button>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div>
-                        <div className="row m-0">
-                          <div className="col-12 px-0">
-                            <div className="product-box">
-                              <div className="product-image">
-                                <a href="product-left-thumbnail.html">
-                                  <img
-                                    src="../assets/images/vegetable/product/4.png"
-                                    className="img-fluid blur-up lazyload"
-                                    alt=""
-                                  />
-                                </a>
-                                <ul className="product-option">
-                                  <li data-bs-toggle="tooltip" data-bs-placement="top" title="View">
-                                    <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#view">
-                                      <i data-feather="eye"></i>
-                                    </a>
-                                  </li>
-
-                                  <li data-bs-toggle="tooltip" data-bs-placement="top" title="Compare">
-                                    <a href="compare.html">
-                                      <i data-feather="refresh-cw"></i>
-                                    </a>
-                                  </li>
-
-                                  <li data-bs-toggle="tooltip" data-bs-placement="top" title="Wishlist">
-                                    <a href="wishlist.html" className="notifi-wishlist">
-                                      <i data-feather="heart"></i>
-                                    </a>
-                                  </li>
-                                </ul>
-                              </div>
-                              <div className="product-detail">
-                                <a href="product-left-thumbnail.html">
-                                  <h6 className="name h-100">Dark Chocolate</h6>
-                                </a>
-
-                                <h5 className="sold text-content">
-                                  <span className="theme-color price">$26.69</span>
-                                  <del>28.56</del>
-                                </h5>
-
-                                <div className="product-rating mt-sm-2 mt-1">
-                                  <ul className="rating">
-                                    <li>
-                                      <i data-feather="star" className="fill"></i>
-                                    </li>
-                                    <li>
-                                      <i data-feather="star" className="fill"></i>
-                                    </li>
-                                    <li>
-                                      <i data-feather="star" className="fill"></i>
-                                    </li>
-                                    <li>
-                                      <i data-feather="star" className="fill"></i>
-                                    </li>
-                                    <li>
-                                      <i data-feather="star"></i>
-                                    </li>
-                                  </ul>
-
-                                  <h6 className="theme-color">In Stock</h6>
-                                </div>
-
-                                <div className="add-to-cart-box">
-                                  <button className="btn btn-add-cart addcart-button">
-                                    Add
-                                    <span className="add-icon">
-                                      <i className="fa-solid fa-plus"></i>
-                                    </span>
-                                  </button>
-                                  <div className="cart_qty qty-box">
-                                    <div className="input-group">
-                                      <button type="button" className="qty-left-minus" data-type="minus" data-field="">
-                                        <i className="fa fa-minus"></i>
-                                      </button>
-                                      <input
-                                        className="form-control input-number qty-input"
-                                        type="text"
-                                        name="quantity"
-                                        defaultValue="0"
-                                      />
-                                      <button type="button" className="qty-right-plus" data-type="plus" data-field="">
-                                        <i className="fa fa-plus"></i>
-                                      </button>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div>
-                        <div className="row m-0">
-                          <div className="col-12 px-0">
-                            <div className="product-box">
-                              <div className="product-image">
-                                <a href="product-left-thumbnail.html">
-                                  <img
-                                    src="../assets/images/vegetable/product/5.png"
-                                    className="img-fluid blur-up lazyload"
-                                    alt=""
-                                  />
-                                </a>
-                                <ul className="product-option">
-                                  <li data-bs-toggle="tooltip" data-bs-placement="top" title="View">
-                                    <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#view">
-                                      <i data-feather="eye"></i>
-                                    </a>
-                                  </li>
-
-                                  <li data-bs-toggle="tooltip" data-bs-placement="top" title="Compare">
-                                    <a href="compare.html">
-                                      <i data-feather="refresh-cw"></i>
-                                    </a>
-                                  </li>
-
-                                  <li data-bs-toggle="tooltip" data-bs-placement="top" title="Wishlist">
-                                    <a href="wishlist.html" className="notifi-wishlist">
-                                      <i data-feather="heart"></i>
-                                    </a>
-                                  </li>
-                                </ul>
-                              </div>
-                              <div className="product-detail">
-                                <a href="product-left-thumbnail.html">
-                                  <h6 className="name h-100">Mix-sweet-food</h6>
-                                </a>
-
-                                <h5 className="sold text-content">
-                                  <span className="theme-color price">$26.69</span>
-                                  <del>28.56</del>
-                                </h5>
-
-                                <div className="product-rating mt-sm-2 mt-1">
-                                  <ul className="rating">
-                                    <li>
-                                      <i data-feather="star" className="fill"></i>
-                                    </li>
-                                    <li>
-                                      <i data-feather="star" className="fill"></i>
-                                    </li>
-                                    <li>
-                                      <i data-feather="star" className="fill"></i>
-                                    </li>
-                                    <li>
-                                      <i data-feather="star" className="fill"></i>
-                                    </li>
-                                    <li>
-                                      <i data-feather="star"></i>
-                                    </li>
-                                  </ul>
-
-                                  <h6 className="theme-color">In Stock</h6>
-                                </div>
-
-                                <div className="add-to-cart-box">
-                                  <button className="btn btn-add-cart addcart-button">
-                                    Add
-                                    <span className="add-icon">
-                                      <i className="fa-solid fa-plus"></i>
-                                    </span>
-                                  </button>
-                                  <div className="cart_qty qty-box">
-                                    <div className="input-group">
-                                      <button type="button" className="qty-left-minus" data-type="minus" data-field="">
-                                        <i className="fa fa-minus"></i>
-                                      </button>
-                                      <input
-                                        className="form-control input-number qty-input"
-                                        type="text"
-                                        name="quantity"
-                                        defaultValue="0"
-                                      />
-                                      <button type="button" className="qty-right-plus" data-type="plus" data-field="">
-                                        <i className="fa fa-plus"></i>
-                                      </button>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div>
-                        <div className="row m-0">
-                          <div className="col-12 px-0">
-                            <div className="product-box">
-                              <div className="product-image">
-                                <a href="product-left-thumbnail.html">
-                                  <img
-                                    src="../assets/images/vegetable/product/4.png"
-                                    className="img-fluid blur-up lazyload"
-                                    alt=""
-                                  />
-                                </a>
-                                <ul className="product-option">
-                                  <li data-bs-toggle="tooltip" data-bs-placement="top" title="View">
-                                    <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#view">
-                                      <i data-feather="eye"></i>
-                                    </a>
-                                  </li>
-
-                                  <li data-bs-toggle="tooltip" data-bs-placement="top" title="Compare">
-                                    <a href="compare.html">
-                                      <i data-feather="refresh-cw"></i>
-                                    </a>
-                                  </li>
-
-                                  <li data-bs-toggle="tooltip" data-bs-placement="top" title="Wishlist">
-                                    <a href="wishlist.html" className="notifi-wishlist">
-                                      <i data-feather="heart"></i>
-                                    </a>
-                                  </li>
-                                </ul>
-                              </div>
-                              <div className="product-detail">
-                                <a href="product-left-thumbnail.html">
-                                  <h6 className="name h-100">Dark Chocolate</h6>
-                                </a>
-
-                                <h5 className="sold text-content">
-                                  <span className="theme-color price">$26.69</span>
-                                  <del>28.56</del>
-                                </h5>
-
-                                <div className="product-rating mt-sm-2 mt-1">
-                                  <ul className="rating">
-                                    <li>
-                                      <i data-feather="star" className="fill"></i>
-                                    </li>
-                                    <li>
-                                      <i data-feather="star" className="fill"></i>
-                                    </li>
-                                    <li>
-                                      <i data-feather="star" className="fill"></i>
-                                    </li>
-                                    <li>
-                                      <i data-feather="star" className="fill"></i>
-                                    </li>
-                                    <li>
-                                      <i data-feather="star"></i>
-                                    </li>
-                                  </ul>
-
-                                  <h6 className="theme-color">In Stock</h6>
-                                </div>
-
-                                <div className="add-to-cart-box">
-                                  <button className="btn btn-add-cart addcart-button">
-                                    Add
-                                    <span className="add-icon">
-                                      <i className="fa-solid fa-plus"></i>
-                                    </span>
-                                  </button>
-                                  <div className="cart_qty qty-box">
-                                    <div className="input-group">
-                                      <button type="button" className="qty-left-minus" data-type="minus" data-field="">
-                                        <i className="fa fa-minus"></i>
-                                      </button>
-                                      <input
-                                        className="form-control input-number qty-input"
-                                        type="text"
-                                        name="quantity"
-                                        defaultValue="0"
-                                      />
-                                      <button type="button" className="qty-right-plus" data-type="plus" data-field="">
-                                        <i className="fa fa-plus"></i>
-                                      </button>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
 
                   <div className="section-t-space">
                     <div className="banner-contain">
                       <img src="15.jpg" className="bg-img blur-up lazyload" alt="" />
                       <div className="banner-details p-center p-4 text-white text-center">
                         <div>
-                          <h3 className="lh-base fw-bold offer-text">Get $3 Cashback! Min Order of $30</h3>
-                          <h6 className="coupon-code">Use Code : GROCERY1920</h6>
+                          <h3 className="lh-base fw-bold offer-text text-white">Nhận mã giảm giá %20 - Thời gian có hạn!</h3>
+                          <h6 className="coupon-code">Sử dụng mã: CLEANFOODSHOP</h6>
                         </div>
                       </div>
                     </div>
@@ -1829,19 +1185,19 @@ const HomePage = () => {
                           <img src="12.jpg" className="bg-img blur-up lazyload" alt="" />
                           <div className="banner-details p-center-left p-4">
                             <div>
-                              <h2 className="text-kaushan fw-normal theme-color">Get Ready To</h2>
-                              <h3 className="mt-2 mb-3">TAKE ON THE DAY!</h3>
+                              <h2 className="text-kaushan fw-normal theme-color">Chuẩn bị sẵn sàng</h2>
+                              <h3 className="mt-2 mb-3">CHÀO MỪNG NGÀY!</h3>
                               <p className="text-content banner-text">
-                                In publishing and graphic design, Lorem ipsum is a placeholder text commonly used to
-                                demonstrate.
+                                Trong xuất bản và thiết kế đồ họa, Lorem ipsum là một đoạn văn bản giữ chỗ thường được sử dụng để
+                                minh họa.
                               </p>
                               <button
                                 onClick={() => {
-                                  window.location.href = "/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1";
+                                  window.location.href = "/all-products";
                                 }}
                                 className="btn btn-animation btn-sm mend-auto"
                               >
-                                Shop Now <i className="fa-solid fa-arrow-right icon"></i>
+                                Mua ngay <i className="fa-solid fa-arrow-right icon"></i>
                               </button>
                             </div>
                           </div>
@@ -1849,13 +1205,13 @@ const HomePage = () => {
                       </div>
 
                       <div className="col-xxl-4 col-xl-12 col-md-5">
-                        <a href="/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1" className="banner-contain hover-effect h-100">
+                        <a href="/all-products" className="banner-contain hover-effect h-100">
                           <img src="13.jpg" className="bg-img blur-up lazyload" alt="" />
                           <div className="banner-details p-center-left p-4 h-100">
                             <div>
-                              <h2 className="text-kaushan fw-normal text-danger">20% Off</h2>
-                              <h3 className="mt-2 mb-2 theme-color">SUMMRY</h3>
-                              <h3 className="fw-normal product-name text-title">Product</h3>
+                              <h2 className="text-kaushan fw-normal text-danger">Giảm giá 20%</h2>
+                              <h3 className="mt-2 mb-2 theme-color">TÓM TẮT</h3>
+                              <h3 className="fw-normal product-name text-title">Sản phẩm</h3>
                             </div>
                           </div>
                         </a>
@@ -1865,292 +1221,55 @@ const HomePage = () => {
 
                   <div className="title d-block">
                     <div>
-                      <h2>Our best Seller</h2>
+                      <h2>Sản phẩm bán chạy nhất của chúng tôi</h2>
                       <span className="title-leaf">
                         <svg className="icon-width">
                           <use href="../assets/svg/leaf.svg#leaf" />
                         </svg>
                       </span>
-                      <p>A virtual assistant collects the products from your list</p>
+                      <p>Trợ lý ảo sẽ thu thập các sản phẩm từ danh sách của bạn</p>
                     </div>
                   </div>
 
                   <div className="best-selling-slider product-wrapper wow fadeInUp">
-                    <div>
-                      <ul className="product-list">
-                        <li>
-                          <div className="offer-product">
-                            <a href="product-left-thumbnail.html" className="offer-image">
-                              <img
-                                src="../assets/images/vegetable/product/11.png"
-                                className="blur-up lazyload"
-                                alt=""
-                              />
-                            </a>
-
-                            <div className="offer-detail">
-                              <div>
-                                <a href="product-left-thumbnail.html" className="text-title">
-                                  <h6 className="name">Tuffets Whole Wheat Bread</h6>
+                    {chunkArray(top12SellingProducts, 12).map((group, index) => (
+                      <div key={index}>
+                        <ul className="product-list">
+                          {group.map((item, idx) => (
+                            <li key={idx}>
+                              <div className="offer-product">
+                                <a
+                                  href={`/product/${item.product.productId}`}
+                                  className="offer-image"
+                                >
+                                  <img
+                                    src={item.product.imageURL}
+                                    className="blur-up lazyload"
+                                    alt={item.product.productName}
+                                  />
                                 </a>
-                                <span>500 G</span>
-                                <h6 className="price theme-color">$ 10.00</h6>
+
+                                <div className="offer-detail">
+                                  <div>
+                                    <a
+                                      href={`/product/${item.product.productId}`}
+                                      className="text-title"
+                                    >
+                                      <h6 className="name">{item.product.productName}</h6>
+                                    </a>
+                                    <span>{item.totalQuantity} sản phẩm đã bán</span>
+                                    <h6 className="price theme-color">
+                                      ${item.product.priceAfterDiscount
+                                      }
+                                    </h6>
+                                  </div>
+                                </div>
                               </div>
-                            </div>
-                          </div>
-                        </li>
-
-                        <li>
-                          <div className="offer-product">
-                            <a href="product-left-thumbnail.html" className="offer-image">
-                              <img
-                                src="../assets/images/vegetable/product/12.png"
-                                className="blur-up lazyload"
-                                alt=""
-                              />
-                            </a>
-
-                            <div className="offer-detail">
-                              <div>
-                                <a href="product-left-thumbnail.html" className="text-title">
-                                  <h6 className="name">Potato</h6>
-                                </a>
-                                <span>500 G</span>
-                                <h6 className="price theme-color">$ 10.00</h6>
-                              </div>
-                            </div>
-                          </div>
-                        </li>
-
-                        <li>
-                          <div className="offer-product">
-                            <a href="product-left-thumbnail.html" className="offer-image">
-                              <img
-                                src="../assets/images/vegetable/product/13.png"
-                                className="blur-up lazyload"
-                                alt=""
-                              />
-                            </a>
-
-                            <div className="offer-detail">
-                              <div>
-                                <a href="product-left-thumbnail.html" className="text-title">
-                                  <h6 className="name">Green Chilli</h6>
-                                </a>
-                                <span>200 G</span>
-                                <h6 className="price theme-color">$ 10.00</h6>
-                              </div>
-                            </div>
-                          </div>
-                        </li>
-
-                        <li>
-                          <div className="offer-product">
-                            <a href="product-left-thumbnail.html" className="offer-image">
-                              <img
-                                src="../assets/images/vegetable/product/14.png"
-                                className="blur-up lazyload"
-                                alt=""
-                              />
-                            </a>
-
-                            <div className="offer-detail">
-                              <div>
-                                <a href="product-left-thumbnail.html" className="text-title">
-                                  <h6 className="name">Muffets Burger Bun</h6>
-                                </a>
-                                <span>150 G</span>
-                                <h6 className="price theme-color">$ 10.00</h6>
-                              </div>
-                            </div>
-                          </div>
-                        </li>
-                      </ul>
-                    </div>
-
-                    <div>
-                      <ul className="product-list">
-                        <li>
-                          <div className="offer-product">
-                            <a href="product-left-thumbnail.html" className="offer-image">
-                              <img
-                                src="../assets/images/vegetable/product/15.png"
-                                className="blur-up lazyload"
-                                alt=""
-                              />
-                            </a>
-
-                            <div className="offer-detail">
-                              <div>
-                                <a href="product-left-thumbnail.html" className="text-title">
-                                  <h6 className="name">Tuffets Britannia Cheezza</h6>
-                                </a>
-                                <span>500 G</span>
-                                <h6 className="price theme-color">$ 10.00</h6>
-                              </div>
-                            </div>
-                          </div>
-                        </li>
-
-                        <li>
-                          <div className="offer-product">
-                            <a href="product-left-thumbnail.html" className="offer-image">
-                              <img
-                                src="../assets/images/vegetable/product/16.png"
-                                className="blur-up lazyload"
-                                alt=""
-                              />
-                            </a>
-
-                            <div className="offer-detail">
-                              <div>
-                                <a href="product-left-thumbnail.html" className="text-title">
-                                  <h6 className="name">Long Life Toned Milk</h6>
-                                </a>
-                                <span>1 L</span>
-                                <h6 className="price theme-color">$ 10.00</h6>
-                              </div>
-                            </div>
-                          </div>
-                        </li>
-
-                        <li>
-                          <div className="offer-product">
-                            <a href="product-left-thumbnail.html" className="offer-image">
-                              <img
-                                src="../assets/images/vegetable/product/17.png"
-                                className="blur-up lazyload"
-                                alt=""
-                              />
-                            </a>
-
-                            <div className="offer-detail">
-                              <div>
-                                <a href="product-left-thumbnail.html" className="text-title">
-                                  <h6 className="name">Organic Tomato</h6>
-                                </a>
-                                <span>1 KG</span>
-                                <h6 className="price theme-color">$ 10.00</h6>
-                              </div>
-                            </div>
-                          </div>
-                        </li>
-
-                        <li>
-                          <div className="offer-product">
-                            <a href="product-left-thumbnail.html" className="offer-image">
-                              <img
-                                src="../assets/images/vegetable/product/18.png"
-                                className="blur-up lazyload"
-                                alt=""
-                              />
-                            </a>
-
-                            <div className="offer-detail">
-                              <div>
-                                <a href="product-left-thumbnail.html" className="text-title">
-                                  <h6 className="name">Organic Jam</h6>
-                                </a>
-                                <span>150 G</span>
-                                <h6 className="price theme-color">$ 10.00</h6>
-                              </div>
-                            </div>
-                          </div>
-                        </li>
-                      </ul>
-                    </div>
-
-                    <div>
-                      <ul className="product-list">
-                        <li>
-                          <div className="offer-product">
-                            <a href="product-left-thumbnail.html" className="offer-image">
-                              <img
-                                src="../assets/images/vegetable/product/19.png"
-                                className="blur-up lazyload"
-                                alt=""
-                              />
-                            </a>
-
-                            <div className="offer-detail">
-                              <div>
-                                <a href="product-left-thumbnail.html" className="text-title">
-                                  <h6 className="name">Good Life Refined Sunflower Oil</h6>
-                                </a>
-                                <span>1 L</span>
-                                <h6 className="price theme-color">$ 10.00</h6>
-                              </div>
-                            </div>
-                          </div>
-                        </li>
-
-                        <li>
-                          <div className="offer-product">
-                            <a href="product-left-thumbnail.html" className="offer-image">
-                              <img
-                                src="../assets/images/vegetable/product/20.png"
-                                className="blur-up lazyload"
-                                alt=""
-                              />
-                            </a>
-
-                            <div className="offer-detail">
-                              <div>
-                                <a href="product-left-thumbnail.html" className="text-title">
-                                  <h6 className="name">Good Life Raw Peanuts</h6>
-                                </a>
-                                <span>500 G</span>
-                                <h6 className="price theme-color">$ 10.00</h6>
-                              </div>
-                            </div>
-                          </div>
-                        </li>
-
-                        <li>
-                          <div className="offer-product">
-                            <a href="product-left-thumbnail.html" className="offer-image">
-                              <img
-                                src="../assets/images/vegetable/product/21.png"
-                                className="blur-up lazyload"
-                                alt=""
-                              />
-                            </a>
-
-                            <div className="offer-detail">
-                              <div>
-                                <a href="product-left-thumbnail.html" className="text-title">
-                                  <h6 className="name">TufBest Farms Mong Dal</h6>
-                                </a>
-                                <span>1 KG</span>
-                                <h6 className="price theme-color">$ 10.00</h6>
-                              </div>
-                            </div>
-                          </div>
-                        </li>
-
-                        <li>
-                          <div className="offer-product">
-                            <a href="product-left-thumbnail.html" className="offer-image">
-                              <img
-                                src="../assets/images/vegetable/product/22.png"
-                                className="blur-up lazyload"
-                                alt=""
-                              />
-                            </a>
-
-                            <div className="offer-detail">
-                              <div>
-                                <a href="product-left-thumbnail.html" className="text-title">
-                                  <h6 className="name">Frooti Mango Drink</h6>
-                                </a>
-                                <span>160 ML</span>
-                                <h6 className="price theme-color">$ 10.00</h6>
-                              </div>
-                            </div>
-                          </div>
-                        </li>
-                      </ul>
-                    </div>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ))}
                   </div>
 
                   <div className="section-t-space">
@@ -2158,16 +1277,17 @@ const HomePage = () => {
                       <img src="14.jpg" className="bg-img blur-up lazyload" alt="" />
                       <div className="banner-details p-center banner-b-space w-100 text-center">
                         <div>
-                          <h6 className="ls-expanded theme-color mb-sm-3 mb-1">SUMMER</h6>
-                          <h2 className="banner-title">VEGETABLE</h2>
-                          <h5 className="lh-sm mx-auto mt-1 text-content">Save up to 5% OFF</h5>
+                          <h6 className="ls-expanded theme-color mb-sm-3 mb-1">MÙA HÈ</h6>
+                          <h2 className="banner-title">RAU CỦ</h2>
+                          <h5 className="lh-sm mx-auto mt-1 text-content">Tiết kiệm đến 5%</h5>
                           <button
                             onClick={() => {
-                              window.location.href = "/category?cate=1%2C2%2C3%2C4%2C6%2C5&page=1";
+                              window.location.href = "/all-products";
+
                             }}
                             className="btn btn-animation btn-sm mx-auto mt-sm-3 mt-2"
                           >
-                            Shop Now <i className="fa-solid fa-arrow-right icon"></i>
+                            Mua ngay <i className="fa-solid fa-arrow-right icon"></i>
                           </button>
                         </div>
                       </div>
@@ -2175,13 +1295,13 @@ const HomePage = () => {
                   </div>
 
                   <div className="title section-t-space">
-                    <h2>Featured Blog</h2>
+                    <h2>Blog nổi bật</h2>
                     <span className="title-leaf">
                       <svg className="icon-width">
                         <use href="../assets/svg/leaf.svg#leaf" />
                       </svg>
                     </span>
-                    <p>A virtual assistant collects the products from your list</p>
+                    <p>Trợ lý ảo thu thập các sản phẩm từ danh sách của bạn</p>
                   </div>
 
                   <div className="slider-3-blog ratio_65 no-arrow product-wrapper">
@@ -2198,8 +1318,8 @@ const HomePage = () => {
                         </div>
 
                         <a href="blog-detail.html" className="blog-detail">
-                          <h6>20 March, 2022</h6>
-                          <h5>Fresh Vegetable Online</h5>
+                          <h6>20 tháng 3, 2022</h6>
+                          <h5>Rau tươi trực tuyến</h5>
                         </a>
                       </div>
                     </div>
@@ -2217,8 +1337,8 @@ const HomePage = () => {
                         </div>
 
                         <a href="blog-detail.html" className="blog-detail">
-                          <h6>10 April, 2022</h6>
-                          <h5>Fresh Combo Fruit</h5>
+                          <h6>10 tháng 4, 2022</h6>
+                          <h5>Trái cây tươi tổng hợp</h5>
                         </a>
                       </div>
                     </div>
@@ -2236,8 +1356,8 @@ const HomePage = () => {
                         </div>
 
                         <a href="blog-detail.html" className="blog-detail">
-                          <h6>10 April, 2022</h6>
-                          <h5>Nuts to Eat for Better Health</h5>
+                          <h6>10 tháng 4, 2022</h6>
+                          <h5>Các loại hạt nên ăn để có sức khỏe tốt hơn</h5>
                         </a>
                       </div>
                     </div>
@@ -2255,8 +1375,8 @@ const HomePage = () => {
                         </div>
 
                         <a href="blog-detail.html" className="blog-detail">
-                          <h6>20 March, 2022</h6>
-                          <h5>Fresh Vegetable Online</h5>
+                          <h6>20 tháng 3, 2022</h6>
+                          <h5>Rau tươi trực tuyến</h5>
                         </a>
                       </div>
                     </div>
@@ -2273,18 +1393,18 @@ const HomePage = () => {
                     <div className="row">
                       <div className="col-xxl-4 col-lg-5 col-md-7 col-sm-9 offset-xxl-2 offset-md-1">
                         <div className="newsletter-detail">
-                          <h2>Join our newsletter and get...</h2>
-                          <h5>$20 discount for your first order</h5>
+                          <h2>Đăng ký nhận bản tin của chúng tôi và nhận...</h2>
+                          <h5>Giảm giá 20 đô la cho đơn hàng đầu tiên của bạn</h5>
                           <div className="input-box">
                             <input
                               type="email"
                               className="form-control"
                               id="exampleFormControlInput1"
-                              placeholder="Enter Your Email"
+                              placeholder="Nhập email của bạn"
                             />
                             <i className="fa-solid fa-envelope arrow"></i>
-                            <button className="sub-btn  btn-animation">
-                              <span className="d-sm-block d-none">Subscribe</span>
+                            <button className="sub-btn btn-animation">
+                              <span className="d-sm-block d-none">Đăng ký</span>
                               <i className="fa-solid fa-arrow-right icon"></i>
                             </button>
                           </div>
@@ -2339,8 +1459,8 @@ const HomePage = () => {
                               <i data-feather="star"></i>
                             </li>
                           </ul>
-                          <span className="ms-2">8 Reviews</span>
-                          <span className="ms-2 text-danger">6 sold in last 16 hours</span>
+                          <span className="ms-2">8 Đánh giá</span>
+                          <span className="ms-2 text-danger">6 sản phẩm đã bán trong 16 giờ qua</span>
                         </div>
 
                         <div className="product-detail">
@@ -2350,13 +1470,13 @@ const HomePage = () => {
                         <ul className="brand-list">
                           <li>
                             <div className="brand-box">
-                              <h5>Category Name:</h5>
+                              <h5>Tên danh mục:</h5>
                               <h6 className="mb-3">{category?.categoryName || "Đang tải..."}</h6>
                             </div>
                           </li>
                           <li>
                             <div className="brand-box">
-                              <h5>Supplier Name:</h5>
+                              <h5>Tên nhà cung cấp:</h5>
                               <h6 className="mb-3">{supplier?.supplierName || "Đang tải..."}</h6>
                             </div>
                           </li>
@@ -2365,16 +1485,11 @@ const HomePage = () => {
                         <ul className="brand-list">
                           <li>
                             <div className="brand-box">
-                              <h5>Stock Quantity:</h5>
+                              <h5>Số lượng hàng tồn kho:</h5>
                               <h6 className="mb-3">{selectedProduct?.stockQuantity || "Đang tải..."}</h6>
                             </div>
                           </li>
-                          <li>
-                            <div className="brand-box">
-                              <h5>Supplier Name:</h5>
-                              <h6 className="mb-3">{supplier?.supplierName || "Đang tải..."}</h6>
-                            </div>
-                          </li>
+
                         </ul>
 
 
@@ -2385,14 +1500,14 @@ const HomePage = () => {
                             className="btn btn-md bg-dark cart-button text-white w-100"
                             onClick={() => handleAddToCart(selectedProduct)}
                           >
-                            Add To Cart
+                            Thêm vào giỏ hàng
                           </button>
                           <button
                             type="button"
                             className="btn theme-bg-color view-button icon text-white fw-bold btn-md"
                             onClick={() => handleViewDetail(selectedProduct.productId)}
                           >
-                            View More Details
+                            Xem thêm chi tiết
                           </button>
                         </div>
                       </div>
@@ -2407,9 +1522,9 @@ const HomePage = () => {
               <div className="modal-content">
                 <div className="modal-header">
                   <h5 className="modal-title" id="exampleModalLabel">
-                    Choose your Delivery Location
+                    Chọn Địa điểm Giao hàng của bạn
                   </h5>
-                  <p className="mt-1 text-content">Enter your address and we will specify the offer for your area.</p>
+                  <p className="mt-1 text-content">Nhập địa chỉ của bạn và chúng tôi sẽ chỉ định ưu đãi cho khu vực của bạn.</p>
                   <button type="button" className="btn-close" data-bs-dismiss="modal">
                     <i className="fa-solid fa-xmark"></i>
                   </button>
@@ -2417,82 +1532,82 @@ const HomePage = () => {
                 <div className="modal-body">
                   <div className="location-list">
                     <div className="search-input">
-                      <input type="search" className="form-control" placeholder="Search Your Area" />
+                      <input type="search" className="form-control" placeholder="Tìm kiếm Khu vực của bạn" />
                       <i className="fa-solid fa-magnifying-glass"></i>
                     </div>
 
                     <div className="disabled-box">
-                      <h6>Select a Location</h6>
+                      <h6>Chọn một vị trí</h6>
                     </div>
 
                     <ul className="location-select custom-height">
                       <li>
                         <a href="javascript:void(0)">
                           <h6>Alabama</h6>
-                          <span>Min: $130</span>
+                          <span>Tối thiểu: 130 đô la</span>
                         </a>
                       </li>
 
                       <li>
                         <a href="javascript:void(0)">
                           <h6>Arizona</h6>
-                          <span>Min: $150</span>
+                          <span>Tối thiểu: 150 đô la</span>
                         </a>
                       </li>
 
                       <li>
                         <a href="javascript:void(0)">
                           <h6>California</h6>
-                          <span>Min: $110</span>
+                          <span>Tối thiểu: 110 đô la</span>
                         </a>
                       </li>
 
                       <li>
                         <a href="javascript:void(0)">
                           <h6>Colorado</h6>
-                          <span>Min: $140</span>
+                          <span>Tối thiểu: 140 đô la</span>
                         </a>
                       </li>
 
                       <li>
                         <a href="javascript:void(0)">
                           <h6>Florida</h6>
-                          <span>Min: $160</span>
+                          <span>Tối thiểu: 160 đô la</span>
                         </a>
                       </li>
 
                       <li>
                         <a href="javascript:void(0)">
                           <h6>Georgia</h6>
-                          <span>Min: $120</span>
+                          <span>Tối thiểu: 120 đô la</span>
                         </a>
                       </li>
 
                       <li>
                         <a href="javascript:void(0)">
                           <h6>Kansas</h6>
-                          <span>Min: $170</span>
+                          <span>Tối thiểu: 170 đô la</span>
                         </a>
                       </li>
 
                       <li>
                         <a href="javascript:void(0)">
                           <h6>Minnesota</h6>
-                          <span>Min: $120</span>
+                          <span>Tối thiểu: 120 đô la</span>
                         </a>
                       </li>
 
                       <li>
                         <a href="javascript:void(0)">
                           <h6>New York</h6>
-                          <span>Min: $110</span>
+                          <span>Tối thiểu: 110 đô la</span>
                         </a>
                       </li>
 
                       <li>
                         <a href="javascript:void(0)">
                           <h6>Washington</h6>
-                          <span>Min: $130</span>
+                          <span>Tối thiểu: 130 đô la</span>
                         </a>
                       </li>
                     </ul>
@@ -2508,9 +1623,9 @@ const HomePage = () => {
                 <div className="modal-header">
                   <div>
                     <h5 className="modal-title w-100" id="deal_today">
-                      Deal Today
+                      Ưu đãi hôm nay
                     </h5>
-                    <p className="mt-1 text-content">Recommended deals for you.</p>
+                    <p className="mt-1 text-content">Ưu đãi được đề xuất cho bạn.</p>
                   </div>
                   <button type="button" className="btn-close" data-bs-dismiss="modal">
                     <i className="fa-solid fa-xmark"></i>
@@ -2557,7 +1672,7 @@ const HomePage = () => {
           </div>
           <div className="bg-overlay"></div>
         </div>
-      </div>
+      </div >
       {showUpdateModal && currentUser && (
         <UpdateInfoModal
           isOpen={showUpdateModal}

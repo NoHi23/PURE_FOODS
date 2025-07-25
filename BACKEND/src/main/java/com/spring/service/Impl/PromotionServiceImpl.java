@@ -251,5 +251,20 @@ public class PromotionServiceImpl implements PromotionService {
         }
     }
 
+    @Override
+    public List<PromotionDTO> getPromotionsByUserId(int userId) {
+        List<String> promotionCodes = promotionDAO.findPromotionCodesByUserId(userId);
+        List<PromotionDTO> result = new ArrayList<>();
+
+        for (String code : promotionCodes) {
+            PromotionDTO dto = getPromotionByCode(code);
+            if (dto != null) {
+                result.add(dto);
+            }
+        }
+
+        return result;
+    }
+
 
 }
