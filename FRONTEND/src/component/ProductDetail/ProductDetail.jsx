@@ -1765,7 +1765,7 @@ const ProductDetail = () => {
                       <i className="fa fa-bookmark"></i> Wishlist
                     </a>
 
-                    <button type="button" onClick={handleAddToCart} className="btn theme-bg-color text-white">
+                    <button type="button" onClick={() => handleAddToCart1(products)} className="btn theme-bg-color text-white">
                       <i className="fas fa-shopping-cart"></i> Add To Cart
                     </button>
                   </div>
