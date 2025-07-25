@@ -468,7 +468,7 @@ const HomePage = () => {
                                     </a>
                                   </li>
                                   <li>
-                                    <a className="dropdown-item" href="blog-list.html">
+                                    <a className="dropdown-item" href="blog-list">
                                       Blog List
                                     </a>
                                   </li>
