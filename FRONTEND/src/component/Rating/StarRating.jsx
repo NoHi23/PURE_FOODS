@@ -1,24 +1,44 @@
-import React from "react";
-import PropTypes from "prop-types";
-import "./StarRating.css";
+import React from 'react';
+import PropTypes from 'prop-types';
+import './StarRating.css';
 
-const StarRating = ({ rating }) => {
-  const hasReviews = rating > 0; // Giả sử rating > 0 nghĩa là có đánh giá; nếu rating = 0 thì coi như chưa có đánh giá nào
-  const colorClass = hasReviews ? "text-warning" : "text-muted"; // text-muted thường là xám trong Bootstrap; bạn có thể điều chỉnh nếu dùng framework khác
+const StarRating = ({ rating, onChange, isInteractive = false }) => {
+  // Hiển thị tĩnh nếu không có onChange (dùng cho hiển thị đánh giá)
+  const hasReviews = rating > 0;
+  const colorClass = hasReviews ? 'text-warning' : 'text-muted';
 
+  // Tính số sao đầy, nửa, và trống cho hiển thị tĩnh
   const full = Math.floor(rating);
   const half = rating - full >= 0.5 ? 1 : 0;
   const empty = 5 - full - half;
 
+  // Nếu là chế độ tương tác, hiển thị 5 sao để chọn
+  if (isInteractive) {
+    const stars = [];
+    for (let i = 5; i >= 1; i--) {
+      stars.push(
+        <span
+          key={i}
+          className={`star ${rating >= i ? 'active' : ''}`}
+          onClick={() => onChange(i)} // Cập nhật rating khi nhấp
+        >
+          ★
+        </span>
+      );
+    }
+    return <div className="star-rating">{stars}</div>;
+  }
+
+  // Hiển thị tĩnh nếu không tương tác
   const stars = [];
   for (let i = 0; i < full; i++) {
-    stars.push(<i key={`full-${i}`} className={`fas fa-star ${colorClass}`} />);
+    stars.push(<i key={`full-${i}`} className={`fas fa-star ${colorClass} star full`} />);
   }
   if (half) {
-    stars.push(<i key="half" className={`fas fa-star-half-alt ${colorClass}`} />);
+    stars.push(<i key="half" className={`fas fa-star-half-alt ${colorClass} star half`} />);
   }
   for (let i = 0; i < empty; i++) {
-    stars.push(<i key={`empty-${i}`} className={`far fa-star ${colorClass}`} />);
+    stars.push(<i key={`empty-${i}`} className={`far fa-star ${colorClass} star empty`} />);
   }
 
   return <div className="star-rating">{stars}</div>;
@@ -26,6 +46,8 @@ const StarRating = ({ rating }) => {
 
 StarRating.propTypes = {
   rating: PropTypes.number.isRequired,
+  onChange: PropTypes.func, // Hàm callback khi chọn sao (tùy chọn)
+  isInteractive: PropTypes.bool, // Xác định chế độ tương tác
 };
 
 export default StarRating;

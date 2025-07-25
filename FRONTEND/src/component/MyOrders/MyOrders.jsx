@@ -5,9 +5,10 @@ import { toast } from 'react-toastify';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
+import StarRating from '../Rating/StarRating';// Import component StarRating
 
 const MyOrders = () => {
-  const user = JSON.parse(localStorage.getItem("user"));
+  const user = JSON.parse(localStorage.getItem('user'));
   const userId = user?.userId;
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
@@ -15,11 +16,9 @@ const MyOrders = () => {
   const [showModal, setShowModal] = useState(false);
   const [modalOrderId, setModalOrderId] = useState(null);
   const [orderDetails, setOrderDetails] = useState([]);
-
-  // State cho modal đánh giá
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [selectedProductId, setSelectedProductId] = useState(null);
-  const [rating, setRating] = useState(''); // Use string to handle empty input
+  const [rating, setRating] = useState(0); // Khởi tạo rating là số 0
   const [comment, setComment] = useState('');
   const [existingReview, setExistingReview] = useState(null);
 
@@ -29,17 +28,17 @@ const MyOrders = () => {
       if (res.data.status === 200) {
         setOrders(res.data.orders);
       } else {
-        toast.error("Không thể lấy danh sách đơn hàng");
+        toast.error('Không thể lấy danh sách đơn hàng');
       }
     } catch (error) {
-      console.error("Lỗi khi lấy đơn hàng:", error);
-      toast.error("Lỗi khi tải đơn hàng");
+      console.error('Lỗi khi lấy đơn hàng:', error);
+      toast.error('Lỗi khi tải đơn hàng');
     }
   };
 
   const formatDate = (timestamp) => {
     const date = new Date(timestamp);
-    return date.toLocaleDateString("vi-VN") + " " + date.toLocaleTimeString("vi-VN");
+    return date.toLocaleDateString('vi-VN') + ' ' + date.toLocaleTimeString('vi-VN');
   };
 
   const openOrderModal = async (orderId) => {
@@ -55,23 +54,23 @@ const MyOrders = () => {
           const productRes = await axios.get(`http://localhost:8082/PureFoods/api/product/getById/${detail.productID}`);
           const product = productRes.data.product;
 
-          let categoryName = "Unknown";
+          let categoryName = 'Unknown';
           if (product.categoryId) {
             try {
               const catRes = await axios.get(`http://localhost:8082/PureFoods/api/category/${product.categoryId}`);
               categoryName = catRes.data.categoryName;
             } catch (e) {
-              console.error("Lỗi lấy category:", e);
+              console.error('Lỗi lấy category:', e);
             }
           }
 
-          let supplierName = "Unknown";
+          let supplierName = 'Unknown';
           if (product.supplierId) {
             try {
               const supRes = await axios.get(`http://localhost:8082/PureFoods/api/supplier/${product.supplierId}`);
               supplierName = supRes.data.supplierName;
             } catch (e) {
-              console.error("Lỗi lấy supplier:", e);
+              console.error('Lỗi lấy supplier:', e);
             }
           }
 
@@ -80,16 +79,16 @@ const MyOrders = () => {
             product: {
               ...product,
               categoryName,
-              supplierName
-            }
+              supplierName,
+            },
           };
         })
       );
 
       setOrderDetails(detailWithProducts);
     } catch (error) {
-      console.error("Lỗi khi lấy chi tiết đơn hàng:", error);
-      toast.error("Không thể tải chi tiết đơn hàng");
+      console.error('Lỗi khi lấy chi tiết đơn hàng:', error);
+      toast.error('Không thể tải chi tiết đơn hàng');
     }
   };
 
@@ -101,29 +100,30 @@ const MyOrders = () => {
 
   const handleOpenReview = async (productId) => {
     try {
-      const hasPurchasedRes = await axios.get(`http://localhost:8082/PureFoods/api/orders/hasPurchased?userId=${userId}&productId=${productId}`);
+      const hasPurchasedRes = await axios.get(
+        `http://localhost:8082/PureFoods/api/orders/hasPurchased?userId=${userId}&productId=${productId}`
+      );
       if (!hasPurchasedRes.data.hasPurchased) {
-        toast.warning("Bạn chưa mua sản phẩm này");
+        toast.warning('Bạn chưa mua sản phẩm này');
         return;
       }
 
       const reviewsRes = await axios.get(`http://localhost:8082/PureFoods/api/review/product?productId=${productId}`);
-      const userReview = reviewsRes.data.find(review => review.customerId === userId);
+      const userReview = reviewsRes.data.find((review) => review.customerId === userId);
       setExistingReview(userReview || null);
-      setRating(userReview?.rating ? String(userReview.rating) : ''); // Convert to string
+      setRating(userReview?.rating || 0); // Đặt rating là số, mặc định 0
       setComment(userReview?.comment || '');
       setSelectedProductId(productId);
       setShowReviewModal(true);
     } catch (error) {
-      console.error("Lỗi khi kiểm tra hoặc tải đánh giá:", error);
-      toast.error("Lỗi khi kiểm tra hoặc tải đánh giá");
+      console.error('Lỗi khi kiểm tra hoặc tải đánh giá:', error);
+      toast.error('Lỗi khi kiểm tra hoặc tải đánh giá');
     }
   };
 
   const handleSubmitReview = async () => {
-    const parsedRating = parseInt(rating);
-    if (!parsedRating || parsedRating < 1 || parsedRating > 5 || comment.trim() === '') {
-      toast.warning("Vui lòng chọn rating từ 1-5 và viết comment");
+    if (rating < 1 || rating > 5 || comment.trim() === '') {
+      toast.warning('Vui lòng chọn rating từ 1-5 và viết comment');
       return;
     }
 
@@ -131,42 +131,42 @@ const MyOrders = () => {
       const reviewData = {
         productId: selectedProductId,
         customerId: userId,
-        rating: parsedRating,
+        rating,
         comment,
       };
 
       if (existingReview) {
         reviewData.reviewId = existingReview.reviewId;
         await axios.put('http://localhost:8082/PureFoods/api/review/update', reviewData);
-        toast.success("Đánh giá đã được cập nhật!");
+        toast.success('Đánh giá đã được cập nhật!');
       } else {
         await axios.post('http://localhost:8082/PureFoods/api/review/create', reviewData);
-        toast.success("Đánh giá đã được gửi!");
+        toast.success('Đánh giá đã được gửi!');
       }
 
       setShowReviewModal(false);
       resetReviewForm();
     } catch (error) {
-      console.error("Lỗi khi gửi đánh giá:", error);
-      toast.error("Gửi đánh giá thất bại");
+      console.error('Lỗi khi gửi đánh giá:', error);
+      toast.error('Gửi đánh giá thất bại');
     }
   };
 
   const handleDeleteReview = async () => {
-    if (!existingReview || !window.confirm("Bạn chắc chắn muốn xóa đánh giá?")) return;
+    if (!existingReview || !window.confirm('Bạn chắc chắn muốn xóa đánh giá?')) return;
     try {
       await axios.delete(`http://localhost:8082/PureFoods/api/review/delete?reviewId=${existingReview.reviewId}`);
-      toast.success("Đánh giá đã được xóa!");
+      toast.success('Đánh giá đã được xóa!');
       setShowReviewModal(false);
       resetReviewForm();
     } catch (error) {
-      console.error("Lỗi khi xóa đánh giá:", error);
-      toast.error("Xóa đánh giá thất bại");
+      console.error('Lỗi khi xóa đánh giá:', error);
+      toast.error('Xóa đánh giá thất bại');
     }
   };
 
   const resetReviewForm = () => {
-    setRating('');
+    setRating(0); // Đặt lại rating về 0
     setComment('');
     setExistingReview(null);
     setSelectedProductId(null);
@@ -175,6 +175,13 @@ const MyOrders = () => {
   useEffect(() => {
     if (userId) loadOrders();
   }, [userId]);
+
+  // Debug trạng thái
+  useEffect(() => {
+    console.log('showReviewModal:', showReviewModal);
+    console.log('selectedProductId:', selectedProductId);
+    console.log('rating:', rating);
+  }, [showReviewModal, selectedProductId, rating]);
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -196,7 +203,9 @@ const MyOrders = () => {
                 <nav>
                   <ol className="breadcrumb mb-0">
                     <li className="breadcrumb-item">
-                      <a href="/"><i className="fa-solid fa-house"></i></a>
+                      <a href="/">
+                        <i className="fa-solid fa-house"></i>
+                      </a>
                     </li>
                     <li className="breadcrumb-item active">Đơn hàng</li>
                   </ol>
@@ -236,9 +245,13 @@ const MyOrders = () => {
                           <td>{order.shippingAddress}</td>
                           <td>{(order.totalAmount || 0).toLocaleString()}đ</td>
                           <td>
-                            {order.statusID === 1 && <span className="badge bg-warning text-dark">Đơn hàng đang chờ xử lý</span>}
+                            {order.statusID === 1 && (
+                              <span className="badge bg-warning text-dark">Đơn hàng đang chờ xử lý</span>
+                            )}
                             {order.statusID === 2 && <span className="badge bg-success">Đơn hàng đang được xử lý</span>}
-                            {order.statusID === 3 && <span className="badge bg-primary">Đã giao cho đơn vị vận chuyển</span>}
+                            {order.statusID === 3 && (
+                              <span className="badge bg-primary">Đã giao cho đơn vị vận chuyển</span>
+                            )}
                             {order.statusID === 4 && <span className="badge bg-success">Giao hàng thành công</span>}
                             {order.statusID === 5 && <span className="badge bg-danger">Đã bị hủy</span>}
                             {!order.statusID && <span className="badge bg-secondary">Không xác định</span>}
@@ -291,9 +304,13 @@ const MyOrders = () => {
               <tbody>
                 {orderDetails.map((detail) => (
                   <tr key={detail.id}>
-                    <td>{detail.product?.productName || "..."}</td>
+                    <td>{detail.product?.productName || '...'}</td>
                     <td>
-                      <img src={detail.product?.imageURL} alt={detail.product?.productName} style={{ width: "60px" }} />
+                      <img
+                        src={detail.product?.imageURL}
+                        alt={detail.product?.productName}
+                        style={{ width: '60px' }}
+                      />
                     </td>
                     <td>{detail.product?.categoryName}</td>
                     <td>{detail.product?.supplierName}</td>
@@ -328,16 +345,15 @@ const MyOrders = () => {
           <Form>
             <Form.Group className="mb-3">
               <Form.Label>Rating (1-5 sao)</Form.Label>
-              <Form.Control
-                type="number"
-                min={1}
-                max={5}
-                value={rating}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  setRating(value === '' ? '' : parseInt(value) || 0);
+              <StarRating
+                rating={rating}
+                onChange={(newRating) => {
+                  console.log('Selected rating:', newRating); // Debug
+                  setRating(newRating);
                 }}
+                isInteractive={true}
               />
+              <p>Rating hiện tại: {rating}</p>
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label>Comment</Form.Label>
@@ -369,15 +385,21 @@ const MyOrders = () => {
         <nav>
           <ul className="pagination">
             <li className={`page-item ${currentPage === 1 && 'disabled'}`}>
-              <button className="page-link" onClick={() => goToPage(currentPage - 1)}>Trước</button>
+              <button className="page-link" onClick={() => goToPage(currentPage - 1)}>
+                Trước
+              </button>
             </li>
             {[...Array(totalPages)].map((_, index) => (
               <li key={index} className={`page-item ${currentPage === index + 1 && 'active'}`}>
-                <button className="page-link" onClick={() => goToPage(index + 1)}>{index + 1}</button>
+                <button className="page-link" onClick={() => goToPage(index + 1)}>
+                  {index + 1}
+                </button>
               </li>
             ))}
             <li className={`page-item ${currentPage === totalPages && 'disabled'}`}>
-              <button className="page-link" onClick={() => goToPage(currentPage + 1)}>Sau</button>
+              <button className="page-link" onClick={() => goToPage(currentPage + 1)}>
+                Sau
+              </button>
             </li>
           </ul>
         </nav>
