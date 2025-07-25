@@ -97,7 +97,7 @@ const AllRole = () => {
       const modal = bootstrap.Modal.getInstance(document.getElementById('editRoleModal'));
       modal.hide();
 
-      toast.success('Update Role Successfull!');
+      toast.success('Cập nhật vai trò thành công!');
     } catch (err) {
       const errorMessage =
         err.response && err.response.data && err.response.data.message
@@ -124,10 +124,10 @@ const AllRole = () => {
                   <div className="card card-table">
                     <div className="card-body">
                       <div className="title-header option-title">
-                        <h5>Role List</h5>
+                        <h5>Danh sách vai trò người dùng</h5>
                         <form className="d-inline-flex">
                           <Link to={"/add-new-role"} className="align-items-center btn btn-theme d-flex">
-                            <i data-feather="plus"></i>Add Role
+                            <i data-feather="plus"></i>Thêm mới vai trò
                           </Link>
                         </form>
                       </div>
@@ -137,8 +137,8 @@ const AllRole = () => {
                             <thead>
                               <tr>
                                 <th>No</th>
-                                <th >Name</th>
-                                <th >Options</th>
+                                <th >Tên</th>
+                                <th >Tùy chọn</th>
                               </tr>
                             </thead>
 
@@ -190,21 +190,21 @@ const AllRole = () => {
           <div className="modal-dialog modal-dialog-centered modal-lg">
             <div className="modal-content">
               <div className="modal-header">
-                <h5 className="modal-title">Update User</h5>
+                <h5 className="modal-title">Cập nhật vai trò người dùng</h5>
                 <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close" />
               </div>
               <div className="modal-body">
                 <form>
                   <div className="mb-3">
-                    <label className="form-label">Role Name</label>
+                    <label className="form-label">Tên vai trò</label>
                     <input type="text" className="form-control" name="roleName" value={editForm.roleName} onChange={handleInputChange} />
                   </div>
                 </form>
               </div>
 
               <div className="modal-footer">
-                <button className="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button className="btn btn-primary" onClick={handleUpdateRole}>Save</button>
+                <button className="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                <button className="btn btn-primary" onClick={handleUpdateRole}>Lưu</button>
               </div>
             </div>
           </div>

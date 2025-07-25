@@ -129,7 +129,7 @@ const Wishlist = () => {
             <div className="row">
               <div className="col-12">
                 <div className="breadcrumb-contain">
-                  <h2>Wishlist</h2>
+                  <h2>Yêu thích</h2>
                   <nav>
                     <ol className="breadcrumb mb-0">
                       <li className="breadcrumb-item">
@@ -137,7 +137,7 @@ const Wishlist = () => {
                           <i className="fa-solid fa-house"></i>
                         </a>
                       </li>
-                      <li className="breadcrumb-item active">Wishlist</li>
+                      <li className="breadcrumb-item active">Yêu thích</li>
                     </ol>
                   </nav>
                 </div>

@@ -220,11 +220,11 @@ const Supplier = () => {
                 <div className="card card-table">
                   <div className="card-body">
                     <div className="title-header option-title d-sm-flex d-block">
-                      <h5>Supplier List</h5>
+                      <h5>Danh sách nhà cung cấp</h5>
                       <div className="right-options">
                         <ul>
                           <li>
-                            <Link to="/admin-add-new-supplier" className="btn btn-solid">Add Supplier</Link>
+                            <Link to="/admin-add-new-supplier" className="btn btn-solid">Thêm mới nhà cung cấp</Link>
                           </li>
                         </ul>
                       </div>
@@ -235,14 +235,14 @@ const Supplier = () => {
                         <thead>
                           <tr>
                             <th>ID</th>
-                            <th>Name</th>
-                            <th>Contact</th>
-                            <th>Phone</th>
+                            <th>Tên</th>
+                            <th>Liên hệ</th>
+                            <th>Số điện thoại</th>
                             <th>Email</th>
-                            <th>Address</th>
-                            <th>Organic Cert</th>
-                            <th>Expiry</th>
-                            <th>Actions</th>
+                            <th>Địa chỉ</th>
+                            <th>Giấy chứng nhận hữu cơ</th>
+                            <th>Ngày hết hạn</th>
+                            <th>Hành động</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -307,20 +307,19 @@ const Supplier = () => {
                       <div className="modal-dialog modal-dialog-centered">
                         <div className="modal-content">
                           <div className="modal-header">
-                            <h5 className="modal-title">Supplier Detail</h5>
+                            <h5 className="modal-title">Chi tiết nhà cung cấp</h5>
                             <button type="button" className="btn-close" data-bs-dismiss="modal"></button>
                           </div>
                           <div className="modal-body">
                             {selectedSupplier && (
                               <>
-                                <p><strong>ID:</strong> {selectedSupplier.supplierId}</p>
-                                <p><strong>Name:</strong> {selectedSupplier.supplierName}</p>
-                                <p><strong>Contact:</strong> {selectedSupplier.contactName}</p>
-                                <p><strong>Phone:</strong> {selectedSupplier.phone}</p>
+                                <p><strong>Tên:</strong> {selectedSupplier.supplierName}</p>
+                                <p><strong>Liên hệ:</strong> {selectedSupplier.contactName}</p>
+                                <p><strong>Số điện thoại:</strong> {selectedSupplier.phone}</p>
                                 <p><strong>Email:</strong> {selectedSupplier.email}</p>
-                                <p><strong>Address:</strong> {selectedSupplier.address}</p>
-                                <p><strong>Organic Cert:</strong> {selectedSupplier.organicCertification === "Yes" ? "Yes" : "No"}</p>
-                                <p><strong>Expiry:</strong> {selectedSupplier.certificationExpiry ? new Date(selectedSupplier.certificationExpiry).toLocaleDateString('en-CA') : 'N/A'}</p>
+                                <p><strong>Địa chỉ:</strong> {selectedSupplier.address}</p>
+                                <p><strong>Chứng nhận hữu cơ:</strong> {selectedSupplier.organicCertification === "Có" ? "Có" : "Không"}</p>
+                                <p><strong>Hết hạn:</strong> {selectedSupplier.certificationExpiry ? new Date(selectedSupplier.certificationExpiry).toLocaleDateString('en-CA') : 'Không áp dụng'}</p>
                               </>
                             )}
                           </div>
@@ -333,27 +332,27 @@ const Supplier = () => {
                       <div className="modal-dialog modal-dialog-centered">
                         <div className="modal-content">
                           <div className="modal-header">
-                            <h5 className="modal-title">Edit Supplier</h5>
+                            <h5 className="modal-title">Chỉnh sửa thông tin nhà cung cấp</h5>
                             <button type="button" className="btn-close" data-bs-dismiss="modal"></button>
                           </div>
                           <div className="modal-body">
                             <form>
-                              <label><strong>Name:</strong></label>
+                              <label><strong>Tên:</strong></label>
                               <input type="text" className="form-control mb-2" placeholder="Name" name="supplierName" value={editSupplier.supplierName} onChange={handleInputChange} />
 
-                              <label><strong>Contact:</strong></label>
+                              <label><strong>Liên hệ:</strong></label>
                               <input type="text" className="form-control mb-2" placeholder="Contact" name="contactName" value={editSupplier.contactName} onChange={handleInputChange} />
 
-                              <label><strong>Phone:</strong></label>
+                              <label><strong>Số điện thoại:</strong></label>
                               <input type="text" className="form-control mb-2" placeholder="Phone" name="phone" value={editSupplier.phone} onChange={handleInputChange} />
 
                               <label><strong>Email:</strong></label>
                               <input type="email" className="form-control mb-2" placeholder="Email" name="email" value={editSupplier.email} onChange={handleInputChange} />
 
-                              <label><strong>Address:</strong></label>
+                              <label><strong>Địa chỉ:</strong></label>
                               <input type="text" className="form-control mb-2" placeholder="Address" name="address" value={editSupplier.address} onChange={handleInputChange} />
 
-                              <label><strong>Organic Cert:</strong></label>
+                              <label><strong>Chứng nhận hữu cơ:</strong></label>
                               <div className="form-check mb-2">
                                 <input
                                   type="checkbox"
@@ -371,7 +370,7 @@ const Supplier = () => {
                                 <label className="form-check-label" htmlFor="organicCertCheckbox">Organic Certified</label>
                               </div>
 
-                              <label><strong>Certification Expiry:</strong></label>
+                              <label><strong>Ngày hết hạn chứng nhận:</strong></label>
                               <input
                                 type="date"
                                 className="form-control mb-2"
@@ -383,8 +382,8 @@ const Supplier = () => {
                             </form>
                           </div>
                           <div className="modal-footer">
-                            <button className="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                            <button className="btn btn-primary" onClick={handleUpdateSupplier}>Save Changes</button>
+                            <button className="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                            <button className="btn btn-primary" onClick={handleUpdateSupplier}>Lưu lại</button>
                           </div>
                         </div>
                       </div>
@@ -395,13 +394,13 @@ const Supplier = () => {
                       <div className="modal-dialog modal-dialog-centered">
                         <div className="modal-content">
                           <div className="modal-header text-center">
-                            <h5 className="modal-title w-100">Confirm Delete</h5>
+                            <h5 className="modal-title w-100">Xác nhận xóa</h5>
                             <button type="button" className="btn-close" data-bs-dismiss="modal"></button>
                           </div>
                           <div className="modal-body text-center">
-                            <p>Are you sure you want to delete this supplier?</p>
-                            <button className="btn btn-danger m-2" onClick={handleDelete}>Yes</button>
-                            <button className="btn btn-secondary m-2" data-bs-dismiss="modal">No</button>
+                            <p>Bạn có chắc chắn muốn xóa nhà cung cấp này?</p>
+                            <button className="btn btn-danger m-2" onClick={handleDelete}>Xóa</button>
+                            <button className="btn btn-secondary m-2" data-bs-dismiss="modal">Hủy bỏ</button>
                           </div>
                         </div>
                       </div>

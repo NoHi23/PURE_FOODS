@@ -179,15 +179,15 @@ const Coupons = () => {
                       <div className="card">
                         <div className="card-body">
                           <div className="title-header option-title d-flex justify-content-between align-items-center">
-                            <h5>Coupon List</h5>
+                            <h5>Danh sách mã giảm giá</h5>
                             <div>
                               <Link to="/admin-add-new-coupons" className="btn btn-animation">
-                                Add New Coupon
+                               Thêm mới mã giảm giá
                               </Link>
                             </div>
                           </div>
                           {loading ? (
-                            <p>Loading...</p>
+                            <p>Đang tải...</p>
                           ) : coupons.length === 0 ? (
                             <p>Không có mã giảm giá nào để hiển thị.</p>
                           ) : (
@@ -197,14 +197,14 @@ const Coupons = () => {
                                   <tr>
                                     <th>ID</th>
                                     <th>Code</th>
-                                    <th>Description</th>
-                                    <th>Discount Type</th>
-                                    <th>Discount Value</th>
-                                    <th>Start Date</th>
-                                    <th>End Date</th>
-                                    <th>Min Order</th>
-                                    <th>Status</th>
-                                    <th>Actions</th>
+                                    <th>Mô tả</th>
+                                    <th>Loại giảm giá</th>
+                                    <th>Giá trị chiết khấu</th>
+                                    <th>Ngày bắt đầu</th>
+                                    <th>Ngày kết thúc</th>
+                                    <th>Số lần sử dụng</th>
+                                    <th>Trạng thái</th>
+                                    <th>Tùy chọn</th>
                                   </tr>
                                 </thead>
                                 <tbody>
@@ -268,7 +268,7 @@ const Coupons = () => {
                             <div className="modal-dialog modal-dialog-centered">
                               <div className="modal-content">
                                 <div className="modal-header">
-                                  <h5 className="modal-title">Coupon Detail</h5>
+                                  <h5 className="modal-title">Chi tiết mã giảm giá</h5>
                                   <button
                                     type="button"
                                     className="btn-close"
@@ -286,28 +286,28 @@ const Coupons = () => {
                                         <strong>Code:</strong> {selectedCoupon.promotionCode}
                                       </p>
                                       <p>
-                                        <strong>Description:</strong> {selectedCoupon.description || '-'}
+                                        <strong>Mô tả:</strong> {selectedCoupon.description || '-'}
                                       </p>
                                       <p>
-                                        <strong>Discount Type:</strong> {selectedCoupon.discountType}
+                                        <strong>Loại giảm giá:</strong> {selectedCoupon.discountType}
                                       </p>
                                       <p>
-                                        <strong>Discount Value:</strong> {selectedCoupon.discountValue}
+                                        <strong>Giá trị triết khấu:</strong> {selectedCoupon.discountValue}
                                       </p>
                                       <p>
-                                        <strong>Start Date:</strong>{' '}
+                                        <strong>Ngày bắt đầu:</strong>{' '}
                                         {new Date(selectedCoupon.startDate).toLocaleDateString()}
                                       </p>
                                       <p>
-                                        <strong>End Date:</strong>{' '}
+                                        <strong>Ngày kết thúc:</strong>{' '}
                                         {new Date(selectedCoupon.endDate).toLocaleDateString()}
                                       </p>
                                       <p>
-                                        <strong>Min Order Amount:</strong> {selectedCoupon.minOrderAmount || '-'}
+                                        <strong>Số lần sử dụng:</strong> {selectedCoupon.minOrderAmount || '-'}
                                       </p>
                                       <p>
-                                        <strong>Status:</strong>{' '}
-                                        {selectedCoupon.status === 1 ? 'Active' : 'Inactive'}
+                                        <strong>Trạng thái:</strong>{' '}
+                                        {selectedCoupon.status === 1 ? 'Hoạt động' : 'Không hoạt động'}
                                       </p>
                                     </>
                                   )}
@@ -319,7 +319,7 @@ const Coupons = () => {
                             <div className="modal-dialog modal-dialog-centered">
                               <div className="modal-content">
                                 <div className="modal-header">
-                                  <h5 className="modal-title">Edit Coupon</h5>
+                                  <h5 className="modal-title">Cập nhật mã giảm giá</h5>
                                   <button
                                     type="button"
                                     className="btn-close"
@@ -343,7 +343,7 @@ const Coupons = () => {
                                       </div>
                                     </div>
                                     <div className="mb-4 row align-items-center">
-                                      <label className="col-lg-2 col-md-3 mb-0">Description</label>
+                                      <label className="col-lg-2 col-md-3 mb-0">Mô tả</label>
                                       <div className="col-md-9 col-lg-10">
                                         <input
                                           type="text"
@@ -356,7 +356,7 @@ const Coupons = () => {
                                       </div>
                                     </div>
                                     <div className="mb-4 row align-items-center">
-                                      <label className="col-lg-2 col-md-3 mb-0">Discount Type</label>
+                                      <label className="col-lg-2 col-md-3 mb-0">Loại giảm giá</label>
                                       <div className="col-md-9 col-lg-10">
                                         <select
                                           className="form-control"
@@ -364,13 +364,13 @@ const Coupons = () => {
                                           value={editCoupon.discountType}
                                           onChange={handleInputChange}
                                         >
-                                          <option value="Percentage">Percentage</option>
-                                          <option value="Fixed">Fixed</option>
+                                          <option value="Percentage">Phần trăm</option>
+                                          <option value="Fixed">Giá thực tế</option>
                                         </select>
                                       </div>
                                     </div>
                                     <div className="mb-4 row align-items-center">
-                                      <label className="col-lg-2 col-md-3 mb-0">Discount Value</label>
+                                      <label className="col-lg-2 col-md-3 mb-0">Giá trị triết khấu</label>
                                       <div className="col-md-9 col-lg-10">
                                         <input
                                           type="number"
@@ -384,7 +384,7 @@ const Coupons = () => {
                                       </div>
                                     </div>
                                     <div className="mb-4 row align-items-center">
-                                      <label className="col-lg-2 col-md-3 mb-0">Start Date</label>
+                                      <label className="col-lg-2 col-md-3 mb-0">Ngày bắt đầu</label>
                                       <div className="col-md-9 col-lg-10">
                                         <input
                                           type="date"
@@ -397,7 +397,7 @@ const Coupons = () => {
                                       </div>
                                     </div>
                                     <div className="mb-4 row align-items-center">
-                                      <label className="col-lg-2 col-md-3 mb-0">End Date</label>
+                                      <label className="col-lg-2 col-md-3 mb-0">Ngày kết thúc</label>
                                       <div className="col-md-9 col-lg-10">
                                         <input
                                           type="date"
@@ -410,7 +410,7 @@ const Coupons = () => {
                                       </div>
                                     </div>
                                     <div className="mb-4 row align-items-center">
-                                      <label className="col-lg-2 col-md-3 mb-0">Min Order Amount</label>
+                                      <label className="col-lg-2 col-md-3 mb-0">Số lần giảm giá</label>
                                       <div className="col-md-9 col-lg-10">
                                         <input
                                           type="number"
@@ -423,7 +423,7 @@ const Coupons = () => {
                                       </div>
                                     </div>
                                     <div className="mb-4 row align-items-center">
-                                      <label className="col-lg-2 col-md-3 mb-0">Active</label>
+                                      <label className="col-lg-2 col-md-3 mb-0">Hoạt động</label>
                                       <div className="col-md-9 col-lg-10 d-flex align-items-center">
                                         <label className="switch">
                                           <input
@@ -442,10 +442,10 @@ const Coupons = () => {
                                         className="btn btn-secondary"
                                         data-bs-dismiss="modal"
                                       >
-                                        Cancel
+                                        Hủy
                                       </button>
                                       <button type="submit" className="btn btn-animation ms-auto">
-                                        Save Changes
+                                        Lưu thay đổi
                                       </button>
                                     </div>
                                   </form>
@@ -457,7 +457,7 @@ const Coupons = () => {
                             <div className="modal-dialog modal-dialog-centered">
                               <div className="modal-content">
                                 <div className="modal-header text-center">
-                                  <h5 className="modal-title w-100">Confirm Delete</h5>
+                                  <h5 className="modal-title w-100">Xác nhận xóa</h5>
                                   <button
                                     type="button"
                                     className="btn-close"
@@ -466,15 +466,15 @@ const Coupons = () => {
                                   ></button>
                                 </div>
                                 <div className="modal-body text-center">
-                                  <p>Are you sure you want to delete this coupon?</p>
+                                  <p>Bạn có chắc chắn muốn xóa mã giảm giá này?</p>
                                   <button className="btn btn-danger m-2" onClick={handleDelete}>
-                                    Yes
+                                    Xóa
                                   </button>
                                   <button
                                     className="btn btn-secondary m-2"
                                     data-bs-dismiss="modal"
                                   >
-                                    No
+                                    Hủy
                                   </button>
                                 </div>
                               </div>
