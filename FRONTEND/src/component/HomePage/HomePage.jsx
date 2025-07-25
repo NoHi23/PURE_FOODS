@@ -28,6 +28,7 @@ const getOrUpdateExpiryTime = () => {
 const HomePage = () => {
   const [dealProduct, setDealProduct] = useState([]);
   const [saveProduct, setSaveProduct] = useState([]);
+  const [bestSellingProducts, setBestSellingProducts] = useState([]);
 
   const [timeLeft, setTimeLeft] = useState(getOrUpdateExpiryTime());
   const [timeObj, setTimeObj] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
@@ -244,6 +245,44 @@ const HomePage = () => {
       setShowUpdateModal(true);
     }
   }, []);
+
+  useEffect(() => {
+    axios
+      .get("http://localhost:8082/PureFoods/api/orders/top5-best-selling")
+      .then((res) => {
+        if (Array.isArray(res.data)) {
+          setBestSellingProducts(res.data);
+        }
+      })
+      .catch((err) => {
+        console.error("Lỗi khi lấy sản phẩm thịnh hành:", err);
+        toast.error("Không thể lấy sản phẩm thịnh hành");
+      });
+  }, []);
+
+  const [top12SellingProducts, setTop12SellingProducts] = useState([]);
+
+  useEffect(() => {
+    axios
+      .get("http://localhost:8082/PureFoods/api/orders/top12-best-selling")
+      .then((res) => {
+        if (Array.isArray(res.data)) {
+          setTop12SellingProducts(res.data);
+        }
+      })
+      .catch((err) => {
+        console.error("Lỗi khi lấy sản phẩm bán chạy nhất:", err);
+        toast.error("Không thể lấy sản phẩm bán chạy nhất");
+      });
+  }, []);
+
+  const chunkArray = (array, chunkSize) => {
+    const result = [];
+    for (let i = 0; i < array.length; i += chunkSize) {
+      result.push(array.slice(i, i + chunkSize));
+    }
+    return result;
+  };
 
   return (
     <HomepageLayout>
@@ -885,93 +924,32 @@ const HomePage = () => {
                         <h3>Sản phẩm thịnh hành</h3>
 
                         <ul className="product-list border-0 p-0 d-block">
-                          <li>
-                            <div className="offer-product">
-                              <a href="product-left-thumbnail.html" className="offer-image">
-                                <img
-                                  src="../assets/images/vegetable/product/23.png"
-                                  className="blur-up lazyload"
-                                  alt=""
-                                />
-                              </a>
+                          {bestSellingProducts?.map((b, i) => (
+                            <li key={i}>
+                              <div className="offer-product">
+                                <a href="product-left-thumbnail.html" className="offer-image">
+                                  <img
+                                    src={b?.product.imageURL}
+                                    className="blur-up lazyload"
+                                    alt=""
+                                  />
+                                </a>
 
-                              <div className="offer-detail">
-                                <div>
-                                  <a href="product-left-thumbnail.html" className="text-title">
-                                    <h6 className="name">Meatigo Premium Goat Curry</h6>
-                                  </a>
-                                  <span>450 G</span>
-                                  <h6 className="price theme-color">$ 70.00</h6>
+                                <div className="offer-detail">
+                                  <div>
+                                    <a href="product-left-thumbnail.html" className="text-title">
+                                      <h6 className="name">{b?.product.productName}</h6>
+                                    </a>
+                                    <span>còn {b?.product.stockQuantity} trong kho</span>
+                                    <h6 className="price theme-color">${b?.product.priceAfterDiscount} <del className="text-danger">${b?.product.price}</del></h6>
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                          </li>
+                            </li>
+                          ))}
 
-                          <li>
-                            <div className="offer-product">
-                              <a href="product-left-thumbnail.html" className="offer-image">
-                                <img
-                                  src="../assets/images/vegetable/product/24.png"
-                                  className="blur-up lazyload"
-                                  alt=""
-                                />
-                              </a>
 
-                              <div className="offer-detail">
-                                <div>
-                                  <a href="product-left-thumbnail.html" className="text-title">
-                                    <h6 className="name">Dates Medjoul Premium Imported</h6>
-                                  </a>
-                                  <span>450 G</span>
-                                  <h6 className="price theme-color">$ 40.00</h6>
-                                </div>
-                              </div>
-                            </div>
-                          </li>
 
-                          <li>
-                            <div className="offer-product">
-                              <a href="product-left-thumbnail.html" className="offer-image">
-                                <img
-                                  src="../assets/images/vegetable/product/25.png"
-                                  className="blur-up lazyload"
-                                  alt=""
-                                />
-                              </a>
-
-                              <div className="offer-detail">
-                                <div>
-                                  <a href="product-left-thumbnail.html" className="text-title">
-                                    <h6 className="name">Good Life Walnut Kernels</h6>
-                                  </a>
-                                  <span>200 G</span>
-                                  <h6 className="price theme-color">$ 52.00</h6>
-                                </div>
-                              </div>
-                            </div>
-                          </li>
-
-                          <li className="mb-0">
-                            <div className="offer-product">
-                              <a href="product-left-thumbnail.html" className="offer-image">
-                                <img
-                                  src="../assets/images/vegetable/product/26.png"
-                                  className="blur-up lazyload"
-                                  alt=""
-                                />
-                              </a>
-
-                              <div className="offer-detail">
-                                <div>
-                                  <a href="product-left-thumbnail.html" className="text-title">
-                                    <h6 className="name">Apple Red Premium Imported</h6>
-                                  </a>
-                                  <span>1 KG</span>
-                                  <h6 className="price theme-color">$ 80.00</h6>
-                                </div>
-                              </div>
-                            </div>
-                          </li>
                         </ul>
                       </div>
                     </div>
@@ -1254,282 +1232,46 @@ const HomePage = () => {
                   </div>
 
                   <div className="best-selling-slider product-wrapper wow fadeInUp">
-                    <div>
-                      <ul className="product-list">
-                        <li>
-                          <div className="offer-product">
-                            <a href="product-left-thumbnail.html" className="offer-image">
-                              <img
-                                src="../assets/images/vegetable/product/11.png"
-                                className="blur-up lazyload"
-                                alt=""
-                              />
-                            </a>
-
-                            <div className="offer-detail">
-                              <div>
-                                <a href="product-left-thumbnail.html" className="text-title">
-                                  <h6 className="name">Tuffets Whole Wheat Bread</h6>
+                    {chunkArray(top12SellingProducts, 12).map((group, index) => (
+                      <div key={index}>
+                        <ul className="product-list">
+                          {group.map((item, idx) => (
+                            <li key={idx}>
+                              <div className="offer-product">
+                                <a
+                                  href={`/product/${item.product.productId}`}
+                                  className="offer-image"
+                                >
+                                  <img
+                                    src={item.product.imageURL}
+                                    className="blur-up lazyload"
+                                    alt={item.product.productName}
+                                  />
                                 </a>
-                                <span>500 G</span>
-                                <h6 className="price theme-color">$ 10.00</h6>
+
+                                <div className="offer-detail">
+                                  <div>
+                                    <a
+                                      href={`/product/${item.product.productId}`}
+                                      className="text-title"
+                                    >
+                                      <h6 className="name">{item.product.productName}</h6>
+                                    </a>
+                                    <span>{item.totalQuantity} sản phẩm đã bán</span>
+                                    <h6 className="price theme-color">
+                                      ${item.product.priceAfterDiscount
+                                      }
+                                    </h6>
+                                  </div>
+                                </div>
                               </div>
-                            </div>
-                          </div>
-                        </li>
-
-                        <li>
-                          <div className="offer-product">
-                            <a href="product-left-thumbnail.html" className="offer-image">
-                              <img
-                                src="../assets/images/vegetable/product/12.png"
-                                className="blur-up lazyload"
-                                alt=""
-                              />
-                            </a>
-
-                            <div className="offer-detail">
-                              <div>
-                                <a href="product-left-thumbnail.html" className="text-title">
-                                  <h6 className="name">Potato</h6>
-                                </a>
-                                <span>500 G</span>
-                                <h6 className="price theme-color">$ 10.00</h6>
-                              </div>
-                            </div>
-                          </div>
-                        </li>
-
-                        <li>
-                          <div className="offer-product">
-                            <a href="product-left-thumbnail.html" className="offer-image">
-                              <img
-                                src="../assets/images/vegetable/product/13.png"
-                                className="blur-up lazyload"
-                                alt=""
-                              />
-                            </a>
-
-                            <div className="offer-detail">
-                              <div>
-                                <a href="product-left-thumbnail.html" className="text-title">
-                                  <h6 className="name">Green Chilli</h6>
-                                </a>
-                                <span>200 G</span>
-                                <h6 className="price theme-color">$ 10.00</h6>
-                              </div>
-                            </div>
-                          </div>
-                        </li>
-
-                        <li>
-                          <div className="offer-product">
-                            <a href="product-left-thumbnail.html" className="offer-image">
-                              <img
-                                src="../assets/images/vegetable/product/14.png"
-                                className="blur-up lazyload"
-                                alt=""
-                              />
-                            </a>
-
-                            <div className="offer-detail">
-                              <div>
-                                <a href="product-left-thumbnail.html" className="text-title">
-                                  <h6 className="name">Muffets Burger Bun</h6>
-                                </a>
-                                <span>150 G</span>
-                                <h6 className="price theme-color">$ 10.00</h6>
-                              </div>
-                            </div>
-                          </div>
-                        </li>
-                      </ul>
-                    </div>
-
-                    <div>
-                      <ul className="product-list">
-                        <li>
-                          <div className="offer-product">
-                            <a href="product-left-thumbnail.html" className="offer-image">
-                              <img
-                                src="../assets/images/vegetable/product/15.png"
-                                className="blur-up lazyload"
-                                alt=""
-                              />
-                            </a>
-
-                            <div className="offer-detail">
-                              <div>
-                                <a href="product-left-thumbnail.html" className="text-title">
-                                  <h6 className="name">Tuffets Britannia Cheezza</h6>
-                                </a>
-                                <span>500 G</span>
-                                <h6 className="price theme-color">$ 10.00</h6>
-                              </div>
-                            </div>
-                          </div>
-                        </li>
-
-                        <li>
-                          <div className="offer-product">
-                            <a href="product-left-thumbnail.html" className="offer-image">
-                              <img
-                                src="../assets/images/vegetable/product/16.png"
-                                className="blur-up lazyload"
-                                alt=""
-                              />
-                            </a>
-
-                            <div className="offer-detail">
-                              <div>
-                                <a href="product-left-thumbnail.html" className="text-title">
-                                  <h6 className="name">Long Life Toned Milk</h6>
-                                </a>
-                                <span>1 L</span>
-                                <h6 className="price theme-color">$ 10.00</h6>
-                              </div>
-                            </div>
-                          </div>
-                        </li>
-
-                        <li>
-                          <div className="offer-product">
-                            <a href="product-left-thumbnail.html" className="offer-image">
-                              <img
-                                src="../assets/images/vegetable/product/17.png"
-                                className="blur-up lazyload"
-                                alt=""
-                              />
-                            </a>
-
-                            <div className="offer-detail">
-                              <div>
-                                <a href="product-left-thumbnail.html" className="text-title">
-                                  <h6 className="name">Organic Tomato</h6>
-                                </a>
-                                <span>1 KG</span>
-                                <h6 className="price theme-color">$ 10.00</h6>
-                              </div>
-                            </div>
-                          </div>
-                        </li>
-
-                        <li>
-                          <div className="offer-product">
-                            <a href="product-left-thumbnail.html" className="offer-image">
-                              <img
-                                src="../assets/images/vegetable/product/18.png"
-                                className="blur-up lazyload"
-                                alt=""
-                              />
-                            </a>
-
-                            <div className="offer-detail">
-                              <div>
-                                <a href="product-left-thumbnail.html" className="text-title">
-                                  <h6 className="name">Organic Jam</h6>
-                                </a>
-                                <span>150 G</span>
-                                <h6 className="price theme-color">$ 10.00</h6>
-                              </div>
-                            </div>
-                          </div>
-                        </li>
-                      </ul>
-                    </div>
-
-                    <div>
-                      <ul className="product-list">
-                        <li>
-                          <div className="offer-product">
-                            <a href="product-left-thumbnail.html" className="offer-image">
-                              <img
-                                src="../assets/images/vegetable/product/19.png"
-                                className="blur-up lazyload"
-                                alt=""
-                              />
-                            </a>
-
-                            <div className="offer-detail">
-                              <div>
-                                <a href="product-left-thumbnail.html" className="text-title">
-                                  <h6 className="name">Good Life Refined Sunflower Oil</h6>
-                                </a>
-                                <span>1 L</span>
-                                <h6 className="price theme-color">$ 10.00</h6>
-                              </div>
-                            </div>
-                          </div>
-                        </li>
-
-                        <li>
-                          <div className="offer-product">
-                            <a href="product-left-thumbnail.html" className="offer-image">
-                              <img
-                                src="../assets/images/vegetable/product/20.png"
-                                className="blur-up lazyload"
-                                alt=""
-                              />
-                            </a>
-
-                            <div className="offer-detail">
-                              <div>
-                                <a href="product-left-thumbnail.html" className="text-title">
-                                  <h6 className="name">Good Life Raw Peanuts</h6>
-                                </a>
-                                <span>500 G</span>
-                                <h6 className="price theme-color">$ 10.00</h6>
-                              </div>
-                            </div>
-                          </div>
-                        </li>
-
-                        <li>
-                          <div className="offer-product">
-                            <a href="product-left-thumbnail.html" className="offer-image">
-                              <img
-                                src="../assets/images/vegetable/product/21.png"
-                                className="blur-up lazyload"
-                                alt=""
-                              />
-                            </a>
-
-                            <div className="offer-detail">
-                              <div>
-                                <a href="product-left-thumbnail.html" className="text-title">
-                                  <h6 className="name">TufBest Farms Mong Dal</h6>
-                                </a>
-                                <span>1 KG</span>
-                                <h6 className="price theme-color">$ 10.00</h6>
-                              </div>
-                            </div>
-                          </div>
-                        </li>
-
-                        <li>
-                          <div className="offer-product">
-                            <a href="product-left-thumbnail.html" className="offer-image">
-                              <img
-                                src="../assets/images/vegetable/product/22.png"
-                                className="blur-up lazyload"
-                                alt=""
-                              />
-                            </a>
-
-                            <div className="offer-detail">
-                              <div>
-                                <a href="product-left-thumbnail.html" className="text-title">
-                                  <h6 className="name">Frooti Mango Drink</h6>
-                                </a>
-                                <span>160 ML</span>
-                                <h6 className="price theme-color">$ 10.00</h6>
-                              </div>
-                            </div>
-                          </div>
-                        </li>
-                      </ul>
-                    </div>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ))}
                   </div>
+
                   <div className="section-t-space">
                     <div className="banner-contain hover-effect">
                       <img src="14.jpg" className="bg-img blur-up lazyload" alt="" />
