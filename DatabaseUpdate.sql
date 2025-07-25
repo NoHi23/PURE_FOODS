@@ -132,6 +132,27 @@ VALUES
     (N'Beverages & Milk', N'Đồ uống, sữa hữu cơ, không chất bảo quản.', 1, 1),
     (N'Pet Foods', N'Thức ăn sạch cho thú cưng, nguyên liệu tự nhiên.', 0, 1);
 
+
+
+INSERT INTO [CleanFoodShop].[dbo].[Suppliers]
+([SupplierName], [ContactName], [Phone], [Email], [Address], [OrganicCertification], [CertificationExpiry], [CreatedAt], [Status])
+VALUES 
+('Green Garden Co.', 'Nguyen Van A', '0901234567', 'g.garden@example.com', '123 Le Loi, Q1, TP.HCM', 'ISO 22000', '2026-12-31', GETDATE(), 1),
+
+('Farm Fresh Ltd.', 'Tran Thi B', '0912345678', 'farm.fresh@example.com', '45 Nguyen Hue, Q1, TP.HCM', 'HACCP', '2025-11-30', GETDATE(), 1),
+
+('EcoFarm Vietnam', 'Le Van C', '0923456789', 'eco.farm@example.com', '12A Vo Van Tan, Q3, TP.HCM', 'VietGAP', '2027-06-15', GETDATE(), 1),
+
+('Nature Foods', 'Pham Thi D', '0934567890', 'nature.foods@example.com', '89 Bach Dang, Da Nang', 'GlobalGAP', '2026-03-20', GETDATE(), 1),
+
+('Organic Life Co.', 'Hoang Van E', '0945678901', 'organic.life@example.com', '56 Tran Phu, Ha Noi', 'Organic EU', '2025-09-10', GETDATE(), 1);
+INSERT INTO [CleanFoodShop].[dbo].[Suppliers]
+([SupplierName], [ContactName], [Phone], [Email], [Address], [OrganicCertification], [CertificationExpiry], [CreatedAt], [Status])
+VALUES 
+('Thanh Nien Farm', 'Nguyen Thi F', '0956789012', 'tnfarm@example.com', '101 Cach Mang Thang 8, Q10, TP.HCM', 'VietGAP', '2026-08-25', GETDATE(), 1);
+
+
+
 -- thêm sản phẩm cho Products
 -- CategoryID = 3 (Frozen Foods)
 INSERT INTO [CleanFoodShop].[dbo].[Products]
@@ -140,11 +161,11 @@ VALUES
 (N'Frozen Mixed Vegetables', 3, 3, 120.00, 100, N'Rau củ hỗn hợp cấp đông, tiện lợi và giàu dinh dưỡng.', 'https://product.hstatic.net/200000352097/product/rau-hon-hop-sg-food-goi-500g-201907161538002913_ec6d500b5d164979977ac5d8de18d5ae.jpg', 1, GETDATE(), 1, NULL),
 (N'Frozen Chicken Wings', 3, 4, 150.00, 120, N'Cánh gà cấp đông, đảm bảo chất lượng.', 'https://images-handler.kamereo.vn/eyJidWNrZXQiOiJpbWFnZS1oYW5kbGVyLXByb2QiLCJrZXkiOiJzdXBwbGllci82NTQvUFJPRFVDVF9JTUFHRS8zNmMzYzkyYS1hZTM1LTQ0NjEtODYzNC0wOTYxN2E1ZDA3YWEuanBnIn0=', 1, GETDATE(), 1, NULL),
 (N'Frozen Shrimp', 3, 5, 210.00, 90, N'Tôm đông lạnh, tươi ngon như mới đánh bắt.', 'https://images-handler.kamereo.vn/eyJidWNrZXQiOiJpbWFnZS1oYW5kbGVyLXByb2QiLCJrZXkiOiJzdXBwbGllci82NTQvUFJPRFVDVF9JTUFHRS81ZWJmODc1YS05NmQ4LTRhMDctYWYxMi00ODA2YWIwYjc0YmMucG5nIiwiZWRpdHMiOnsicmVzaXplIjp7IndpZHRoIjo1MDAsImhlaWdodCI6NTAwLCJmaXQiOiJmaWxsIn19fQ==', 1, GETDATE(), 1, NULL),
-(N'Frozen Dumplings', 3, 6, 130.00, 150, N'Bánh bao nhân thịt đông lạnh, hấp dẫn và tiện dụng.', 'https://thucphamnhanh.com/wp-content/uploads/2020/10/banh-bao-thit-trung-cut.jpg', 1, GETDATE(), 1, NULL),
+(N'Frozen Dumplings', 3, 5, 130.00, 150, N'Bánh bao nhân thịt đông lạnh, hấp dẫn và tiện dụng.', 'https://thucphamnhanh.com/wp-content/uploads/2020/10/banh-bao-thit-trung-cut.jpg', 1, GETDATE(), 1, NULL),
 (N'Frozen Beef Slices', 3, 3, 180.00, 70, N'Thịt bò thái lát cấp đông, dùng cho lẩu hoặc xào.', 'https://file.hstatic.net/200000301004/file/thit-bo-dong-lanh-2_e6ca4ffd20ff401f8e2e911b38c70b00.jpg', 1, GETDATE(), 1, NULL),
 (N'Frozen Pizza Margherita', 3, 4, 220.00, 60, N'Pizza đông lạnh vị truyền thống Ý.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSqQ0JNpgArppcXyDRqfY01qWY18gQ5kSsooA&s', 1, GETDATE(), 1, NULL),
 (N'Frozen Spinach', 3, 5, 110.00, 80, N'Rau chân vịt đông lạnh giữ nguyên dưỡng chất.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQp-b6AlP5Nr80vIcqwd1KHGMEZ68I-lDSPeA&s', 1, GETDATE(), 1, NULL),
-(N'Frozen French Fries', 3, 6, 140.00, 200, N'Khoai tây chiên cấp đông giòn tan.', 'https://csfood.vn/wp-content/uploads/2021/01/Khoai-T%C3%A2y-%C4%90%C3%B4ng-L%E1%BA%A1nh-S%E1%BB%A3i-L%E1%BB%9Bn-Potato-Chips-Lutosa-G%C3%B3i-1kg.png', 1, GETDATE(), 1, NULL),
+(N'Frozen French Fries', 3, 5, 140.00, 200, N'Khoai tây chiên cấp đông giòn tan.', 'https://csfood.vn/wp-content/uploads/2021/01/Khoai-T%C3%A2y-%C4%90%C3%B4ng-L%E1%BA%A1nh-S%E1%BB%A3i-L%E1%BB%9Bn-Potato-Chips-Lutosa-G%C3%B3i-1kg.png', 1, GETDATE(), 1, NULL),
 (N'Frozen Salmon Fillet', 3, 3, 250.00, 50, N'Cá hồi đông lạnh cắt lát, giàu omega-3.', 'https://greengood.vn/wp-content/uploads/2024/01/59.jpg', 1, GETDATE(), 1, NULL),
 (N'Frozen Tofu Cubes', 3, 4, 100.00, 160, N'Đậu hũ cấp đông, tiện chế biến món chay.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcToHCQW9mCR-kytkQhuV3R0LxFQGwlL4eH3pw&s', 1, GETDATE(), 1, NULL);
 
@@ -153,15 +174,15 @@ INSERT INTO [CleanFoodShop].[dbo].[Products]
     ([ProductName], [CategoryID], [SupplierID], [Price], [StockQuantity], [Description], [ImageURL], [LastUpdatedBy], [CreatedAt], [Status], [DiscountPercent])
 VALUES
 (N'Organic Chicken Breast', 4, 5, 180.00, 90, N'Ức gà hữu cơ, không chất tăng trưởng.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRMJ7vAfC73du4pBsRIClNPW5YpkPEOEAIqIg&s', 1, GETDATE(), 1, NULL),
-(N'Beef Ribeye Steak', 4, 6, 320.00, 70, N'Sườn bò cao cấp nhập khẩu.', 'https://amp.thucphamsachhd.com/uploads/files/2023/06/13/s-n-Nga-prime.jpg', 1, GETDATE(), 1, NULL),
+(N'Beef Ribeye Steak', 4, 5, 320.00, 70, N'Sườn bò cao cấp nhập khẩu.', 'https://amp.thucphamsachhd.com/uploads/files/2023/06/13/s-n-Nga-prime.jpg', 1, GETDATE(), 1, NULL),
 (N'Pork Tenderloin', 4, 3, 200.00, 100, N'Thịt heo nạc sạch, mềm ngon.', 'https://bizweb.dktcdn.net/100/406/569/products/nac-mong-heo-nhap-khau-jpeg.jpg?v=1621930945023', 1, GETDATE(), 1, NULL),
 (N'Duck Leg Confit', 4, 4, 240.00, 60, N'Chân vịt chế biến kiểu Pháp.', 'https://cdn2.fptshop.com.vn/unsafe/1920x0/filters:format(webp):quality(75)/cach_lam_chan_vit_cay_tu_xuyen_0_1_1_df2c36688e.jpg', 1, GETDATE(), 1, NULL),
 (N'Salmon Fillet', 4, 5, 270.00, 80, N'Cá hồi Na Uy tươi ngon.', 'https://file.hstatic.net/200000775599/file/cach-chon-ca-hoi-ngon_f6db7e90f91648d0bf9a5457944aba8c_grande.png', 1, GETDATE(), 1, NULL),
-(N'Mackerel Fillet', 4, 6, 160.00, 120, N'Cá thu phi lê, giàu dinh dưỡng.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRNxbBYjmxUr6AgzNIJS1pYJUth9IPpZswdBg&s', 1, GETDATE(), 1, NULL),
+(N'Mackerel Fillet', 4, 5, 160.00, 120, N'Cá thu phi lê, giàu dinh dưỡng.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRNxbBYjmxUr6AgzNIJS1pYJUth9IPpZswdBg&s', 1, GETDATE(), 1, NULL),
 (N'Organic Lamb Chops', 4, 3, 400.00, 50, N'Sườn cừu hữu cơ, ít béo.', 'https://khaihoanphuquoc.com.vn/wp-content/uploads/2024/01/suon-heo-chien-nuoc-mam-3-e1704261943819.jpg', 1, GETDATE(), 1, NULL),
 (N'Squid Cleaned', 4, 4, 190.00, 110, N'Mực làm sạch, dễ chế biến.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSi12sBS1N_9BdOV2RzNH1wDVHLPYulE_yu0b5tOgPt__OXkSIGtT1zCTI8Xr4bYFSJK-Y&usqp=CAU', 1, GETDATE(), 1, NULL),
 (N'Fresh Tuna Steak', 4, 5, 350.00, 60, N'Cá ngừ cắt lát, chất lượng sashimi.', 'https://haisanantoan.vn/wp-content/uploads/2020/03/t%E1%BA%A3i-xu%E1%BB%91ng-2.jpg', 1, GETDATE(), 1, NULL),
-(N'Organic Minced Pork', 4, 6, 150.00, 140, N'Thịt heo xay hữu cơ.', 'https://cdnv2.tgdd.vn/bhx-static/bhx/Products/Images/8781/233782/bhx/cdntgddvnproductsimages8781241238bhxba-roi-heo-rut-suon-g-kitchen-khay-300g-202106021510397530_202410311040593558.jpg', 1, GETDATE(), 1, NULL);
+(N'Organic Minced Pork', 4, 5, 150.00, 140, N'Thịt heo xay hữu cơ.', 'https://cdnv2.tgdd.vn/bhx-static/bhx/Products/Images/8781/233782/bhx/cdntgddvnproductsimages8781241238bhxba-roi-heo-rut-suon-g-kitchen-khay-300g-202106021510397530_202410311040593558.jpg', 1, GETDATE(), 1, NULL);
 
 -- CategoryID = 5 (Beverages & Milk)
 INSERT INTO [CleanFoodShop].[dbo].[Products]
