@@ -204,8 +204,13 @@ public class OrderServiceImpl implements OrderService {
             productRepository.save(product);
         }
     }
+    // Thêm method hasPurchased
+    @Override
+    public boolean hasCustomerBoughtProduct(int customerId, int productId) {
+        return orderDAO.hasCustomerBoughtProduct(customerId, productId); // Gọi DAO method
+    }
+    }
 
 
 
 
-}

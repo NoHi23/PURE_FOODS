@@ -340,4 +340,22 @@ public class OrderController {
         }
     }
 
+    @GetMapping("/hasPurchased")
+    public ResponseEntity<?> hasPurchased(@RequestParam("userId") int userId, @RequestParam("productId") int productId) {
+        try {
+            boolean hasPurchased = orderService.hasCustomerBoughtProduct(userId, productId); // Gọi method mới
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Check purchased successfully!");
+            response.put("status", 200);
+            response.put("hasPurchased", hasPurchased);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("message", e.getMessage());
+            errorResponse.put("status", 400);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        }
+    }
+
+
 }
