@@ -23,5 +23,6 @@ public interface OrderService {
     void updateOrder(Order order);
     Order getOrderEntityById(int orderId);
     void decreaseProductQuantitiesByOrderId(int orderId);
-
+    // Thêm method hasPurchased
+    boolean hasCustomerBoughtProduct(int customerId, int productId);
 }

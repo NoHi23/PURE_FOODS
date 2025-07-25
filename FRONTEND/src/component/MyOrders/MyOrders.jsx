@@ -4,6 +4,7 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
+import Form from 'react-bootstrap/Form';
 
 const MyOrders = () => {
   const user = JSON.parse(localStorage.getItem("user"));
@@ -14,6 +15,13 @@ const MyOrders = () => {
   const [showModal, setShowModal] = useState(false);
   const [modalOrderId, setModalOrderId] = useState(null);
   const [orderDetails, setOrderDetails] = useState([]);
+
+  // State cho modal đánh giá
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [selectedProductId, setSelectedProductId] = useState(null);
+  const [rating, setRating] = useState(''); // Use string to handle empty input
+  const [comment, setComment] = useState('');
+  const [existingReview, setExistingReview] = useState(null);
 
   const loadOrders = async () => {
     try {
@@ -81,6 +89,7 @@ const MyOrders = () => {
       setOrderDetails(detailWithProducts);
     } catch (error) {
       console.error("Lỗi khi lấy chi tiết đơn hàng:", error);
+      toast.error("Không thể tải chi tiết đơn hàng");
     }
   };
 
@@ -88,6 +97,79 @@ const MyOrders = () => {
     setShowModal(false);
     setOrderDetails([]);
     setModalOrderId(null);
+  };
+
+  const handleOpenReview = async (productId) => {
+    try {
+      const hasPurchasedRes = await axios.get(`http://localhost:8082/PureFoods/api/orders/hasPurchased?userId=${userId}&productId=${productId}`);
+      if (!hasPurchasedRes.data.hasPurchased) {
+        toast.warning("Bạn chưa mua sản phẩm này");
+        return;
+      }
+
+      const reviewsRes = await axios.get(`http://localhost:8082/PureFoods/api/review/product?productId=${productId}`);
+      const userReview = reviewsRes.data.find(review => review.customerId === userId);
+      setExistingReview(userReview || null);
+      setRating(userReview?.rating ? String(userReview.rating) : ''); // Convert to string
+      setComment(userReview?.comment || '');
+      setSelectedProductId(productId);
+      setShowReviewModal(true);
+    } catch (error) {
+      console.error("Lỗi khi kiểm tra hoặc tải đánh giá:", error);
+      toast.error("Lỗi khi kiểm tra hoặc tải đánh giá");
+    }
+  };
+
+  const handleSubmitReview = async () => {
+    const parsedRating = parseInt(rating);
+    if (!parsedRating || parsedRating < 1 || parsedRating > 5 || comment.trim() === '') {
+      toast.warning("Vui lòng chọn rating từ 1-5 và viết comment");
+      return;
+    }
+
+    try {
+      const reviewData = {
+        productId: selectedProductId,
+        customerId: userId,
+        rating: parsedRating,
+        comment,
+      };
+
+      if (existingReview) {
+        reviewData.reviewId = existingReview.reviewId;
+        await axios.put('http://localhost:8082/PureFoods/api/review/update', reviewData);
+        toast.success("Đánh giá đã được cập nhật!");
+      } else {
+        await axios.post('http://localhost:8082/PureFoods/api/review/create', reviewData);
+        toast.success("Đánh giá đã được gửi!");
+      }
+
+      setShowReviewModal(false);
+      resetReviewForm();
+    } catch (error) {
+      console.error("Lỗi khi gửi đánh giá:", error);
+      toast.error("Gửi đánh giá thất bại");
+    }
+  };
+
+  const handleDeleteReview = async () => {
+    if (!existingReview || !window.confirm("Bạn chắc chắn muốn xóa đánh giá?")) return;
+    try {
+      await axios.delete(`http://localhost:8082/PureFoods/api/review/delete?reviewId=${existingReview.reviewId}`);
+      toast.success("Đánh giá đã được xóa!");
+      setShowReviewModal(false);
+      resetReviewForm();
+    } catch (error) {
+      console.error("Lỗi khi xóa đánh giá:", error);
+      toast.error("Xóa đánh giá thất bại");
+    }
+  };
+
+  const resetReviewForm = () => {
+    setRating('');
+    setComment('');
+    setExistingReview(null);
+    setSelectedProductId(null);
   };
 
   useEffect(() => {
@@ -102,6 +184,7 @@ const MyOrders = () => {
   const goToPage = (pageNumber) => {
     setCurrentPage(pageNumber);
   };
+
   return (
     <MyCouponsPageLayout>
       <section className="breadcrumb-section pt-0">
@@ -142,6 +225,7 @@ const MyOrders = () => {
                         <th>Tổng cộng</th>
                         <th>Trạng thái</th>
                         <th>Chi tiết</th>
+                        <th>Đánh giá</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -164,6 +248,15 @@ const MyOrders = () => {
                               Xem chi tiết
                             </button>
                           </td>
+                          <td>
+                            <button
+                              className="btn btn-sm btn-success"
+                              onClick={() => openOrderModal(order.orderID)}
+                              disabled={order.statusID !== 4}
+                            >
+                              Đánh giá sản phẩm
+                            </button>
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -175,7 +268,6 @@ const MyOrders = () => {
         </div>
       </section>
 
-      {/* Modal Chi tiết đơn hàng */}
       <Modal show={showModal} onHide={closeModal} size="lg" centered>
         <Modal.Header closeButton>
           <Modal.Title>Chi tiết đơn hàng #00{modalOrderId}</Modal.Title>
@@ -193,6 +285,7 @@ const MyOrders = () => {
                   <th>Nhà cung cấp</th>
                   <th>Số lượng</th>
                   <th>Giá</th>
+                  <th>Đánh giá</th>
                 </tr>
               </thead>
               <tbody>
@@ -206,6 +299,14 @@ const MyOrders = () => {
                     <td>{detail.product?.supplierName}</td>
                     <td>{detail.quantity}</td>
                     <td>${detail.product.salePrice}</td>
+                    <td>
+                      <button
+                        className="btn btn-sm btn-primary"
+                        onClick={() => handleOpenReview(detail.product.productId)}
+                      >
+                        Đánh giá
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -218,6 +319,52 @@ const MyOrders = () => {
           </Button>
         </Modal.Footer>
       </Modal>
+
+      <Modal show={showReviewModal} onHide={() => setShowReviewModal(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>{existingReview ? 'Chỉnh sửa đánh giá' : 'Đánh giá sản phẩm'}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form>
+            <Form.Group className="mb-3">
+              <Form.Label>Rating (1-5 sao)</Form.Label>
+              <Form.Control
+                type="number"
+                min={1}
+                max={5}
+                value={rating}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setRating(value === '' ? '' : parseInt(value) || 0);
+                }}
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Comment</Form.Label>
+              <Form.Control
+                as="textarea"
+                rows={3}
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+              />
+            </Form.Group>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          {existingReview && (
+            <Button variant="danger" onClick={handleDeleteReview}>
+              Xóa đánh giá
+            </Button>
+          )}
+          <Button variant="secondary" onClick={() => setShowReviewModal(false)}>
+            Đóng
+          </Button>
+          <Button variant="primary" onClick={handleSubmitReview}>
+            Gửi
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
       <div className="d-flex justify-content-center mt-3">
         <nav>
           <ul className="pagination">

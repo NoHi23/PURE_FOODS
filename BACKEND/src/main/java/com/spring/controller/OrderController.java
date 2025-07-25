@@ -165,6 +165,7 @@ public class OrderController {
         }
         return ResponseEntity.ok(list);
     }
+
     @GetMapping("/top5-recent-orders")
     public ResponseEntity<List<Order>> getTop5RecentOrders() {
         List<Order> orders = orderService.getTop5RecentOrders();
@@ -328,5 +329,23 @@ public class OrderController {
                     .body(Map.of("message", "Update status failed", "status", 500));
         }
     }
+
+    @GetMapping("/hasPurchased")
+    public ResponseEntity<?> hasPurchased(@RequestParam("userId") int userId, @RequestParam("productId") int productId) {
+        try {
+            boolean hasPurchased = orderService.hasCustomerBoughtProduct(userId, productId); // Gọi method mới
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Check purchased successfully!");
+            response.put("status", 200);
+            response.put("hasPurchased", hasPurchased);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("message", e.getMessage());
+            errorResponse.put("status", 400);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        }
+    }
+
 
 }
