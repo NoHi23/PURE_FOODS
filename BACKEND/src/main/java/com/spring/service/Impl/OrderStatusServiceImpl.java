@@ -1,4 +1,4 @@
-package com.spring.service.impl;
+package com.spring.service.Impl;
 import com.spring.dao.OrderStatusDAO;
 import com.spring.entity.OrderStatus;
 import com.spring.service.OrderStatusService;

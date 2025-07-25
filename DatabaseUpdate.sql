@@ -210,3 +210,7 @@ CREATE TABLE UserPromotion (
     status VARCHAR(20) DEFAULT 'active', -- 'active', 'used', 'expired'
     assignedDate DATE NOT NULL
 );
+
+INSERT INTO [CleanFoodShop].[dbo].[Users] 
+	(FullName, Email, Password, RoleID, Phone, Address, Status, reset_token, token_expiry, last_login) 
+VALUES ('Admin Test', 'admin1@gmail.com', 'admin', 1, 0123456789, 'FPT Campus Hoa Lac', 0, NULL, NULL, NULL);

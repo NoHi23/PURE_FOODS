@@ -1,25 +1,21 @@
 package com.spring.service.Impl;
 
 import com.spring.dao.ExporterDAO;
-import com.spring.dao.ProductDAO;
 import com.spring.dto.ExporterDTO;
-import com.spring.entity.Exporter;
-import com.spring.entity.ExporterDetail;
-import com.spring.entity.Products;
+import com.spring.dto.OrderDetailDTO;
+import com.spring.dto.InventoryLogsDTO;
 import com.spring.service.ExporterService;
+import com.spring.service.OrderStatusService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
+@Transactional
 public class ExporterServiceImpl implements ExporterService {
 
     private static final Logger logger = LoggerFactory.getLogger(ExporterServiceImpl.class);
@@ -28,341 +24,140 @@ public class ExporterServiceImpl implements ExporterService {
     private ExporterDAO exporterDAO;
 
     @Autowired
-    private ProductDAO productDAO;
+    private OrderStatusService orderStatusService;
 
     @Override
-    @Transactional
-    public ExporterDTO getExporterById(Long id) {
-        try {
-            logger.info("Fetching exporter with ID: {}", id);
-            Exporter exporter = exporterDAO.getExporterById(id);
-            return convertToDTO(exporter);
-        } catch (Exception e) {
-            logger.error("Error fetching exporter ID {}: {}", id, e.getMessage());
-            throw e;
-        }
-    }
-
-    @Override
-    @Transactional
-    public List<ExporterDTO> getAllExporters() {
-        try {
-            logger.info("Fetching all exporters");
-            return exporterDAO.getAllExporters().stream()
-                    .map(this::convertToDTO)
-                    .filter(dto -> dto != null)
-                    .collect(Collectors.toList());
-        } catch (Exception e) {
-            logger.error("Error fetching all exporters: {}", e.getMessage());
-            throw e;
-        }
-    }
-
-    @Override
-    @Transactional
-    public List<ExporterDTO> searchExporters(String keyword) {
-        try {
-            logger.info("Searching exporters with keyword: {}", keyword);
-            return exporterDAO.searchExporters(keyword).stream()
-                    .map(this::convertToDTO)
-                    .filter(dto -> dto != null)
-                    .collect(Collectors.toList());
-        } catch (Exception e) {
-            logger.error("Error searching exporters: {}", e.getMessage());
-            throw e;
-        }
-    }
-
-    @Override
-    @Transactional
-    public ExporterDTO createExporter(ExporterDTO dto) {
-        try {
-            logger.info("Creating exporter for userId: {}", dto.getUserId());
-            if (dto.getUserId() == null || dto.getItems() == null || dto.getItems().isEmpty()) {
-                throw new IllegalArgumentException("UserID and items are required");
-            }
-            for (ExporterDTO.ExporterDetailDTO detailDTO : dto.getItems()) {
-                if (!exporterDAO.checkStockAvailability(detailDTO.getProductId(), detailDTO.getQuantity())) {
-                    throw new IllegalArgumentException("Insufficient stock for product ID: " + detailDTO.getProductId());
+    public List<ExporterDTO> getAllExportRequests() {
+        logger.info("Fetching all export requests");
+        List<ExporterDTO> exportRequests = exporterDAO.getAllExportRequests();
+        // Điền statusName cho mỗi ExporterDTO
+        for (ExporterDTO exporterDTO : exportRequests) {
+            if (exporterDTO.getStatusID() != null) {
+                try {
+                    exporterDTO.setStatusName(orderStatusService.findById(exporterDTO.getStatusID()).getStatusName());
+                } catch (Exception e) {
+                    logger.warn("Could not fetch statusName for statusID {}: {}", exporterDTO.getStatusID(), e.getMessage());
+                    exporterDTO.setStatusName("Unknown");
                 }
             }
-            Exporter exporter = convertToEntity(dto);
-            exporter.setOrderDate(LocalDateTime.now());
-            exporter.setStatus(1);
-            Exporter created = exporterDAO.createExporter(exporter);
-            exporterDAO.logExporterAction(created.getExporterId(), "Create", dto.getUserId(), "Created exporter request");
+        }
+        logger.info("Fetched {} export requests", exportRequests.size());
+        return exportRequests;
+    }
 
-            for (ExporterDTO.ExporterDetailDTO detailDTO : dto.getItems()) {
-                if (detailDTO.getProductId() == null || detailDTO.getQuantity() <= 0) {
-                    throw new IllegalArgumentException("Invalid ExporterDetail: productId or quantity missing");
-                }
-                ExporterDetail detail = new ExporterDetail();
-                detail.setExporterId(created.getExporterId());
-                detail.setProductId(detailDTO.getProductId());
-                detail.setQuantity(detailDTO.getQuantity());
-                detail.setUnitPrice(detailDTO.getUnitPrice());
-                detail.setImageUrl(detailDTO.getImageUrl());
-                detail.setStatus(detailDTO.getStatus() != null ? detailDTO.getStatus() : 1);
-                exporterDAO.createExporterDetail(detail);
+    @Override
+    public ExporterDTO getExportRequestById(int orderId) {
+        logger.info("Fetching export request for order ID: {}", orderId);
+        ExporterDTO exporterDTO = exporterDAO.getExportRequestById(orderId);
+        if (exporterDTO != null && exporterDTO.getStatusID() != null) {
+            try {
+                exporterDTO.setStatusName(orderStatusService.findById(exporterDTO.getStatusID()).getStatusName());
+            } catch (Exception e) {
+                logger.warn("Could not fetch statusName for statusID {}: {}", exporterDTO.getStatusID(), e.getMessage());
+                exporterDTO.setStatusName("Unknown");
             }
-            return convertToDTO(created);
-        } catch (Exception e) {
-            logger.error("Failed to create exporter: {}", e.getMessage());
-            throw new RuntimeException("Failed to create exporter: " + e.getMessage(), e);
         }
+        if (exporterDTO == null) {
+            logger.warn("No export request found for order ID: {}", orderId);
+        }
+        return exporterDTO;
     }
 
     @Override
     @Transactional
-    public ExporterDTO updateExporter(Long id, ExporterDTO dto) {
-        try {
-            logger.info("Updating exporter with ID: {}", id);
-            Exporter existing = exporterDAO.getExporterById(id);
-            if (dto.getUserId() == null || dto.getItems() == null || dto.getItems().isEmpty()) {
-                throw new IllegalArgumentException("UserID and items are required");
+    public void createExportRequest(ExporterDTO exporterDTO, List<OrderDetailDTO> orderDetails) {
+        logger.info("Creating export request for order ID: {}", exporterDTO.getOrderID());
+        if (exporterDTO.getOrderID() == null) {
+            logger.error("Order ID is null");
+            throw new IllegalArgumentException("Order ID cannot be null");
+        }
+        if (orderDetails == null || orderDetails.isEmpty()) {
+            logger.error("Order details list is null or empty for order ID: {}", exporterDTO.getOrderID());
+            throw new IllegalArgumentException("Order details cannot be null or empty");
+        }
+
+        // Validate statusID
+        if (exporterDTO.getStatusID() != null && !List.of(1, 2, 3, 4, 5).contains(exporterDTO.getStatusID())) {
+            logger.error("Invalid statusID: {} for order ID: {}", exporterDTO.getStatusID(), exporterDTO.getOrderID());
+            throw new IllegalArgumentException("statusID không hợp lệ! Chỉ chấp nhận các giá trị: 1, 2, 3, 4, 5");
+        }
+
+        // Điền statusName nếu statusID có giá trị
+        if (exporterDTO.getStatusID() != null) {
+            try {
+                exporterDTO.setStatusName(orderStatusService.findById(exporterDTO.getStatusID()).getStatusName());
+            } catch (Exception e) {
+                logger.warn("Could not fetch statusName for statusID {}: {}", exporterDTO.getStatusID(), e.getMessage());
+                exporterDTO.setStatusName("Unknown");
             }
-            for (ExporterDTO.ExporterDetailDTO detailDTO : dto.getItems()) {
-                if (!exporterDAO.checkStockAvailability(detailDTO.getProductId(), detailDTO.getQuantity())) {
-                    throw new IllegalArgumentException("Insufficient stock for product ID: " + detailDTO.getProductId());
-                }
+        }
+
+        // Kiểm tra tính hợp lệ của các trường số
+        try {
+            if (exporterDTO.getCustomerID() != null && String.valueOf(exporterDTO.getCustomerID()).matches(".*[^0-9].*")) {
+                throw new NumberFormatException("Invalid customerID: " + exporterDTO.getCustomerID());
             }
-            Exporter updated = convertToEntity(dto);
-            updated.setExporterId(id);
-            updated.setOrderDate(existing.getOrderDate());
-            updated.setStatus(existing.getStatus());
-
-            exporterDAO.logExporterAction(id, "Update", dto.getUserId(), "Updated exporter details");
-            exporterDAO.deleteExporterDetailsByExporterId(id);
-            for (ExporterDTO.ExporterDetailDTO detailDTO : dto.getItems()) {
-                if (detailDTO.getProductId() == null || detailDTO.getQuantity() <= 0) {
-                    throw new IllegalArgumentException("Invalid ExporterDetail: productId or quantity missing");
-                }
-                ExporterDetail detail = new ExporterDetail();
-                detail.setExporterId(id);
-                detail.setProductId(detailDTO.getProductId());
-                detail.setQuantity(detailDTO.getQuantity());
-                detail.setUnitPrice(detailDTO.getUnitPrice());
-                detail.setImageUrl(detailDTO.getImageUrl());
-                detail.setStatus(detailDTO.getStatus() != null ? detailDTO.getStatus() : 1);
-                exporterDAO.createExporterDetail(detail);
+            if (exporterDTO.getShippingMethodID() != null && String.valueOf(exporterDTO.getShippingMethodID()).matches(".*[^0-9].*")) {
+                throw new NumberFormatException("Invalid shippingMethodID: " + exporterDTO.getShippingMethodID());
             }
-            return convertToDTO(exporterDAO.updateExporter(updated));
-        } catch (Exception e) {
-            logger.error("Failed to update exporter ID {}: {}", id, e.getMessage());
-            throw new RuntimeException("Failed to update exporter: " + e.getMessage(), e);
-        }
-    }
-
-    @Override
-    @Transactional
-    public void updateStatus(Long id, Integer statusId) {
-        try {
-            logger.info("Updating status for exporter ID: {}", id);
-            exporterDAO.updateStatus(id, statusId);
-            exporterDAO.logExporterAction(id, "UpdateStatus", null, "Updated status to: " + statusId);
-        } catch (Exception e) {
-            logger.error("Failed to update status for exporter ID {}: {}", id, e.getMessage());
-            throw e;
-        }
-    }
-
-    @Override
-    @Transactional
-    public void confirmOrder(Long id) {
-        try {
-            logger.info("Confirming order for exporter ID: {}", id);
-            exporterDAO.confirmOrder(id);
-            exporterDAO.logExporterAction(id, "ConfirmOrder", null, "Order confirmed");
-        } catch (Exception e) {
-            logger.error("Failed to confirm order for exporter ID {}: {}", id, e.getMessage());
-            throw e;
-        }
-    }
-
-    @Override
-    @Transactional
-    public void rejectOrder(Long id, String reason) {
-        try {
-            logger.info("Rejecting order for exporter ID: {}", id);
-            exporterDAO.rejectOrder(id, reason);
-            exporterDAO.logExporterAction(id, "RejectOrder", null, "Order rejected: " + reason);
-        } catch (Exception e) {
-            logger.error("Failed to reject order for exporter ID {}: {}", id, e.getMessage());
-            throw e;
-        }
-    }
-
-    @Override
-    @Transactional
-    public void returnOrder(Long id, String returnReason) {
-        try {
-            logger.info("Returning order for exporter ID: {}", id);
-            exporterDAO.returnOrder(id, returnReason);
-            exporterDAO.logExporterAction(id, "ReturnOrder", null, "Order returned: " + returnReason);
-        } catch (Exception e) {
-            logger.error("Failed to return order for exporter ID {}: {}", id, e.getMessage());
-            throw e;
-        }
-    }
-
-    @Override
-    @Transactional
-    public void updateStock(Long exporterId, Long productId, Integer quantity, String action) {
-        try {
-            logger.info("Updating stock for exporter ID: {}, productId: {}", exporterId, productId);
-            exporterDAO.updateStock(exporterId, productId, quantity, action);
-            exporterDAO.logExporterAction(exporterId, "UpdateStock", null, "Stock updated: productId=" + productId + ", action=" + action);
-        } catch (Exception e) {
-            logger.error("Failed to update stock for exporter ID {}: {}", exporterId, e.getMessage());
-            throw e;
-        }
-    }
-
-    @Override
-    @Transactional
-    public void confirmDelivery(Long id) {
-        try {
-            logger.info("Confirming delivery for exporter ID: {}", id);
-            exporterDAO.confirmDelivery(id);
-            exporterDAO.logExporterAction(id, "ConfirmDelivery", null, "Delivery confirmed");
-        } catch (Exception e) {
-            logger.error("Failed to confirm delivery for exporter ID {}: {}", id, e.getMessage());
-            throw e;
-        }
-    }
-
-    @Override
-    @Transactional
-    public void driverConfirmDelivery(Long id) {
-        try {
-            logger.info("Driver confirming delivery for exporter ID: {}", id);
-            exporterDAO.driverConfirmDelivery(id);
-            exporterDAO.logExporterAction(id, "DriverConfirmDelivery", null, "Driver confirmed delivery");
-        } catch (Exception e) {
-            logger.error("Failed to driver confirm delivery for exporter ID {}: {}", id, e.getMessage());
-            throw e;
-        }
-    }
-
-    @Override
-    @Transactional
-    public void updateDeliverySchedule(Long id, String estimatedDeliveryDate) {
-        try {
-            logger.info("Updating delivery schedule for exporter ID: {}", id);
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
-            LocalDateTime.parse(estimatedDeliveryDate, formatter); // Validate format
-            exporterDAO.updateDeliverySchedule(id, estimatedDeliveryDate);
-            exporterDAO.logExporterAction(id, "UpdateDeliverySchedule", null, "Updated delivery schedule: " + estimatedDeliveryDate);
-        } catch (DateTimeParseException e) {
-            logger.error("Invalid date format for exporter ID {}: {}", id, e.getMessage());
-            throw new IllegalArgumentException("Invalid date format: " + estimatedDeliveryDate + ". Expected: yyyy-MM-dd'T'HH:mm:ss", e);
-        } catch (Exception e) {
-            logger.error("Failed to update delivery schedule for exporter ID {}: {}", id, e.getMessage());
-            throw e;
-        }
-    }
-
-    @Override
-    @Transactional
-    public void prepareShipment(Long id, Long exporterId, Long productId, Integer quantity) {
-        try {
-            logger.info("Preparing shipment for exporter ID: {}, productId: {}", id, productId);
-            exporterDAO.prepareShipment(id, exporterId, productId, quantity);
-            exporterDAO.logExporterAction(exporterId, "PrepareShipment", null, "Shipment prepared: productId=" + productId + ", quantity=" + quantity);
-        } catch (Exception e) {
-            logger.error("Failed to prepare shipment for exporter ID {}: {}", id, e.getMessage());
-            throw e;
-        }
-    }
-
-    @Override
-    @Transactional
-    public boolean checkStockAvailability(Long productId, Integer quantity) {
-        try {
-            logger.info("Checking stock for productId: {}, quantity: {}", productId, quantity);
-            return exporterDAO.checkStockAvailability(productId, quantity);
-        } catch (Exception e) {
-            logger.error("Failed to check stock for productId {}: {}", productId, e.getMessage());
-            throw e;
-        }
-    }
-
-    @Override
-    @Transactional
-    public void deleteExporter(Long id, String cancelReason) {
-        try {
-            logger.info("Deleting exporter ID: {}", id);
-            if (cancelReason == null || cancelReason.trim().isEmpty()) {
-                throw new IllegalArgumentException("Cancel reason cannot be empty");
+            if (exporterDTO.getDriverID() != null && String.valueOf(exporterDTO.getDriverID()).matches(".*[^0-9].*")) {
+                throw new NumberFormatException("Invalid driverID: " + exporterDTO.getDriverID());
             }
-            exporterDAO.deleteExporterDetailsByExporterId(id);
-            exporterDAO.deleteExporter(id);
-            exporterDAO.logExporterAction(id, "DeleteExporter", null, "Exporter deleted: " + cancelReason);
-        } catch (Exception e) {
-            logger.error("Failed to delete exporter ID {}: {}", id, e.getMessage());
-            throw e;
+        } catch (NumberFormatException e) {
+            logger.error("Invalid integer value in ExporterDTO: {}", e.getMessage());
+            throw new IllegalArgumentException("Dữ liệu không hợp lệ cho các trường số: " + e.getMessage());
         }
+
+        // Gọi DAO để tạo yêu cầu xuất hàng
+        exporterDAO.createExportRequest(exporterDTO, orderDetails);
+        logger.info("Successfully created export request for order ID: {}", exporterDTO.getOrderID());
     }
 
-    private ExporterDTO convertToDTO(Exporter exporter) {
-        try {
-            List<ExporterDTO.ExporterDetailDTO> items = exporter.getItems() != null ?
-                    exporter.getItems().stream()
-                            .map(item -> {
-                                Products product = productDAO.getProductById(item.getProductId().intValue());
-                                return new ExporterDTO.ExporterDetailDTO(
-                                        item.getExporterDetailId(),
-                                        item.getExporterId(),
-                                        item.getProductId(),
-                                        item.getQuantity(),
-                                        item.getUnitPrice(),
-                                        product != null ? product.getImageURL() : item.getImageUrl(),
-                                        item.getStatus()
-                                );
-                            })
-                            .collect(Collectors.toList()) : List.of();
-
-            return new ExporterDTO(
-                    exporter.getExporterId(),
-                    exporter.getUserId(),
-                    exporter.getCustomerId(),
-                    exporter.getCustomerName(),
-                    exporter.getPhone(),
-                    exporter.getEmail(),
-                    exporter.getShippingAddress(),
-                    exporter.getDriverId(),
-                    exporter.getOrderDate(),
-                    exporter.getEstimatedDeliveryDate(),
-                    exporter.getDelayReason(),
-                    exporter.getStatusId(),
-                    exporter.getCancelReason(),
-                    exporter.getReturnReason(),
-                    exporter.getSource(),
-                    exporter.getStatus(),
-                    items
-            );
-        } catch (Exception e) {
-            logger.error("Error converting exporter ID {}: {}", exporter.getExporterId(), e.getMessage());
-            return null;
+    @Override
+    @Transactional
+    public void cancelExportRequest(int orderId, String cancelReason, int exporterId) {
+        logger.info("Canceling export request for order ID: {} by exporter ID: {}", orderId, exporterId);
+        if (cancelReason == null || cancelReason.trim().isEmpty()) {
+            logger.error("Cancel reason is null or empty for order ID: {}", orderId);
+            throw new IllegalArgumentException("Cancel reason cannot be null or empty");
         }
+        exporterDAO.cancelExportRequest(orderId, cancelReason, exporterId);
+        logger.info("Successfully canceled export request for order ID: {}", orderId);
     }
 
-    private Exporter convertToEntity(ExporterDTO dto) {
-        Exporter exporter = new Exporter();
-        exporter.setUserId(dto.getUserId());
-        exporter.setCustomerId(dto.getCustomerId());
-        exporter.setCustomerName(dto.getCustomerName());
-        exporter.setPhone(dto.getPhone());
-        exporter.setEmail(dto.getEmail());
-        exporter.setShippingAddress(dto.getShippingAddress());
-        exporter.setDriverId(dto.getDriverId());
-        exporter.setEstimatedDeliveryDate(dto.getEstimatedDeliveryDate());
-        exporter.setDelayReason(dto.getDelayReason());
-        exporter.setStatusId(dto.getStatusId());
-        exporter.setCancelReason(dto.getCancelReason());
-        exporter.setReturnReason(dto.getReturnReason());
-        exporter.setSource(dto.getSource());
-        exporter.setStatus(dto.getStatus());
-        return exporter;
+    @Override
+    public boolean checkInventoryAvailability(int productId, int quantity) {
+        logger.info("Checking inventory availability for product ID: {} with quantity: {}", productId, quantity);
+        boolean available = exporterDAO.checkInventoryAvailability(productId, quantity);
+        logger.info("Inventory check result for product ID {}: {}", productId, available);
+        return available;
+    }
+
+    @Override
+    @Transactional
+    public void confirmOrder(int orderId, int exporterId) {
+        logger.info("Confirming order ID: {} by exporter ID: {}", orderId, exporterId);
+        exporterDAO.confirmOrder(orderId, exporterId);
+        logger.info("Successfully confirmed order ID: {}", orderId);
+    }
+
+    @Override
+    @Transactional
+    public void rejectOrder(int orderId, String rejectReason, int exporterId) {
+        logger.info("Rejecting order ID: {} by exporter ID: {}", orderId, exporterId);
+        if (rejectReason == null || rejectReason.trim().isEmpty()) {
+            logger.error("Reject reason is null or empty for order ID: {}", orderId);
+            throw new IllegalArgumentException("Reject reason cannot be null or empty");
+        }
+        exporterDAO.rejectOrder(orderId, rejectReason, exporterId);
+        logger.info("Successfully rejected order ID: {}", orderId);
+    }
+
+    @Override
+    public List<InventoryLogsDTO> getExportHistory(int productId, int orderId) {
+        logger.info("Fetching export history for product ID: {} and order ID: {}", productId, orderId);
+        List<InventoryLogsDTO> history = exporterDAO.getExportHistory(productId, orderId);
+        logger.info("Fetched {} inventory logs", history.size());
+        return history;
     }
 }

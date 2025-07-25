@@ -1,327 +1,298 @@
 package com.spring.controller;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.spring.dto.ExporterDTO;
+import com.spring.dto.InventoryLogsDTO;
+import com.spring.dto.OrderDTO;
+import com.spring.dto.OrderDetailDTO;
+import com.spring.entity.OrderDetail;
 import com.spring.service.ExporterService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.spring.service.InventoryLogsService;
+import com.spring.service.OrderDetailService;
+import com.spring.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
+
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/exporters")
+@RequestMapping("/api/exporter")
 @CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 public class ExporterController {
-
-    private static final Logger logger = LoggerFactory.getLogger(ExporterController.class);
 
     @Autowired
     private ExporterService exporterService;
 
-    @GetMapping
-    public ResponseEntity<List<ExporterDTO>> getAllExporters() {
-        try {
-            logger.info("Fetching all exporters");
-            List<ExporterDTO> exporters = exporterService.getAllExporters();
-            return ResponseEntity.ok(exporters);
-        } catch (Exception e) {
-            logger.error("Error fetching all exporters: {}", e.getMessage());
-            return ResponseEntity.status(500).body(null);
-        }
-    }
+    @Autowired
+    private InventoryLogsService inventoryLogsService;
 
-    @GetMapping("/{id}")
-    public ResponseEntity<ExporterDTO> getExporterById(@PathVariable("id") Long id) {
+    @Autowired
+    private OrderService orderService;
+
+    @Autowired
+    private OrderDetailService orderDetailService;
+
+    @GetMapping("/orders")
+    public ResponseEntity<Map<String, Object>> getAllOrdersForExport() {
         try {
-            logger.info("Fetching exporter with ID: {}", id);
-            ExporterDTO dto = exporterService.getExporterById(id);
-            if (dto == null) {
-                logger.warn("Exporter not found with ID: {}", id);
-                return ResponseEntity.status(404).body(null);
-            }
-            return ResponseEntity.ok(dto);
+            List<OrderDTO> orders = orderService.getAllOrders();
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Lấy danh sách đơn hàng thành công!");
+            response.put("status", 200);
+            response.put("orders", orders);
+            return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
-            logger.error("Error fetching exporter ID {}: {}", id, e.getMessage());
-            return ResponseEntity.status(404).body(null);
+            return buildErrorResponse("Lỗi khi lấy danh sách đơn hàng: " + e.getMessage(), 400);
         }
     }
 
-    @GetMapping("/search")
-    public ResponseEntity<List<ExporterDTO>> searchExporters(@RequestParam(value = "keyword", required = false) String keyword) {
+    @GetMapping("/requests")
+    public ResponseEntity<Map<String, Object>> getAllExportRequests() {
         try {
-            logger.info("Searching exporters with keyword: {}", keyword);
-            if (keyword == null || keyword.trim().isEmpty()) {
-                return ResponseEntity.ok(exporterService.getAllExporters());
-            }
-            return ResponseEntity.ok(exporterService.searchExporters(keyword));
-        } catch (Exception e) {
-            logger.error("Error searching exporters: {}", e.getMessage());
-            return ResponseEntity.status(500).body(null);
-        }
-    }
-
-    @PostMapping
-    public ResponseEntity<?> createExporter(@RequestBody ExporterDTO dto) {
-        try {
-            logger.info("Creating new exporter for userId: {}", dto != null ? dto.getUserId() : null);
-            // Manual validation
-            if (dto == null || dto.getUserId() == null || dto.getItems() == null || dto.getItems().isEmpty()) {
-                logger.error("Invalid request: userId and items list are required");
-                return ResponseEntity.status(400).body("Invalid request: userId and items list are required");
-            }
-            for (ExporterDTO.ExporterDetailDTO item : dto.getItems()) {
-                if (item.getProductId() == null || item.getQuantity() <= 0) {
-                    logger.error("Invalid item: productId and quantity are required");
-                    return ResponseEntity.status(400).body("Invalid item: productId and quantity are required");
-                }
-            }
-            ExporterDTO created = exporterService.createExporter(dto);
-            return ResponseEntity.ok(created);
-        } catch (IllegalArgumentException e) {
-            logger.error("Invalid input for creating exporter: {}", e.getMessage());
-            return ResponseEntity.status(400).body(e.getMessage());
-        } catch (Exception e) {
-            logger.error("Failed to create exporter: {}", e.getMessage());
-            return ResponseEntity.status(500).body("Failed to create exporter: " + e.getMessage());
-        }
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<?> updateExporter(@PathVariable("id") Long id, @RequestBody ExporterDTO dto) {
-        try {
-            logger.info("Updating exporter with ID: {}", id);
-            // Manual validation
-            if (dto == null || dto.getUserId() == null || dto.getItems() == null || dto.getItems().isEmpty()) {
-                logger.error("Invalid request: userId and items list are required");
-                return ResponseEntity.status(400).body("Invalid request: userId and items list are required");
-            }
-            for (ExporterDTO.ExporterDetailDTO item : dto.getItems()) {
-                if (item.getProductId() == null || item.getQuantity() <= 0) {
-                    logger.error("Invalid item: productId and quantity are required");
-                    return ResponseEntity.status(400).body("Invalid item: productId and quantity are required");
-                }
-            }
-            ExporterDTO updated = exporterService.updateExporter(id, dto);
-            if (updated == null) {
-                logger.warn("Exporter not found with ID: {}", id);
-                return ResponseEntity.status(404).body("Exporter not found");
-            }
-            return ResponseEntity.ok(updated);
-        } catch (IllegalArgumentException e) {
-            logger.error("Invalid input for updating exporter ID {}: {}", id, e.getMessage());
-            return ResponseEntity.status(400).body(e.getMessage());
+            List<ExporterDTO> requests = exporterService.getAllExportRequests();
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Lấy danh sách yêu cầu xuất hàng thành công!");
+            response.put("status", 200);
+            response.put("requests", requests);
+            return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
-            logger.error("Failed to update exporter ID {}: {}", id, e.getMessage());
-            return ResponseEntity.status(404).body("Exporter not found: " + e.getMessage());
+            return buildErrorResponse("Lỗi khi lấy danh sách yêu cầu xuất hàng: " + e.getMessage(), 400);
         }
     }
 
-    @PutMapping("/updateStatus/{id}")
-    public ResponseEntity<String> updateStatus(@PathVariable("id") Long id, @RequestParam("statusId") Integer statusId) {
+    @GetMapping("/requests/{orderId}")
+    public ResponseEntity<Map<String, Object>> getExportRequestById(@PathVariable("orderId") int orderId) {
         try {
-            logger.info("Updating status for exporter ID: {}", id);
-            if (statusId == null || statusId < 1 || statusId > 5) {
-                logger.error("Invalid statusId: {}", statusId);
-                return ResponseEntity.status(400).body("Invalid statusId");
+            ExporterDTO exporterDTO = exporterService.getExportRequestById(orderId);
+            if (exporterDTO == null) {
+                return buildErrorResponse("Không tìm thấy yêu cầu xuất hàng với ID: " + orderId, 404);
             }
-            exporterService.updateStatus(id, statusId);
-            return ResponseEntity.ok("Status updated successfully");
-        } catch (IllegalArgumentException e) {
-            logger.error("Invalid statusId for exporter ID {}: {}", id, e.getMessage());
-            return ResponseEntity.status(400).body(e.getMessage());
-        } catch (RuntimeException e) {
-            logger.error("Failed to update status for exporter ID {}: {}", id, e.getMessage());
-            return ResponseEntity.status(404).body("Exporter not found: " + e.getMessage());
-        }
-    }
-
-    @PutMapping("/confirmOrder/{id}")
-    public ResponseEntity<String> confirmOrder(@PathVariable("id") Long id) {
-        try {
-            logger.info("Confirming order for exporter ID: {}", id);
-            exporterService.confirmOrder(id);
-            return ResponseEntity.ok("Order confirmed successfully");
-        } catch (RuntimeException e) {
-            logger.error("Failed to confirm order for exporter ID {}: {}", id, e.getMessage());
-            return ResponseEntity.status(404).body("Exporter not found: " + e.getMessage());
-        }
-    }
-
-    @PutMapping("/rejectOrder/{id}")
-    public ResponseEntity<String> rejectOrder(@PathVariable("id") Long id, @RequestParam("reason") String reason) {
-        try {
-            logger.info("Rejecting order for exporter ID: {}", id);
-            if (reason == null || reason.trim().isEmpty()) {
-                logger.error("Reject reason cannot be empty");
-                return ResponseEntity.status(400).body("Reject reason cannot be empty");
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Lấy chi tiết yêu cầu xuất hàng thành công!");
+            response.put("status", 200);
+            response.put("order", exporterDTO);
+            if (exporterDTO.getStatusID() == 5) {
+                response.put("cancelReason", exporterDTO.getCancelReason());
             }
-            exporterService.rejectOrder(id, reason);
-            return ResponseEntity.ok("Order rejected successfully");
-        } catch (IllegalArgumentException e) {
-            logger.error("Invalid reason for rejecting exporter ID {}: {}", id, e.getMessage());
-            return ResponseEntity.status(400).body(e.getMessage());
+            return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
-            logger.error("Failed to reject order for exporter ID {}: {}", id, e.getMessage());
-            return ResponseEntity.status(404).body("Exporter not found: " + e.getMessage());
+            return buildErrorResponse("Lỗi khi lấy chi tiết yêu cầu xuất hàng: " + e.getMessage(), 400);
         }
     }
 
-    @PutMapping("/return/{id}")
-    public ResponseEntity<String> returnOrder(@PathVariable("id") Long id, @RequestParam("returnReason") String returnReason) {
+    @PostMapping("/requests")
+    public ResponseEntity<Map<String, Object>> createExportRequest(@RequestBody Map<String, Object> payload) {
         try {
-            logger.info("Returning order for exporter ID: {}", id);
-            if (returnReason == null || returnReason.trim().isEmpty()) {
-                logger.error("Return reason cannot be empty");
-                return ResponseEntity.status(400).body("Return reason cannot be empty");
-            }
-            exporterService.returnOrder(id, returnReason);
-            return ResponseEntity.ok("Return order processed successfully");
-        } catch (IllegalArgumentException e) {
-            logger.error("Invalid return reason for exporter ID {}: {}", id, e.getMessage());
-            return ResponseEntity.status(400).body(e.getMessage());
-        } catch (RuntimeException e) {
-            logger.error("Failed to return order for exporter ID {}: {}", id, e.getMessage());
-            return ResponseEntity.status(404).body("Exporter not found: " + e.getMessage());
-        }
-    }
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
-    @PutMapping("/updateStock/{exporterId}")
-    public ResponseEntity<String> updateStock(@PathVariable("exporterId") Long exporterId,
-                                              @RequestParam("productId") Long productId,
-                                              @RequestParam("quantity") Integer quantity,
-                                              @RequestParam("action") String action) {
-        try {
-            logger.info("Updating stock for exporter ID: {}, productId: {}", exporterId, productId);
-            if (quantity < 0) {
-                logger.error("Quantity cannot be negative");
-                return ResponseEntity.status(400).body("Quantity cannot be negative");
+            // Bước 1: Validate đầu vào
+            if (!payload.containsKey("orderID") || payload.get("orderID") == null) {
+                return buildErrorResponse("Thiếu orderID trong payload!", 400);
             }
-            if (!"update".equalsIgnoreCase(action) && !"delete".equalsIgnoreCase(action)) {
-                logger.error("Invalid action: {}", action);
-                return ResponseEntity.status(400).body("Invalid action");
-            }
-            exporterService.updateStock(exporterId, productId, quantity, action);
-            return ResponseEntity.ok("Stock updated successfully");
-        } catch (IllegalArgumentException e) {
-            logger.error("Invalid input for updating stock for exporter ID {}: {}", exporterId, e.getMessage());
-            return ResponseEntity.status(400).body(e.getMessage());
-        } catch (RuntimeException e) {
-            logger.error("Failed to update stock for exporter ID {}: {}", exporterId, e.getMessage());
-            return ResponseEntity.status(400).body("Error: " + e.getMessage());
-        }
-    }
 
-    @PutMapping("/confirmDelivery/{id}")
-    public ResponseEntity<String> confirmDelivery(@PathVariable("id") Long id) {
-        try {
-            logger.info("Confirming delivery for exporter ID: {}", id);
-            exporterService.confirmDelivery(id);
-            return ResponseEntity.ok("Delivery confirmed successfully");
-        } catch (RuntimeException e) {
-            logger.error("Failed to confirm delivery for exporter ID {}: {}", id, e.getMessage());
-            return ResponseEntity.status(404).body("Exporter not found: " + e.getMessage());
-        }
-    }
-
-    @PutMapping("/driverConfirm/{id}")
-    public ResponseEntity<String> driverConfirmDelivery(@PathVariable("id") Long id) {
-        try {
-            logger.info("Driver confirming delivery for exporter ID: {}", id);
-            exporterService.driverConfirmDelivery(id);
-            return ResponseEntity.ok("Driver confirmed delivery successfully");
-        } catch (RuntimeException e) {
-            logger.error("Failed to driver confirm delivery for exporter ID {}: {}", id, e.getMessage());
-            return ResponseEntity.status(404).body("Exporter not found: " + e.getMessage());
-        }
-    }
-
-    @PostMapping("/prepareShipment/{id}")
-    public ResponseEntity<String> prepareShipment(@PathVariable("id") Long id,
-                                                  @RequestParam("exporterId") Long exporterId,
-                                                  @RequestParam("productId") Long productId,
-                                                  @RequestParam("quantity") Integer quantity) {
-        try {
-            logger.info("Preparing shipment for exporter ID: {}, productId: {}", id, productId);
-            if (quantity <= 0) {
-                logger.error("Quantity must be greater than 0");
-                return ResponseEntity.status(400).body("Quantity must be greater than 0");
-            }
-            exporterService.prepareShipment(id, exporterId, productId, quantity);
-            return ResponseEntity.ok("Shipment prepared successfully");
-        } catch (IllegalArgumentException e) {
-            logger.error("Invalid input for preparing shipment for exporter ID {}: {}", id, e.getMessage());
-            return ResponseEntity.status(400).body(e.getMessage());
-        } catch (RuntimeException e) {
-            logger.error("Failed to prepare shipment for exporter ID {}: {}", id, e.getMessage());
-            return ResponseEntity.status(400).body("Error: " + e.getMessage());
-        }
-    }
-
-    @GetMapping("/checkStock/{productId}")
-    public ResponseEntity<ExporterDTO.StockAvailability> checkStockAvailability(@PathVariable("productId") Long productId, @RequestParam("quantity") Integer quantity) {
-        try {
-            logger.info("Checking stock for productId: {}, quantity: {}", productId, quantity);
-            if (quantity <= 0) {
-                logger.error("Quantity must be greater than 0");
-                return ResponseEntity.status(400).body(new ExporterDTO.StockAvailability(false));
-            }
-            boolean available = exporterService.checkStockAvailability(productId, quantity);
-            return ResponseEntity.ok(new ExporterDTO.StockAvailability(available));
-        } catch (IllegalArgumentException e) {
-            logger.error("Invalid input for checking stock for productId {}: {}", productId, e.getMessage());
-            return ResponseEntity.status(400).body(new ExporterDTO.StockAvailability(false));
-        } catch (RuntimeException e) {
-            logger.error("Failed to check stock for productId {}: {}", productId, e.getMessage());
-            return ResponseEntity.status(400).body(new ExporterDTO.StockAvailability(false));
-        }
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteExporter(@PathVariable("id") Long id, @RequestParam("cancelReason") String cancelReason) {
-        try {
-            logger.info("Deleting exporter ID: {}", id);
-            if (cancelReason == null || cancelReason.trim().isEmpty()) {
-                logger.error("Cancel reason cannot be empty");
-                return ResponseEntity.status(400).body("Cancel reason cannot be empty");
-            }
-            exporterService.deleteExporter(id, cancelReason);
-            return ResponseEntity.ok("Exporter deleted successfully");
-        } catch (IllegalArgumentException e) {
-            logger.error("Invalid cancel reason for exporter ID {}: {}", id, e.getMessage());
-            return ResponseEntity.status(400).body(e.getMessage());
-        } catch (RuntimeException e) {
-            logger.error("Failed to delete exporter ID {}: {}", id, e.getMessage());
-            return ResponseEntity.status(404).body("Exporter not found: " + e.getMessage());
-        }
-    }
-    @PutMapping("/updateDelivery/{id}")
-    public ResponseEntity<String> updateDeliverySchedule(@PathVariable("id") Long id, @RequestParam("estimatedDeliveryDate") String estimatedDeliveryDate) {
-        try {
-            logger.info("Updating delivery schedule for exporter ID: {}", id);
-            if (estimatedDeliveryDate == null || estimatedDeliveryDate.trim().isEmpty()) {
-                logger.error("Estimated delivery date cannot be empty");
-                return ResponseEntity.status(400).body("Estimated delivery date cannot be empty");
-            }
-            // Kiểm tra định dạng ngày giờ (ISO 8601: yyyy-MM-dd'T'HH:mm:ss)
+            // Bước 2: Parse và validate orderID
+            Integer orderID;
             try {
-                LocalDateTime.parse(estimatedDeliveryDate, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
-            } catch (DateTimeParseException e) {
-                logger.error("Invalid date format for estimatedDeliveryDate: {}", estimatedDeliveryDate);
-                return ResponseEntity.status(400).body("Invalid date format. Use yyyy-MM-dd'T'HH:mm:ss (e.g., 2025-07-25T10:00:00)");
+                orderID = Integer.parseInt(payload.get("orderID").toString());
+            } catch (NumberFormatException e) {
+                return buildErrorResponse("orderID phải là số nguyên!", 400);
             }
-            exporterService.updateDeliverySchedule(id, estimatedDeliveryDate);
-            return ResponseEntity.ok("Delivery schedule updated successfully");
-        } catch (IllegalArgumentException e) {
-            logger.error("Invalid input for updating delivery schedule for exporter ID {}: {}", id, e.getMessage());
-            return ResponseEntity.status(400).body(e.getMessage());
+
+            // Bước 3: Lấy thông tin đơn hàng từ OrderService
+            OrderDTO orderDTO = orderService.getOrderById(orderID);
+            if (orderDTO == null) {
+                return buildErrorResponse("Không tìm thấy đơn hàng với ID: " + orderID, 404);
+            }
+            if (orderDTO.getStatusID() == 5) {
+                return buildErrorResponse("Không thể tạo xuất hàng cho đơn đã hủy!", 400);
+            }
+
+            // Bước 4: Tạo ExporterDTO từ thông tin đơn hàng
+            ExporterDTO exportRequest = new ExporterDTO();
+            exportRequest.setOrderID(orderID);
+            exportRequest.setCustomerID(orderDTO.getCustomerID());
+            Integer statusID = orderDTO.getStatusID() != null ? orderDTO.getStatusID() : 1;
+            // Validate statusID
+            if (!List.of(1, 2, 3, 4, 5).contains(statusID)) {
+                return buildErrorResponse("statusID không hợp lệ! Chỉ chấp nhận các giá trị: 1, 2, 3, 4, 5", 400);
+            }
+            exportRequest.setStatusID(statusID);
+            exportRequest.setShippingAddress(orderDTO.getShippingAddress());
+            exportRequest.setTotalAmount(orderDTO.getTotalAmount());
+            exportRequest.setDiscountAmount(orderDTO.getDiscountAmount());
+            exportRequest.setOrderDate(orderDTO.getOrderDate());
+            exportRequest.setEstimatedDeliveryDate(orderDTO.getEstimatedDeliveryDate());
+
+            // Bước 5: Ghi đè các thông tin bổ sung từ payload (nếu có)
+            if (payload.containsKey("shippingMethodID") && payload.get("shippingMethodID") != null) {
+                try {
+                    exportRequest.setShippingMethodID(Integer.parseInt(payload.get("shippingMethodID").toString()));
+                } catch (NumberFormatException e) {
+                    return buildErrorResponse("shippingMethodID phải là số nguyên!", 400);
+                }
+            }
+            if (payload.containsKey("driverID") && payload.get("driverID") != null) {
+                try {
+                    exportRequest.setDriverID(Integer.parseInt(payload.get("driverID").toString()));
+                } catch (NumberFormatException e) {
+                    return buildErrorResponse("driverID phải là số nguyên!", 400);
+                }
+            }
+            if (payload.containsKey("shippingCost") && payload.get("shippingCost") != null) {
+                try {
+                    exportRequest.setShippingCost(Double.parseDouble(payload.get("shippingCost").toString()));
+                } catch (NumberFormatException e) {
+                    return buildErrorResponse("shippingCost phải là số thực!", 400);
+                }
+            }
+            if (payload.containsKey("distance") && payload.get("distance") != null) {
+                try {
+                    exportRequest.setDistance(Double.parseDouble(payload.get("distance").toString()));
+                } catch (NumberFormatException e) {
+                    return buildErrorResponse("distance phải là số thực!", 400);
+                }
+            }
+            if (payload.containsKey("statusID") && payload.get("statusID") != null) {
+                try {
+                    statusID = Integer.parseInt(payload.get("statusID").toString());
+                    if (!List.of(1, 2, 3, 4, 5).contains(statusID)) {
+                        return buildErrorResponse("statusID không hợp lệ! Chỉ chấp nhận các giá trị: 1, 2, 3, 4, 5", 400);
+                    }
+                    exportRequest.setStatusID(statusID);
+                } catch (NumberFormatException e) {
+                    return buildErrorResponse("statusID phải là số nguyên!", 400);
+                }
+            }
+
+            // Bước 6: Lấy danh sách orderDetails từ OrderDetailService
+            List<OrderDetail> orderDetailsEntity = orderDetailService.getByOrderID(orderID);
+            if (orderDetailsEntity == null || orderDetailsEntity.isEmpty()) {
+                return buildErrorResponse("Không tìm thấy chi tiết đơn hàng cho ID: " + orderID, 404);
+            }
+            List<OrderDetailDTO> orderDetails = orderDetailsEntity.stream()
+                    .map(detail -> new OrderDetailDTO(
+                            detail.getOrderDetailID(),
+                            detail.getProductID(),
+                            orderID,
+                            detail.getQuantity(),
+                            detail.getUnitPrice(),
+                            detail.getStatus()
+                    ))
+                    .collect(Collectors.toList());
+
+            // Bước 7: Gọi service để xử lý
+            exporterService.createExportRequest(exportRequest, orderDetails);
+
+            // Bước 8: Trả về thông báo thành công
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Đơn xuất hàng đã được tạo thành công dựa trên đơn hàng ID: " + orderID);
+            response.put("status", 200);
+            return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
-            logger.error("Failed to update delivery schedule for exporter ID {}: {}", id, e.getMessage());
-            return ResponseEntity.status(400).body("Error: " + e.getMessage());
+            return buildErrorResponse("Lỗi khi tạo đơn xuất hàng: " + e.getMessage(), 400);
         }
     }
 
+    @PutMapping("/requests/{orderId}/cancel")
+    public ResponseEntity<Map<String, Object>> cancelExportRequest(
+            @PathVariable("orderId") int orderId,
+            @RequestBody String cancelReason,
+            @RequestParam("exporterId") int exporterId) {
+        try {
+            exporterService.cancelExportRequest(orderId, cancelReason, exporterId);
+            return buildSuccessResponse("Hủy yêu cầu xuất hàng thành công!");
+        } catch (RuntimeException e) {
+            return buildErrorResponse("Lỗi khi hủy yêu cầu xuất hàng: " + e.getMessage(), 400);
+        }
+    }
+
+    @PutMapping("/requests/{orderId}/confirm")
+    public ResponseEntity<Map<String, Object>> confirmOrder(@PathVariable("orderId") int orderId,
+                                                            @RequestParam("exporterId") int exporterId) {
+        try {
+            exporterService.confirmOrder(orderId, exporterId);
+            return buildSuccessResponse("Xác nhận đơn hàng thành công!");
+        } catch (RuntimeException e) {
+            return buildErrorResponse("Lỗi khi xác nhận đơn hàng: " + e.getMessage(), 400);
+        }
+    }
+
+    @PutMapping("/requests/{orderId}/reject")
+    public ResponseEntity<Map<String, Object>> rejectOrder(@PathVariable("orderId") int orderId,
+                                                           @RequestBody String rejectReason,
+                                                           @RequestParam("exporterId") int exporterId) {
+        try {
+            exporterService.rejectOrder(orderId, rejectReason, exporterId);
+            return buildSuccessResponse("Từ chối đơn hàng thành công!");
+        } catch (RuntimeException e) {
+            return buildErrorResponse("Lỗi khi từ chối đơn hàng: " + e.getMessage(), 400);
+        }
+    }
+
+    @GetMapping("/inventory/check")
+    public ResponseEntity<Map<String, Object>> checkInventory(@RequestParam("productId") int productId,
+                                                              @RequestParam("quantity") int quantity) {
+        try {
+            boolean available = exporterService.checkInventoryAvailability(productId, quantity);
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Kiểm tra tồn kho thành công!");
+            response.put("status", 200);
+            response.put("available", available);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            return buildErrorResponse("Lỗi khi kiểm tra tồn kho: " + e.getMessage(), 400);
+        }
+    }
+
+    @GetMapping("/history")
+    public ResponseEntity<Map<String, Object>> getExportHistory(@RequestParam(value = "productId", defaultValue = "0") int productId,
+                                                                @RequestParam(value = "orderId", defaultValue = "0") int orderId) {
+        try {
+            List<InventoryLogsDTO> history = exporterService.getExportHistory(productId, orderId);
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Lấy lịch sử xuất hàng thành công!");
+            response.put("status", 200);
+            response.put("history", history);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            return buildErrorResponse("Lỗi khi lấy lịch sử xuất hàng: " + e.getMessage(), 400);
+        }
+    }
+
+    @PostMapping("/inventory-logs/archive")
+    public ResponseEntity<Map<String, Object>> archiveOrder(@RequestBody Map<String, Integer> payload) {
+        try {
+            int logId = payload.get("logId");
+            InventoryLogsDTO archivedLog = inventoryLogsService.archiveLog(logId);
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Lưu trữ đơn hàng thành công!");
+            response.put("status", 200);
+            response.put("log", archivedLog);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            return buildErrorResponse("Lỗi khi lưu trữ đơn hàng: " + e.getMessage(), 400);
+        }
+    }
+
+    private ResponseEntity<Map<String, Object>> buildSuccessResponse(String message) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", message);
+        response.put("status", 200);
+        return ResponseEntity.ok(response);
+    }
+
+    private ResponseEntity<Map<String, Object>> buildErrorResponse(String message, int status) {
+        Map<String, Object> error = new HashMap<>();
+        error.put("message", message);
+        error.put("status", status);
+        return ResponseEntity.status(status).body(error);
+    }
 }

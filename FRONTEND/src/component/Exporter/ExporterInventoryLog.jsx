@@ -1,150 +1,344 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { FiSearch } from "react-icons/fi";
+import { FiSearch, FiRefreshCw } from "react-icons/fi";
 import { Modal, Button } from "react-bootstrap";
 import Pagination from "../../layouts/Pagination";
-import FilterStatus from './FilterStatus';
+import FilterStatus from "./FilterStatus";
 import Swal from "sweetalert2";
-import { toast } from "react-toastify";
 
-const ExporterInventoryLog = ({ currentPage, setCurrentPage }) => {
-  const [transactions, setTransactions] = useState([]);
-  const [productMap, setProductMap] = useState({});
-  const [userMap, setUserMap] = useState({});
+const ExporterInventoryLog = ({ currentPage, setCurrentPage, setRequests }) => {
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const [logs, setLocalLogs] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [products, setProducts] = useState({});
+  const [users, setUsers] = useState({});
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedStatus, setSelectedStatus] = useState("all");
   const [archivedPage, setArchivedPage] = useState(1);
   const [showArchivedModal, setShowArchivedModal] = useState(false);
-  const [showReturnModal, setShowReturnModal] = useState(false);
-  const [selectedReturnLogs, setSelectedReturnLogs] = useState([]);
+  const [selectedStatus, setSelectedStatus] = useState("all");
 
-  const archivedTransactions = transactions.filter((t) => t.status === 3);
+  useEffect(() => {
+    if (!user || user.roleID !== 5) return;
+    const fetchData = async () => {
+      try {
+        const headers = { Authorization: `Bearer ${user.token}` };
+        const [logsRes, productsRes, usersRes] = await Promise.all([
+          axios.get("http://localhost:8082/PureFoods/api/exporter/history?productId=0&orderId=0", { headers }),
+          axios.get("http://localhost:8082/PureFoods/api/product/getAll", { headers }),
+          axios.get("http://localhost:8082/PureFoods/api/users/getAll", { headers }),
+        ]);
 
-  const filteredTransactions = transactions
-    .filter((t) => t.status !== 3)
-    .filter((t) => {
-      const matchStatus = selectedStatus === "all" ? true : t.status === parseInt(selectedStatus);
-      const productName = productMap[t.productId]?.toLowerCase() || "";
-      const userName = userMap[t.userId]?.toLowerCase() || "";
-      const quantity = t.quantityChange?.toString() || "";
-      const reason = t.reason?.toLowerCase() || "";
-      const createdAt = t.createdAt ? new Date(t.createdAt).toLocaleString("vi-VN").toLowerCase() : "";
-      const statusText = t.status === 0 ? "đang xử lý" : t.status === 1 ? "hoàn thành" : "từ chối";
+        if (logsRes.data.status === 200) {
+          const logData = logsRes.data.history || [];
+          const sortedLogs = [...logData].sort((a, b) => {
+            if (a.status !== b.status) return a.status - b.status;
+            return new Date(b.createdAt) - new Date(a.createdAt);
+          });
+
+          setLocalLogs(sortedLogs);
+          if (setRequests) setRequests(sortedLogs);
+        } else {
+          Swal.fire({
+            icon: "error",
+            title: "Lỗi!",
+            text: logsRes.data.message || "Lỗi khi tải lịch sử xuất hàng",
+            confirmButtonText: "OK",
+          });
+        }
+
+        if (productsRes.data.status === 200) {
+          const productData = productsRes.data.listProduct || [];
+          const productMap = {};
+          productData.forEach((p) => {
+            productMap[p.productId] = { name: p.productName };
+          });
+          setProducts(productMap);
+        } else {
+          Swal.fire({
+            icon: "error",
+            title: "Lỗi!",
+            text: productsRes.data.message || "Lỗi khi tải danh sách sản phẩm",
+            confirmButtonText: "OK",
+          });
+        }
+
+        if (usersRes.data.status === 200) {
+          const userData = usersRes.data.userList || [];
+          const userMap = {};
+          userData.forEach((u) => {
+            userMap[u.userId] = u.fullName;
+          });
+          setUsers(userMap);
+        } else {
+          Swal.fire({
+            icon: "error",
+            title: "Lỗi!",
+            text: usersRes.data.message || "Lỗi khi tải danh sách người dùng",
+            confirmButtonText: "OK",
+          });
+        }
+      } catch (err) {
+        Swal.fire({
+          icon: "error",
+          title: "Lỗi!",
+          text: "Không thể tải dữ liệu: " + (err.response?.data?.message || err.message),
+          confirmButtonText: "OK",
+        });
+      }
+    };
+    fetchData();
+  }, [setRequests]);
+
+  if (!user || user.roleID !== 5) {
+    return <div className="text-danger">Vui lòng đăng nhập với tài khoản Exporter.</div>;
+  }
+
+  const archivedLogs = logs.filter((log) => log.status === 3);
+
+  const filteredLogs = logs
+    .filter((log) => log.status !== 3)
+    .filter((log) => {
+      const matchStatus = selectedStatus === "all" ? true : log.status === parseInt(selectedStatus);
+      const productName = products[log.productId]?.name?.toLowerCase() || "";
+      const userName = users[log.userId]?.toLowerCase() || "";
+      const quantity = log.quantityChange?.toString() || "";
+      const reason = log.reason?.toLowerCase() || "";
+      const createdAt = log.createdAt ? new Date(log.createdAt).toLocaleString("vi-VN").toLowerCase() : "";
+      const statusText =
+        log.status === 1
+          ? "đang chờ xử lý"
+          : log.status === 2
+          ? "đang xử lý"
+          : log.status === 3
+          ? "hoàn thành"
+          : log.status === 4
+          ? "đang giao hàng"
+          : log.status === 5
+          ? "đã hủy"
+          : "không rõ";
 
       return (
         matchStatus &&
         (productName.includes(searchTerm.toLowerCase()) ||
-         userName.includes(searchTerm.toLowerCase()) ||
-         quantity.includes(searchTerm) ||
-         reason.includes(searchTerm.toLowerCase()) ||
-         createdAt.includes(searchTerm.toLowerCase()) ||
-         statusText.includes(searchTerm.toLowerCase()))
+          userName.includes(searchTerm.toLowerCase()) ||
+          quantity.includes(searchTerm) ||
+          reason.includes(searchTerm.toLowerCase()) ||
+          createdAt.includes(searchTerm.toLowerCase()) ||
+          statusText.includes(searchTerm.toLowerCase()))
       );
     });
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const exporterId = JSON.parse(localStorage.getItem("user"))?.userID || 1;
-      try {
-        const [transactionsRes, productsRes, usersRes] = await Promise.all([
-          axios.get(`http://localhost:8082/PureFoods/api/inventoryLogs`, { params: { userId: exporterId } }),
-          axios.get(`http://localhost:8082/PureFoods/api/products`),
-          axios.get(`http://localhost:8082/PureFoods/api/users/getAll`),
-        ]);
-        const sortedTransactions = [...(transactionsRes.data || [])].sort((a, b) => {
-          if (a.status !== b.status) return a.status - b.status;
-          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-        });
-        setTransactions(sortedTransactions);
-        const productMapTemp = {};
-        productsRes.data.listProduct?.forEach((p) => {
-          productMapTemp[p.productId] = p.productName;
-        });
-        setProductMap(productMapTemp);
-        const userMapTemp = {};
-        usersRes.data.userList?.forEach((u) => {
-          userMapTemp[u.userId] = u.fullName;
-        });
-        setUserMap(userMapTemp);
-      } catch (err) {
-        toast.error("Lỗi khi lấy dữ liệu: " + (err.response?.data?.message || err.message));
-      }
-    };
-    fetchData();
-  }, []);
-
-  const transactionsPerPage = 7;
-  const totalPages = Math.ceil(filteredTransactions.length / transactionsPerPage);
-  const indexOfLast = currentPage * transactionsPerPage;
-  const indexOfFirst = indexOfLast - transactionsPerPage;
-  const currentTransactions = filteredTransactions.slice(indexOfFirst, indexOfLast);
-
-  const archivedTotalPages = Math.ceil(archivedTransactions.length / transactionsPerPage);
-  const indexOfLastArchived = archivedPage * transactionsPerPage;
-  const indexOfFirstArchived = indexOfLastArchived - transactionsPerPage;
-  const currentArchivedTransactions = archivedTransactions.slice(indexOfFirstArchived, indexOfLastArchived);
-
-  const handleArchive = async (logId) => {
+  const handleRefresh = async () => {
+    setIsLoading(true);
     try {
-      await axios.post(`http://localhost:8082/PureFoods/api/inventoryLogs/archive`, { logId });
-      setTransactions((prev) => prev.map((t) => (t.logId === logId ? { ...t, status: 3 } : t)));
-      toast.success("Lưu trữ giao dịch thành công!");
+      const headers = { Authorization: `Bearer ${user.token}` };
+      const [logsRes, productsRes, usersRes] = await Promise.all([
+        axios.get("http://localhost:8082/PureFoods/api/exporter/history?productId=0&orderId=0", { headers }),
+        axios.get("http://localhost:8082/PureFoods/api/product/getAll", { headers }),
+        axios.get("http://localhost:8082/PureFoods/api/users/getAll", { headers }),
+      ]);
+
+      if (logsRes.data.status === 200) {
+        const logData = logsRes.data.history || [];
+        const sortedLogs = [...logData].sort((a, b) => {
+          if (a.status !== b.status) return a.status - b.status;
+          return new Date(b.createdAt) - new Date(a.createdAt);
+        });
+
+        setLocalLogs(sortedLogs);
+        if (setRequests) setRequests(sortedLogs);
+      } else {
+        throw new Error(logsRes.data.message || "Lỗi tải lịch sử");
+      }
+
+      if (productsRes.data.status === 200) {
+        const productMap = {};
+        (productsRes.data.listProduct || []).forEach((p) => {
+          productMap[p.productId] = { name: p.productName };
+        });
+        setProducts(productMap);
+      } else {
+        throw new Error(productsRes.data.message || "Lỗi tải sản phẩm");
+      }
+
+      if (usersRes.data.status === 200) {
+        const userMap = {};
+        (usersRes.data.userList || []).forEach((u) => {
+          userMap[u.userId] = u.fullName;
+        });
+        setUsers(userMap);
+      } else {
+        throw new Error(usersRes.data.message || "Lỗi tải người dùng");
+      }
+
+      Swal.fire({
+        icon: "success",
+        title: "Đã làm mới!",
+        text: "Dữ liệu đã được cập nhật thành công.",
+        confirmButtonText: "OK",
+      });
     } catch (err) {
-      toast.error("Lưu trữ thất bại: " + (err.response?.data?.message || err.message));
+      Swal.fire({
+        icon: "error",
+        title: "Lỗi!",
+        text: "Làm mới thất bại: " + (err.response?.data?.message || err.message),
+        confirmButtonText: "OK",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
- const handleReturn = async () => {
-  if (selectedReturnLogs.length === 0) {
-    toast.error("Vui lòng chọn ít nhất một đơn hàng để trả!");
-    return;
-  }
-  const exporterId = JSON.parse(localStorage.getItem("user"))?.userID || 1;
-  try {
-    for (let logId of selectedReturnLogs) {
-      const log = transactions.find((t) => t.logId === logId);
-      if (log && log.status === 1) {
-        await axios.put(`http://localhost:8082/PureFoods/api/exporters/return/${log.orderId}`, null, {
-          params: { returnReason: `Trả hàng cho log #${logId}` },
+  const handleConfirmOrder = async (orderId) => {
+    try {
+      const res = await axios.put(
+        `http://localhost:8082/PureFoods/api/exporter/requests/${orderId}/confirm`,
+        {},
+        { params: { exporterId: user.userId }, headers: { Authorization: `Bearer ${user.token}` } }
+      );
+      if (res.data.status === 200) {
+        Swal.fire({
+          icon: "success",
+          title: "Thành công!",
+          text: res.data.message || "Xác nhận đơn hàng thành công.",
+          confirmButtonText: "OK",
         });
-        await axios.put(`http://localhost:8082/PureFoods/api/exporters/updateStock/${exporterId}`, null, {
-          params: {
-            productId: log.productId,
-            quantity: log.quantityChange,
-            action: "update",
-          },
-        });
-        await axios.post(`http://localhost:8082/PureFoods/api/inventoryLogs`, {
-          productId: log.productId,
-          userId: exporterId,
-          quantityChange: log.quantityChange,
-          reason: `Trả hàng cho log #${logId}`,
+        handleRefresh();
+      } else {
+        throw new Error(res.data.message || "Xác nhận thất bại");
+      }
+    } catch (err) {
+      Swal.fire({
+        icon: "error",
+        title: "Lỗi!",
+        text: err.response?.data?.message || "Xác nhận thất bại.",
+        confirmButtonText: "OK",
+      });
+    }
+  };
+
+  const handleRejectOrder = async (orderId) => {
+    const { value: rejectReason } = await Swal.fire({
+      title: "Lý do từ chối",
+      input: "text",
+      inputPlaceholder: "Nhập lý do từ chối...",
+      showCancelButton: true,
+      confirmButtonText: "Từ chối",
+      cancelButtonText: "Hủy",
+    });
+
+    if (rejectReason) {
+      try {
+        const res = await axios.put(
+          `http://localhost:8082/PureFoods/api/exporter/requests/${orderId}/reject`,
+          rejectReason,
+          { params: { exporterId: user.userId }, headers: { Authorization: `Bearer ${user.token}` } }
+        );
+        if (res.data.status === 200) {
+          Swal.fire({
+            icon: "success",
+            title: "Thành công!",
+            text: res.data.message || "Từ chối đơn hàng thành công.",
+            confirmButtonText: "OK",
+          });
+          handleRefresh();
+        } else {
+          throw new Error(res.data.message || "Từ chối thất bại");
+        }
+      } catch (err) {
+        Swal.fire({
+          icon: "error",
+          title: "Lỗi!",
+          text: err.response?.data?.message || "Từ chối thất bại.",
+          confirmButtonText: "OK",
         });
       }
     }
-    setTransactions((prev) =>
-      prev.map((t) =>
-        selectedReturnLogs.includes(t.logId) ? { ...t, status: 5, reason: `Trả hàng cho log #${t.logId}` } : t
-      )
-    );
-    Swal.fire({
-      icon: "success",
-      title: "Đã gửi yêu cầu trả hàng",
-      text: "Các đơn được chọn đã được gửi thành công!",
-      confirmButtonColor: "#3085d6",
-      confirmButtonText: "OK",
+  };
+
+  const handleCancelOrder = async (orderId) => {
+    const { value: cancelReason } = await Swal.fire({
+      title: "Lý do hủy",
+      input: "text",
+      inputPlaceholder: "Nhập lý do hủy...",
+      showCancelButton: true,
+      confirmButtonText: "Hủy đơn",
+      cancelButtonText: "Thoát",
     });
-    setSelectedReturnLogs([]);
-    setShowReturnModal(false);
-  } catch (err) {
-    toast.error("Yêu cầu trả hàng thất bại: " + (err.response?.data || err.message));
-  }
-};
+
+    if (cancelReason) {
+      try {
+        const res = await axios.put(
+          `http://localhost:8082/PureFoods/api/exporter/requests/${orderId}/cancel`,
+          cancelReason,
+          { params: { exporterId: user.userId }, headers: { Authorization: `Bearer ${user.token}` } }
+        );
+        if (res.data.status === 200) {
+          Swal.fire({
+            icon: "success",
+            title: "Thành công!",
+            text: res.data.message || "Hủy đơn hàng thành công.",
+            confirmButtonText: "OK",
+          });
+          handleRefresh();
+        } else {
+          throw new Error(res.data.message || "Hủy thất bại");
+        }
+      } catch (err) {
+        Swal.fire({
+          icon: "error",
+          title: "Lỗi!",
+          text: err.response?.data?.message || "Hủy thất bại.",
+          confirmButtonText: "OK",
+        });
+      }
+    }
+  };
+
+  const handleArchiveOrder = async (logId) => {
+    try {
+      const res = await axios.post(
+        "http://localhost:8082/PureFoods/api/exporter/inventory-logs/archive",
+        { logId },
+        { headers: { Authorization: `Bearer ${user.token}` } }
+      );
+      if (res.data.status === 200) {
+        const updatedLogs = logs.map((l) => (l.logId === logId ? { ...l, status: 3 } : l));
+        setLocalLogs(updatedLogs);
+        Swal.fire({
+          icon: "success",
+          title: "Thành công!",
+          text: res.data.message || "Lưu trữ đơn hàng thành công.",
+          confirmButtonText: "OK",
+        });
+      } else {
+        throw new Error(res.data.message || "Lưu trữ thất bại");
+      }
+    } catch (err) {
+      Swal.fire({
+        icon: "error",
+        title: "Lỗi!",
+        text: err.response?.data?.message || "Lưu trữ thất bại.",
+        confirmButtonText: "OK",
+      });
+    }
+  };
+
+  const logsPerPage = 7;
+  const totalPages = Math.ceil(filteredLogs.length / logsPerPage);
+  const indexOfLast = currentPage * logsPerPage;
+  const indexOfFirst = indexOfLast - logsPerPage;
+  const currentLogs = filteredLogs.slice(indexOfFirst, indexOfLast);
+
+  const archivedTotalPages = Math.ceil(archivedLogs.length / logsPerPage);
+  const indexOfLastArchived = archivedPage * logsPerPage;
+  const indexOfFirstArchived = indexOfLastArchived - logsPerPage;
+  const currentArchivedLogs = archivedLogs.slice(indexOfFirstArchived, indexOfLastArchived);
 
   return (
     <div className="dashboard-order">
       <div className="title">
-        <h2>Lịch sử xuất/trả hàng</h2>
+        <h2>Lịch sử các đơn xuất hàng</h2>
         <span className="title-leaf title-leaf-gray">
           <svg className="icon-width bg-gray">
             <use href="../assets/svg/leaf.svg#leaf"></use>
@@ -163,30 +357,38 @@ const ExporterInventoryLog = ({ currentPage, setCurrentPage }) => {
           }}
         />
         <FiSearch
-          style={{ position: "absolute", right: "15px", top: "50%", transform: "translateY(-50%)", color: "#aaa", pointerEvents: "none" }}
+          style={{
+            position: "absolute",
+            right: "15px",
+            top: "50%",
+            transform: "translateY(-50%)",
+            color: "#aaa",
+            pointerEvents: "none",
+          }}
           size={18}
         />
       </div>
-      <div className="d-flex justify-content-between mb-4">
+      <div className="d-flex justify-content-between align-items-center mb-4 gap-3 flex-wrap">
         <button
-          className="btn"
+          className="btn fw-bold text-white d-flex justify-content-center align-items-center"
+          onClick={handleRefresh}
+          disabled={isLoading}
           style={{
-            backgroundColor: "#f40766ff",
-            color: "white",
-            fontWeight: "bold",
-            transition: "0.2s",
-            borderRadius: "8px",
-            padding: "10px 18px",
+            backgroundColor: "#007bff",
+            border: "1px solid #007bff",
+            transition: "all 0.3s ease",
           }}
           onMouseEnter={(e) => {
-            e.target.style.backgroundColor = "#fdb344ff";
+            e.currentTarget.style.backgroundColor = "#0056b3";
+            e.currentTarget.style.borderColor = "#0056b3";
           }}
           onMouseLeave={(e) => {
-            e.target.style.backgroundColor = "#f40766ff";
+            e.currentTarget.style.backgroundColor = "#007bff";
+            e.currentTarget.style.borderColor = "#007bff";
           }}
-          onClick={() => setShowReturnModal(true)}
         >
-          🔁 Yêu cầu trả hàng
+          <FiRefreshCw className={`me-2 ${isLoading ? "fa-spin" : ""}`} />
+          {isLoading ? "Đang làm mới..." : "Làm mới dữ liệu"}
         </button>
         <button
           className="btn"
@@ -226,72 +428,155 @@ const ExporterInventoryLog = ({ currentPage, setCurrentPage }) => {
           <table className="table order-table">
             <thead>
               <tr>
-                <th scope="col">Ảnh</th>
                 <th scope="col">Sản phẩm</th>
-                <th scope="col">Người thực hiện</th>
-                <th scope="col">Số lượng thay đổi</th>
+                <th scope="col">Người xuất</th>
+                <th scope="col">Số lượng</th>
                 <th scope="col">Lý do</th>
                 <th scope="col">Thời gian</th>
                 <th scope="col">Trạng thái</th>
+                <th scope="col">Hành động</th>
               </tr>
             </thead>
             <tbody>
-              {currentTransactions.length > 0 ? (
-                currentTransactions.map((t) => (
-                  <tr key={t.logId}>
-                    <td>
-                      <img
-                        src={productMap[t.productId] ? `http://localhost:8082/PureFoods/images/${productMap[t.productId]}.jpg` : "https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg"}
-                        alt={productMap[t.productId]}
-                        style={{ width: "80px", height: "80px", objectFit: "cover", border: "1px solid #ccc", backgroundColor: "#eee" }}
-                        onError={(e) => { e.target.src = "https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg"; }}
-                      />
-                    </td>
-                    <td>
-                      <h6>{productMap[t.productId] || "Không rõ"}</h6>
-                    </td>
-                    <td>
-                      <h6>{userMap[t.userId] || "Không rõ"}</h6>
-                    </td>
-                    <td>
-                      <h6>{t.quantityChange}</h6>
-                    </td>
-                    <td>
-                      <h6>{t.reason || "Không rõ"}</h6>
-                    </td>
-                    <td>
-                      <h6>{new Date(t.createdAt).toLocaleString("vi-VN", { year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" })}</h6>
-                    </td>
-                    <td>
-                      <div style={{ display: "flex", flexDirection: "column", alignItems: "start" }}>
-                        <label className={t.status === 0 ? "warning" : t.status === 1 ? "success" : "danger"}>
-                          {t.status === 0 ? "Đang xử lý" : t.status === 1 ? "Hoàn thành" : "Từ chối"}
+              {currentLogs.length > 0 ? (
+                currentLogs.map((log, index) => {
+                  const orderId = log.reason.match(/Xác nhận đơn hàng: (\d+)/)?.[1] || log.reason.match(/Hủy đơn hàng: (\d+)/)?.[1] || log.reason.match(/Từ chối đơn hàng: (\d+)/)?.[1] || null;
+                  return (
+                    <tr key={index}>
+                      <td>
+                        <h6>{products[log.productId]?.name || "Chưa xác định"}</h6>
+                      </td>
+                      <td>
+                        <h6>{users[log.userId] || `Người xuất: ${log.userId}`}</h6>
+                      </td>
+                      <td>
+                        <h6>{log.quantityChange || 0}</h6>
+                      </td>
+                      <td>
+                        <h6>{log.reason || "Không có lý do"}</h6>
+                      </td>
+                      <td>
+                        <h6>
+                          {log.createdAt
+                            ? new Date(log.createdAt).toLocaleString("vi-VN", {
+                                year: "numeric",
+                                month: "2-digit",
+                                day: "2-digit",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })
+                            : "Chưa có"}
+                        </h6>
+                      </td>
+                      <td>
+                        <label
+                          className={
+                            log.status === 1
+                              ? "warning"
+                              : log.status === 2
+                              ? "info"
+                              : log.status === 3
+                              ? "success"
+                              : log.status === 4
+                              ? "primary"
+                              : log.status === 5
+                              ? "danger"
+                              : "unknown"
+                          }
+                        >
+                          {log.status === 1
+                            ? "Đang chờ xử lý"
+                            : log.status === 2
+                            ? "Đang xử lý"
+                            : log.status === 3
+                            ? "Hoàn thành"
+                            : log.status === 4
+                            ? "Đang giao hàng"
+                            : log.status === 5
+                            ? "Đã hủy"
+                            : "Không rõ"}
                         </label>
-                        {t.status === 1 && (
-                          <button
-                            className="btn btn-sm mt-1"
-                            style={{
-                              backgroundColor: "blue",
-                              color: "white",
-                              fontSize: "12px",
-                              padding: "2px 6px",
-                              fontWeight: "bold",
-                            }}
-                            onMouseEnter={(e) => (e.target.style.backgroundColor = "#bf903aff")}
-                            onMouseLeave={(e) => (e.target.style.backgroundColor = "blue")}
-                            onClick={() => handleArchive(t.logId)}
-                          >
-                            📦 Lưu trữ
-                          </button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))
+                      </td>
+                      <td>
+                        <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
+                          {log.status === 1 && orderId && (
+                            <>
+                              <button
+                                className="btn btn-sm"
+                                style={{
+                                  backgroundColor: "green",
+                                  color: "white",
+                                  fontSize: "12px",
+                                  padding: "2px 6px",
+                                  fontWeight: "bold",
+                                }}
+                                onMouseEnter={(e) => (e.target.style.backgroundColor = "#006400")}
+                                onMouseLeave={(e) => (e.target.style.backgroundColor = "green")}
+                                onClick={() => handleConfirmOrder(orderId)}
+                              >
+                                ✅ Xác nhận
+                              </button>
+                              <button
+                                className="btn btn-sm"
+                                style={{
+                                  backgroundColor: "red",
+                                  color: "white",
+                                  fontSize: "12px",
+                                  padding: "2px 6px",
+                                  fontWeight: "bold",
+                                }}
+                                onMouseEnter={(e) => (e.target.style.backgroundColor = "#8b0000")}
+                                onMouseLeave={(e) => (e.target.style.backgroundColor = "red")}
+                                onClick={() => handleRejectOrder(orderId)}
+                              >
+                                ❌ Từ chối
+                              </button>
+                              <button
+                                className="btn btn-sm"
+                                style={{
+                                  backgroundColor: "orange",
+                                  color: "white",
+                                  fontSize: "12px",
+                                  padding: "2px 6px",
+                                  fontWeight: "bold",
+                                }}
+                                onMouseEnter={(e) => (e.target.style.backgroundColor = "#ff8c00")}
+                                onMouseLeave={(e) => (e.target.style.backgroundColor = "orange")}
+                                onClick={() => handleCancelOrder(orderId)}
+                              >
+                                🗑️ Hủy
+                              </button>
+                            </>
+                          )}
+                          {log.status === 2 && (
+                            <button
+                              className="btn btn-sm"
+                              style={{
+                                backgroundColor: "blue",
+                                color: "white",
+                                fontSize: "12px",
+                                padding: "2px 6px",
+                                fontWeight: "bold",
+                              }}
+                              onMouseEnter={(e) => (e.target.style.backgroundColor = "#00008b")}
+                              onMouseLeave={(e) => (e.target.style.backgroundColor = "blue")}
+                              onClick={() => handleArchiveOrder(log.logId)}
+                            >
+                              📦 Lưu trữ
+                            </button>
+                          )}
+                          {log.status === 5 && (
+                            <span className="text-muted">Không có hành động</span>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
               ) : (
                 <tr>
                   <td colSpan="7" className="text-center">
-                    Không có giao dịch nào.
+                    Không có lịch sử xuất hàng.
                   </td>
                 </tr>
               )}
@@ -305,42 +590,42 @@ const ExporterInventoryLog = ({ currentPage, setCurrentPage }) => {
         <Modal.Header closeButton>
           <Modal.Title>🗃️ Danh sách các đơn đã lưu trữ</Modal.Title>
         </Modal.Header>
+        <p style={{ fontSize: "19px", color: "blue", margin: "20px 20px" }}>
+          Các đơn hàng <span style={{ color: "green", fontWeight: "bold" }}>HOÀN THÀNH</span> sẽ được lưu trữ ở dưới
+          đây.
+          <i className="fa-solid fa-arrow-down ms-2 text-muted"></i>
+        </p>
         <Modal.Body>
-          <p style={{ fontSize: "19px", color: "blue", margin: "20px 20px" }}>
-            Các đơn hàng <span style={{ color: "green", fontWeight: "bold" }}>ĐÃ HOÀN THÀNH</span> sẽ được lưu trữ ở dưới đây.
-            <i className="fa-solid fa-arrow-down ms-2 text-muted"></i>
-          </p>
-          {currentArchivedTransactions.length === 0 ? (
+          {archivedLogs.length === 0 ? (
             <p>Chưa có đơn nào được lưu trữ.</p>
           ) : (
             <div className="table-responsive">
               <table className="table table-bordered">
                 <thead>
                   <tr>
-                    <th>Ảnh</th>
                     <th>Sản phẩm</th>
-                    <th>Người thực hiện</th>
+                    <th>Người xuất</th>
                     <th>Số lượng</th>
                     <th>Lý do</th>
                     <th>Thời gian</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {currentArchivedTransactions.map((t) => (
-                    <tr key={t.logId}>
+                  {currentArchivedLogs.map((log, index) => (
+                    <tr key={index}>
+                      <td>{products[log.productId]?.name || "Không rõ"}</td>
+                      <td>{users[log.userId] || log.userId}</td>
+                      <td>{log.quantityChange}</td>
+                      <td>{log.reason || "Không có lý do"}</td>
                       <td>
-                        <img
-                          src={productMap[t.productId] ? `http://localhost:8082/PureFoods/images/${productMap[t.productId]}.jpg` : "https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg"}
-                          alt={productMap[t.productId]}
-                          style={{ width: "60px", height: "60px", objectFit: "cover", border: "1px solid #ccc" }}
-                          onError={(e) => { e.target.src = "https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg"; }}
-                        />
+                        {new Date(log.createdAt).toLocaleString("vi-VN", {
+                          year: "numeric",
+                          month: "2-digit",
+                          day: "2-digit",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
                       </td>
-                      <td>{productMap[t.productId] || "Không rõ"}</td>
-                      <td>{userMap[t.userId] || "Không rõ"}</td>
-                      <td>{t.quantityChange}</td>
-                      <td>{t.reason || "Không rõ"}</td>
-                      <td>{new Date(t.createdAt).toLocaleString("vi-VN", { year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" })}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -349,82 +634,20 @@ const ExporterInventoryLog = ({ currentPage, setCurrentPage }) => {
           )}
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="primary" onClick={() => { setArchivedPage(1); setShowArchivedModal(false); }}>
-            Đóng
-          </Button>
-        </Modal.Footer>
-        <Pagination currentPage={archivedPage} totalPages={archivedTotalPages} onPageChange={(page) => setArchivedPage(page)} />
-      </Modal>
-
-      <Modal show={showReturnModal} onHide={() => setShowReturnModal(false)} size="xl" centered>
-        <Modal.Header closeButton>
-          <Modal.Title>🔁 Yêu cầu trả hàng</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <p className="text-primary fw-bold mb-3">
-            Tích chọn các đơn hàng cần trả. Chỉ có thể trả các đơn hàng có trạng thái **đã hoàn thành**.
-          </p>
-          <div className="table-responsive">
-            <table className="table table-bordered">
-              <thead>
-                <tr>
-                  <th>Chọn</th>
-                  <th>Ảnh</th>
-                  <th>Sản phẩm</th>
-                  <th>Người thực hiện</th>
-                  <th>Số lượng</th>
-                  <th>Lý do</th>
-                  <th>Thời gian</th>
-                </tr>
-              </thead>
-              <tbody>
-                {transactions
-                  .filter((t) => t.status === 1)
-                  .map((t) => (
-                    <tr key={t.logId}>
-                      <td>
-                        <input
-                          type="checkbox"
-                          style={{ width: "20px", height: "20px" }}
-                          checked={selectedReturnLogs.includes(t.logId)}
-                          onChange={(e) => {
-                            if (e.target.checked) {
-                              setSelectedReturnLogs([...selectedReturnLogs, t.logId]);
-                            } else {
-                              setSelectedReturnLogs(selectedReturnLogs.filter((id) => id !== t.logId));
-                            }
-                          }}
-                        />
-                      </td>
-                      <td>
-                        <img
-                          src={productMap[t.productId] ? `http://localhost:8082/PureFoods/images/${productMap[t.productId]}.jpg` : "https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg"}
-                          alt={productMap[t.productId]}
-                          style={{ width: "60px", height: "60px", objectFit: "cover", border: "1px solid #ccc" }}
-                          onError={(e) => { e.target.src = "https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg"; }}
-                        />
-                      </td>
-                      <td>{productMap[t.productId] || "Không rõ"}</td>
-                      <td>{userMap[t.userId] || "Không rõ"}</td>
-                      <td>{t.quantityChange}</td>
-                      <td>{t.reason || "Không rõ"}</td>
-                      <td>{new Date(t.createdAt).toLocaleString("vi-VN", { year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" })}</td>
-                    </tr>
-                  ))}
-              </tbody>
-            </table>
-          </div>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="warning" onClick={() => setShowReturnModal(false)}>
-            Đóng
-          </Button>
           <Button
             variant="primary"
-            onClick={handleReturn}
+            onClick={() => {
+              setArchivedPage(1);
+              setShowArchivedModal(false);
+            }}
           >
-            ✅ Xác nhận trả hàng
+            Đóng
           </Button>
+          <Pagination
+            currentPage={archivedPage}
+            totalPages={archivedTotalPages}
+            onPageChange={(page) => setArchivedPage(page)}
+          />
         </Modal.Footer>
       </Modal>
     </div>

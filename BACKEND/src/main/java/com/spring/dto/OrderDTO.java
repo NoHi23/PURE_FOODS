@@ -21,6 +21,7 @@ public class OrderDTO {
     private String returnReason;
     private String paymentMethod;
     private String paymentStatus;
+    private String status;
 
     public OrderDTO() {}
 
