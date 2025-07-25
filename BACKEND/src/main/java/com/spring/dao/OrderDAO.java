@@ -21,4 +21,7 @@ public interface OrderDAO {
     List<BestSellingProductDTO> getTop5BestSellingProductsWithStats();
     List<Order> getTop5RecentOrders();
 
+    boolean hasCustomerBoughtProduct(int customerId, int productId);
+
+
 }

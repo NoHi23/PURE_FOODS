@@ -128,5 +128,23 @@ public class OrderDAOImpl implements OrderDAO {
                 .setMaxResults(5)
                 .list();
     }
+    @Override
+    public boolean hasCustomerBoughtProduct(int customerId, int productId) {
+        Session session = sessionFactory.getCurrentSession();
+        String hql = "SELECT COUNT(od) FROM Order o " +
+                "JOIN OrderDetail od ON o.orderID = od.orderID " +
+                "WHERE o.customerID = :customerId " +
+                "AND od.productID = :productId " +
+                "AND o.statusID = 4"; // 4 = Delivered
+
+        Long count = (Long) session.createQuery(hql)
+                .setParameter("customerId", customerId)
+                .setParameter("productId", productId)
+                .uniqueResult();
+
+        return count != null && count > 0;
+    }
+
+
 
 }

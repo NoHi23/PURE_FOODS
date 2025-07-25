@@ -5,10 +5,12 @@ import axios from "axios";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import { useWishlist } from "../../layouts/WishlistContext";
+import StarRating from "../Rating/StarRating";
 
 const ProductSlider = ({ products, handleViewProduct, userId }) => {
   const { wishlistMap, setWishlistMap, fetchWishlistCount, refreshWishlist } = useWishlist();
   const [loadingWishlist, setLoadingWishlist] = useState(true);
+    const [avgRatings, setAvgRatings] = useState({});
 
   const fetchWishlistMap = async () => {
     if (!userId) return;
@@ -39,6 +41,25 @@ const ProductSlider = ({ products, handleViewProduct, userId }) => {
     }
   }, [wishlistMap, loadingWishlist]);
 
+   useEffect(() => {
+    const fetchRatings = async () => {
+      const ratingMap = {};
+      for (const p of products) {
+        try {
+          const res = await axios.get(`http://localhost:8082/PureFoods/api/review/average/product?productId=${p.productId}`);
+          ratingMap[p.productId] = res.data || 0;
+        } catch (err) {
+          console.error(`❌ Lỗi khi lấy rating cho product ${p.productId}:`, err);
+          ratingMap[p.productId] = 0;
+        }
+      }
+      setAvgRatings(ratingMap);
+    };
+
+    if (products && products.length > 0) {
+      fetchRatings();
+    }
+  }, [products]);
   const toggleWishlist = async (product) => {
     const hasWish = Boolean(wishlistMap[product.productId]);
 
@@ -92,6 +113,7 @@ const ProductSlider = ({ products, handleViewProduct, userId }) => {
         {products.map((product) => {
           const isWished = Boolean(wishlistMap[product.productId]);
           const tooltipText = isWished ? "Remove from Wishlist" : "Add to Wishlist";
+           const avg = avgRatings[product.productId] || 0;
 
           return (
             <div key={product.productId}>
@@ -131,12 +153,7 @@ const ProductSlider = ({ products, handleViewProduct, userId }) => {
                     <del>${product.price.toFixed(2)}</del>
                   </h5>
                   <div className="product-rating mt-sm-2 mt-1">
-                    <ul className="rating">
-                      {[1, 2, 3, 4].map(i => (
-                        <li key={i}><i data-feather="star" className="fill" /></li>
-                      ))}
-                      <li><i data-feather="star" /></li>
-                    </ul>
+                    <StarRating rating={avg} />
                     <h6 className="theme-color">
                       {product?.stockQuantity === 0
                         ? 'Out of Stock'
