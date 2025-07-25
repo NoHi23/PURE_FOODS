@@ -50,6 +50,7 @@ import SpinWheelButton from './component/SpinWheelPage/SpinWheelButton';
 import AllProducts from './component/All Products/AllProducts';
 import MyCouponsPage from './component/MyCouponsPage/MyCouponsPage';
 import Notitications from './component/Notifications/Notifications';
+import MyOrders from './component/MyOrders/MyOrders';
 {/*import CustomerBlog from './component/CustomerBlog';
 import BlogDetail from './component/BlogDetail';*/}
 
@@ -214,6 +215,11 @@ function AppContent() {
         <Route path="/all-products" element={
           <PrivateRoute allowedRoles={2}>
             <AllProducts />
+          </PrivateRoute>
+        } />
+        <Route path="/my-orders" element={
+          <PrivateRoute allowedRoles={2}>
+            <MyOrders />
           </PrivateRoute>
         } />
         <Route path="/my-coupons" element={

@@ -224,7 +224,7 @@ public class OrderController {
             // ✅ Lấy Order để lấy ra userId (customerId)
             Order order = orderService.getOrderEntityById(Integer.parseInt(orderId));
 
-            order.setStatusID(4);
+            order.setStatusID(2);
             orderService.updateOrder(order);
 
             int userId = order.getCustomerID();
@@ -280,6 +280,20 @@ public class OrderController {
                 OrderDTO orderDTO = new OrderDTO(existingOrder); // Convert sang DTO
                 String vnpayUrl = vnpayService.createPaymentUrl(orderDTO);
                 return ResponseEntity.ok(Map.of("redirectUrl", vnpayUrl));
+            }
+            if ("COD".equalsIgnoreCase(existingOrder.getPaymentMethod())) {
+                // xử lý sau khi cập nhật COD
+                existingOrder.setStatusID(4); // Đặt hàng thành công
+                orderService.updateOrder(existingOrder);
+
+                orderService.decreaseProductQuantitiesByOrderId(orderId);
+                cartItemService.clearCartByUserId(existingOrder.getCustomerID());
+
+                Notifications notify = new Notifications();
+                notify.setUserId(existingOrder.getCustomerID());
+                notify.setTitle("Đặt hàng thành công!");
+                notify.setContent("Đơn hàng #" + existingOrder.getOrderID() + " của bạn đã được đặt thành công.");
+                notificationService.saveNotification(notify);
             }
 
             return ResponseEntity.ok(existingOrder);
