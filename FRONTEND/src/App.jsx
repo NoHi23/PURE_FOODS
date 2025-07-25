@@ -65,7 +65,7 @@ function AppContent() {
     '/admin-add-new-supplier', '/all-user', '/all-role', '/add-new-user',
     '/add-new-role', '/admin-order',
     '/admin-coupons', '/admin-add-new-coupons', '/admin-taxes',
-    '/admin-add-new-tax', '/admin-blog', '/admin-add-new-blog',
+    '/admin-add-new-tax', '/admin-blog', '/admin-add-new-blog','/admin-product-review'
 
   ];
 
