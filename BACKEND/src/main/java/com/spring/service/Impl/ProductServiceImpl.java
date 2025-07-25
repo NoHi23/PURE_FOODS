@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Pageable;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -304,4 +305,14 @@ public class ProductServiceImpl implements ProductService {
             return dto;
         }).collect(Collectors.toList());
     }
+    @Override
+    public List<ProductDTO> getCheapestActiveProducts(int limit) {
+        List<ProductDTO> products = getAllProductByStatus(0); // chỉ lấy sản phẩm có status = 0
+        return products.stream()
+                .filter(p -> p.getSalePrice() != null)
+                .sorted(Comparator.comparing(ProductDTO::getSalePrice))
+                .limit(limit)
+                .collect(Collectors.toList());
+    }
+
 }
