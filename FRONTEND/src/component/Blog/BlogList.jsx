@@ -2,213 +2,213 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import BlogListLayout from '../../layouts/BlogListLayout'; // Updated import
-import './BlogList.css';
+import HomepageLayout from '../../layouts/HomepageLayout';
+import feather from 'feather-icons';
+import CartLayout from "../../layouts/CartLayout";
 
 const BlogList = () => {
   const [blogs, setBlogs] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedCategory, setSelectedCategory] = useState('All');
   const itemsPerPage = 6;
-
-  const categories = [
-    { name: 'Latest Recipes', count: 10 },
-    { name: 'Diet Food', count: 6 },
-    { name: 'Low Calorie Items', count: 8 },
-    { name: 'Cooking Method', count: 9 },
-    { name: 'Dairy Free', count: 12 },
-    { name: 'Vegetarian Food', count: 10 },
-  ];
-
-  const tags = [
-    'Fruit Cutting',
-    'Meat',
-    'Organic',
-    'Cake',
-    'Pick Fruit',
-    'Bakery',
-    'Organic Food',
-    'Most Expensive Fruit',
-  ];
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentBlogs = blogs.slice(startIndex, endIndex);
+  const totalPages = Math.ceil(blogs.length / itemsPerPage);
 
   useEffect(() => {
-    const fetchBlogs = async () => {
+    const fetchData = async () => {
       try {
-        const res = await axios.get('http://localhost:8082/PureFoods/api/blog/getAll');
-        setBlogs(res.data.blogList || []);
+        // Fetch blogs
+        const blogRes = await axios.get('http://localhost:8082/PureFoods/api/blog/getAll');
+        setBlogs(blogRes.data.blogList || []);
+
+        // Fetch trending products
+        const productRes = await axios.get('http://localhost:8082/PureFoods/api/product/top-discount');
+        setProducts(productRes.data || []);
+
+        // Fetch categories
+        const categoryRes = await axios.get('http://localhost:8082/PureFoods/api/category/getAll');
+        setCategories(categoryRes.data || []);
       } catch (err) {
-        toast.error('Không thể tải danh sách bài viết!');
+        toast.error('Không thể tải dữ liệu!');
         console.error('Fetch error:', err);
       }
     };
-    fetchBlogs();
+    fetchData();
   }, []);
 
-  const filteredBlogs = selectedCategory === 'All'
-    ? blogs
-    : blogs.filter(blog => blog.title.toLowerCase().includes(selectedCategory.toLowerCase()));
-
-  const totalPages = Math.ceil(filteredBlogs.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const currentBlogs = filteredBlogs.slice(startIndex, startIndex + itemsPerPage);
+  useEffect(() => {
+    feather.replace();
+  }, [blogs, products, categories]);
 
   const handlePageChange = (page) => {
-    if (page >= 1 && page <= totalPages) {
-      setCurrentPage(page);
-    }
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
-    <BlogListLayout>
-      <div className="page-wrapper">
-        <div className="breadcrumb-area">
-          <div className="container">
-            <ul className="breadcrumb">
-              <li><Link to="/">Home</Link></li>
-              <li>Blog List</li>
-            </ul>
-          </div>
-        </div>
-
-        <section className="blog-section section-b-space">
-          <div className="container">
-            <div className="row g-4">
-              <div className="col-lg-9 order-lg-2">
-                <div className="row g-4">
-                  {currentBlogs.length === 0 ? (
-                    <p>Không có bài viết nào để hiển thị.</p>
-                  ) : (
-                    currentBlogs.map((blog, index) => (
-                      <div key={index} className="col-md-6">
-                        <div className="blog-box">
-                          <div className="blog-image">
-                            <img
-                              src={blog.image || '/assets/images/blog-placeholder.jpg'}
-                              className="img-fluid"
-                              alt={blog.title || 'Blog Image'}
-                            />
-                            {blog.popular && <span className="popular-badge">Popular</span>}
-                          </div>
-                          <div className="blog-content">
-                            <ul className="blog-meta">
-                              <li>{new Date(blog.createdAt).toLocaleDateString('vi-VN')}</li>
-                              <li>{blog.author || 'Unknown Author'}</li>
-                            </ul>
-                            <h4>{blog.title || 'N/A'}</h4>
-                            <p>{blog.content.substring(0, 150)}...</p>
-                            <Link to={`/blog-detail/${blog.blogID}`} className="btn btn-outline">
-                              Read More
-                            </Link>
-                          </div>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-
-                <div className="pagination-container d-flex justify-content-center mt-4">
-                  <nav>
-                    <ul className="pagination">
-                      <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
-                        <button className="page-link" onClick={() => handlePageChange(currentPage - 1)}>
-                          Previous
-                        </button>
-                      </li>
-                      {[...Array(totalPages)].map((_, i) => (
-                        <li key={i} className={`page-item ${currentPage === i + 1 ? 'active' : ''}`}>
-                          <button className="page-link" onClick={() => handlePageChange(i + 1)}>
-                            {i + 1}
-                          </button>
-                        </li>
-                      ))}
-                      <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
-                        <button className="page-link" onClick={() => handlePageChange(currentPage + 1)}>
-                          Next
-                        </button>
-                      </li>
-                    </ul>
-                  </nav>
-                </div>
+    <HomepageLayout>
+      <section className="section-b-space blog-section">
+        <div className="container-fluid-lg">
+          <div className="row g-4">
+            <div className="col-lg-9">
+              <div className="title section-t-space">
+                <h2>Blog Nổi Bật</h2>
+                <span className="title-leaf">
+                  <svg className="icon-width">
+                    <use href="../assets/svg/leaf.svg#leaf" />
+                  </svg>
+                </span>
+                <p>Khám phá các bài viết hữu ích về thực phẩm sạch và lối sống lành mạnh</p>
               </div>
 
-              <div className="col-lg-3 order-lg-1">
-                <div className="blog-sidebar">
-                  <div className="sidebar-box recent-post">
-                    <h4>Recent Post</h4>
-                    <ul className="recent-post-list">
-                      {blogs.slice(0, 4).map((blog, index) => (
-                        <li key={index}>
-                          <div className="recent-post-item">
-                            <img
-                              src={blog.image || '/assets/images/blog-placeholder.jpg'}
-                              alt={blog.title || 'Blog Image'}
-                              className="recent-post-img"
-                            />
-                            <div className="recent-post-content">
-                              <Link to={`/blog-detail/${blog.blogID}`}>
-                                {blog.title.substring(0, 50)}...
-                              </Link>
-                              <span>{new Date(blog.createdAt).toLocaleDateString('vi-VN')}</span>
-                            </div>
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
+              <div className="row g-4">
+                {currentBlogs.map((blog, index) => (
+                  <div className="col-lg-6 col-md-6" key={index}>
+                    <div className="blog-box">
+                      <div className="blog-box-image">
+                        <Link to={`/blog-detail/${blog.blogID}`} className="blog-image">
+                          <img
+                            src={`../assets/images/vegetable/blog/${(index % 3) + 1}.jpg`}
+                            className="bg-img blur-up lazyload"
+                            alt={blog.title}
+                          />
+                        </Link>
+                      </div>
+                      <div className="blog-detail">
+                        <h6>{new Date(blog.createdAt).toLocaleDateString('vi-VN')}</h6>
+                        <Link to={`/blog-detail/${blog.blogID}`}>
+                          <h5>{blog.title}</h5>
+                        </Link>
+                        <p className="text-content">
+                          {blog.content.length > 150 ? `${blog.content.substring(0, 150)}...` : blog.content}
+                        </p>
+                        <Link to={`/blog-detail/${blog.blogID}`} className="btn btn-sm btn-animation">
+                          Đọc thêm <i className="fa-solid fa-arrow-right"></i>
+                        </Link>
+                      </div>
+                    </div>
                   </div>
+                ))}
+              </div>
 
-                  <div className="sidebar-box category-box">
-                    <h4>Category</h4>
-                    <ul className="category-list">
-                      <li>
-                        <a
-                          href="#"
-                          className={selectedCategory === 'All' ? 'active' : ''}
-                          onClick={(e) => {
-                            e.preventDefault();
-                            setSelectedCategory('All');
-                            setCurrentPage(1);
-                          }}
-                        >
-                          All
-                        </a>
+              <div className="pagination-container d-flex justify-content-center mt-4">
+                <nav>
+                  <ul className="pagination">
+                    <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+                      <button
+                        className="page-link"
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        disabled={currentPage === 1}
+                      >
+                        Trước
+                      </button>
+                    </li>
+                    {[...Array(totalPages)].map((_, i) => (
+                      <li key={i} className={`page-item ${currentPage === i + 1 ? 'active' : ''}`}>
+                        <button className="page-link" onClick={() => handlePageChange(i + 1)}>
+                          {i + 1}
+                        </button>
                       </li>
-                      {categories.map((category, index) => (
-                        <li key={index}>
-                          <a
-                            href="#"
-                            className={selectedCategory === category.name ? 'active' : ''}
-                            onClick={(e) => {
-                              e.preventDefault();
-                              setSelectedCategory(category.name);
-                              setCurrentPage(1);
-                            }}
-                          >
-                            {category.name} ({category.count})
-                          </a>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+                    ))}
+                    <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+                      <button
+                        className="page-link"
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                      >
+                        Sau
+                      </button>
+                    </li>
+                  </ul>
+                </nav>
+              </div>
+            </div>
 
-                  <div className="sidebar-box tags-box">
-                    <h4>Product Tags</h4>
-                    <ul className="tags-list">
-                      {tags.map((tag, index) => (
-                        <li key={index}>
-                          <a href="#" onClick={(e) => e.preventDefault()}>
-                            {tag}
-                          </a>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
+            <div className="col-lg-3">
+              <div className="category-menu">
+                <h3>Bài viết gần đây</h3>
+                <ul>
+                  {blogs.slice(0, 4).map((blog, index) => (
+                    <li key={index}>
+                      <div className="offer-product">
+                        <Link to={`/blog-detail/${blog.blogID}`} className="offer-image">
+                          <img
+                            src={`../assets/images/vegetable/blog/${(index % 3) + 1}.jpg`}
+                            className="blur-up lazyload"
+                            alt={blog.title}
+                          />
+                        </Link>
+                        <div className="offer-detail">
+                          <Link to={`/blog-detail/${blog.blogID}`}>
+                            <h6 className="name">{blog.title.substring(0, 50)}...</h6>
+                          </Link>
+                          <span>{new Date(blog.createdAt).toLocaleDateString('vi-VN')}</span>
+                        </div>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="category-menu section-t-space">
+                <h3>Danh mục</h3>
+                <ul>
+                  {categories.map((category, index) => (
+                    <li key={index}>
+                      <Link to={`/category?cate=${category.categoryID}`}>
+                        {category.categoryName} <span>({Math.floor(Math.random() * 10) + 5})</span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="category-menu section-t-space">
+                <h3>Thẻ bài viết</h3>
+                <ul className="tag-cloud">
+                  <li><Link to="/blog-list">Thực phẩm hữu cơ</Link></li>
+                  <li><Link to="/blog-list">Rau củ</Link></li>
+                  <li><Link to="/blog-list">Dinh dưỡng</Link></li>
+                  <li><Link to="/blog-list">Sống khỏe</Link></li>
+                  <li><Link to="/blog-list">Ẩm thực</Link></li>
+                  <li><Link to="/blog-list">Món chay</Link></li>
+                </ul>
+              </div>
+
+              <div className="category-menu section-t-space">
+                <h3>Sản phẩm thịnh hành</h3>
+                <ul className="product-list">
+                  {products.slice(0, 3).map((product, index) => (
+                    <li key={index}>
+                      <div className="offer-product">
+                        <Link to={`/product/${product.productId}`} className="offer-image">
+                          <img
+                            src={product.imageURL}
+                            className="blur-up lazyload"
+                            alt={product.productName}
+                          />
+                        </Link>
+                        <div className="offer-detail">
+                          <Link to={`/product/${product.productId}`}>
+                            <h6 className="name">{product.productName}</h6>
+                          </Link>
+                          <h6 className="price theme-color">
+                            ${product.salePrice} <del>${product.price}</del>
+                          </h6>
+                        </div>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
               </div>
             </div>
           </div>
-        </section>
-      </div>
-    </BlogListLayout>
+        </div>
+      </section>
+    </HomepageLayout>
   );
 };
 
