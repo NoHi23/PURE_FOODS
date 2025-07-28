@@ -42,8 +42,7 @@ import Blog from './component/Admin/Blog';
 import AddNewBlog from './component/Admin/AddNewBlog';
 import ProductReview from './component/AdminDashboard/ProductReview';
 import BlogList from './component/Blog/BlogList';
-//import CustomerBlog from './component/CustomerBlog';
-//import BlogDetail from './component/BlogDetail';
+import BlogDetail from './component/Blog/BlogDetail';
 import DashboardCategory from './component/ShopLeftSidebar/DashboardCategory';
 import OrderSuccess from './component/OrderSuccess/OrderSuccess';
 import SpinWheelButton from './component/SpinWheelPage/SpinWheelButton';
@@ -51,9 +50,7 @@ import AllProducts from './component/All Products/AllProducts';
 import MyCouponsPage from './component/MyCouponsPage/MyCouponsPage';
 import Notitications from './component/Notifications/Notifications';
 import MyOrders from './component/MyOrders/MyOrders';
-{/*import CustomerBlog from './component/CustomerBlog';
-import BlogDetail from './component/BlogDetail';*/}
-
+import ProductSearch from './component/Search/ProductSearch';
 function AppContent() {
   const location = useLocation();
   const isProductDetail = location.pathname.startsWith('/product/');
@@ -66,7 +63,7 @@ function AppContent() {
     '/admin-add-new-supplier', '/all-user', '/all-role', '/add-new-user',
     '/add-new-role', '/admin-order',
     '/admin-coupons', '/admin-add-new-coupons', '/admin-taxes',
-    '/admin-add-new-tax', '/admin-blog', '/admin-add-new-blog','/admin-product-review'
+    '/admin-add-new-tax', '/admin-blog', '/admin-add-new-blog', '/admin-product-review'
 
   ];
 
@@ -100,6 +97,8 @@ function AppContent() {
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/verify-otp" element={<VerifyOtp />} />
         <Route path="/blog-list" element={<BlogList />} />
+        <Route path="/blog-detail/:id" element={<BlogDetail />} />
+        <Route path="/search" element={<ProductSearch />} />
         <Route path="/admin-dashboard" element={
           <PrivateRoute allowedRoles={1}>
             <AdminDashboard />
@@ -146,6 +145,7 @@ function AppContent() {
             <AllRole />
           </PrivateRoute>
         } />
+        
         <Route path="/add-new-user" element={
           <PrivateRoute allowedRoles={1}>
             <AddNewUser />
@@ -192,10 +192,10 @@ function AppContent() {
           </PrivateRoute>
         } />
         <Route path="/admin-product-review" element={
-  <PrivateRoute allowedRoles={1}>
-    <ProductReview />
-  </PrivateRoute>
-} />
+          <PrivateRoute allowedRoles={1}>
+            <ProductReview />
+          </PrivateRoute>
+        } />
 
 
         {/* Customer Routes 
