@@ -24,6 +24,11 @@ function getTimeRemaining(endtime) {
 /***** DISPLAY THE CLOCK AND STOP IT WHEN IT REACHES ZERO *****/
 function initializeClock(id, endtime) {
     var clock = document.getElementById(id);
+    if (!clock) {
+        console.error("Không tìm thấy phần tử với id:", id);
+        return;
+    }
+
     var daysSpan = clock.querySelector('.days');
     var hoursSpan = clock.querySelector('.hours');
     var minutesSpan = clock.querySelector('.minutes');
@@ -42,9 +47,10 @@ function initializeClock(id, endtime) {
         }
     }
 
-    updateClock(); // run function once at first to avoid delay
+    updateClock();
     var timeinterval = setInterval(updateClock, 1000);
 }
+
 
 /***** SET A VALID END DATE *****/
 var deadline = new Date(Date.parse(new Date()) + 15 * 24 * 60 * 60 * 1000);

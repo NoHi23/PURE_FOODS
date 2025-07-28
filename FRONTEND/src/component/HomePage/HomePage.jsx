@@ -34,7 +34,7 @@ const HomePage = () => {
   const [timeObj, setTimeObj] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const user = JSON.parse(localStorage.getItem("user"));
   const userId = user?.userId;
-
+  const [searchTerm, setSearchTerm] = useState("");
   const [products, setProducts] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const navigate = useNavigate();
@@ -114,6 +114,13 @@ const HomePage = () => {
         toast.error("Không thể lấy danh sách sản phẩm");
       });
   }, []);
+  const handleSearch = () => {
+    if (!searchTerm.trim()) {
+      toast.warning("Vui lòng nhập từ khóa tìm kiếm");
+      return;
+    }
+    navigate(`/search?q=${encodeURIComponent(searchTerm)}`);
+  };
 
   useEffect(() => {
     // Xử lý sự cố còn sót modal hoặc lớp backdrop
@@ -330,6 +337,21 @@ const HomePage = () => {
                     </div>
 
                     <div className="header-nav-middle">
+                       <div className="header-search input-group ms-3">
+                      <input
+                        type="text"
+                        className="form-control"
+                        placeholder="Tìm sản phẩm..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") handleSearch();
+                        }}
+                      />
+                      <button className="btn btn-primary theme-bg-color" onClick={handleSearch}>
+                        <i className="fa fa-search"></i>
+                      </button>
+                    </div>
                       <div className="main-nav navbar navbar-expand-xl navbar-light navbar-sticky">
                         <div className="offcanvas offcanvas-collapse order-xl-2" id="primaryMenu">
                           <div className="offcanvas-header navbar-shadow">
@@ -458,15 +480,11 @@ const HomePage = () => {
                                 </a>
                                 <ul className="dropdown-menu">
                                   <li>
-                                    <a className="dropdown-item" href="blog-detail.html">
+                                    <a className="dropdown-item" href="blog-detail">
                                       Blog Detail
                                     </a>
                                   </li>
-                                  <li>
-                                    <a className="dropdown-item" href="blog-grid.html">
-                                      Blog Grid
-                                    </a>
-                                  </li>
+
                                   <li>
                                     <a className="dropdown-item" href="blog-list">
                                       Blog List
@@ -656,6 +674,7 @@ const HomePage = () => {
                         <span>Ưu đãi hôm nay</span>
                       </button>
                     </div>
+                   
                   </div>
                 </div>
               </div>
@@ -730,6 +749,8 @@ const HomePage = () => {
                     </div>
                   </div>
                 </div>
+
+
 
                 <div className="col-xl-4 ratio_65">
                   <div className="row g-4">
