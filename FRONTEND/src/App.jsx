@@ -50,6 +50,12 @@ import AllProducts from './component/All Products/AllProducts';
 import MyCouponsPage from './component/MyCouponsPage/MyCouponsPage';
 import Notitications from './component/Notifications/Notifications';
 import MyOrders from './component/MyOrders/MyOrders';
+import ShipperDashboard from './component/ShipperDashboard/ShipperDashboard';
+import ShipperOrder from './component/ShipperDashboard/ShipperOrder';
+import ShipperProfileUpdate from './component/ShipperDashboard/ShipperProfileUpdate';
+{/*import CustomerBlog from './component/CustomerBlog';
+import BlogDetail from './component/BlogDetail';*/}
+
 import ProductSearch from './component/Search/ProductSearch';
 function AppContent() {
   const location = useLocation();
@@ -63,7 +69,8 @@ function AppContent() {
     '/admin-add-new-supplier', '/all-user', '/all-role', '/add-new-user',
     '/add-new-role', '/admin-order',
     '/admin-coupons', '/admin-add-new-coupons', '/admin-taxes',
-    '/admin-add-new-tax', '/admin-blog', '/admin-add-new-blog', '/admin-product-review'
+    '/admin-add-new-tax', '/admin-blog', '/admin-add-new-blog','/admin-product-review', '/shipper-dashboard', '/shipper-order', '/shipper-profile-update'
+    
 
   ];
 
@@ -104,6 +111,25 @@ function AppContent() {
             <AdminDashboard />
           </PrivateRoute>
         } />
+
+        <Route path="/shipper-dashboard" element={
+          <PrivateRoute allowedRoles={6}>
+            <ShipperDashboard />
+          </PrivateRoute>
+        } />
+
+        <Route path="/shipper-order" element={
+          <PrivateRoute allowedRoles={6}>
+            <ShipperOrder />
+          </PrivateRoute>
+        } />
+
+        <Route path="/shipper-profile-update" element={
+          <PrivateRoute allowedRoles={6}>
+            <ShipperProfileUpdate />
+          </PrivateRoute>
+        } />
+
         <Route path="/product/:id" element={<ProductDetail />} />
         <Route path="/admin-product" element={
           <PrivateRoute allowedRoles={1}>
