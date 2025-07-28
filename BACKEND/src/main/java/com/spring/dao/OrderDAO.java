@@ -8,8 +8,8 @@ import java.util.List;
 import java.util.Optional;
 
 public interface OrderDAO {
-    void saveOrder(Order order);
-    void updateOrder(Order order);
+    Order saveOrder(Order order); // Thêm phương thức
+    void updateOrder(Order order); // Thêm phương thức
     void deleteOrder(int orderId);
 
     Order getOrderById(int orderId);
