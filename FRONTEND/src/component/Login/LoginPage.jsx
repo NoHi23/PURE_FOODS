@@ -65,7 +65,7 @@ const LoginPage = () => {
         } else if (user.roleID === 5) {
           navigate("/exporter");
         } else if (user.roleID === 6) {
-          navigate("/shipper");
+          navigate("/shipper-dashboard");
         }
         else {
           toast.warn("Unknown role!");
@@ -116,7 +116,7 @@ const LoginPage = () => {
       } else if (user.roleID === 5) {
         navigate("/exporter");
       } else if (user.roleID === 6) {
-        navigate("/shipper");
+        navigate("/shipper-dashboard");
       } else {
         toast.warn("Unknown role!");
       }
@@ -183,7 +183,7 @@ const LoginPage = () => {
               else if (user.roleID === 3) navigate("/wholesaler");
               else if (user.roleID === 4) navigate("/importer");
               else if (user.roleID === 5) navigate("/exporter");
-              else if (user.roleID === 6) navigate("/shipper");
+              else if (user.roleID === 6) navigate("/shipper-dashboard");
 
             }).catch(err => {
               const errorMessage =
