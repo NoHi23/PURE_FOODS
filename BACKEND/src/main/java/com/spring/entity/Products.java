@@ -3,6 +3,8 @@ package com.spring.entity;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 
+import java.util.Date;
+
 
 @Entity
 @Table(name = "Products")
@@ -43,6 +45,15 @@ public class Products {
     @jakarta.persistence.Temporal(jakarta.persistence.TemporalType.TIMESTAMP)
     @jakarta.persistence.Column(name = "CreatedAt")
     private java.sql.Timestamp createdAt;
+
+    @Column(name = "HarvestDate")
+    @Temporal(TemporalType.DATE)
+    private Date harvestDate;
+
+    @Column(name = "ExpirationDate")
+    @Temporal(TemporalType.DATE)
+    private Date expirationDate;
+
 
     @Column(name = "Status")
     private int status;
@@ -117,6 +128,22 @@ public class Products {
     public void setStatus(int status) {
         this.status = status;
     }
+    public Date getHarvestDate() {
+        return harvestDate;
+    }
+
+    public void setHarvestDate(Date harvestDate) {
+        this.harvestDate = harvestDate;
+    }
+
+    public Date getExpirationDate() {
+        return expirationDate;
+    }
+
+    public void setExpirationDate(Date expirationDate) {
+        this.expirationDate = expirationDate;
+    }
+
 
     @Transient
     public float getPriceAfterDiscount() {
