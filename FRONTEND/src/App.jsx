@@ -53,8 +53,8 @@ import MyOrders from './component/MyOrders/MyOrders';
 import ShipperDashboard from './component/ShipperDashboard/ShipperDashboard';
 import ShipperOrder from './component/ShipperDashboard/ShipperOrder';
 import ShipperProfileUpdate from './component/ShipperDashboard/ShipperProfileUpdate';
-{/*import CustomerBlog from './component/CustomerBlog';
-import BlogDetail from './component/BlogDetail';*/}
+//import CustomerBlog from './component/CustomerBlog';
+//import BlogDetail from './component/BlogDetail';
 
 import ProductSearch from './component/Search/ProductSearch';
 function AppContent() {

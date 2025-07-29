@@ -30,5 +30,6 @@ public interface ProductService {
     List<ProductDTO> getProductsByCategory(int categoryId);
     public List<ProductDTO> getRelatedProducts(int productId);
     List<ProductDTO> getCheapestActiveProducts(int limit);
+    int updateExpiredProductStatuses();
 
 }

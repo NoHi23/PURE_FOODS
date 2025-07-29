@@ -8,7 +8,19 @@ const ImporterEditProduct = ({ show, onClose, product, onUpdated }) => {
   const [suppliers, setSuppliers] = useState([]);
 
   useEffect(() => {
-    setForm({ ...product });
+    if (product) {
+      const formatDate = (date) => {
+        if (!date) return "";
+        const d = new Date(date);
+        return d.toISOString().split("T")[0]; // Trả về "YYYY-MM-DD"
+      };
+
+      setForm({
+        ...product,
+        harvestDate: formatDate(product.harvestDate),
+        expirationDate: formatDate(product.expirationDate),
+      });
+    }
   }, [product]);
 
   useEffect(() => {
@@ -206,33 +218,7 @@ const ImporterEditProduct = ({ show, onClose, product, onUpdated }) => {
                   ))}
                 </select>
               </div>
-              <div className="mb-3">
-                <label
-                  className="form-label"
-                  style={{
-                    fontWeight: "500",
-                    color: "#444",
-                    marginBottom: "5px",
-                  }}
-                >
-                  Giá
-                </label>
-                <input
-                  type="number"
-                  className="form-control"
-                  name="price"
-                  value={form.price || 0}
-                  onChange={handleChange}
-                  required
-                  min={0}
-                  style={{
-                    borderRadius: "5px",
-                    border: "1px solid #ced4da",
-                    padding: "8px 12px",
-                    fontSize: "1rem",
-                  }}
-                />
-              </div>
+
               <div className="mb-3">
                 <label
                   className="form-label"
@@ -373,30 +359,6 @@ const ImporterEditProduct = ({ show, onClose, product, onUpdated }) => {
                     border: "1px solid #ced4da",
                     padding: "8px 12px",
                     fontSize: "1rem",
-                  }}
-                />
-              </div>
-              <div className="mb-3">
-                <label
-                  style={{
-                    fontWeight: "500",
-                    color: "#444",
-                    marginBottom: "5px",
-                  }}
-                >
-                  Thông tin dinh dưỡng
-                </label>
-                <textarea
-                  name="nutritionalInfo"
-                  value={form.nutritionalInfo}
-                  onChange={handleChange}
-                  style={{
-                    width: "100%",
-                    borderRadius: "5px",
-                    border: "1px solid #ced4da",
-                    padding: "8px 12px",
-                    fontSize: "1rem",
-                    minHeight: "100px",
                   }}
                 />
               </div>

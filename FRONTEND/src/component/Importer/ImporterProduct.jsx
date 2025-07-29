@@ -4,11 +4,13 @@ import { toast } from "react-toastify";
 import { FiSearch, FiRefreshCw } from "react-icons/fi";
 import Pagination from "../../layouts/Pagination";
 import ImporterEditProduct from "./ImporterEditProduct";
+import ModalExpiredProduct from "./ModalExpiredProduct";
 import * as bootstrap from "bootstrap";
 
 const ImporterProduct = ({ setProducts, currentPage, setCurrentPage }) => {
   const [products, setLocalProducts] = useState([]);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showExpiredModal, setShowExpiredModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [categories, setCategories] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
@@ -17,28 +19,32 @@ const ImporterProduct = ({ setProducts, currentPage, setCurrentPage }) => {
     quantityChange: "",
     reason: "",
   });
-  const [isLoading, setIsLoading] = useState(false); // Thêm trạng thái loading
+  const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const modalRef = useRef(null); // Ref để điều khiển modal
+  const modalRef = useRef(null);
 
-  const filteredProducts = products.filter((p) => {
-    const productName = p.productName?.toLowerCase() || "";
-    const price = p.price?.toString() || "";
-    const quantity = p.stockQuantity?.toString() || "";
-    const harvestDate = p.harvestDate ? new Date(p.harvestDate).toLocaleDateString("vi-VN").toLowerCase() : "";
-    const expirationDate = p.expirationDate ? new Date(p.expirationDate).toLocaleDateString("vi-VN").toLowerCase() : "";
+  const filteredProducts = products
+    .filter((p) => !p.expired) // ❌ Ẩn sản phẩm đã hết hạn
+    .filter((p) => {
+      const productName = p.productName?.toLowerCase() || "";
+      const price = p.price?.toString() || "";
+      const quantity = p.stockQuantity?.toString() || "";
+      const harvestDate = p.harvestDate ? new Date(p.harvestDate).toLocaleDateString("vi-VN").toLowerCase() : "";
+      const expirationDate = p.expirationDate
+        ? new Date(p.expirationDate).toLocaleDateString("vi-VN").toLowerCase()
+        : "";
 
-    const statusText = p.status === 0 ? "đang bán" : "ngừng bán";
+      const statusText = p.status === 0 ? "đang bán" : "ngừng bán";
 
-    return (
-      productName.includes(searchTerm.toLowerCase()) ||
-      price.includes(searchTerm) ||
-      quantity.includes(searchTerm) ||
-      harvestDate.includes(searchTerm.toLowerCase()) ||
-      expirationDate.includes(searchTerm.toLowerCase()) ||
-      statusText.includes(searchTerm.toLowerCase())
-    );
-  });
+      return (
+        productName.includes(searchTerm.toLowerCase()) ||
+        price.includes(searchTerm) ||
+        quantity.includes(searchTerm) ||
+        harvestDate.includes(searchTerm.toLowerCase()) ||
+        expirationDate.includes(searchTerm.toLowerCase()) ||
+        statusText.includes(searchTerm.toLowerCase())
+      );
+    });
 
   const productsPerPage = 7;
   const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
@@ -48,14 +54,34 @@ const ImporterProduct = ({ setProducts, currentPage, setCurrentPage }) => {
 
   const fetchProducts = async () => {
     try {
+      // Gọi API update status trước
+      await axios.put("http://localhost:8082/PureFoods/api/product/auto-update-expired-status");
+
+      // Sau đó mới lấy toàn bộ danh sách
       const [productsRes, suppliersRes, categoriesRes] = await Promise.all([
         axios.get("http://localhost:8082/PureFoods/api/product/getAll"),
         axios.get("http://localhost:8082/PureFoods/api/supplier/getAll"),
         axios.get("http://localhost:8082/PureFoods/api/category/getAll"),
       ]);
 
-      setLocalProducts(productsRes.data.listProduct || []);
-      setProducts(productsRes.data.listProduct || []);
+      const today = new Date();
+      const FIVE_DAYS_MS = 5 * 24 * 60 * 60 * 1000;
+
+      const processedProducts = (productsRes.data.listProduct || []).map((p) => {
+        const expiration = new Date(p.expirationDate);
+        const isExpiringSoon = expiration - today <= FIVE_DAYS_MS && expiration - today > 0;
+        const isExpired = expiration - today <= 0;
+
+        return {
+          ...p,
+          status: isExpired ? 1 : p.status, // nếu hết hạn → ngừng bán
+          expiringSoon: isExpiringSoon,
+          expired: isExpired,
+        };
+      });
+
+      setLocalProducts(processedProducts);
+      setProducts(processedProducts);
       setSuppliers(suppliersRes.data.suppliers || []);
       setCategories(categoriesRes.data || []);
     } catch (err) {
@@ -166,8 +192,8 @@ const ImporterProduct = ({ setProducts, currentPage, setCurrentPage }) => {
           </svg>
         </span>
         <p style={{ color: "#f98050", marginTop: "5px", fontFamily: "Inconsolata, monospace" }}>
-          (*)Đảm bảo mọi thứ còn nguyên vẹn trước khi lưu kho, mọi sai lệch sẽ ảnh hưởng đến quá trình xử
-           lý sau này! Kiểm tra kỹ nếu có vấn đề thì trả hàng lại cho nhà cung cấp.
+          (*)Đảm bảo mọi thứ còn nguyên vẹn trước khi lưu kho, mọi sai lệch sẽ ảnh hưởng đến quá trình xử lý sau này!
+          Kiểm tra kỹ nếu có vấn đề thì trả hàng lại cho nhà cung cấp.
         </p>
       </div>
       <div className="position-relative mb-4">
@@ -207,6 +233,10 @@ const ImporterProduct = ({ setProducts, currentPage, setCurrentPage }) => {
           }}
         >
           Nhập thêm
+        </button>
+
+        <button className="btn btn-warning fw-bold text-white" onClick={() => setShowExpiredModal(true)}>
+          🗓️ Sản phẩm hết hạn
         </button>
 
         <button
@@ -339,8 +369,7 @@ const ImporterProduct = ({ setProducts, currentPage, setCurrentPage }) => {
             <tr>
               <th scope="col">Ảnh</th>
               <th scope="col">Tên sản phẩm</th>
-              <th scope="col">Giá</th>
-              <th scope="col">Số lượng</th>
+              <th scope="col">Tồn kho</th>
               <th scope="col">Ngày thu hoạch</th>
               <th scope="col">Ngày hết hạn</th>
               <th scope="col">Trạng thái</th>
@@ -371,9 +400,6 @@ const ImporterProduct = ({ setProducts, currentPage, setCurrentPage }) => {
                     <h6>{product.productName || "Không xác định"}</h6>
                   </td>
                   <td>
-                    <h6 className="theme-color fw-bold">{product.price ? `$${product.price}` : "Không xác định"}</h6>
-                  </td>
-                  <td>
                     <h6>{product.stockQuantity ?? 0}</h6>
                   </td>
                   <td>
@@ -389,12 +415,19 @@ const ImporterProduct = ({ setProducts, currentPage, setCurrentPage }) => {
                     </h6>
                   </td>
                   <td>
-                    <span
-                      className={`badge ${product.status === 0 ? "bg-success" : "bg-secondary"}`}
-                      style={{ fontSize: "0.8rem" }}
-                    >
-                      {product.status === 0 ? "Đang bán" : "Ngừng bán"}
-                    </span>
+                    {product.expired ? (
+                      <span className="badge bg-danger" title="Sản phẩm đã hết hạn">
+                        Hết hạn ❌
+                      </span>
+                    ) : product.expiringSoon ? (
+                      <span className="badge bg-warning text-dark" title="Sản phẩm sắp hết hạn">
+                        Sắp hết hạn ⏳
+                      </span>
+                    ) : (
+                      <span className={`badge ${product.status === 0 ? "bg-success" : "bg-secondary"}`}>
+                        {product.status === 0 ? "Đang bán" : "Ngừng bán"}
+                      </span>
+                    )}
                   </td>
                   <td className="edit-delete">
                     <button
@@ -453,6 +486,12 @@ const ImporterProduct = ({ setProducts, currentPage, setCurrentPage }) => {
           />
         )}
       </div>
+      {showExpiredModal && (
+        <ModalExpiredProduct
+          expiredProducts={products.filter((p) => p.expired)}
+          onClose={() => setShowExpiredModal(false)}
+        />
+      )}
     </div>
   );
 };
