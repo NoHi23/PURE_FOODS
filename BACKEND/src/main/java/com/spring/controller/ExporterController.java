@@ -330,7 +330,7 @@ public class ExporterController {
             Map<String, Object> response = new HashMap<>();
             response.put("message", "Lấy thống kê xuất hàng thành công!");
             response.put("status", 200);
-            response.put("log", archivedLog);
+            response.put("stats", stats);
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
             Map<String, Object> errorResponse = new HashMap<>();
