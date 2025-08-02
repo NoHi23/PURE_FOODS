@@ -100,12 +100,12 @@ const AddNewRole = () => {
                       <div className="card">
                         <div className="card-body">
                           <div className="card-header-2">
-                            <h5>Create Role</h5>
+                            <h5>Tạo mới vai trò người dùng</h5>
                           </div>
 
                           <form className="theme-form theme-form-2 mega-form" onSubmit={handleSubmit}>
                             <div className="mb-4 row align-items-center">
-                              <label className="col-lg-2 col-md-3 mb-0">Role Name</label>
+                              <label className="col-lg-2 col-md-3 mb-0">Tên vai trò</label>
                               <div className="col-md-9 col-lg-10">
                                 <input
                                   className="form-control"
@@ -118,7 +118,7 @@ const AddNewRole = () => {
 
                             <div className="card-submit-button">
                               <button className="btn btn-animation ms-auto" type="submit">
-                                Submit
+                                Gửi
                               </button>
                             </div>
                           </form>

@@ -134,16 +134,16 @@ const AddNewProduct = () => {
                       <div className="card">
                         <div className="card-body">
                           <div className="card-header-2">
-                            <h5>Product Information</h5>
+                            <h5>Thông tin sản phẩm</h5>
                           </div>
 
                           <form className="theme-form theme-form-2 mega-form" onSubmit={handleSubmit}>
                             <div className="mb-4 row align-items-center">
-                              <label className="form-label-title col-sm-3 mb-0">Product
-                                Name</label>
+                              <label className="form-label-title col-sm-3 mb-0">
+                                Tên sản phẩm</label>
                               <div className="col-sm-9">
                                 <input className="form-control" type="text"
-                                  placeholder="Product Name"
+                                  placeholder="Tên sản phẩm"
                                   name="productName"
                                   value={form.productName}
                                   onChange={handleChange} />
@@ -151,8 +151,8 @@ const AddNewProduct = () => {
                             </div>
 
                             <div className="mb-4 row align-items-center">
-                              <label className="col-sm-3 col-form-label form-label-title">Category
-                                Name</label>
+                              <label className="col-sm-3 col-form-label form-label-title">Loại sản phẩm
+                                </label>
                               <div className="col-sm-9">
                                 <select className="js-example-basic-single w-100"
                                   value={form.categoryId}
@@ -168,7 +168,7 @@ const AddNewProduct = () => {
 
                             <div className="mb-4 row align-items-center">
                               <label
-                                className="col-sm-3 col-form-label form-label-title">Supplier Name</label>
+                                className="col-sm-3 col-form-label form-label-title">Nhà cung cấp</label>
                               <div className="col-sm-9">
                                 <select className="js-example-basic-single w-100"
                                   name="supplierId"
@@ -183,23 +183,23 @@ const AddNewProduct = () => {
                             </div>
 
                             <div className="mb-4 row align-items-center">
-                              <label className="form-label-title col-sm-3 mb-0">Price</label>
+                              <label className="form-label-title col-sm-3 mb-0">Giá</label>
                               <div className="col-sm-9">
                                 <input className="form-control" type="number"
-                                  placeholder="Price"
+                                  placeholder="Giá"
                                   name="price"
                                   value={form.price}
                                   onChange={handleChange} min={0} />
                               </div>
                             </div>
                             <div className="mb-4 row align-items-center">
-                              <label className="form-label-title col-sm-3 mb-0"> Discount: </label>
+                              <label className="form-label-title col-sm-3 mb-0"> Giảm giá: </label>
                               <div className="col-sm-9">
                                 <label className="form-label">
                                   {form.discountPercent || 0}%
                                 </label>
                                 <input className="form-range" type="range"
-                                  placeholder="Price"
+                                  placeholder="Giá"
                                   name="discountPercent"
                                   min={0}
                                   max={100}
@@ -210,7 +210,7 @@ const AddNewProduct = () => {
                             </div>
 
                             <div className="mb-4 row align-items-center">
-                              <label className="form-label-title col-sm-3 mb-0"> Price After Discount: </label>
+                              <label className="form-label-title col-sm-3 mb-0"> Giá sau khi giảm: </label>
                               <div className="col-sm-9">
                                 <label className="form-label">
                                   &nbsp;
@@ -223,28 +223,28 @@ const AddNewProduct = () => {
                               </div>
                             </div>
                             <div className="mb-4 row align-items-center">
-                              <label className="form-label-title col-sm-3 mb-0">Stock Quantity</label>
+                              <label className="form-label-title col-sm-3 mb-0">Số lượng</label>
                               <div className="col-sm-9">
                                 <input className="form-control" type="number"
-                                  placeholder="Stock Quantity"
+                                  placeholder="Số lượng"
                                   name="stockQuantity"
                                   value={form.stockQuantity}
                                   onChange={handleChange} min={0} />
                               </div>
                             </div>
                             <div className="mb-4 row">
-                              <label className="form-label-title col-sm-3 mb-0">Description</label>
+                              <label className="form-label-title col-sm-3 mb-0">Mô tả</label>
                               <div className="col-sm-9">
                                 <textarea className="form-control" rows="3" name="description" value={form.description} onChange={handleChange}></textarea>
                               </div>
                             </div>
                             <div className="mb-3">
-                              <label className="form-label">Avatar URL</label>
+                              <label className="form-label">Đường dẫn ảnh đại diện</label>
                               <input type="text" className="form-control" name="imageURL" value={form.imageURL} onChange={handleChange} />
                             </div>
                             {form.imageURL && (
                               <div className="mb-3">
-                                <label className="form-label">Preview image</label>
+                                <label className="form-label">Xem trước hình ảnh</label>
                                 <div>
                                   <img
                                     src={form.imageURL}
@@ -257,7 +257,7 @@ const AddNewProduct = () => {
                                 </div>
                               </div>
                             )}
-                            <label className="form-label">Image URL</label>
+                            <label className="form-label">Đường dẫn ảnh sản phẩm</label>
 
                             {form.galleryImages?.map((url, idx) => (
                               <div key={idx} className="d-flex mb-2 align-items-center">
@@ -319,7 +319,7 @@ const AddNewProduct = () => {
                               </div>
                             )}
                             <div className="mb-4 row align-items-center">
-                              <label className="col-sm-3 col-form-label form-label-title">Status</label>
+                              <label className="col-sm-3 col-form-label form-label-title">Trạng thái</label>
                               <div className="col-sm-9">
                                 <label className="switch">
                                   <input
@@ -338,7 +338,7 @@ const AddNewProduct = () => {
                               </div>
                             </div>
                             <div className="card-submit-button">
-                              <button className="btn btn-animation ms-auto" type="submit">Submit</button>
+                              <button className="btn btn-animation ms-auto" type="submit">Tạo mới</button>
                             </div>
                           </form>
 

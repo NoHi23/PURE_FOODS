@@ -42,18 +42,22 @@ import AddNewTax from './component/Admin/AddNewTax';
 import Blog from './component/Admin/Blog';
 import AddNewBlog from './component/Admin/AddNewBlog';
 import ProductReview from './component/AdminDashboard/ProductReview';
-
-//import CustomerBlog from './component/CustomerBlog';
-//import BlogDetail from './component/BlogDetail';
+import BlogList from './component/Blog/BlogList';
+import BlogDetail from './component/Blog/BlogDetail';
 import DashboardCategory from './component/ShopLeftSidebar/DashboardCategory';
 import OrderSuccess from './component/OrderSuccess/OrderSuccess';
 import SpinWheelButton from './component/SpinWheelPage/SpinWheelButton';
 import AllProducts from './component/All Products/AllProducts';
 import MyCouponsPage from './component/MyCouponsPage/MyCouponsPage';
 import Notitications from './component/Notifications/Notifications';
-{/*import CustomerBlog from './component/CustomerBlog';
-import BlogDetail from './component/BlogDetail';*/}
+import MyOrders from './component/MyOrders/MyOrders';
+import ShipperDashboard from './component/ShipperDashboard/ShipperDashboard';
+import ShipperOrder from './component/ShipperDashboard/ShipperOrder';
+import ShipperProfileUpdate from './component/ShipperDashboard/ShipperProfileUpdate';
+//import CustomerBlog from './component/CustomerBlog';
+//import BlogDetail from './component/BlogDetail';
 
+import ProductSearch from './component/Search/ProductSearch';
 function AppContent() {
   const location = useLocation();
   const isProductDetail = location.pathname.startsWith('/product/');
@@ -66,7 +70,8 @@ function AppContent() {
     '/admin-add-new-supplier', '/all-user', '/all-role', '/add-new-user',
     '/add-new-role', '/admin-order',
     '/admin-coupons', '/admin-add-new-coupons', '/admin-taxes',
-    '/admin-add-new-tax', '/admin-blog', '/admin-add-new-blog',
+    '/admin-add-new-tax', '/admin-blog', '/admin-add-new-blog','/admin-product-review', '/shipper-dashboard', '/shipper-order', '/shipper-profile-update'
+    
 
   ];
 
@@ -99,12 +104,33 @@ function AppContent() {
         <Route path="/forgot" element={<Forgot />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/verify-otp" element={<VerifyOtp />} />
-
+        <Route path="/blog-list" element={<BlogList />} />
+        <Route path="/blog-detail/:id" element={<BlogDetail />} />
+        <Route path="/search" element={<ProductSearch />} />
         <Route path="/admin-dashboard" element={
           <PrivateRoute allowedRoles={1}>
             <AdminDashboard />
           </PrivateRoute>
         } />
+
+        <Route path="/shipper-dashboard" element={
+          <PrivateRoute allowedRoles={6}>
+            <ShipperDashboard />
+          </PrivateRoute>
+        } />
+
+        <Route path="/shipper-order" element={
+          <PrivateRoute allowedRoles={6}>
+            <ShipperOrder />
+          </PrivateRoute>
+        } />
+
+        <Route path="/shipper-profile-update" element={
+          <PrivateRoute allowedRoles={6}>
+            <ShipperProfileUpdate />
+          </PrivateRoute>
+        } />
+
         <Route path="/product/:id" element={<ProductDetail />} />
         <Route path="/admin-product" element={
           <PrivateRoute allowedRoles={1}>
@@ -146,6 +172,7 @@ function AppContent() {
             <AllRole />
           </PrivateRoute>
         } />
+        
         <Route path="/add-new-user" element={
           <PrivateRoute allowedRoles={1}>
             <AddNewUser />
@@ -192,10 +219,10 @@ function AppContent() {
           </PrivateRoute>
         } />
         <Route path="/admin-product-review" element={
-  <PrivateRoute allowedRoles={1}>
-    <ProductReview />
-  </PrivateRoute>
-} />
+          <PrivateRoute allowedRoles={1}>
+            <ProductReview />
+          </PrivateRoute>
+        } />
 
 
         {/* Customer Routes 
@@ -215,6 +242,11 @@ function AppContent() {
         <Route path="/all-products" element={
           <PrivateRoute allowedRoles={2}>
             <AllProducts />
+          </PrivateRoute>
+        } />
+        <Route path="/my-orders" element={
+          <PrivateRoute allowedRoles={2}>
+            <MyOrders />
           </PrivateRoute>
         } />
         <Route path="/my-coupons" element={

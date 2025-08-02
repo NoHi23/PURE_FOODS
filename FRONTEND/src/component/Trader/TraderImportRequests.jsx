@@ -10,13 +10,13 @@ const TraderImportRequests = ({ traderId }) => {
   const [loading, setLoading] = useState(true);
   const [imageLoading, setImageLoading] = useState({});
   const [activeTab, setActiveTab] = useState("pending");
-
   const [searchTerm, setSearchTerm] = useState("");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
-
+  const [statusFilter, setStatusFilter] = useState(""); // New state for status filter
   const [currentPage, setCurrentPage] = useState(1);
   const [logsPerPage] = useState(5);
+  const [selectedLogs, setSelectedLogs] = useState([]);
 
   const fetchProductDetails = async (productId) => {
     try {
@@ -96,6 +96,7 @@ const TraderImportRequests = ({ traderId }) => {
         { withCredentials: true }
       );
       toast.success("✅ Đã xác nhận đơn nhập.");
+      setSelectedLogs((prev) => prev.filter((id) => id !== logId));
       fetchImportRequests();
     } catch (err) {
       toast.error("❌ Lỗi xác nhận: " + (err.response?.data?.message || "Không xác định"));
@@ -112,9 +113,73 @@ const TraderImportRequests = ({ traderId }) => {
         { withCredentials: true }
       );
       toast.success("🚫 Đã từ chối đơn nhập.");
+      setSelectedLogs((prev) => prev.filter((id) => id !== logId));
       fetchImportRequests();
     } catch (err) {
       toast.error("❌ Lỗi từ chối: " + (err.response?.data?.message || "Không xác định"));
+    }
+  };
+
+  const handleBulkConfirm = async () => {
+    if (selectedLogs.length === 0) {
+      toast.warn("Vui lòng chọn ít nhất một đơn hàng để xác nhận.");
+      return;
+    }
+    try {
+      await Promise.all(
+        selectedLogs.map((logId) =>
+          axios.post(
+            `http://localhost:8082/PureFoods/api/trader/inventory/confirm-shipping?userId=${traderId}&logId=${logId}`,
+            null,
+            { withCredentials: true }
+          )
+        )
+      );
+      toast.success(`✅ Đã xác nhận ${selectedLogs.length} đơn nhập.`);
+      setSelectedLogs([]);
+      fetchImportRequests();
+    } catch (err) {
+      toast.error("❌ Lỗi xác nhận hàng loạt: " + (err.response?.data?.message || "Không xác định"));
+    }
+  };
+
+  const handleBulkReject = async () => {
+    if (selectedLogs.length === 0) {
+      toast.warn("Vui lòng chọn ít nhất một đơn hàng để từ chối.");
+      return;
+    }
+    const reason = prompt("Nhập lý do từ chối cho các đơn hàng:");
+    if (!reason) return toast.warn("Vui lòng nhập lý do từ chối.");
+    try {
+      await Promise.all(
+        selectedLogs.map((logId) =>
+          axios.post(
+            `http://localhost:8082/PureFoods/api/trader/inventory/reject-shipping?userId=${traderId}&logId=${logId}&reason=${encodeURIComponent(reason)}`,
+            null,
+            { withCredentials: true }
+          )
+        )
+      );
+      toast.success(`🚫 Đã từ chối ${selectedLogs.length} đơn nhập.`);
+      setSelectedLogs([]);
+      fetchImportRequests();
+    } catch (err) {
+      toast.error("❌ Lỗi từ chối hàng loạt: " + (err.response?.data?.message || "Không xác định"));
+    }
+  };
+
+  const handleSelectLog = (logId) => {
+    setSelectedLogs((prev) =>
+      prev.includes(logId) ? prev.filter((id) => id !== logId) : [...prev, logId]
+    );
+  };
+
+  const handleSelectAll = (e) => {
+    if (e.target.checked) {
+      const currentPageLogIds = currentLogs.map((log) => log.logId);
+      setSelectedLogs(currentPageLogIds);
+    } else {
+      setSelectedLogs([]);
     }
   };
 
@@ -152,17 +217,22 @@ const TraderImportRequests = ({ traderId }) => {
     const date = new Date(log.createdAt);
     const from = dateFrom ? new Date(dateFrom) : null;
     const to = dateTo ? new Date(dateTo) : null;
+    const statusMatch =
+      activeTab === "processed" && statusFilter
+        ? log.status === parseInt(statusFilter)
+        : true;
 
     const dateMatch =
       (!from || date >= from) &&
       (!to || date <= new Date(to.getTime() + 86400000));
 
-    return nameMatch && dateMatch;
+    return nameMatch && dateMatch && statusMatch;
   });
 
   const indexOfLastLog = currentPage * logsPerPage;
   const indexOfFirstLog = indexOfLastLog - logsPerPage;
   const currentLogs = filteredLogs.slice(indexOfFirstLog, indexOfLastLog);
+  const totalPages = Math.ceil(filteredLogs.length / logsPerPage);
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   if (loading) return <div className="text-center my-4">⏳ Đang tải dữ liệu...</div>;
@@ -172,13 +242,15 @@ const TraderImportRequests = ({ traderId }) => {
       <h4 className="mb-4">🛒 Yêu cầu nhập hàng</h4>
 
       {/* Tabs */}
-      <ul className="nav nav-tabs">
+      <ul className="nav nav-tabs mb-4">
         <li className="nav-item">
           <button
             className={`nav-link ${activeTab === "pending" ? "active" : ""}`}
             onClick={() => {
               setActiveTab("pending");
               setCurrentPage(1);
+              setSelectedLogs([]);
+              setStatusFilter("");
             }}
           >
             Đang chờ xác nhận
@@ -190,6 +262,8 @@ const TraderImportRequests = ({ traderId }) => {
             onClick={() => {
               setActiveTab("processed");
               setCurrentPage(1);
+              setSelectedLogs([]);
+              setStatusFilter("");
             }}
           >
             Đã xử lý
@@ -197,9 +271,9 @@ const TraderImportRequests = ({ traderId }) => {
         </li>
       </ul>
 
-      {/* Filter */}
-      <div className="row mt-3 mb-3">
-        <div className="col-md-4">
+      {/* Filter and Bulk Actions */}
+      <div className="row mt-3 mb-3 align-items-center">
+        <div className="col-md-3">
           <input
             type="text"
             className="form-control"
@@ -208,6 +282,7 @@ const TraderImportRequests = ({ traderId }) => {
             onChange={(e) => {
               setSearchTerm(e.target.value);
               setCurrentPage(1);
+              setSelectedLogs([]);
             }}
           />
         </div>
@@ -219,6 +294,7 @@ const TraderImportRequests = ({ traderId }) => {
             onChange={(e) => {
               setDateFrom(e.target.value);
               setCurrentPage(1);
+              setSelectedLogs([]);
             }}
           />
         </div>
@@ -230,21 +306,80 @@ const TraderImportRequests = ({ traderId }) => {
             onChange={(e) => {
               setDateTo(e.target.value);
               setCurrentPage(1);
+              setSelectedLogs([]);
             }}
           />
         </div>
-        <div className="col-md-2 text-end">
+        {activeTab === "processed" && (
+          <div className="col-md-2">
+            <select
+              className="form-control"
+              value={statusFilter}
+              onChange={(e) => {
+                setStatusFilter(e.target.value);
+                setCurrentPage(1);
+                setSelectedLogs([]);
+              }}
+            >
+              <option value="">Tất cả trạng thái</option>
+              <option value="1">Đã xác nhận</option>
+              <option value="2">Đã từ chối</option>
+            </select>
+          </div>
+        )}
+        <div className={activeTab === "processed" ? "col-md-1 text-end" : "col-md-3 text-end"}>
           <button className="btn btn-outline-success w-100" onClick={handleExportExcel}>
             📤 Xuất Excel
           </button>
         </div>
       </div>
 
+      {/* Bulk Actions for Pending Tab */}
+      {activeTab === "pending" && (
+        <div className="mb-3 d-flex align-items-center justify-content-between">
+          <div>
+            <input
+              type="checkbox"
+              className="form-check-input me-2"
+              checked={selectedLogs.length === currentLogs.length && currentLogs.length > 0}
+              onChange={handleSelectAll}
+            />
+            <span>Chọn tất cả ({selectedLogs.length} được chọn)</span>
+          </div>
+          <div className="d-flex gap-2">
+            <button
+              className="btn btn-success"
+              onClick={handleBulkConfirm}
+              disabled={selectedLogs.length === 0}
+            >
+              ✅ Xác nhận nhiều
+            </button>
+            <button
+              className="btn btn-danger"
+              onClick={handleBulkReject}
+              disabled={selectedLogs.length === 0}
+            >
+              ❌ Từ chối nhiều
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Table */}
       <div className="table-responsive">
         <table className="table table-hover table-bordered align-middle">
           <thead className="table-light">
             <tr>
+              {activeTab === "pending" && (
+                <th>
+                  <input
+                    type="checkbox"
+                    className="form-check-input"
+                    checked={selectedLogs.length === currentLogs.length && currentLogs.length > 0}
+                    onChange={handleSelectAll}
+                  />
+                </th>
+              )}
               <th>#</th>
               <th>Hình ảnh</th>
               <th>Tên sản phẩm</th>
@@ -257,13 +392,23 @@ const TraderImportRequests = ({ traderId }) => {
           <tbody>
             {currentLogs.length === 0 ? (
               <tr>
-                <td colSpan="7" className="text-center text-muted">
+                <td colSpan={activeTab === "pending" ? 8 : 7} className="text-center text-muted">
                   Không có yêu cầu nào.
                 </td>
               </tr>
             ) : (
               currentLogs.map((log, index) => (
                 <tr key={log.logId}>
+                  {activeTab === "pending" && (
+                    <td>
+                      <input
+                        type="checkbox"
+                        className="form-check-input"
+                        checked={selectedLogs.includes(log.logId)}
+                        onChange={() => handleSelectLog(log.logId)}
+                      />
+                    </td>
+                  )}
                   <td>{indexOfFirstLog + index + 1}</td>
                   <td className="text-center">
                     {imageLoading[log.logId] ? (
@@ -320,17 +465,40 @@ const TraderImportRequests = ({ traderId }) => {
       </div>
 
       {/* Pagination */}
-      <nav className="mt-4">
-        <ul className="pagination justify-content-center">
-          {Array.from({ length: Math.ceil(filteredLogs.length / logsPerPage) }, (_, i) => (
-            <li key={i} className={`page-item ${currentPage === i + 1 ? "active" : ""}`}>
-              <button onClick={() => paginate(i + 1)} className="page-link">
-                {i + 1}
+      {filteredLogs.length > 0 && (
+        <nav className="mt-4">
+          <ul className="pagination justify-content-center">
+            <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
+              <button
+                onClick={() => paginate(currentPage - 1)}
+                className="page-link"
+              >
+                Previous
               </button>
             </li>
-          ))}
-        </ul>
-      </nav>
+            {Array.from({ length: totalPages }, (_, i) => (
+              <li
+                key={i}
+                className={`page-item ${currentPage === i + 1 ? "active" : ""}`}
+              >
+                <button onClick={() => paginate(i + 1)} className="page-link">
+                  {i + 1}
+                </button>
+              </li>
+            ))}
+            <li
+              className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}
+            >
+              <button
+                onClick={() => paginate(currentPage + 1)}
+                className="page-link"
+              >
+                Next
+              </button>
+            </li>
+          </ul>
+        </nav>
+      )}
     </div>
   );
 };

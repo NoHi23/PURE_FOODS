@@ -97,13 +97,13 @@ const ProductListItem = ({ product, handleViewProduct, userId }) => {
           onClick={() => handleViewProduct(product)}
         >
           <Eye size={16} className="me-1" />
-          View detail
+          Xem chi tiết
         </button>
         <button
           className="btn btn-primary btn-sm w-100"
           onClick={handleAddToCart}
         >
-          Add To Cart
+          Thêm vào giỏ hàng
         </button>
       </div>
     </div>

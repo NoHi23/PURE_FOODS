@@ -6,9 +6,11 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
 import Swal from "sweetalert2";
 import { usePriceFilter } from "./PriceFilterContext";
+import { useDiscountFilter } from "./DiscountFilterContext";
 
-const FiltersLeftCategory = () => {
+const FiltersLeftCategory = ({ products, selectedRatings, setSelectedRatings }) => {
   const { priceRange, setPriceRange } = usePriceFilter();
+  const { discountRange, setDiscountRange } = useDiscountFilter();
   const [openSections, setOpenSections] = useState({
     categories: true,
     "food-preference": true,
@@ -20,7 +22,6 @@ const FiltersLeftCategory = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [categories, setCategories] = useState([]);
-  const [selectedCategories, setSelectedCategories] = useState([]);
 
   useEffect(() => {
     axios
@@ -60,6 +61,8 @@ const FiltersLeftCategory = () => {
         console.error("Error fetching categories:", error);
       });
   }, []);
+
+  const [selectedCategories, setSelectedCategories] = useState([]);
 
   const handleCategoryChange = (categoryId) => {
     let updated = [...selectedCategories];
@@ -137,14 +140,35 @@ const FiltersLeftCategory = () => {
     return `$. ${value.toLocaleString("en-US")}`;
   };
 
+  const formatPercent = (value) => {
+    return `${value}%`;
+  };
+
+  // Tính count cho từng rating level dựa trên products hiện tại
+  const ratingCounts = {};
+  products.forEach((product) => {
+    const rounded = Math.round(product.averageRating || 0);
+    ratingCounts[rounded] = (ratingCounts[rounded] || 0) + 1;
+  });
+
+  const handleRatingChange = (rating) => {
+    let updated = [...selectedRatings];
+    if (updated.includes(rating)) {
+      updated = updated.filter((r) => r !== rating);
+    } else {
+      updated.push(rating);
+    }
+    setSelectedRatings(updated);
+  };
+
   const sections = [
     {
       id: "categories",
-      title: "Categories",
+      title: "Thể loại",
       content: (
         <>
           <button className="btn btn-sm btn-primary mb-2" onClick={handleSelectAllCategories}>
-            {selectedCategories.length === categories.length ? "Set At Default" : "Select All Categories"}
+            {selectedCategories.length === categories.length ? "Đặt về mặc định" : "Chọn tất cả"}
           </button>
 
           <ul className="category-list custom-padding custom-height">
@@ -170,30 +194,8 @@ const FiltersLeftCategory = () => {
       ),
     },
     {
-      id: "food-preference",
-      title: "Food Preference",
-      content: (
-        <ul className="category-list custom-padding">
-          {[
-            { id: "veget", label: "Vegetarian", count: 8 },
-            { id: "non", label: "Non Vegetarian", count: 9 },
-          ].map((item) => (
-            <li key={item.id}>
-              <div className="form-check ps-0 m-0 category-list-box">
-                <input className="checkbox_animated" type="checkbox" id={item.id} />
-                <label className="form-check-label" htmlFor={item.id}>
-                  <span className="name">{item.label}</span>
-                  <span className="number">({item.count})</span>
-                </label>
-              </div>
-            </li>
-          ))}
-        </ul>
-      ),
-    },
-    {
       id: "price",
-      title: "Price",
+      title: "Giá thành",
       content: (
         <div className="range-slider">
           <div className="d-flex justify-content-between mb-2">
@@ -252,46 +254,94 @@ const FiltersLeftCategory = () => {
     },
     {
       id: "rating",
-      title: "Rating",
+      title: "Đánh giá",
       content: (
         <ul className="category-list custom-padding">
-          <li>
-            <div className="form-check ps-0 m-0 category-list-box">
-              <input className="checkbox_animated" type="checkbox" id="rating-5" />
-              <label className="form-check-label" htmlFor="rating-5">
-                <ul className="rating d-flex gap-1">
-                  {Array(5)
-                    .fill(0)
-                    .map((_, i) => (
-                      <li key={i}>
-                        <Star size={14} fill="#ffc107" color="#ffc107" />
-                      </li>
-                    ))}
-                </ul>
-                <span className="text-content">(5 Star)</span>
-              </label>
-            </div>
-          </li>
-        </ul>
-      ),
-    },
-    {
-      id: "discount",
-      title: "Discount",
-      content: (
-        <ul className="category-list custom-padding">
-          {["5% - 10%", "10% - 15%", "More than 15%"].map((text, i) => (
-            <li key={i}>
+          {[5, 4, 3, 2, 1, 0].map((star) => (
+            <li key={star}>
               <div className="form-check ps-0 m-0 category-list-box">
-                <input className="checkbox_animated" type="checkbox" id={`discount-${i}`} />
-                <label className="form-check-label" htmlFor={`discount-${i}`}>
-                  <span className="name">{text}</span>
-                  <span className="number">({8 + i * 2})</span>
+                <input
+                  className="checkbox_animated"
+                  type="checkbox"
+                  id={`rating-${star}`}
+                  checked={selectedRatings.includes(star)}
+                  onChange={() => handleRatingChange(star)}
+                />
+                <label className="form-check-label" htmlFor={`rating-${star}`}>
+                  <ul className="rating d-flex gap-1">
+                    {Array(5)
+                      .fill(0)
+                      .map((_, i) => (
+                        <li key={i}>
+                          <Star size={14} fill={i < star ? "#ffc107" : "#ddd"} color={i < star ? "#ffc107" : "#ddd"} />
+                        </li>
+                      ))}
+                  </ul>
+                  <span className="text-content">{star === 0 ? "(Chưa có đánh giá)" : `(${star} Sao)`} ({ratingCounts[star] || 0})</span>
                 </label>
               </div>
             </li>
           ))}
         </ul>
+      ),
+    },
+    {
+      id: "discount",
+      title: "Mã giảm giá",
+      content: (
+        <div className="range-slider">
+          <div className="d-flex justify-content-between mb-2">
+            <span className="badge bg-success">{formatPercent(discountRange[0])}</span>
+            <span className="badge bg-success">{formatPercent(discountRange[1])}</span>
+            <span className="badge bg-secondary">{formatPercent(100)}</span>
+          </div>
+          <Range
+            step={1}
+            min={0}
+            max={100}
+            values={discountRange}
+            onChange={(values) => setDiscountRange(values)}
+            renderTrack={({ props, children }) => {
+              const percentLeft = (discountRange[0] / 100) * 100;
+              const percentRight = 100 - (discountRange[1] / 100) * 100;
+
+              return (
+                <div
+                  {...props}
+                  style={{
+                    ...props.style,
+                    height: "6px",
+                    width: "100%",
+                    background: `linear-gradient(to right, #ccc ${percentLeft}%, #007bff ${percentLeft}% ${
+                      100 - percentRight
+                    }%, #ccc ${100 - percentRight}%)`,
+                    borderRadius: "3px",
+                  }}
+                >
+                  {children}
+                </div>
+              );
+            }}
+            renderThumb={({ props }) => (
+              <div
+                {...props}
+                style={{
+                  ...props.style,
+                  height: "16px",
+                  width: "16px",
+                  backgroundColor: "#007bff",
+                  borderRadius: "50%",
+                  cursor: "pointer",
+                }}
+              />
+            )}
+          />
+          <input
+            className="form-control mt-2"
+            value={`${formatPercent(discountRange[0])} - ${formatPercent(discountRange[1])}`}
+            readOnly
+          />
+        </div>
       ),
     },
   ];

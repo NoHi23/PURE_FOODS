@@ -42,3 +42,35 @@
 .btn-solid:hover {
   background-color: #00796b;
 }
+
+
+/* Supplier.css */
+
+/* Làm nền modal nhẹ hơn */
+.modal-backdrop.show {
+  opacity: 0.3 !important;  /* Mặc định Bootstrap là 0.5 */
+  background-color: rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Cải thiện hiển thị modal-content */
+.modal-content {
+  border-radius: 8px;
+  box-shadow: 0 5px 25px rgba(0, 0, 0, 0.3);
+  background-color: #fff; /* Đảm bảo không bị đen nền trong modal */
+}
+
+/* Table UI */
+.table.theme-table th,
+.table.theme-table td {
+  vertical-align: middle;
+}
+
+.table-action-icons i {
+  font-size: 1.2rem;
+  color: #555;
+  cursor: pointer;
+}
+
+.table-action-icons i:hover {
+  color: #0d6efd; /* Màu xanh Bootstrap */
+}

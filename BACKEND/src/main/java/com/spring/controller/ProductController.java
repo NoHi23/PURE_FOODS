@@ -228,6 +228,24 @@ public class ProductController {
         return ResponseEntity.ok(body);
     }
 
+    @GetMapping("/cheapest")
+    public ResponseEntity<?> getCheapestProducts(
+            @RequestParam(name = "limit", defaultValue = "4") int limit
+    ) {
+        try {
+            List<ProductDTO> products = productService.getCheapestActiveProducts(limit);
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Lấy danh sách sản phẩm giá thấp thành công!");
+            response.put("status", 200);
+            response.put("products", products);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("message", e.getMessage());
+            errorResponse.put("status", 400);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        }
+    }
 
 
     @GetMapping("/getById/{id}")
@@ -269,6 +287,21 @@ public class ProductController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
     }
+
+    @PutMapping("/auto-update-expired-status")
+    public ResponseEntity<?> autoUpdateExpiredProductStatus() {
+        try {
+            int updatedCount = productService.updateExpiredProductStatuses();
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Cập nhật trạng thái hết hạn thành công");
+            response.put("updatedCount", updatedCount);
+            response.put("status", 200);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Lỗi: " + e.getMessage());
+        }
+    }
+
 
 
 

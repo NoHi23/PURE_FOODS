@@ -79,7 +79,7 @@ const TopBar = () => {
     <div>
       <div className="page-header">
         <div className="header-wrapper m-0">
-          <form className="form-inline search-full" action="javascript:void(0)" method="get">
+          {/* <form className="form-inline search-full" action="javascript:void(0)" method="get">
             <div className="form-group w-100">
               <div className="Typeahead Typeahead--twitterUsers">
                 <div className="u-posRelative">
@@ -99,7 +99,7 @@ const TopBar = () => {
                 <div className="Typeahead-menu"></div>
               </div>
             </div>
-          </form>
+          </form> */}
           <div className="nav-right col-6 pull-right right-header p-0">
             <ul className="nav-menus">
               <li>
@@ -117,7 +117,7 @@ const TopBar = () => {
                 <ul className="notification-dropdown onhover-show-div">
                   <li>
                     <i className="ri-notification-line"></i>
-                    <h6 className="f-18 mb-0">Notitications</h6>
+                    <h6 className="f-18 mb-0">Thông báo</h6>
                   </li>
                   {notifications.map((n) => (
                     <li key={n.id} onClick={() => handleMarkRead(n.id)}>
@@ -139,12 +139,12 @@ const TopBar = () => {
                   ))}
                   {notifications.length === 0 && history.length === 0 && (
                     <li>
-                      <p>No notification.</p>
+                      <p>Không có thông báo nào</p>
                     </li>
                   )}
                   <li>
                     <a className="btn btn-primary" onClick={handleMarkAllRead}>
-                      Check all notification
+                      Đánh dấu đã đọc tất cả
                     </a>
                   </li>
                 </ul>
@@ -161,39 +161,15 @@ const TopBar = () => {
                   <div className="user-name-hide media-body">
                     <span>{user.fullName}</span>
                     <p className="mb-0 font-roboto">
-                      Admin<i className="middle ri-arrow-down-s-line"></i>
+                      Quản trị viên<i className="middle ri-arrow-down-s-line"></i>
                     </p>
                   </div>
                 </div>
                 <ul className="profile-dropdown onhover-show-div">
                   <li>
-                    <a href="#" style={{ textDecoration: "none" }}>
-                      <i data-feather="users"></i>
-                      <span>Users</span>
-                    </a>
-                  </li>
-                  <li>
-                    <a href="#" style={{ textDecoration: "none" }}>
-                      <i data-feather="archive"></i>
-                      <span>Orders</span>
-                    </a>
-                  </li>
-                  <li>
-                    <a href="#" style={{ textDecoration: "none" }}>
-                      <i data-feather="phone"></i>
-                      <span>Spports Tickets</span>
-                    </a>
-                  </li>
-                  <li>
-                    <a href="#" style={{ textDecoration: "none" }}>
-                      <i data-feather="settings"></i>
-                      <span>Settings</span>
-                    </a>
-                  </li>
-                  <li>
                     <a onClick={handleLogout}>
                       <i data-feather="log-out"></i>
-                      <span>Log out</span>
+                      <span>Đăng xuất</span>
                     </a>
                   </li>
                 </ul>

@@ -78,7 +78,7 @@ const MyCouponsPage = () => {
             <div className="row">
               <div className="col-12">
                 <div className="breadcrumb-contain">
-                  <h2 className="mb-2">Compare</h2>
+                  <h2 className="mb-2">Danh sách mã giảm giá</h2>
                   <nav>
                     <ol className="breadcrumb mb-0">
                       <li className="breadcrumb-item">
@@ -86,8 +86,7 @@ const MyCouponsPage = () => {
                           <i className="fa-solid fa-house"></i>
                         </a>
                       </li>
-                      <li className="breadcrumb-item">Shop</li>
-                      <li className="breadcrumb-item active">Compare</li>
+                      <li className="breadcrumb-item active">Danh sách mã giảm giá</li>
                     </ol>
                   </nav>
                 </div>
@@ -113,13 +112,13 @@ const MyCouponsPage = () => {
                                 {coupon.description}
                               </div>
                               <div className="h5 mb-2 font-weight-bold text-gray-800">
-                                Code: <span className="badge badge-success">{coupon.promotionCode}</span>
+                                Mã: <span className="badge badge-success">{coupon.promotionCode}</span>
                               </div>
                               <p className="mb-1">
-                                Discount: <strong>{coupon.discountValue}%</strong>
+                                Giảm: <strong>{coupon.discountValue}%</strong>
                               </p>
                               <p className="mb-0">
-                                 Expiry: {new Date(coupon.endDate).toLocaleDateString('vi-VN')}
+                                Hạn sử dụng: {new Date(coupon.endDate).toLocaleDateString('vi-VN')}
                               </p>
                             </div>
                           </div>
@@ -320,7 +319,7 @@ const MyCouponsPage = () => {
 
         {/*Tap to top and theme setting button start  */}
         <div className="theme-option">
-          
+
 
           <div className="back-to-top">
             <a id="back-to-top" href="#">

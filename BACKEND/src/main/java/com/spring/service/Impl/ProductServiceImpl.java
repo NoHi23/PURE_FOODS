@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Pageable;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -40,17 +41,41 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public List<ProductDTO> getAllProduct() {
-        List<ProductDTO> list = new ArrayList<ProductDTO>();
+        List<ProductDTO> list = new ArrayList<>();
         List<Products> productList = productDAO.getAllProduct();
-        if (productList == null || productList.size() == 0) {
+
+        if (productList == null || productList.isEmpty()) {
             throw new RuntimeException("Danh sách sản phẩm trống");
         }
+
         for (Products product : productList) {
-            ProductDetails details = productDAO.getProductDetailsById(product.getProductId());
-            list.add(convertToDTO(product, details));
+            ProductDTO dto = new ProductDTO();
+
+            dto.setProductId(product.getProductId());
+            dto.setProductName(product.getProductName());
+            dto.setCategoryId(product.getCategoryId());
+            dto.setSupplierId(product.getSupplierId());
+            dto.setPrice(product.getPrice());
+            dto.setDiscountPercent(product.getDiscountPercent());
+            dto.setStockQuantity(product.getStockQuantity());
+            dto.setDescription(product.getDescription());
+            dto.setImageURL(product.getImageURL());
+            dto.setLastUpdatedBy(product.getLastUpdatedBy());
+            dto.setCreatedAt(product.getCreatedAt());
+            dto.setStatus(product.getStatus());
+            dto.setHarvestDate(product.getHarvestDate());
+            dto.setExpirationDate(product.getExpirationDate());
+
+            // Tính giá sau giảm giá nếu có
+            if (product.getDiscountPercent() != null) {
+                float sale = product.getPrice() * (1 - product.getDiscountPercent() / 100);
+                dto.setSalePrice(sale);
+            }
+            list.add(dto);
         }
         return list;
     }
+
 
     @Override
     public ProductDTO getProductById(int id) {
@@ -110,6 +135,9 @@ public class ProductServiceImpl implements ProductService {
         q.setImageURL(product.getImageURL());
         q.setStatus(product.getStatus());
         q.setLastUpdateBy(product.getLastUpdatedBy());
+        // 🩵 THÊM 2 DÒNG NÀY
+        q.setHarvestDate(product.getHarvestDate());
+        q.setExpirationDate(product.getExpirationDate());
         try {
 
             productDAO.updateProduct(q);
@@ -213,13 +241,18 @@ public class ProductServiceImpl implements ProductService {
                 product.getCreatedAt(),
                 product.getStatus()
         );
+
+        // 👇 Lấy ngày nhập - hết hạn từ bảng Product (chứ không từ ProductDetails nữa)
+        dto.setHarvestDate(product.getHarvestDate());
+        dto.setExpirationDate(product.getExpirationDate());
+
+        // 👇 Nếu có details thì lấy thông tin dinh dưỡng
         if (details != null) {
-            dto.setHarvestDate(details.getHarvestDate());
-            dto.setExpirationDate(details.getExpirationDate());
             dto.setNutritionalInfo(details.getNutritionalInfo());
         }
-        List<ProductImages> imgEntities =
-                productImageDAO.getImagesByProductId(product.getProductId());
+
+        // 👇 Thêm ảnh gallery nếu có
+        List<ProductImages> imgEntities = productImageDAO.getImagesByProductId(product.getProductId());
 
         List<String> urls = imgEntities.stream()
                 .filter(i -> i.getStatus() == 0)
@@ -227,8 +260,10 @@ public class ProductServiceImpl implements ProductService {
                 .collect(Collectors.toList());
 
         dto.setGalleryImages(urls);
+
         return dto;
     }
+
 
     @Override
     public List<ProductDTO> getAllProductByStatus(int status) {
@@ -304,4 +339,36 @@ public class ProductServiceImpl implements ProductService {
             return dto;
         }).collect(Collectors.toList());
     }
+    @Override
+    public List<ProductDTO> getCheapestActiveProducts(int limit) {
+        List<ProductDTO> products = getAllProductByStatus(0); // chỉ lấy sản phẩm có status = 0
+        return products.stream()
+                .filter(p -> p.getSalePrice() != null)
+                .sorted(Comparator.comparing(ProductDTO::getSalePrice))
+                .limit(limit)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public int updateExpiredProductStatuses() {
+        List<Products> productList = productDAO.getAllProduct();
+        int updatedCount = 0;
+
+        Date now = new Date();
+
+        for (Products product : productList) {
+            Date expirationDate = product.getExpirationDate();
+
+            if (product.getStatus() == 0 && expirationDate != null && expirationDate.before(now)) {
+                // Cập nhật status về 1 (ngừng bán)
+                product.setStatus(1);
+                productDAO.updateProduct(product);
+                updatedCount++;
+            }
+        }
+
+        return updatedCount;
+    }
+
+
 }

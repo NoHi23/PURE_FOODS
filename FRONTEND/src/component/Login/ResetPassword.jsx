@@ -50,7 +50,7 @@ const ResetPassword = () => {
           <div className="col-xl-5 col-lg-6 me-auto">
             <div className="log-in-box">
               <div className="log-in-title">
-                <h3 className="text-content">Reset Your Password</h3>
+                <h3 className="text-content">Đặt lại mật khẩu của bạn</h3>
                 <h5 className="text-content">
                   Email: <span>{email}</span>
                 </h5>
@@ -65,10 +65,10 @@ const ResetPassword = () => {
                       id="password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      placeholder="New Password"
+                      placeholder="Mật khẩu mới"
                       required
                     />
-                    <label htmlFor="password">New Password</label>
+                    <label htmlFor="password">Mật khẩu mới</label>
                   </div>
                 </div>
 
@@ -86,22 +86,22 @@ const ResetPassword = () => {
                       id="confirm"
                       value={confirm}
                       onChange={(e) => setConfirm(e.target.value)}
-                      placeholder="Confirm Password"
+                      placeholder="Xác nhận mật khẩu"
                       required
                     />
                     {confirm && confirm !== password && (
-                      <p className="text-danger mt-1">Confirmation password does not match</p>
+                      <p className="text-danger mt-1">Mật khẩu xác nhận không khớp</p>
                     )}
                     {confirm && confirm === password && (
-                      <p className="text-success mt-1">Password matches</p>
+                      <p className="text-success mt-1">Mật khẩu xác nhận trùng khớp</p>
                     )}
-                    <label htmlFor="confirm">Confirm Password</label>
+                    <label htmlFor="confirm">Xác nhận mật khẩu</label>
                   </div>
                 </div>
 
                 <div className="col-12">
                   <button type="submit" className="btn btn-animation w-100 justify-content-center">
-                    Reset Password
+                    Đặt lại mật khẩu
                   </button>
                 </div>
               </form>

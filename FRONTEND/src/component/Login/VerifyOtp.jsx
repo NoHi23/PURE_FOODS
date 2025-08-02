@@ -113,10 +113,10 @@ const OtpVerify = () => {
             <div className="log-in-box">
               <div className="log-in-title">
                 <h3 className="text-content">
-                  Please enter the one time password to verify your account
+                  Vui lòng nhập mật khẩu một lần để xác minh tài khoản của bạn
                 </h3>
                 <h5 className="text-content">
-                  A code has been sent to <span>{maskEmail(email)}</span>
+                  Một mã đã được gửi đến <span>{maskEmail(email)}</span>
                 </h5>
               </div>
 
@@ -142,16 +142,16 @@ const OtpVerify = () => {
 
               <div className="send-box pt-4">
                 <h5>
-                  Didn't get the code?{' '}
+                  Không nhận được mã?{' '}
                   <a href="" className="theme-color fw-bold" style={{ cursor: isResending ? 'not-allowed' : 'pointer' }}
                     onClick={(e) => { e.preventDefault(); handleResend() }}
                     disabled={isResending}>
                     {isResending ? (
                       <>
-                        <span className="spinner-border spinner-border-sm me-1" /> Sending...
+                        <span className="spinner-border spinner-border-sm me-1" /> Đang gửi...
                       </>
                     ) : (
-                      'Resend It'
+                      'Gửi lại'
                     )}
                   </a>
                 </h5>
@@ -162,7 +162,7 @@ const OtpVerify = () => {
                 type="button"
                 onClick={handleSubmit}
               >
-                Validate
+                Xác Thực
               </button>
             </div>
           </div>

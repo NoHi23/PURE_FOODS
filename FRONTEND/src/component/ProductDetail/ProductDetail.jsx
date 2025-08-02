@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
+
 import { useParams } from 'react-router-dom';
 import ProductDetailLayout from '../../layouts/ProductDetailLayout'
 import axios from 'axios';
@@ -6,67 +7,231 @@ import { toast } from 'react-toastify';
 import './ProductDetail.css'
 import { useWishlist } from '../../layouts/WishlistContext';
 import { useNavigate } from 'react-router-dom';
+import * as bootstrap from "bootstrap";
 import StarRating from "../Rating/StarRating";
+import feather from 'feather-icons'; // Install nếu chưa: npm i feather-icons
 
 
 const ProductDetail = () => {
   const { id } = useParams();
-  const [products, setProducts] = useState(null)
-  
-  const [avgRating, setAvgRating] = useState(0);
-const [reviewCount, setReviewCount] = useState(0);
-const [reviewStats, setReviewStats] = useState({});
-const [reviews, setReviews] = useState([]);
-
+  const [products, setProducts] = useState(null);
+  const [avgRating, setAvgRating] = useState(null);
+  const [reviewCount, setReviewCount] = useState(0);
+  const [reviews, setReviews] = useState([]);
+  const [selectedRating, setSelectedRating] = useState(0); // Rating chọn (1-5)
+  const [reviewComment, setReviewComment] = useState(''); // Nội dung comment
+  const [isSubmitting, setIsSubmitting] = useState(false); // Loading state khi submit
+  const [refreshReviews, setRefreshReviews] = useState(0);
 
   const { wishlistMap, setWishlistMap, fetchWishlistCount, refreshWishlist } = useWishlist();
   const [isWished, setIsWished] = useState(false);
   const user = JSON.parse(localStorage.getItem("user"));
   const userId = user?.userId;
   const [selectedImage, setSelectedImage] = useState(null);
-
+  const [cartQuantities, setCartQuantities] = useState({});
   const [quantity, setQuantity] = useState(1);
-  const increaseQty = () => setQuantity(prev => Math.max(1, prev + 1));
-  const decreaseQty = () => setQuantity(prev => Math.max(1, prev - 1));
 
+  const increaseQty = () => {
+    if (products && quantity < products.stockQuantity) {
+      setQuantity(prev => prev + 1);
+    } else {
+      toast.warning("Đã đạt số lượng tối đa trong kho");
+    }
+  };
+
+  const decreaseQty = () => {
+    if (quantity > 1) {
+      setQuantity(prev => prev - 1);
+    }
+  };
 
   const navigate = useNavigate();
 
-  const handleAddToCart = () => {
-    if (!userId || !products) {
-      toast.error('Vui lòng đăng nhập');
+
+  const updateQuantity = async (product, delta) => {
+    if (!userId) {
+      toast.error("Vui lòng đăng nhập");
       return;
     }
 
-    const cartItem = {
-      userID: userId,
-      productID: products.productId,
-      quantity: quantity,
-      priceAfterDiscount: products.salePrice,
-      total: products.salePrice * quantity,
-      imageURL: products.imageURL,
-      productName: products.productName,
-      originalPrice: products.price,
-      discount: products.discountPercent
-    };
+    try {
+      const res = await axios.get(`http://localhost:8082/PureFoods/api/cart/user/${userId}`);
+      const cartItems = res.data;
+      const existingItem = cartItems.find(item => item.productID === product.productId);
+      const currentQty = existingItem ? existingItem.quantity : 0;
+      const newQty = currentQty + delta;
 
-    console.log("🛒 Gửi dữ liệu add to cart:", cartItem);
+      if (newQty < 1) return;
 
-    if (!userId || !products.productId) {
-      toast.error("Thiếu thông tin giỏ hàng!");
+      if (newQty > product.stockQuantity) {
+        toast.warning(`Chỉ còn ${product.stockQuantity - currentQty} sản phẩm trong kho`);
+        return;
+      }
+
+      const cartItem = {
+        userID: userId,
+        productID: product.productId,
+        quantity: newQty,
+        priceAfterDiscount: product.salePrice,
+        total: product.salePrice * newQty,
+        imageURL: product.imageURL,
+        productName: product.productName,
+        originalPrice: product.price,
+        discount: product.discountPercent,
+      };
+
+      if (existingItem) {
+        await axios.put(`http://localhost:8082/PureFoods/api/cart/update/${existingItem.cartItemID}`, cartItem);
+      } else {
+        await axios.post(`http://localhost:8082/PureFoods/api/cart/create`, cartItem);
+      }
+
+      setCartQuantities(prev => ({ ...prev, [product.productId]: newQty }));
+      window.dispatchEvent(new Event("cartUpdated"));
+    } catch (err) {
+      toast.error("Cập nhật giỏ hàng thất bại");
+      console.error(err);
+    }
+  };
+
+
+  const handleManualQuantityChange = async (product, value) => {
+    const newQty = parseInt(value);
+
+    if (isNaN(newQty) || newQty < 1) {
+      toast.warning("Số lượng phải ≥ 1");
       return;
     }
 
-    axios.post('http://localhost:8082/PureFoods/api/cart/create', cartItem)
-      .then(() => {
-        toast.success('Đã thêm vào giỏ hàng');
-        window.dispatchEvent(new Event('cartUpdated'));
-        navigate(`/cart-detail`, { state: { fromAddToCart: true } });
-      })
-      .catch((err) => {
-        console.error("❌ Lỗi khi thêm vào giỏ hàng:", err.response?.data || err.message);
-        toast.error('Thêm vào giỏ thất bại');
-      });
+    if (newQty > product.stockQuantity) {
+      toast.warning(`Chỉ còn ${product.stockQuantity} sản phẩm trong kho`);
+      return;
+    }
+
+    try {
+      // Lấy giỏ hàng hiện tại để kiểm tra đã có sản phẩm chưa
+      const res = await axios.get(`http://localhost:8082/PureFoods/api/cart/user/${userId}`);
+      const existingItem = res.data.find(item => item.productID === product.productId);
+
+      const cartItem = {
+        userID: userId,
+        productID: product.productId,
+        quantity: newQty,
+        priceAfterDiscount: product.salePrice,
+        total: product.salePrice * newQty,
+        imageURL: product.imageURL,
+        productName: product.productName,
+        originalPrice: product.price,
+        discount: product.discountPercent,
+      };
+
+      if (existingItem) {
+        // 🔁 update
+        await axios.put(`http://localhost:8082/PureFoods/api/cart/update/${existingItem.cartItemID}`, cartItem);
+      } else {
+        // 🆕 create
+        await axios.post("http://localhost:8082/PureFoods/api/cart/create", cartItem);
+      }
+
+      setCartQuantities(prev => ({ ...prev, [product.productId]: newQty }));
+      toast.success("Cập nhật giỏ hàng thành công");
+      window.dispatchEvent(new Event("cartUpdated"));
+
+    } catch (err) {
+      toast.error("Lỗi khi cập nhật giỏ hàng");
+      console.error(err);
+    }
+  };
+
+
+  const handleAddToCart = async (product) => {
+    if (!userId) {
+      toast.error("Vui lòng đăng nhập");
+      return;
+    }
+
+    try {
+      const res = await axios.get(`http://localhost:8082/PureFoods/api/cart/user/${userId}`);
+      const cartItems = res.data;
+      const existingItem = cartItems.find(item => item.productID === product.productId);
+      const currentQty = existingItem ? existingItem.quantity : 0;
+      const newQty = currentQty + 1;
+
+      if (newQty > product.stockQuantity) {
+        toast.warning(`Chỉ còn ${product.stockQuantity - currentQty} sản phẩm trong kho`);
+        return;
+      }
+
+      const cartItem = {
+        userID: userId,
+        productID: product.productId,
+        quantity: newQty,
+        priceAfterDiscount: product.salePrice,
+        total: product.salePrice * newQty,
+        imageURL: product.imageURL,
+        productName: product.productName,
+        originalPrice: product.price,
+        discount: product.discountPercent,
+      };
+
+      if (existingItem) {
+        await axios.put(`http://localhost:8082/PureFoods/api/cart/update/${existingItem.cartItemID}`, cartItem);
+      } else {
+        await axios.post("http://localhost:8082/PureFoods/api/cart/create", cartItem);
+      }
+
+      setCartQuantities(prev => ({ ...prev, [product.productId]: newQty }));
+      toast.success("Đã thêm vào giỏ hàng");
+      window.dispatchEvent(new Event("cartUpdated"));
+    } catch (err) {
+      toast.error("Thêm vào giỏ hàng thất bại");
+      console.error(err);
+    }
+  };
+
+
+  const handleAddToCart1 = async (product) => {
+    if (!userId) {
+      toast.error("Vui lòng đăng nhập");
+      return;
+    }
+
+    try {
+      const res = await axios.get(`http://localhost:8082/PureFoods/api/cart/user/${userId}`);
+      const cartItems = res.data;
+      const existingItem = cartItems.find(item => item.productID === product.productId);
+      const currentQty = existingItem ? existingItem.quantity : 0;
+      const totalQty = currentQty + quantity;
+
+      if (totalQty > product.stockQuantity) {
+        toast.warning(`Chỉ còn ${product.stockQuantity - currentQty} sản phẩm trong kho`);
+        return;
+      }
+
+      const cartItem = {
+        userID: userId,
+        productID: product.productId,
+        quantity: totalQty,
+        priceAfterDiscount: product.salePrice,
+        total: product.salePrice * totalQty,
+        imageURL: product.imageURL,
+        productName: product.productName,
+        originalPrice: product.price,
+        discount: product.discountPercent,
+      };
+
+      if (existingItem) {
+        await axios.put(`http://localhost:8082/PureFoods/api/cart/update/${existingItem.cartItemID}`, cartItem);
+      } else {
+        await axios.post("http://localhost:8082/PureFoods/api/cart/create", cartItem);
+      }
+
+      toast.success("Đã thêm vào giỏ hàng");
+      window.dispatchEvent(new Event("cartUpdated"));
+    } catch (err) {
+      toast.error("Thêm vào giỏ hàng thất bại");
+      console.error(err);
+    }
   };
 
 
@@ -77,71 +242,84 @@ const [reviews, setReviews] = useState([]);
   }, [quantity]);
 
 
+  useEffect(() => {
+    window.scrollTo(0, 0); // Scroll lên đầu
+    document.body.style.overflow = 'auto'; // Cho phép cuộn lại nếu bị khoá
+  }, []);
+
 
   useEffect(() => {
-  axios.get(`http://localhost:8082/PureFoods/api/product/getById/${id}`)
-    .then(res => {
-      if (res.data.product) {
-        setProducts(res.data.product);
-      } else {
-        toast.error("Product not found");
-      }
-    })
-    .catch(err => {
-      console.error(err);
-      toast.error("Error loading product");
-    });
-}, [id]);
-useEffect(() => {
-  if (id) {
     axios
-      .get(`http://localhost:8082/PureFoods/api/review/product?productId=${id}`)
+      .get(`http://localhost:8082/PureFoods/api/product/getById/${id}`)
       .then((res) => {
-        const reviews = res.data;
-        setReviews(reviews); // 👈 Lưu toàn bộ danh sách review
-        setReviewCount(reviews.length);
-
-        if (reviews.length > 0) {
-          const totalRating = reviews.reduce((acc, r) => acc + r.rating, 0);
-          setAvgRating(totalRating / reviews.length);
-
-          // 👇 Tính phân phối số sao
-          const stats = {};
-          reviews.forEach(r => {
-            stats[r.rating] = (stats[r.rating] || 0) + 1;
-          });
-          setReviewStats(stats);
+        if (res.data.product) {
+          setProducts(res.data.product);
         } else {
-          setAvgRating(0);
-          setReviewStats({});
+          toast.error("Product not found");
         }
       })
       .catch((err) => {
-        console.error("❌ Lỗi khi lấy danh sách đánh giá:", err);
+        console.error(err);
+        toast.error("Error loading product");
       });
-  }
-}, [id]);
+  }, [id]);
 
+  useEffect(() => {
+    if (products?.productId) {
+      axios
+        .get(`http://localhost:8082/PureFoods/api/review/product?productId=${products.productId}`)
+        .then(res => {
+          const reviewList = res.data || [];
+          setReviews(reviewList);
+          setReviewCount(reviewList.length);
 
-
+          if (reviewList.length > 0) {
+            const total = reviewList.reduce((acc, r) => acc + r.rating, 0);
+            const avg = total / reviewList.length;
+            setAvgRating(Number(avg.toFixed(2)));
+          } else {
+            setAvgRating(0);
+          }
+        })
+        .catch(err => {
+          console.error("❌ Lỗi khi lấy đánh giá:", err);
+          setReviews([]);
+          setReviewCount(0);
+          setAvgRating(0);
+        });
+    }
+  }, [products, refreshReviews]); // Thêm refreshReviews để reload
 
 
   const [thumbnailList, setThumbnailList] = useState([]);
 
   useEffect(() => {
-    if (products?.imageURL) {
-      const thumbnails = [
-        products.imageURL,
-        "../assets/images/veg-2/product/22.png",
-        "../assets/images/veg-2/product/23.png",
-        "../assets/images/veg-2/product/24.png",
-        "../assets/images/veg-2/product/21.png",
-        "../assets/images/veg-2/product/25.png",
+    const fetchThumbnails = async () => {
+      if (products?.productId && products?.imageURL) {
+        try {
+          const response = await axios.get(
+            `http://localhost:8082/PureFoods/api/productImage/all/${products.productId}`
+          );
 
-      ];
-      setThumbnailList(thumbnails);
-      setSelectedImage(thumbnails[0]);
-    }
+          const apiThumbnails = response.data.map((img) => img.imageUrl);
+
+          const thumbnails = [products.imageURL, ...apiThumbnails];
+
+          setThumbnailList(thumbnails);
+          setSelectedImage(thumbnails[0]);
+        } catch (error) {
+          console.error("Lỗi khi lấy ảnh sản phẩm:", error);
+
+          const thumbnails = [
+            products.imageURL,
+          ];
+          setThumbnailList(thumbnails);
+          setSelectedImage(thumbnails[0]);
+        }
+      }
+    };
+
+    fetchThumbnails();
   }, [products]);
 
   const zoomRef = useRef();
@@ -154,14 +332,13 @@ useEffect(() => {
   };
 
   const handleMouseEnter = () => {
-    zoomRef.current.style.backgroundSize = '200%';
+    zoomRef.current.style.backgroundSize = "200%";
   };
 
   const handleMouseLeave = () => {
-    zoomRef.current.style.backgroundSize = 'cover';
+    zoomRef.current.style.backgroundSize = "cover";
   };
 
-  //start logic wishlist
   const fetchWishlistStatus = async () => {
     if (!products || !userId) return;
     try {
@@ -227,8 +404,12 @@ useEffect(() => {
       scrollLeft = container.scrollLeft;
     };
 
-    const handleMouseLeave = () => { isDown = false; };
-    const handleMouseUp = () => { isDown = false; };
+    const handleMouseLeave = () => {
+      isDown = false;
+    };
+    const handleMouseUp = () => {
+      isDown = false;
+    };
     const handleMouseMove = (e) => {
       if (!isDown) return;
       const x = e.pageX - container.offsetLeft;
@@ -250,11 +431,140 @@ useEffect(() => {
   }, []);
 
 
+  const [productsRelated, setProductsRelated] = useState([]);
+
+  useEffect(() => {
+    axios.get(`http://localhost:8082/PureFoods/api/product/related/${id}`)
+      .then(response => {
+        setProductsRelated(response.data.relatedProducts);
+      })
+      .catch(error => {
+        console.error("Error fetching related products:", error);
+      });
+  }, []);
+
+  const [categoryMap, setCategoryMap] = useState({});
+  useEffect(() => {
+    const fetchAllCategories = async () => {
+      const promises = productsRelated.map(async product => {
+        const res = await axios.get(`http://localhost:8082/PureFoods/api/category/${product.categoryId}`);
+        return { productId: product.productId, category: res.data };
+      });
+
+      const results = await Promise.all(promises);
+      const map = {};
+      results.forEach(r => {
+        map[r.productId] = r.category;
+      });
+      setCategoryMap(map);
+    };
+
+    if (productsRelated?.length > 0) {
+      fetchAllCategories();
+    }
+  }, [productsRelated]);
+
+
+  const handleViewDetail = (productId) => {
+    const modalEl = document.getElementById("view");
+    if (modalEl && bootstrap.Modal.getInstance(modalEl)) {
+      bootstrap.Modal.getInstance(modalEl).hide();
+    }
+
+    navigate(`/product/${productId}`);
+  };
+
+  const handleViewProduct = (product) => {
+    setSelectedProduct(product);
+    const modal = new bootstrap.Modal(document.getElementById("view"));
+    modal.show();
+    console.log("hi: " + product);
+  };
+
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [category, setCategory] = useState(null);
+  useEffect(() => {
+    const fetchCategory = async () => {
+      if (selectedProduct?.categoryId) {
+        try {
+          const res = await axios.get(`http://localhost:8082/PureFoods/api/category/${selectedProduct.categoryId}`);
+          setCategory(res.data);
+        } catch (err) {
+          console.error("Không thể lấy danh mục:", err);
+          setCategory(null);
+        }
+      }
+    };
+
+    fetchCategory();
+  }, [selectedProduct]);
+
+  const [supplier, setSupplier] = useState(null);
+  useEffect(() => {
+    const fetchSuppliers = async () => {
+      if (selectedProduct?.supplierId) {
+        try {
+          const res = await axios.get(`http://localhost:8082/PureFoods/api/supplier/${selectedProduct.supplierId}`);
+          setSupplier(res.data);
+        } catch (err) {
+          console.error("Không thể lấy:", err);
+          setSupplier(null);
+        }
+      }
+    };
+
+    fetchSuppliers();
+  }, [selectedProduct]);
+
+  const handleSubmitReview = async () => {
+    let hasError = false;
+    if (selectedRating < 1) {
+      toast.warning("Vui lòng chọn rating");
+      hasError = true;
+    }
+    if (reviewComment.trim() === '') {
+      toast.warning("Vui lòng viết nội dung");
+      hasError = true;
+    }
+    if (hasError) return;
+
+    setIsSubmitting(true);
+    try {
+      const reviewData = {
+        productId: products.productId,
+        customerId: userId,
+        rating: selectedRating,
+        comment: reviewComment,
+      };
+
+      await axios.post('http://localhost:8082/PureFoods/api/review/create', reviewData);
+      toast.success("Đánh giá đã được gửi thành công!");
+
+      // Reset form
+      setSelectedRating(0);
+      setReviewComment('');
+
+      // Đóng modal
+      const modalEl = document.getElementById('writereview');
+      if (modalEl) {
+        bootstrap.Modal.getInstance(modalEl).hide();
+      }
+
+      // Reload reviews
+      setRefreshReviews(prev => prev + 1);
+    } catch (err) {
+      toast.error("Gửi đánh giá thất bại");
+      console.error(err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+  useEffect(() => {
+    feather.replace(); // Re-render icons khi rating change
+  }, [selectedRating]);
   return (
     <ProductDetailLayout>
       <div>
-
-
         <div className="mobile-menu d-md-none d-block mobile-cart">
           <ul>
             <li className="active">
@@ -298,7 +608,7 @@ useEffect(() => {
             <div className="row">
               <div className="col-12">
                 <div className="breadcrumb-contain">
-                  <h2>Creamy Chocolate Cake</h2>
+                  <h2>{products?.productName}</h2>
                   <nav>
                     <ol className="breadcrumb mb-0">
                       <li className="breadcrumb-item">
@@ -307,7 +617,7 @@ useEffect(() => {
                         </a>
                       </li>
 
-                      <li className="breadcrumb-item active">Creamy Chocolate Cake</li>
+                      <li className="breadcrumb-item active">{products?.productName}</li>
                     </ol>
                   </nav>
                 </div>
@@ -322,7 +632,6 @@ useEffect(() => {
                 <div className="row g-4">
                   <div className="col-xl-6 wow fadeInUp">
                     <div className="product-left-box">
-
                       <div className="product-left-box">
                         <div className="row g-sm-4 g-2">
                           <div className="col-12">
@@ -351,7 +660,7 @@ useEffect(() => {
                                     e.currentTarget.scrollIntoView({
                                       behavior: "smooth",
                                       inline: "center", // hoặc 'nearest', 'start', 'end'
-                                      block: "nearest"
+                                      block: "nearest",
                                     });
                                   }}
                                 >
@@ -376,21 +685,23 @@ useEffect(() => {
                         title={isWished ? "Remove from Wishlist" : "Add to Wishlist"}
                         onClick={toggleWishlist}
                       >
-                        <i className={`fa${isWished ? 's' : 'r'} fa-heart`}></i>
+                        <i className={`fa${isWished ? "s" : "r"} fa-heart`}></i>
                       </button>
                       <h6 className="offer-top">{products?.discountPercent}% Off</h6>
                       <h2 className="name">{products?.productName}</h2>
                       <div className="price-rating">
-                        <h3 className="theme-color price">${products?.salePrice} <del className="text-content">${products?.price}</del>
-
+                        <h3 className="theme-color price">
+                          ${products?.salePrice} <del className="text-content">${products?.price}</del>
                         </h3>
                         {avgRating !== null && (
- <div className="product-rating custom-rate">
-  <StarRating rating={avgRating} />
-  <span className="review">Average Rating: {avgRating.toFixed(1)} ★</span>
-</div>
+                          <div className="d-flex align-items-center gap-2">
+                            <StarRating rating={avgRating} />
+                            <span className="text-muted small">
+                              {avgRating.toFixed(1)} / 5 ({reviewCount} đánh giá)
+                            </span>
+                          </div>
+                        )}
 
-)}
 
                       </div>
 
@@ -414,10 +725,15 @@ useEffect(() => {
                         </div>
                       </div> */}
 
-                      <div className="time deal-timer product-deal-timer mx-md-0 mx-auto" id="clockdiv-1"
-                        data-hours="1" data-minutes="2" data-seconds="3">
+                      <div
+                        className="time deal-timer product-deal-timer mx-md-0 mx-auto"
+                        id="clockdiv-1"
+                        data-hours="1"
+                        data-minutes="2"
+                        data-seconds="3"
+                      >
                         <div className="product-title">
-                          <h4>Hurry up! Sales Ends In</h4>
+                          <h4>Nhanh lên! Khuyến mại kết thúc vào</h4>
                         </div>
                         <ul>
                           <li>
@@ -425,7 +741,7 @@ useEffect(() => {
                               <div className="days d-block">
                                 <h5></h5>
                               </div>
-                              <h6>Days</h6>
+                              <h6>Ngày</h6>
                             </div>
                           </li>
                           <li>
@@ -433,7 +749,7 @@ useEffect(() => {
                               <div className="hours d-block">
                                 <h5></h5>
                               </div>
-                              <h6>Hours</h6>
+                              <h6>Giờ</h6>
                             </div>
                           </li>
                           <li>
@@ -441,7 +757,7 @@ useEffect(() => {
                               <div className="minutes d-block">
                                 <h5></h5>
                               </div>
-                              <h6>Min</h6>
+                              <h6>Phút</h6>
                             </div>
                           </li>
                           <li>
@@ -449,13 +765,11 @@ useEffect(() => {
                               <div className="seconds d-block">
                                 <h5></h5>
                               </div>
-                              <h6>Sec</h6>
+                              <h6>Giây</h6>
                             </div>
                           </li>
                         </ul>
                       </div>
-
-
 
                       <div className="note-box product-package">
                         <div className="cart_qty qty-box product-qty m-0">
@@ -478,50 +792,39 @@ useEffect(() => {
                           </div>
                         </div>
 
-
-                        <button onClick={handleAddToCart} className="btn btn-md bg-dark cart-button text-white w-100">
-                          Add To Cart
+                        <button onClick={() => handleAddToCart1(products)} className="btn btn-md bg-dark cart-button text-white w-100">
+                          Thêm vào giỏ hàng
                         </button>
-
                       </div>
-
-
-
-
 
                       <div className="payment-option">
                         <div className="product-title">
-                          <h4>Guaranteed Safe Checkout</h4>
+                          <h4>Thanh toán an toàn được đảm bảo</h4>
                         </div>
                         <ul>
                           <li>
                             <a href="javascript:void(0)">
-                              <img src="../assets/images/product/payment/1.svg"
-                                className="blur-up lazyload" alt="" />
+                              <img src="../assets/images/product/payment/1.svg" className="blur-up lazyload" alt="" />
                             </a>
                           </li>
                           <li>
                             <a href="javascript:void(0)">
-                              <img src="../assets/images/product/payment/2.svg"
-                                className="blur-up lazyload" alt="" />
+                              <img src="../assets/images/product/payment/2.svg" className="blur-up lazyload" alt="" />
                             </a>
                           </li>
                           <li>
                             <a href="javascript:void(0)">
-                              <img src="../assets/images/product/payment/3.svg"
-                                className="blur-up lazyload" alt="" />
+                              <img src="../assets/images/product/payment/3.svg" className="blur-up lazyload" alt="" />
                             </a>
                           </li>
                           <li>
                             <a href="javascript:void(0)">
-                              <img src="../assets/images/product/payment/4.svg"
-                                className="blur-up lazyload" alt="" />
+                              <img src="../assets/images/product/payment/4.svg" className="blur-up lazyload" alt="" />
                             </a>
                           </li>
                           <li>
                             <a href="javascript:void(0)">
-                              <img src="../assets/images/product/payment/5.svg"
-                                className="blur-up lazyload" alt="" />
+                              <img src="../assets/images/product/payment/5.svg" className="blur-up lazyload" alt="" />
                             </a>
                           </li>
                         </ul>
@@ -540,33 +843,56 @@ useEffect(() => {
                       </div>
 
                       <div className="vendor-name">
-                        <h5 className="fw-500">Pure Foods</h5>
+                        <h5 className="fw-500">Clean Food Shop</h5>
 
                         <div className="product-rating mt-1">
-                          <StarRating rating={avgRating} /> 
-                            <span>({reviewCount} đánh giá) – ⭐ {avgRating.toFixed(1)} / 5</span>
-                          </div>
-
-
+                          <ul className="rating">
+                            <li>
+                              <i data-feather="star" className="fill"></i>
+                            </li>
+                            <li>
+                              <i data-feather="star" className="fill"></i>
+                            </li>
+                            <li>
+                              <i data-feather="star" className="fill"></i>
+                            </li>
+                            <li>
+                              <i data-feather="star" className="fill"></i>
+                            </li>
+                            <li>
+                              <i data-feather="star"></i>
+                            </li>
+                          </ul>
+                          <span>(9999+ đánh giá)</span>
+                        </div>
                       </div>
                     </div>
 
-                    <p className="vendor-detail">Pure Foods is an Vietnamese fast-casual
-                      restaurant that offers international and Vietnamese noodle dishes and pasta.</p>
+                    <p className="vendor-detail">
+                      Clean Food Shop là một nhà hàng Việt Nam bình dân, phục vụ các món mì và mì ống quốc tế và Việt Nam.
+                    </p>
 
                     <div className="vendor-list">
                       <ul>
                         <li>
                           <div className="address-contact">
                             <i data-feather="map-pin"></i>
-                            <h5>Address: <span className="text-content">Khu Giáo dục và Đào tạo - Khu Công nghệ cao Hòa Lạc - Km29 Đại lộ Thăng Long, xã Hòa Lạc, TP. Hà Nội</span></h5>
+                            <h5>
+                              Địa chỉ:{" "}
+                              <span className="text-content">
+                                Khu Giáo dục và Đào tạo - Khu Công nghệ cao Hòa Lạc - Km29 Đại lộ Thăng Long, xã Hòa
+                                Lạc, TP. Hà Nội
+                              </span>
+                            </h5>
                           </div>
                         </li>
 
                         <li>
                           <div className="address-contact">
                             <i data-feather="headphones"></i>
-                            <h5>Contact Seller: <span className="text-content">1900 6789</span></h5>
+                            <h5>
+                              Liên hệ người bán: <span className="text-content">1900 6789</span>
+                            </h5>
                           </div>
                         </li>
                       </ul>
@@ -575,8 +901,8 @@ useEffect(() => {
 
                   <div className="pt-25">
                     <div className="hot-line-number">
-                      <h5>Hotline Order:</h5>
-                      <h6>Mon - Fri: 07:00 am - 08:30PM</h6>
+                      <h5>Hotline đặt hàng:</h5>
+                      <h6>Thứ 2 - Thứ 6: 07:00 sáng - 08:30 tối</h6>
                       <h3>1900 6789</h3>
                     </div>
                   </div>
@@ -592,188 +918,188 @@ useEffect(() => {
                 <div className="product-section-box m-0">
                   <ul className="nav nav-tabs custom-nav" id="myTab" role="tablist">
                     <li className="nav-item" role="presentation">
-                      <button className="nav-link active" id="description-tab" data-bs-toggle="tab"
-                        data-bs-target="#description" type="button" role="tab">Description</button>
+                      <button
+                        className="nav-link active"
+                        id="description-tab"
+                        data-bs-toggle="tab"
+                        data-bs-target="#description"
+                        type="button"
+                        role="tab"
+                      >
+                        Mô tả
+                      </button>
                     </li>
 
                     <li className="nav-item" role="presentation">
-                      <button className="nav-link" id="info-tab" data-bs-toggle="tab" data-bs-target="#info"
-                        type="button" role="tab">Additional
-                        info</button>
+                      <button
+                        className="nav-link"
+                        id="care-tab"
+                        data-bs-toggle="tab"
+                        data-bs-target="#care"
+                        type="button"
+                        role="tab"
+                      >
+                        Hướng dẫn chăm sóc
+                      </button>
                     </li>
 
                     <li className="nav-item" role="presentation">
-                      <button className="nav-link" id="care-tab" data-bs-toggle="tab" data-bs-target="#care"
-                        type="button" role="tab">Care
-                        Instructions</button>
-                    </li>
-
-                    <li className="nav-item" role="presentation">
-                      <button className="nav-link" id="review-tab" data-bs-toggle="tab" data-bs-target="#review"
-                        type="button" role="tab">Review</button>
+                      <button
+                        className="nav-link"
+                        id="review-tab"
+                        data-bs-toggle="tab"
+                        data-bs-target="#review"
+                        type="button"
+                        role="tab"
+                      >
+                        Đánh giá
+                      </button>
                     </li>
                   </ul>
 
-                  <div className="tab-content custom-tab" id="myTabContent">
-                    <div className="tab-pane fade show active" id="description" role="tabpanel">
-                      <div className="product-description">
-                        <div className="nav-desh">
-                          <p>{products?.description}</p>
+                  <div className="tab-pane fade" id="review" role="tabpanel">
+                    <div className="review-box">
+                      <div className="row">
+                        {/* Cột trái: Tổng kết đánh giá */}
+                        <div className="col-xl-5">
+                          <div className="product-rating-box">
+                            <div className="row">
+                              <div className="col-xl-12">
+                                <div className="product-main-rating d-flex align-items-center gap-2">
+                                  {avgRating !== null ? (
+                                    <>
+                                      <StarRating rating={avgRating} />
+                                      <h2>{avgRating.toFixed(1)} / 5</h2>
+                                    </>
+                                  ) : (
+                                    <h2>0.00 / 5 <i data-feather="star"></i></h2>
+                                  )}
+                                  <h5>({reviewCount} đánh giá)</h5>
+                                </div>
+                              </div>
+
+                              <div className="col-xl-12">
+                                <ul className="product-rating-list">
+                                  {[5, 4, 3, 2, 1].map((star) => {
+                                    const count = reviews.filter((r) => (r.rating || 0) === star).length;
+                                    const percentage = reviewCount > 0 ? (count / reviewCount) * 100 : 0;
+                                    return (
+                                      <li key={star}>
+                                        <div className="rating-product d-flex align-items-center">
+                                          <h5 className="me-2">
+                                            {star}
+                                          </h5>
+                                          <i data-feather="star" className="fill me-2"></i> {/* Icon sao cho trực quan */}
+                                          <div className="progress flex-grow-1">
+                                            <div className="progress-bar" style={{ width: `${percentage}%` }}></div>
+                                          </div>
+                                          <h5 className="total ms-2">{count}</h5>
+                                        </div>
+                                      </li>
+                                    );
+                                  })}
+                                </ul>
+
+                                <div className="review-title-2">
+                                  <h4 className="fw-bold">Đánh giá sản phẩm</h4>
+                                  <p>Hãy để lại cảm nhận của bạn về sản phẩm</p>
+                                  <button
+                                    className="btn"
+                                    type="button"
+                                    onClick={() => {
+                                      const modal = new bootstrap.Modal(document.getElementById('writereview'));
+                                      modal.show();
+                                    }}
+                                  >
+                                    Viết đánh giá
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Cột phải: Danh sách đánh giá */}
+                        <div className="col-xl-7">
+                          <div className="review-people">
+                            <ul className="review-list">
+                              {reviews.length === 0 && (
+                                <p className="text-muted">Chưa có đánh giá nào cho sản phẩm này.</p>
+                              )}
+                              {reviews.map((review, index) => {
+                                // Helper để format createdAt từ mảng thành Date
+                                let formattedDate = "Không xác định thời gian";
+                                if (Array.isArray(review.createdAt) && review.createdAt.length >= 6) {
+                                  const [year, month, day, hour, min, sec, nano = 0] = review.createdAt;
+                                  const millis = Math.floor(nano / 1000000); // Chuyển nano sang milli
+                                  const reviewDate = new Date(year, month - 1, day, hour, min, sec, millis); // Tháng trừ 1 (0-based)
+                                  if (!isNaN(reviewDate)) {
+                                    // Format absolute
+                                    const absoluteDate = new Intl.DateTimeFormat("vi-VN", {
+                                      year: "numeric",
+                                      month: "2-digit",
+                                      day: "2-digit",
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                    }).format(reviewDate);
+
+                                    // Tính relative time dựa trên current date July 25, 2025 (chi tiết hơn)
+                                    const currentDate = new Date(2025, 6, 25); // July là month 6 (0-based)
+                                    const timeDiff = currentDate - reviewDate;
+                                    const daysAgo = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+                                    const relative = daysAgo > 0 ? `(${daysAgo} ngày trước)` : "(Mới đây)";
+
+                                    formattedDate = `${absoluteDate} ${relative}`;
+                                  }
+                                }
+
+                                return (
+                                  <li key={review.reviewId || index}>
+                                    <div className="people-box">
+                                      <div>
+                                        <div className="people-image people-text">
+                                          <img
+                                            alt="user"
+                                            className="img-fluid"
+                                            src="/assets/images/review/default.jpg"
+                                          />
+                                        </div>
+                                      </div>
+                                      <div className="people-comment">
+                                        <div className="people-name">
+                                          <span className="name fw-bold">{review.customerName || "Ẩn danh"}</span>
+                                          <div className="date-time">
+                                            <h6 className="text-content">{formattedDate}</h6>
+                                            <div className="product-rating">
+                                              <ul className="rating">
+                                                {[1, 2, 3, 4, 5].map((star) => (
+                                                  <li key={star}>
+                                                    <i
+                                                      data-feather="star"
+                                                      className={(review.rating || 0) >= star ? "fill" : ""}
+                                                    ></i>
+                                                  </li>
+                                                ))}
+                                              </ul>
+                                            </div>
+                                          </div>
+                                        </div>
+                                        <div className="reply">
+                                          <p>{review?.comment || "Không có nội dung đánh giá."}</p>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </li>
+                                );
+                              })}
+                            </ul>
+                          </div>
                         </div>
                       </div>
                     </div>
-
-                    <div className="tab-pane fade" id="info" role="tabpanel">
-                      <div className="table-responsive">
-                        <table className="table info-table">
-                          <tbody>
-                            <tr>
-                              <td>Specialty</td>
-                              <td>Vegetarian</td>
-                            </tr>
-                            <tr>
-                              <td>Ingredient Type</td>
-                              <td>Vegetarian</td>
-                            </tr>
-                            <tr>
-                              <td>Brand</td>
-                              <td>Lavian Exotique</td>
-                            </tr>
-                            <tr>
-                              <td>Form</td>
-                              <td>Bar Brownie</td>
-                            </tr>
-                            <tr>
-                              <td>Package Information</td>
-                              <td>Box</td>
-                            </tr>
-                            <tr>
-                              <td>Manufacturer</td>
-                              <td>Prayagh Nutri Product Pvt Ltd</td>
-                            </tr>
-                            <tr>
-                              <td>Item part number</td>
-                              <td>LE 014 - 20pcs Crème Bakes (Pack of 2)</td>
-                            </tr>
-                            <tr>
-                              <td>Net Quantity</td>
-                              <td>40.00 count</td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-
-                    <div className="tab-pane fade" id="care" role="tabpanel">
-                      <div className="information-box">
-                        <ul>
-                          <li>Store cream cakes in a refrigerator. Fondant cakes should be
-                            stored in an air conditioned environment.</li>
-
-                          <li>Slice and serve the cake at room temperature and make sure
-                            it is not exposed to heat.</li>
-
-                          <li>Use a serrated knife to cut a fondant cake.</li>
-
-                          <li>Sculptural elements and figurines may contain wire supports
-                            or toothpicks or wooden skewers for support.</li>
-
-                          <li>Please check the placement of these items before serving to
-                            small children.</li>
-
-                          <li>The cake should be consumed within 24 hours.</li>
-
-                          <li>Enjoy your cake!</li>
-                        </ul>
-                      </div>
-                    </div>
-
-                    <div className="tab-pane fade" id="review" role="tabpanel">
-  <div className="review-box">
-    <div className="row">
-      <div className="col-xl-5">
-        <div className="product-rating-box">
-          <div className="row">
-            <div className="col-xl-12">
-              <div className="product-main-rating">
-                <h2>{avgRating?.toFixed(1) || 0}
-                  <i data-feather="star"></i>
-                </h2>
-                <h5>{reviewCount} Đánh giá</h5>
-              </div>
-            </div>
-            <div className="col-xl-12">
-              <ul className="product-rating-list">
-                {[5, 4, 3, 2, 1].map((star) => {
-                  const count = reviewStats[star] || 0;
-                  const percent = reviewCount > 0 ? (count / reviewCount) * 100 : 0;
-                  return (
-                    <li key={star}>
-                      <div className="rating-product">
-                        <h5>{star}<i data-feather="star"></i></h5>
-                        <div className="progress">
-                          <div className="progress-bar" style={{ width: `${percent}%` }}></div>
-                        </div>
-                        <h5 className="total">{count}</h5>
-                      </div>
-                    </li>
-                  );
-                })}
-              </ul>
-              <div className="review-title-2">
-                <h4 className="fw-bold">Review this product</h4>
-                <p>Let other customers know what you think</p>
-                <button className="btn" type="button" data-bs-toggle="modal" data-bs-target="#writereview">
-                  Write a review
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="col-xl-7">
-        <div className="review-people">
-          <ul className="review-list">
-            {reviews.map((review, idx) => (
-              <li key={idx}>
-                <div className="people-box">
-                  <div>
-                    <div className="people-image people-text">
-                      <img alt="user" className="img-fluid" src="/assets/images/review/default-user.png" />
-                    </div>
                   </div>
-                  <div className="people-comment">
-                    <div className="people-name">
-                      <a href="#" className="name">{review.customerName}</a>
-                      <div className="date-time">
-                        <h6 className="text-content">{new Date(review.createdAt).toLocaleString()}</h6>
-                        <div className="product-rating">
-                          <ul className="rating">
-                            {[1, 2, 3, 4, 5].map(i => (
-                              <li key={i}>
-                                <i data-feather="star" className={i <= review.rating ? "fill" : ""}></i>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="reply">
-                      <p>{review.comment}</p>
-                    </div>
-                  </div>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
 
-                  </div>
+
                 </div>
               </div>
             </div>
@@ -782,625 +1108,118 @@ useEffect(() => {
         <section className="product-list-section section-b-space">
           <div className="container-fluid-lg">
             <div className="title">
-              <h2>Related Products</h2>
+              <h2>Sản phẩm liên quan</h2>
               <span className="title-leaf">
-                <svg className="icon-width">
-                </svg>
+                <svg className="icon-width"></svg>
               </span>
             </div>
-            <div className="row">
-              <div className="col-12">
-                <div className="slider-6_1 product-wrapper">
-                  <div>
-                    <div className="product-box-3 wow fadeInUp">
-                      <div className="product-header">
-                        <div className="product-image">
-                          <a href="product-left.htm">
-                            <img src="../assets/images/cake/product/11.png"
-                              className="img-fluid blur-up lazyload" alt="" />
-                          </a>
+            <div className="related-scroll-container">
+              {productsRelated?.map(product => (
+                <div className="product-box" style={{ minWidth: "250px" }} key={product.productId}>
+                  <div className="">
+                    <div className="product-header">
+                      <div className="product-image">
+                        <a href={`/product/${product.productId}`}>
+                          <img
+                            src={product.imageURL}
+                            className="img-fluid blur-up lazyload"
+                            alt={product.productName}
+                          />
+                        </a>
 
-                          <ul className="product-option">
-                            <li data-bs-toggle="tooltip" data-bs-placement="top" title="View">
-                              <a href="javascript:void(0)" data-bs-toggle="modal"
-                                data-bs-target="#view">
+                        <ul className="product-option">
+                          <li data-bs-toggle="tooltip" data-bs-placement="top" title="View">
+                            <li data-bs-toggle="tooltip" title="View">
+                              <a href="#" onClick={(e) => { e.preventDefault(); handleViewProduct(product); }}>
                                 <i data-feather="eye"></i>
                               </a>
                             </li>
-
-                            <li data-bs-toggle="tooltip" data-bs-placement="top" title="Compare">
-                              <a href="compare.html">
-                                <i data-feather="refresh-cw"></i>
-                              </a>
-                            </li>
-
+                          </li>
+                          <li data-bs-toggle="tooltip" data-bs-placement="top" title="Compare">
+                            <a >
+                              <i data-feather="refresh-cw"></i>
+                            </a>
+                          </li>
+                          <li data-bs-toggle="tooltip" data-bs-placement="top" title="Wishlist">
                             <li data-bs-toggle="tooltip" data-bs-placement="top" title="Wishlist">
-                              <a href="wishlist.html" className="notifi-wishlist">
-                                <i data-feather="heart"></i>
-                              </a>
+                              <button onClick={toggleWishlist} className="wishlist-btn" style={{ background: 'none', border: 'none' }}>
+                                <i className={`fa${isWished ? 's' : 'r'} fa-heart wishlist-icon ${isWished ? 'text-danger' : ''}`}></i>
+                              </button>
                             </li>
-                          </ul>
-                        </div>
+
+                          </li>
+                        </ul>
                       </div>
+                    </div>
 
-                      <div className="product-footer">
-                        <div className="product-detail">
-                          <span className="span-name">Cake</span>
-                          <a href="product-left-thumbnail.html">
-                            <h5 className="name">Chocolate Chip Cookies 250 g</h5>
-                          </a>
-                          <div className="product-rating mt-2">
-  <ul className="rating">
-    {[1, 2, 3, 4, 5].map((i) => (
-      <li key={i}>
-        <i
-          data-feather="star"
-          className={avgRating >= i ? "fill" : avgRating >= i - 0.5 ? "half" : ""}
-        ></i>
-      </li>
-    ))}
-  </ul>
-  <span>({avgRating?.toFixed(1)} / {reviewCount} Reviews)</span>
-</div>
+                    <div className="product-footer">
+                      <div >
+                        <span className="span-name"><span>{categoryMap[product.productId]?.categoryName}</span>
+                        </span>
+                        <a href={`/product/${product.productId}`}>
+                          <h5 className="name">{product.productName}</h5>
+                        </a>
+                        <div className="product-rating mt-2">
+                          <ul className="rating">
+                            {[...Array(5)].map((_, i) => (
+                              <li key={i}><i data-feather="star" className="fill"></i></li>
+                            ))}
+                          </ul>
+                          <span>(5.0)</span>
+                        </div>
+                        <h5 className="price">
+                          <span className="theme-color">${product.salePrice} <del>${product.price}</del></span>
+                        </h5>
 
-                          <h6 className="unit">500 G</h6>
-                          <h5 className="price"><span className="theme-color">$10.25</span> <del>$12.57</del>
-                          </h5>
-                          <div className="add-to-cart-box bg-white">
-                            <button className="btn btn-add-cart addcart-button">Add
-                              <span className="add-icon bg-light-gray">
-                                <i className="fa-solid fa-plus"></i>
-                              </span>
-                            </button>
-                            <div className="cart_qty qty-box">
-                              <div className="input-group bg-white">
-                                <button type="button" className="qty-left-minus bg-gray"
-                                  data-type="minus" data-field="">
-                                  <i className="fa fa-minus"></i>
-                                </button>
-                                <input className="form-control input-number qty-input" type="text"
-                                  name="quantity" value="0" />
-                                <button type="button" className="qty-right-plus bg-gray"
-                                  data-type="plus" data-field="">
-                                  <i className="fa fa-plus"></i>
-                                </button>
-                              </div>
+                        <div className="add-to-cart-box">
+                          <button
+                            className="btn btn-add-cart addcart-button"
+                            onClick={() => handleAddToCart(product)}
+                          >
+                            Thêm
+                            <span className="add-icon">
+                              <i className="fa-solid fa-plus"></i>
+                            </span>
+                          </button>
+
+                          <div className="cart_qty qty-box mt-2">
+                            <div className="input-group justify-content-center">
+                              <button className="qty-left-minus btn btn-sm btn-light"
+                                onClick={() => updateQuantity(product, -1)}>
+                                <i className="fa fa-minus"></i>
+                              </button>
+                              <input
+                                className="form-control input-number qty-input text-center"
+                                type="number"
+                                min="1"
+                                max={product.stockQuantity}
+                                value={cartQuantities[product.productId] || 1}
+                                onChange={(e) => handleManualQuantityChange(product, e.target.value)}
+                                style={{ width: "60px" }}
+                              />
+                              <button className="qty-right-plus btn btn-sm btn-light"
+                                onClick={() => updateQuantity(product, 1)}>
+                                <i className="fa fa-plus"></i>
+                              </button>
                             </div>
                           </div>
                         </div>
+
                       </div>
                     </div>
-                  </div>
 
-                  <div>
-                    <div className="product-box-3 wow fadeInUp" data-wow-delay="0.05s">
-                      <div className="product-header">
-                        <div className="product-image">
-                          <a href="product-left-thumbnail.html">
-                            <img src="../assets/images/cake/product/2.png"
-                              className="img-fluid blur-up lazyload" alt="" />
-                          </a>
-
-                          <ul className="product-option">
-                            <li data-bs-toggle="tooltip" data-bs-placement="top" title="View">
-                              <a href="javascript:void(0)" data-bs-toggle="modal"
-                                data-bs-target="#view">
-                                <i data-feather="eye"></i>
-                              </a>
-                            </li>
-
-                            <li data-bs-toggle="tooltip" data-bs-placement="top" title="Compare">
-                              <a href="compare.html">
-                                <i data-feather="refresh-cw"></i>
-                              </a>
-                            </li>
-
-                            <li data-bs-toggle="tooltip" data-bs-placement="top" title="Wishlist">
-                              <a href="wishlist.html" className="notifi-wishlist">
-                                <i data-feather="heart"></i>
-                              </a>
-                            </li>
-                          </ul>
-                        </div>
-                      </div>
-                      <div className="product-footer">
-                        <div className="product-detail">
-                          <span className="span-name">Vegetable</span>
-                          <a href="product-left-thumbnail.html">
-                            <h5 className="name">Fresh Bread and Pastry Flour 200 g</h5>
-                          </a>
-                          <div className="product-rating mt-2">
-                            <ul className="rating">
-                              <li>
-                                <i data-feather="star" className="fill"></i>
-                              </li>
-                              <li>
-                                <i data-feather="star" className="fill"></i>
-                              </li>
-                              <li>
-                                <i data-feather="star" className="fill"></i>
-                              </li>
-                              <li>
-                                <i data-feather="star" className="fill"></i>
-                              </li>
-                              <li>
-                                <i data-feather="star"></i>
-                              </li>
-                            </ul>
-                            <span>(4.0)</span>
-                          </div>
-                          <h6 className="unit">250 ml</h6>
-                          <h5 className="price"><span className="theme-color">$08.02</span> <del>$15.15</del>
-                          </h5>
-                          <div className="add-to-cart-box bg-white">
-                            <button className="btn btn-add-cart addcart-button">Add
-                              <span className="add-icon bg-light-gray">
-                                <i className="fa-solid fa-plus"></i>
-                              </span>
-                            </button>
-                            <div className="cart_qty qty-box">
-                              <div className="input-group bg-white">
-                                <button type="button" className="qty-left-minus bg-gray"
-                                  data-type="minus" data-field="">
-                                  <i className="fa fa-minus"></i>
-                                </button>
-                                <input className="form-control input-number qty-input" type="text"
-                                  name="quantity" value="0" />
-                                <button type="button" className="qty-right-plus bg-gray"
-                                  data-type="plus" data-field="">
-                                  <i className="fa fa-plus"></i>
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="product-box-3 wow fadeInUp" data-wow-delay="0.1s">
-                      <div className="product-header">
-                        <div className="product-image">
-                          <a href="product-left-thumbnail.html">
-                            <img src="../assets/images/cake/product/3.png"
-                              className="img-fluid blur-up lazyload" alt="" />
-                          </a>
-
-                          <ul className="product-option">
-                            <li data-bs-toggle="tooltip" data-bs-placement="top" title="View">
-                              <a href="javascript:void(0)" data-bs-toggle="modal"
-                                data-bs-target="#view">
-                                <i data-feather="eye"></i>
-                              </a>
-                            </li>
-
-                            <li data-bs-toggle="tooltip" data-bs-placement="top" title="Compare">
-                              <a href="compare.html">
-                                <i data-feather="refresh-cw"></i>
-                              </a>
-                            </li>
-
-                            <li data-bs-toggle="tooltip" data-bs-placement="top" title="Wishlist">
-                              <a href="wishlist.html" className="notifi-wishlist">
-                                <i data-feather="heart"></i>
-                              </a>
-                            </li>
-                          </ul>
-                        </div>
-                      </div>
-
-                      <div className="product-footer">
-                        <div className="product-detail">
-                          <span className="span-name">Vegetable</span>
-                          <a href="product-left-thumbnail.html">
-                            <h5 className="name">Peanut Butter Bite Premium Butter Cookies 600 g</h5>
-                          </a>
-                          <div className="product-rating mt-2">
-                            <ul className="rating">
-                              <li>
-                                <i data-feather="star" className="fill"></i>
-                              </li>
-                              <li>
-                                <i data-feather="star" className="fill"></i>
-                              </li>
-                              <li>
-                                <i data-feather="star"></i>
-                              </li>
-                              <li>
-                                <i data-feather="star"></i>
-                              </li>
-                              <li>
-                                <i data-feather="star"></i>
-                              </li>
-                            </ul>
-                            <span>(2.4)</span>
-                          </div>
-                          <h6 className="unit">350 G</h6>
-                          <h5 className="price"><span className="theme-color">$04.33</span> <del>$10.36</del>
-                          </h5>
-                          <div className="add-to-cart-box bg-white">
-                            <button className="btn btn-add-cart addcart-button">Add
-                              <span className="add-icon bg-light-gray">
-                                <i className="fa-solid fa-plus"></i>
-                              </span>
-                            </button>
-                            <div className="cart_qty qty-box">
-                              <div className="input-group bg-white">
-                                <button type="button" className="qty-left-minus bg-gray"
-                                  data-type="minus" data-field="">
-                                  <i className="fa fa-minus"></i>
-                                </button>
-                                <input className="form-control input-number qty-input" type="text"
-                                  name="quantity" value="0" />
-                                <button type="button" className="qty-right-plus bg-gray"
-                                  data-type="plus" data-field="">
-                                  <i className="fa fa-plus"></i>
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="product-box-3 wow fadeInUp" data-wow-delay="0.15s">
-                      <div className="product-header">
-                        <div className="product-image">
-                          <a href="product-left-thumbnail.html">
-                            <img src="../assets/images/cake/product/4.png"
-                              className="img-fluid blur-up lazyload" alt="" />
-                          </a>
-
-                          <ul className="product-option">
-                            <li data-bs-toggle="tooltip" data-bs-placement="top" title="View">
-                              <a href="javascript:void(0)" data-bs-toggle="modal"
-                                data-bs-target="#view">
-                                <i data-feather="eye"></i>
-                              </a>
-                            </li>
-
-                            <li data-bs-toggle="tooltip" data-bs-placement="top" title="Compare">
-                              <a href="compare.html">
-                                <i data-feather="refresh-cw"></i>
-                              </a>
-                            </li>
-
-                            <li data-bs-toggle="tooltip" data-bs-placement="top" title="Wishlist">
-                              <a href="wishlist.html" className="notifi-wishlist">
-                                <i data-feather="heart"></i>
-                              </a>
-                            </li>
-                          </ul>
-                        </div>
-                      </div>
-
-                      <div className="product-footer">
-                        <div className="product-detail">
-                          <span className="span-name">Snacks</span>
-                          <a href="product-left-thumbnail.html">
-                            <h5 className="name">SnackAmor Combo Pack of Jowar Stick and Jowar Chips</h5>
-                          </a>
-                          <div className="product-rating mt-2">
-                            <ul className="rating">
-                              <li>
-                                <i data-feather="star" className="fill"></i>
-                              </li>
-                              <li>
-                                <i data-feather="star" className="fill"></i>
-                              </li>
-                              <li>
-                                <i data-feather="star" className="fill"></i>
-                              </li>
-                              <li>
-                                <i data-feather="star" className="fill"></i>
-                              </li>
-                              <li>
-                                <i data-feather="star" className="fill"></i>
-                              </li>
-                            </ul>
-                            <span>(5.0)</span>
-                          </div>
-                          <h6 className="unit">570 G</h6>
-                          <h5 className="price"><span className="theme-color">$12.52</span> <del>$13.62</del>
-                          </h5>
-                          <div className="add-to-cart-box bg-white">
-                            <button className="btn btn-add-cart addcart-button">Add
-                              <span className="add-icon bg-light-gray">
-                                <i className="fa-solid fa-plus"></i>
-                              </span>
-                            </button>
-                            <div className="cart_qty qty-box">
-                              <div className="input-group bg-white">
-                                <button type="button" className="qty-left-minus bg-gray"
-                                  data-type="minus" data-field="">
-                                  <i className="fa fa-minus"></i>
-                                </button>
-                                <input className="form-control input-number qty-input" type="text"
-                                  name="quantity" value="0" />
-                                <button type="button" className="qty-right-plus bg-gray"
-                                  data-type="plus" data-field="">
-                                  <i className="fa fa-plus"></i>
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="product-box-3 wow fadeInUp" data-wow-delay="0.2s">
-                      <div className="product-header">
-                        <div className="product-image">
-                          <a href="product-left-thumbnail.html">
-                            <img src="../assets/images/cake/product/5.png"
-                              className="img-fluid blur-up lazyload" alt="" />
-                          </a>
-
-                          <ul className="product-option">
-                            <li data-bs-toggle="tooltip" data-bs-placement="top" title="View">
-                              <a href="javascript:void(0)" data-bs-toggle="modal"
-                                data-bs-target="#view">
-                                <i data-feather="eye"></i>
-                              </a>
-                            </li>
-
-                            <li data-bs-toggle="tooltip" data-bs-placement="top" title="Compare">
-                              <a href="compare.html">
-                                <i data-feather="refresh-cw"></i>
-                              </a>
-                            </li>
-
-                            <li data-bs-toggle="tooltip" data-bs-placement="top" title="Wishlist">
-                              <a href="wishlist.html" className="notifi-wishlist">
-                                <i data-feather="heart"></i>
-                              </a>
-                            </li>
-                          </ul>
-                        </div>
-                      </div>
-
-                      <div className="product-footer">
-                        <div className="product-detail">
-                          <span className="span-name">Snacks</span>
-                          <a href="product-left-thumbnail.html">
-                            <h5 className="name">Yumitos Chilli Sprinkled Potato Chips 100 g</h5>
-                          </a>
-                          <div className="product-rating mt-2">
-                            <ul className="rating">
-                              <li>
-                                <i data-feather="star" className="fill"></i>
-                              </li>
-                              <li>
-                                <i data-feather="star" className="fill"></i>
-                              </li>
-                              <li>
-                                <i data-feather="star" className="fill"></i>
-                              </li>
-                              <li>
-                                <i data-feather="star"></i>
-                              </li>
-                              <li>
-                                <i data-feather="star"></i>
-                              </li>
-                            </ul>
-                            <span>(3.8)</span>
-                          </div>
-                          <h6 className="unit">100 G</h6>
-                          <h5 className="price"><span className="theme-color">$10.25</span> <del>$12.36</del>
-                          </h5>
-                          <div className="add-to-cart-box bg-white">
-                            <button className="btn btn-add-cart addcart-button">Add
-                              <span className="add-icon bg-light-gray">
-                                <i className="fa-solid fa-plus"></i>
-                              </span>
-                            </button>
-                            <div className="cart_qty qty-box">
-                              <div className="input-group bg-white">
-                                <button type="button" className="qty-left-minus bg-gray"
-                                  data-type="minus" data-field="">
-                                  <i className="fa fa-minus"></i>
-                                </button>
-                                <input className="form-control input-number qty-input" type="text"
-                                  name="quantity" value="0" />
-                                <button type="button" className="qty-right-plus bg-gray"
-                                  data-type="plus" data-field="">
-                                  <i className="fa fa-plus"></i>
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="product-box-3 wow fadeInUp" data-wow-delay="0.25s">
-                      <div className="product-header">
-                        <div className="product-image">
-                          <a href="product-left-thumbnail.html">
-                            <img src="../assets/images/cake/product/6.png"
-                              className="img-fluid blur-up lazyload" alt="" />
-                          </a>
-
-                          <ul className="product-option">
-                            <li data-bs-toggle="tooltip" data-bs-placement="top" title="View">
-                              <a href="javascript:void(0)" data-bs-toggle="modal"
-                                data-bs-target="#view">
-                                <i data-feather="eye"></i>
-                              </a>
-                            </li>
-
-                            <li data-bs-toggle="tooltip" data-bs-placement="top" title="Compare">
-                              <a href="compare.html">
-                                <i data-feather="refresh-cw"></i>
-                              </a>
-                            </li>
-
-                            <li data-bs-toggle="tooltip" data-bs-placement="top" title="Wishlist">
-                              <a href="wishlist.html" className="notifi-wishlist">
-                                <i data-feather="heart"></i>
-                              </a>
-                            </li>
-                          </ul>
-                        </div>
-                      </div>
-
-                      <div className="product-footer">
-                        <div className="product-detail">
-                          <span className="span-name">Vegetable</span>
-                          <a href="product-left-thumbnail.html">
-                            <h5 className="name">Fantasy Crunchy Choco Chip Cookies</h5>
-                          </a>
-                          <div className="product-rating mt-2">
-                            <ul className="rating">
-                              <li>
-                                <i data-feather="star" className="fill"></i>
-                              </li>
-                              <li>
-                                <i data-feather="star" className="fill"></i>
-                              </li>
-                              <li>
-                                <i data-feather="star" className="fill"></i>
-                              </li>
-                              <li>
-                                <i data-feather="star" className="fill"></i>
-                              </li>
-                              <li>
-                                <i data-feather="star"></i>
-                              </li>
-                            </ul>
-                            <span>(4.0)</span>
-                          </div>
-
-                          <h6 className="unit">550 G</h6>
-
-                          <h5 className="price"><span className="theme-color">$14.25</span> <del>$16.57</del>
-                          </h5>
-                          <div className="add-to-cart-box bg-white">
-                            <button className="btn btn-add-cart addcart-button">Add
-                              <span className="add-icon bg-light-gray">
-                                <i className="fa-solid fa-plus"></i>
-                              </span>
-                            </button>
-                            <div className="cart_qty qty-box">
-                              <div className="input-group bg-white">
-                                <button type="button" className="qty-left-minus bg-gray"
-                                  data-type="minus" data-field="">
-                                  <i className="fa fa-minus"></i>
-                                </button>
-                                <input className="form-control input-number qty-input" type="text"
-                                  name="quantity" value="0" />
-                                <button type="button" className="qty-right-plus bg-gray"
-                                  data-type="plus" data-field="">
-                                  <i className="fa fa-plus"></i>
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="product-box-3 wow fadeInUp" data-wow-delay="0.3s">
-                      <div className="product-header">
-                        <div className="product-image">
-                          <a href="product-left-thumbnail.html">
-                            <img src="../assets/images/cake/product/7.png" className="img-fluid" alt="" />
-                          </a>
-
-                          <ul className="product-option">
-                            <li data-bs-toggle="tooltip" data-bs-placement="top" title="View">
-                              <a href="javascript:void(0)" data-bs-toggle="modal"
-                                data-bs-target="#view">
-                                <i data-feather="eye"></i>
-                              </a>
-                            </li>
-
-                            <li data-bs-toggle="tooltip" data-bs-placement="top" title="Compare">
-                              <a href="compare.html">
-                                <i data-feather="refresh-cw"></i>
-                              </a>
-                            </li>
-
-                            <li data-bs-toggle="tooltip" data-bs-placement="top" title="Wishlist">
-                              <a href="wishlist.html" className="notifi-wishlist">
-                                <i data-feather="heart"></i>
-                              </a>
-                            </li>
-                          </ul>
-                        </div>
-                      </div>
-
-                      <div className="product-footer">
-                        <div className="product-detail">
-                          <span className="span-name">Vegetable</span>
-                          <a href="product-left-thumbnail.html">
-                            <h5 className="name">Fresh Bread and Pastry Flour 200 g</h5>
-                          </a>
-                          <div className="product-rating mt-2">
-                            <ul className="rating">
-                              <li>
-                                <i data-feather="star" className="fill"></i>
-                              </li>
-                              <li>
-                                <i data-feather="star" className="fill"></i>
-                              </li>
-                              <li>
-                                <i data-feather="star" className="fill"></i>
-                              </li>
-                              <li>
-                                <i data-feather="star"></i>
-                              </li>
-                              <li>
-                                <i data-feather="star"></i>
-                              </li>
-                            </ul>
-                            <span>(3.8)</span>
-                          </div>
-
-                          <h6 className="unit">1 Kg</h6>
-
-                          <h5 className="price"><span className="theme-color">$12.68</span> <del>$14.69</del>
-                          </h5>
-                          <div className="add-to-cart-box bg-white">
-                            <button className="btn btn-add-cart addcart-button">Add
-                              <span className="add-icon bg-light-gray">
-                                <i className="fa-solid fa-plus"></i>
-                              </span>
-                            </button>
-                            <div className="cart_qty qty-box">
-                              <div className="input-group bg-white">
-                                <button type="button" className="qty-left-minus bg-gray"
-                                  data-type="minus" data-field="">
-                                  <i className="fa fa-minus"></i>
-                                </button>
-                                <input className="form-control input-number qty-input" type="text"
-                                  name="quantity" value="0" />
-                                <button type="button" className="qty-right-plus bg-gray"
-                                  data-type="plus" data-field="">
-                                  <i className="fa fa-plus"></i>
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
                   </div>
                 </div>
-              </div>
+              ))}
             </div>
+
           </div>
         </section>
-        <div className="modal fade theme-modal view-modal" id="view" tabindex="-1">
+
+
+
+
+        <div className="modal fade theme-modal view-modal" id="view" tabIndex="-1">
           <div className="modal-dialog modal-dialog-centered modal-xl modal-fullscreen-sm-down">
             <div className="modal-content">
               <div className="modal-header p-0">
@@ -1412,15 +1231,18 @@ useEffect(() => {
                 <div className="row g-sm-4 g-2">
                   <div className="col-lg-6">
                     <div className="slider-image">
-                      <img src="../assets/images/product/category/1.jpg" className="img-fluid blur-up lazyload"
-                        alt="" />
+                      <img src={selectedProduct?.imageURL} className="img-fluid blur-up lazyload" alt="" />
                     </div>
                   </div>
 
                   <div className="col-lg-6">
                     <div className="right-sidebar-modal">
-                      <h4 className="title-name">Peanut Butter Bite Premium Butter Cookies 600 g</h4>
-                      <h4 className="price">$36.99</h4>
+                      <h4 className="title-name">{selectedProduct?.productName}</h4>
+                      <h4 className="price theme-color ">
+                        ${selectedProduct?.salePrice?.toFixed(2)}{" "}
+                        <del className="text-muted ">${selectedProduct?.price}</del>
+                      </h4>
+
                       <div className="product-rating">
                         <ul className="rating">
                           <li>
@@ -1439,65 +1261,60 @@ useEffect(() => {
                             <i data-feather="star"></i>
                           </li>
                         </ul>
-                        <span className="ms-2">8 Reviews</span>
-                        <span className="ms-2 text-danger">6 sold in last 16 hours</span>
+                        <span className="ms-2">8 đánh giá</span>
+                        <span className="ms-2 text-danger">6 đã bán trong 16 giờ qua</span>
                       </div>
 
                       <div className="product-detail">
-                        <h4>Product Details :</h4>
-                        <p>Candy canes sugar plum tart cotton candy chupa chups sugar plum chocolate I love.
-                          Caramels marshmallow icing dessert candy canes I love soufflé I love toffee.
-                          Marshmallow pie sweet sweet roll sesame snaps tiramisu jelly bear claw. Bonbon
-                          muffin I love carrot cake sugar plum dessert bonbon.</p>
+                        <p>{selectedProduct?.description || "No description available."}</p>
                       </div>
 
                       <ul className="brand-list">
                         <li>
                           <div className="brand-box">
-                            <h5>Brand Name:</h5>
-                            <h6>Black Forest</h6>
+                            <h5>Tên danh mục:</h5>
+                            <h6 className="mb-3">{category?.categoryName || "Đang tải..."}</h6>
                           </div>
                         </li>
-
                         <li>
                           <div className="brand-box">
-                            <h5>Product Code:</h5>
-                            <h6>W0690034</h6>
-                          </div>
-                        </li>
-
-                        <li>
-                          <div className="brand-box">
-                            <h5>Product Type:</h5>
-                            <h6>White Cream Cake</h6>
+                            <h5>Tên nhà cung cấp:</h5>
+                            <h6 className="mb-3">{supplier?.supplierName || "Đang tải..."}</h6>
                           </div>
                         </li>
                       </ul>
 
-                      <div className="select-size">
-                        <h4>Cake Size :</h4>
-                        <select className="form-select select-form-size">
-                          <option selected>Select Size</option>
-                          <option value="1.2">1/2 KG</option>
-                          <option value="0">1 KG</option>
-                          <option value="1.5">1/5 KG</option>
-                          <option value="red">Red Roses</option>
-                          <option value="pink">With Pink Roses</option>
-                        </select>
-                      </div>
+                      <ul className="brand-list">
+                        <li>
+                          <div className="brand-box">
+                            <h5>Số lượng hàng tồn kho:</h5>
+                            <h6 className="mb-3">{selectedProduct?.stockQuantity || "Đang tải..."}</h6>
+                          </div>
+                        </li>
+                        <li>
+                          <div className="brand-box">
+                            <h5>Tên nhà cung cấp:</h5>
+                            <h6 className="mb-3">{supplier?.supplierName || "Đang tải..."}</h6>
+                          </div>
+                        </li>
+                      </ul>
+
 
                       <div className="modal-button">
                         <button
                           type="button"
-                          onClick={handleAddToCart}
                           className="btn btn-md bg-dark cart-button text-white w-100"
+                          onClick={() => handleAddToCart(selectedProduct)}
                         >
-                          Add To Cart
+                          Thêm vào giỏ hàng
                         </button>
-
-                        <button onclick="location.href = 'product-left-thumbnail.html';"
-                          className="btn theme-bg-color view-button icon text-white fw-bold btn-md">
-                          View More Details</button>
+                        <button
+                          type="button"
+                          className="btn theme-bg-color view-button icon text-white fw-bold btn-md"
+                          onClick={() => handleViewDetail(selectedProduct.productId)}
+                        >
+                          Xem thêm chi tiết
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -1510,8 +1327,10 @@ useEffect(() => {
           <div className="modal-dialog modal-dialog-centered modal-fullscreen-sm-down">
             <div className="modal-content">
               <div className="modal-header">
-                <h5 className="modal-title" id="exampleModalLabel">Choose your Delivery Location</h5>
-                <p className="mt-1 text-content">Enter your address and we will specify the offer for your area.</p>
+                <h5 className="modal-title" id="exampleModalLabel">
+                  Chọn Địa điểm Giao hàng
+                </h5>
+                <p className="mt-1 text-content">Nhập địa chỉ của bạn và chúng tôi sẽ chỉ định ưu đãi cho khu vực của bạn.</p>
                 <button type="button" className="btn-close" data-bs-dismiss="modal">
                   <i className="fa-solid fa-xmark"></i>
                 </button>
@@ -1608,7 +1427,9 @@ useEffect(() => {
             <div className="modal-content">
               <div className="modal-header">
                 <div>
-                  <h5 className="modal-title w-100" id="deal_today">Deal Today</h5>
+                  <h5 className="modal-title w-100" id="deal_today">
+                    Deal Today
+                  </h5>
                   <p className="mt-1 text-content">Recommended deals for you.</p>
                 </div>
                 <button type="button" className="btn-close" data-bs-dismiss="modal">
@@ -1621,13 +1442,14 @@ useEffect(() => {
                     <li className="list-1">
                       <div className="deal-offer-contain">
                         <a href="shop-left-sidebar.html" className="deal-image">
-                          <img src="../assets/images/vegetable/product/10.png" className="blur-up lazyload"
-                            alt="" />
+                          <img src="../assets/images/vegetable/product/10.png" className="blur-up lazyload" alt="" />
                         </a>
 
                         <a href="shop-left-sidebar.html" className="deal-contain">
                           <h5>Blended Instant Coffee 50 g Buy 1 Get 1 Free</h5>
-                          <h6>$52.57 <del>57.62</del> <span>500 G</span></h6>
+                          <h6>
+                            $52.57 <del>57.62</del> <span>500 G</span>
+                          </h6>
                         </a>
                       </div>
                     </li>
@@ -1635,13 +1457,14 @@ useEffect(() => {
                     <li className="list-2">
                       <div className="deal-offer-contain">
                         <a href="shop-left-sidebar.html" className="deal-image">
-                          <img src="../assets/images/vegetable/product/11.png" className="blur-up lazyload"
-                            alt="" />
+                          <img src="../assets/images/vegetable/product/11.png" className="blur-up lazyload" alt="" />
                         </a>
 
                         <a href="shop-left-sidebar.html" className="deal-contain">
                           <h5>Blended Instant Coffee 50 g Buy 1 Get 1 Free</h5>
-                          <h6>$52.57 <del>57.62</del> <span>500 G</span></h6>
+                          <h6>
+                            $52.57 <del>57.62</del> <span>500 G</span>
+                          </h6>
                         </a>
                       </div>
                     </li>
@@ -1649,13 +1472,14 @@ useEffect(() => {
                     <li className="list-3">
                       <div className="deal-offer-contain">
                         <a href="shop-left-sidebar.html" className="deal-image">
-                          <img src="../assets/images/vegetable/product/12.png" className="blur-up lazyload"
-                            alt="" />
+                          <img src="../assets/images/vegetable/product/12.png" className="blur-up lazyload" alt="" />
                         </a>
 
                         <a href="shop-left-sidebar.html" className="deal-contain">
                           <h5>Blended Instant Coffee 50 g Buy 1 Get 1 Free</h5>
-                          <h6>$52.57 <del>57.62</del> <span>500 G</span></h6>
+                          <h6>
+                            $52.57 <del>57.62</del> <span>500 G</span>
+                          </h6>
                         </a>
                       </div>
                     </li>
@@ -1663,13 +1487,14 @@ useEffect(() => {
                     <li className="list-1">
                       <div className="deal-offer-contain">
                         <a href="shop-left-sidebar.html" className="deal-image">
-                          <img src="../assets/images/vegetable/product/13.png" className="blur-up lazyload"
-                            alt="" />
+                          <img src="../assets/images/vegetable/product/13.png" className="blur-up lazyload" alt="" />
                         </a>
 
                         <a href="shop-left-sidebar.html" className="deal-contain">
                           <h5>Blended Instant Coffee 50 g Buy 1 Get 1 Free</h5>
-                          <h6>$52.57 <del>57.62</del> <span>500 G</span></h6>
+                          <h6>
+                            $52.57 <del>57.62</del> <span>500 G</span>
+                          </h6>
                         </a>
                       </div>
                     </li>
@@ -1703,9 +1528,16 @@ useEffect(() => {
                     </div>
                     <div className="theme-setting-button color-picker">
                       <form className="form-control">
-                        <label for="colorPick" className="form-label mb-0">Theme Color</label>
-                        <input type="color" className="form-control form-control-color" id="colorPick"
-                          value="#0da487" title="Choose your color" />
+                        <label for="colorPick" className="form-label mb-0">
+                          Theme Color
+                        </label>
+                        <input
+                          type="color"
+                          className="form-control form-control-color"
+                          id="colorPick"
+                          value="#0da487"
+                          title="Choose your color"
+                        />
                       </form>
                     </div>
                   </li>
@@ -1715,8 +1547,12 @@ useEffect(() => {
                       <h4>Dark</h4>
                     </div>
                     <div className="theme-setting-button">
-                      <button className="btn btn-2 outline" id="darkButton">Dark</button>
-                      <button className="btn btn-2 unline" id="lightButton">Light</button>
+                      <button className="btn btn-2 outline" id="darkButton">
+                        Dark
+                      </button>
+                      <button className="btn btn-2 unline" id="lightButton">
+                        Light
+                      </button>
                     </div>
                   </li>
 
@@ -1746,17 +1582,18 @@ useEffect(() => {
               <div className="col-12">
                 <div className="cart-content">
                   <div className="product-image">
-                    <img src={products?.imageURL} className="img-fluid blur-up lazyload"
-                      alt="" />
+                    <img src={products?.imageURL} className="img-fluid blur-up lazyload" alt="" />
                     <div className="content">
                       <h5>{products?.productName}</h5>
-                      <h6>${products?.salePrice}<del className="text-danger">${products?.price}</del><span>{products?.discountPercent}% off</span></h6>
+                      <h6>
+                        ${products?.salePrice}
+                        <del className="text-danger">${products?.price}</del>
+                        <span>{products?.discountPercent}% off</span>
+                      </h6>
                     </div>
                   </div>
                   <div className="selection-section">
-
                     <div className="cart_qty qty-box product-qty m-0">
-
                       <div className="input-group h-100">
                         <button type="button" className="qty-left-minus" onClick={decreaseQty}>
                           <i className="fa fa-minus"></i>
@@ -1774,42 +1611,42 @@ useEffect(() => {
                           <i className="fa fa-plus"></i>
                         </button>
                       </div>
-
                     </div>
                   </div>
                   <div className="add-btn">
-                    <a className="btn theme-bg-color text-white wishlist-btn" href="wishlist.html"><i
-                      className="fa fa-bookmark"></i> Wishlist</a>
+                    <a className="btn theme-bg-color text-white wishlist-btn" href="wishlist.html">
+                      <i className="fa fa-bookmark"></i> Yêu thích
+                    </a>
 
-                    <button
-                      type="button"
-                      onClick={handleAddToCart}
-                      className="btn theme-bg-color text-white"
-                    >
+                    <button type="button" onClick={() => handleAddToCart1(products)} className="btn theme-bg-color text-white">
                       <i className="fas fa-shopping-cart"></i> Add To Cart
                     </button>
-
                   </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-        <div className="modal fade theme-modal question-modal" id="writereview" tabindex="-1">
+        <div className="modal fade theme-modal question-modal" id="writereview" tabIndex="-1">
           <div className="modal-dialog modal-dialog-centered">
             <div className="modal-content">
               <div className="modal-header">
-                <h1 className="modal-title fs-5" id="exampleModalLabel">Write a review</h1>
+                <h1 className="modal-title fs-5" id="exampleModalLabel">
+                  Write a review
+                </h1>
                 <button type="button" className="btn-close" data-bs-dismiss="modal">
                   <i className="fa-solid fa-xmark"></i>
                 </button>
               </div>
               <div className="modal-body pt-0">
-                <form className="product-review-form">
+                <form className="product-review-form" onSubmit={(e) => e.preventDefault()}>
                   <div className="product-wrapper">
                     <div className="product-image">
-                      <img className="img-fluid" alt="Solid Collared Tshirts"
-                        src="../assets/images/fashion/product/26.jpg" />
+                      <img
+                        className="img-fluid"
+                        alt="Solid Collared Tshirts"
+                        src="../assets/images/fashion/product/26.jpg"
+                      />
                     </div>
                     <div className="product-content">
                       <h5 className="name">Solid Collared Tshirts</h5>
@@ -1825,35 +1662,32 @@ useEffect(() => {
                       <label>Rating</label>
                       <div className="product-rating">
                         <ul className="rating">
-                          <li>
-                            <i data-feather="star" className="fill"></i>
-                          </li>
-                          <li>
-                            <i data-feather="star" className="fill"></i>
-                          </li>
-                          <li>
-                            <i data-feather="star" className="fill"></i>
-                          </li>
-                          <li>
-                            <i data-feather="star" className="fill"></i>
-                          </li>
-                          <li>
-                            <i data-feather="star"></i>
-                          </li>
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <li key={star} onClick={() => setSelectedRating(star)} style={{ cursor: 'pointer' }}>
+                              <i data-feather="star" style={{ color: selectedRating >= star ? 'gold' : 'gray' }}></i> {/* Dynamic color để hiển thị màu khi ấn */}
+                            </li>
+                          ))}
                         </ul>
                       </div>
+                      {selectedRating < 1 && <small className="text-danger d-block mt-1">Vui lòng chọn rating *</small>} {/* Inline message cho validation */}
                     </div>
                   </div>
                   <div className="review-box">
-                    <label for="content" className="form-label">Your Question *</label>
-                    <textarea id="content" rows="3" className="form-control" placeholder="Your Question"></textarea>
+                    <label htmlFor="content" className="form-label">
+                      Nội dung đánh giá *
+                    </label>
+                    <textarea id="content" rows="3" className="form-control" placeholder="Your Question" value={reviewComment} onChange={(e) => setReviewComment(e.target.value)}></textarea>
+                    {reviewComment.trim() === '' && <small className="text-danger d-block mt-1">Vui lòng viết nội dung *</small>}
                   </div>
                 </form>
               </div>
               <div className="modal-footer">
-                <button type="button" className="btn btn-md btn-theme-outline fw-bold"
-                  data-bs-dismiss="modal">Close</button>
-                <button type="button" className="btn btn-md fw-bold text-light theme-bg-color">Save changes</button>
+                <button type="button" className="btn btn-md btn-theme-outline fw-bold" data-bs-dismiss="modal">
+                  Close
+                </button>
+                <button type="button" className="btn btn-md fw-bold text-light theme-bg-color" onClick={handleSubmitReview} disabled={isSubmitting || selectedRating < 1 || reviewComment.trim() === ''}>
+                  {isSubmitting ? 'Sending...' : 'Save changes'}
+                </button>
               </div>
             </div>
           </div>
@@ -1861,8 +1695,11 @@ useEffect(() => {
 
         <div className="bg-overlay"></div>
       </div>
-    </ProductDetailLayout>
-  )
-}
 
-export default ProductDetail
+
+
+    </ProductDetailLayout>
+  );
+};
+
+export default ProductDetail;

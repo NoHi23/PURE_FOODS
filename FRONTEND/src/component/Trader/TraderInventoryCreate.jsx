@@ -32,6 +32,7 @@ const [itemsPerPage] = useState(5); // Bạn có thể thay đổi số lượng
         `http://localhost:8082/PureFoods/api/trader/inventory?userId=${traderId}`
       );
       setProducts(res.data?.data || []);
+      toast.success("Làm mới danh sách sản phẩm thành công!");
     } catch (error) {
       toast.error("Lỗi khi tải sản phẩm: " + (error.response?.data?.message || error.message));
     } finally {
@@ -157,6 +158,9 @@ const [itemsPerPage] = useState(5); // Bạn có thể thay đổi số lượng
         <button className="btn btn-success" onClick={() => openModal("createProduct")}>
           🆕 Tạo sản phẩm mới
         </button>
+        <button className="btn btn-outline-secondary" onClick={fetchProducts} disabled={loading}>
+    🔄 Làm mới
+  </button>
       </div>
 
       {showModal && (

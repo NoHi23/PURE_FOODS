@@ -213,7 +213,7 @@ const Order = () => {
                             <th>Shipping Address</th>
                             <th>Payment</th>
                             <th>Total Amount</th>
-                            <th>Status</th>
+                            <th >Status</th>
                             <th>Options</th>
                           </tr>
                         </thead>
@@ -226,11 +226,12 @@ const Order = () => {
                               <td>{o.paymentMethod}</td>
                               <td>{o.shippingAddress}</td>
                               <td>${o.totalAmount}</td>
-                              <td>
+                              <td  >
                                 <select
+                                  style={{ width: '105px' }}
                                   value={o.statusID}
                                   className={`form-select form-select-sm ${getStatusClass(orderStatuses[o.statusID])}`}
-                                  onChange={(e) => handleUpdateStatus(o.orderID, parseInt(e.target.value))}
+                                  onChange={(e) => {e.preventDefault(); handleUpdateStatus(o.orderID, parseInt(e.target.value))}}
                                 >
                                   <option value={1}>Pending</option>
                                   <option value={2}>Processing</option>

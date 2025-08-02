@@ -27,13 +27,11 @@ public class ReviewController {
     }
 
     @DeleteMapping("/delete")
-    public ResponseEntity<Void> delete(
-            @RequestParam("productId") int productId,
-            @RequestParam("customerId") int customerId
-    ) {
-        reviewService.deleteReview(productId, customerId);
+    public ResponseEntity<Void> delete(@RequestParam("reviewId") int reviewId) {
+        reviewService.deleteReviewById(reviewId);
         return ResponseEntity.noContent().build();
     }
+
 
 
     @GetMapping("/product")

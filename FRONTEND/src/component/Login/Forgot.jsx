@@ -45,8 +45,8 @@ const Forgot = () => {
             <div class="col-xl-5 col-lg-6 me-auto">
               <div class="log-in-box">
                 <div class="log-in-title">
-                  <h3>Welcome To Pure Food</h3>
-                  <h4>Log In Your Account</h4>
+                  <h3>Chào mừng bạn đến với Clean Food Shop</h3>
+                  <h4>Quên mật khẩu</h4>
                 </div>
 
                 <div class="input-box">
@@ -54,7 +54,7 @@ const Forgot = () => {
                     <div class="col-12">
                       <div class="form-floating theme-form-floating log-in-form">
                         <input type="email" class="form-control" id="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="Email Address" />
-                        <label for="email">Email Address</label>
+                        <label for="email">Email</label>
                       </div>
                     </div>
 
@@ -63,10 +63,10 @@ const Forgot = () => {
                         {isLoading ? (                    
                           <>
                             <span class="spinner-border spinner-border-sm me-2"></span>
-                            Sending…
+                            Đang gửi...
                           </>
                         ) : (
-                          'Send link'
+                          'Gửi'
                         )}
                       </button>
                     </div>

@@ -175,7 +175,7 @@ const SignUp = () => {
             });
           });
         } else {
-          toast.error("User cancelled login or did not fully authorize.");
+          toast.error("Người dùng đã hủy đăng nhập hoặc không xác thực đầy đủ.");
         }
       }, { scope: 'public_profile,email' });
   };
@@ -191,8 +191,8 @@ const SignUp = () => {
             <div className="col-xl-5 col-lg-6 me-auto">
               <div className="log-in-box">
                 <div className="log-in-title">
-                  <h3>Welcome To Clean Food Shop</h3>
-                  <h4>Sign Up Your Account</h4>
+                  <h3>Chào mừng đến với Clean Food Shop</h3>
+                  <h4>Đăng ký Tài Khoản của bạn</h4>
                 </div>
 
                 <div className="input-box">
@@ -207,7 +207,7 @@ const SignUp = () => {
                           onChange={handleChange}
                           required
                         />
-                        <label>Full Name</label>
+                        <label>Họ và Tên</label>
                       </div>
                     </div>
 
@@ -221,7 +221,7 @@ const SignUp = () => {
                           onChange={handleChange}
                           required
                         />
-                        <label>Email Address</label>
+                        <label>Email</label>
                       </div>
                     </div>
 
@@ -235,7 +235,7 @@ const SignUp = () => {
                           onChange={handleChange}
                           required
                         />
-                        <label>Password</label>
+                        <label>Mật khẩu</label>
                       </div>
                     </div>
                     <div className="col-12">
@@ -252,12 +252,12 @@ const SignUp = () => {
                           onChange={handleChange}
                         />
                         {formData.confirm && formData.confirm !== formData.password && (
-                          <p className="text-danger mt-1">Confirmation password does not match</p>
+                          <p className="text-danger mt-1">Mật khẩu xác nhận không khớp</p>
                         )}
                         {formData.confirm && formData.confirm === formData.password && (
-                          <p className="text-success mt-1">Password matches</p>
+                          <p className="text-success mt-1">Mật khẩu xác nhận trùng khớp</p>
                         )}
-                        <label>Confirm Password</label>
+                        <label>Xác nhận mật khẩu</label>
                       </div>
                     </div>
 
@@ -267,11 +267,11 @@ const SignUp = () => {
                           type="text"
                           name="phone"
                           className="form-control"
-                          placeholder="Phone"
+                          placeholder="Số điện thoại"
                           onChange={handleChange}
                           required
                         />
-                        <label>Phone</label>
+                        <label>Số điện thoại</label>
                       </div>
                     </div>
 
@@ -279,13 +279,13 @@ const SignUp = () => {
                       <div className="form-floating theme-form-floating log-in-form">
                         <input
                           type="text"
-                          name="address"
+                          name="Địa chỉ"
                           className="form-control"
                           placeholder="Address"
                           onChange={handleChange}
                           required
                         />
-                        <label>Address</label>
+                        <label>Địa chỉ</label>
                       </div>
                     </div>
 
@@ -299,24 +299,24 @@ const SignUp = () => {
                           onChange={(e) => setAgree(e.target.checked)}
                         />
                         <label className="form-check-label" htmlFor="terms">
-                          I accept the terms and privacy policy.
+                          Tôi chấp nhận các điều khoản và chính sách bảo mật.
                         </label>
                       </div>
                     </div>
 
                     <div className="col-12">
                       <button type="submit" className="btn btn-animation w-100 justify-content-center">
-                        Sign Up
+                        Đăng Ký
                       </button>
                       <h5 className="new-page mt-3 text-center">
-                        Already have an account? <a href="/login">Sign In</a>
+                        Bạn đã có tài khoản? <a href="/login">Đăng Nhập</a>
                       </h5>
                     </div>
                   </form>
                   {message && <p className="text-center mt-3">{message}</p>}
                 </div>
 
-                <div className="other-log-in"><h6>or</h6></div>
+                <div className="other-log-in"><h6>hoặc</h6></div>
 
                 <div className="log-in-button">
                   <ul>

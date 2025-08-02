@@ -45,19 +45,19 @@ const ProductDetailModal = ({ show, onHide, product }) => {
           className="img-fluid d-block mx-auto"
         />
         <p>
-          <strong>Description:</strong> {product.description}
+          <strong>Mô tả:</strong> {product.description}
         </p>
         <p>
-          <strong>Price:</strong> ${product.salePrice} <del>${product.price}</del>
+          <strong>Giá:</strong> ${product.salePrice} <del>${product.price}</del>
         </p>
         <p>
-          <strong>Quantity:</strong> {product.stockQuantity}
+          <strong>Số lượng:</strong> {product.stockQuantity}
         </p>
         <p>
-          <strong>Category:</strong> {categoryName}
+          <strong>Thể loại:</strong> {categoryName}
         </p>
         <p>
-          <strong>Supplier:</strong> {supplierName}
+          <strong>Nhà cung cấp:</strong> {supplierName}
         </p>
       </Modal.Body>
       <Modal.Footer>

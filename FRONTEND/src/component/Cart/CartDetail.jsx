@@ -157,7 +157,7 @@ const CartDetail = () => {
 
         Promise.all(orderDetailRequests)
           .then(() => {
-            toast.success("🛒 Order and details created!");
+            toast.success("Đã tạo đơn hàng và thông tin chi tiết!");
             navigate(`/checkout/${orderID}`);
           })
           .catch((err) => {
@@ -177,9 +177,9 @@ const CartDetail = () => {
         <div className="container">
           {cartItems.length === 0 ? (
             <div className="text-center py-5">
-              <h3>Your cart is empty</h3>
+              <h3>Giỏ hàng của bạn đang trống</h3>
               <a href="/" className="btn btn-primary mt-3">
-                Continue Shopping
+                Tiếp tục mua sắm
               </a>
             </div>
           ) : (
@@ -188,7 +188,7 @@ const CartDetail = () => {
                 <div className="cart-table">
                   <div className="table-responsive">
                     <button
-                      className="btn btn-danger w-100 mt-2 mb-3"
+                      className="btn btn-dark w-25 mt-2 mb-3 text-white"
                       onClick={() => {
                         Swal.fire({
                           title: "Bạn có chắc không?",
@@ -216,17 +216,17 @@ const CartDetail = () => {
                         });
                       }}
                     >
-                      Remove All Product
+                      Xóa tất cả sản phẩm
                     </button>
                     <hr></hr>
                     <table className="table all-package theme-table">
                       <thead>
                         <tr>
-                          <th className="text-dark">Product</th>
-                          <th className="text-dark">Price</th>
-                          <th className="text-dark">Quantity</th>
-                          <th className="text-dark">Total</th>
-                          <th className="text-dark">Action</th>
+                          <th className="text-dark">Sản phẩm</th>
+                          <th className="text-dark">Giá</th>
+                          <th className="text-dark">Số lượng</th>
+                          <th className="text-dark">Tổng cộng</th>
+                          <th className="text-dark">Hành động</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -242,7 +242,6 @@ const CartDetail = () => {
                                 />
                                 <div className="product-detail-box">
                                   <h6>{item.productName}</h6>
-                                  <p className="text-content">Unit: 1 item</p>
                                 </div>
                               </div>
                             </td>
@@ -338,7 +337,7 @@ const CartDetail = () => {
                                   className="btn btn-sm btn-outline-danger"
                                   onClick={() => handleRemove(item.cartItemID)}
                                 >
-                                  Remove
+                                  Xóa
                                 </button>
                               </div>
                             </td>
@@ -353,11 +352,11 @@ const CartDetail = () => {
               <div className="col-xxl-3">
                 <div className="summery-box p-sticky">
                   <div className="summery-header">
-                    <h3>Order Summary</h3>
+                    <h3>Tóm tắt đơn hàng</h3>
                   </div>
 
                   <div className="cart-coupon">
-                    <h5 className="mb-2">Coupon Code</h5>
+                    <h5 className="mb-2">Mã giảm giá</h5>
                     <div className="input-group">
                       <input
                         type="text"
@@ -366,7 +365,7 @@ const CartDetail = () => {
                         onChange={(e) => setCouponCode(e.target.value)}
                       />
                       <button className="btn btn-sm btn-dark text-white" onClick={handleApplyCoupon}>
-                        Apply
+                        Áp dụng
                       </button>
                     </div>
                   </div>
@@ -374,7 +373,7 @@ const CartDetail = () => {
                   <div className="summery-contain mt-3">
                     <ul>
                       <li>
-                        <h4>Subtotal</h4>
+                        <h4>Tổng phụ</h4>
                         <h4 className="price">{toUSD(subtotal)}</h4>
                       </li>
                       {/* <li>
@@ -382,7 +381,7 @@ const CartDetail = () => {
                         <h4 className="price">{toUSD(shippingFee)}</h4>
                       </li> */}
                       <li>
-                        <h4>Discount</h4>
+                        <h4>Giảm giá</h4>
                         <h4 className="price">-{toUSD(couponDiscount)}</h4>
                       </li>
                     </ul>
@@ -390,17 +389,17 @@ const CartDetail = () => {
 
                   <ul className="summery-total">
                     <li className="list-total">
-                      <h4>Total</h4>
+                      <h4>Tổng</h4>
                       <h4 className="price theme-color">{toUSD(total)}</h4>
                     </li>
                   </ul>
 
                   <div className="button-group cart-button">
                     <button className="btn btn-animation w-100" onClick={handleCreateOrder}>
-                      Proceed to Checkout
+                      Tiến hành thanh toán
                     </button>
                     <a href="/" className="btn btn-primary shopping-button w-100 mt-2">
-                      Continue Shopping
+                      Tiếp tục mua sắm
                     </a>
                   </div>
                 </div>

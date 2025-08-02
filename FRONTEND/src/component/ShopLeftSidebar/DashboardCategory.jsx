@@ -6,6 +6,7 @@ import FilterCategoryLayout from "../../layouts/FilterCategoryLayout";
 import { useParams, useLocation } from "react-router-dom";
 import Products from "./Products";
 import { PriceFilterProvider } from "./PriceFilterContext";
+import { DiscountFilterProvider } from "./DiscountFilterContext";
 
 const DashboardCategory = () => {
   const { categoryID } = useParams();
@@ -13,16 +14,35 @@ const DashboardCategory = () => {
   const [isLoading, setIsLoading] = useState(false);
   const location = useLocation();
   const userLocal = JSON.parse(localStorage.getItem("user"));
-const userId = userLocal?.userId || null;
+  const userId = userLocal?.userId || null;
+  const [selectedRatings, setSelectedRatings] = useState([]);
+
+  const fetchAverages = async (prods) => {
+    if (prods.length === 0) return prods;
+    const ids = prods.map(p => p.productId);
+    const resps = await Promise.all(
+      ids.map(id => 
+        axios.get(`http://localhost:8082/PureFoods/api/review/average/product?productId=${id}`)
+          .then(res => res.data || 0)
+          .catch(() => 0) // Handle error or no reviews as 0
+      )
+    );
+    const avgMap = {};
+    resps.forEach((avg, idx) => {
+      avgMap[ids[idx]] = avg;
+    });
+    return prods.map(p => ({ ...p, averageRating: avgMap[p.productId] }));
+  };
 
   useEffect(() => {
     if (categoryID) {
       setIsLoading(true);
       axios
         .get(`http://localhost:8082/PureFoods/api/product/by-category/${categoryID}`)
-        .then((response) => {
+        .then(async (response) => {
           console.log("Sản phẩm theo category:", response.data);
-          setProducts(response.data);
+          const updatedProducts = await fetchAverages(response.data);
+          setProducts(updatedProducts);
           setIsLoading(false);
         })
         .catch((error) => {
@@ -39,30 +59,46 @@ const userId = userLocal?.userId || null;
     if (cateParam) {
       const cateIDs = cateParam.split(",").map(Number);
       const requests = cateIDs.map((id) => axios.get(`http://localhost:8082/PureFoods/api/product/by-category/${id}`));
-      Promise.all(requests).then((responses) => {
+      Promise.all(requests).then(async (responses) => {
         const allProducts = responses.flatMap((res) => res.data);
-        setProducts(allProducts);
+        const updatedProducts = await fetchAverages(allProducts);
+        setProducts(updatedProducts);
       });
     } else {
-      axios.get("http://localhost:8082/PureFoods/api/product/getAll").then((res) => setProducts(res.data));
+      axios.get("http://localhost:8082/PureFoods/api/product/getAll").then(async (res) => {
+        const updatedProducts = await fetchAverages(res.data);
+        setProducts(updatedProducts);
+      });
     }
   }, [location.search]);
 
   return (
     <PriceFilterProvider>
-      <FilterCategoryLayout>
-        <div>
-          <HeaderCategory />
-          <div className="row">
-            <div className="col-lg-2 col-md-3">
-              <FiltersLeftCategory />
-            </div>
-            <div className="col-lg-10 col-md-9">
-              <Products products={products} setProducts={setProducts} isLoading={isLoading} userId={userId}/>
+      <DiscountFilterProvider>
+        <FilterCategoryLayout>
+          <div>
+            <HeaderCategory />
+            <div className="row">
+              <div className="col-lg-2 col-md-3">
+                <FiltersLeftCategory 
+                  products={products} 
+                  selectedRatings={selectedRatings} 
+                  setSelectedRatings={setSelectedRatings} 
+                />
+              </div>
+              <div className="col-lg-10 col-md-9">
+                <Products 
+                  products={products} 
+                  setProducts={setProducts} 
+                  isLoading={isLoading} 
+                  userId={userId} 
+                  selectedRatings={selectedRatings} 
+                />
+              </div>
             </div>
           </div>
-        </div>
-      </FilterCategoryLayout>
+        </FilterCategoryLayout>
+      </DiscountFilterProvider>
     </PriceFilterProvider>
   );
 };
