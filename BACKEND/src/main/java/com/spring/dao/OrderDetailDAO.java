@@ -7,5 +7,5 @@ import java.util.List;
 public interface OrderDetailDAO {
     OrderDetail save(OrderDetail orderDetail);
     List<OrderDetail> findByOrderID(int orderId);
-
+    void deleteByOrderId(int orderId);
 }

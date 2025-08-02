@@ -1,13 +1,10 @@
 import React from "react";
 
-const FilterStatus = ({ selectedStatus, setSelectedStatus }) => {
-  // Danh sách options đầy đủ theo yêu cầu
+const FilterStatusLog = ({ selectedStatus, setSelectedStatus }) => {
+  // Danh sách options đã được rút gọn theo yêu cầu: tất cả, shipped (thành công, statusID=3), cancelled (hủy, statusID=5)
   const options = [
     { label: "Tất cả", value: "all" },
-    { label: "Chờ xử lý", value: "pending" },
-    { label: "Đang xử lý", value: "processing" },
     { label: "Đã giao hàng", value: "shipped" },
-    { label: "Đã giao", value: "delivered" },
     { label: "Đã hủy", value: "cancelled" },
   ];
 
@@ -28,4 +25,4 @@ const FilterStatus = ({ selectedStatus, setSelectedStatus }) => {
   );
 };
 
-export default FilterStatus;
+export default FilterStatusLog;

@@ -8,7 +8,11 @@ public class OrderDetailDTO {
     private double unitPrice;
     private int status;
 
-    public OrderDetailDTO(){};
+
+    public OrderDetailDTO() {
+        this.quantity = 1;
+        this.status = 1;
+    }
 
     public OrderDetailDTO(int orderDetailID, int productID, int orderID, int quantity, double unitPrice,int status) {
         this.orderDetailID = orderDetailID;

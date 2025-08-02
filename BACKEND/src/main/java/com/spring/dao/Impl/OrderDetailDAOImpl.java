@@ -30,4 +30,11 @@ public class OrderDetailDAOImpl implements OrderDetailDAO {
                 .setParameter("orderId", orderId)
                 .getResultList();
     }
+
+    @Override
+    public void deleteByOrderId(int orderId) {
+        entityManager.createQuery("DELETE FROM OrderDetail od WHERE od.orderID = :orderId")
+                .setParameter("orderId", orderId)
+                .executeUpdate();
+    }
 }

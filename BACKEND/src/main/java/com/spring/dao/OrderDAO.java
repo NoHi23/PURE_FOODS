@@ -8,8 +8,8 @@ import java.util.List;
 import java.util.Optional;
 
 public interface OrderDAO {
-    Order saveOrder(Order order); // Thêm phương thức
-    void updateOrder(Order order); // Thêm phương thức
+    void saveOrder(Order order);
+    void updateOrder(Order order);
     void deleteOrder(int orderId);
 
     Order getOrderById(int orderId);
@@ -20,6 +20,7 @@ public interface OrderDAO {
     int countOrder();
     List<Order> getOrdersByStatusID(int statusID);
     List<BestSellingProductDTO> getTop5BestSellingProductsWithStats();
+    List<BestSellingProductDTO> getTop12BestSellingProductsWithStats();
     List<Order> getTop5RecentOrders();
     Optional<Order> findById(int orderId);
 

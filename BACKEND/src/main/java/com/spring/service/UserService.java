@@ -1,8 +1,10 @@
 package com.spring.service;
 import com.spring.dto.ProductDTO;
 import com.spring.dto.UserDTO;
+import com.spring.entity.User;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface UserService {
     public boolean login(UserDTO userDTO);
@@ -32,4 +34,6 @@ public interface UserService {
 
     UserDTO getUserById(int userId);
     boolean verifyPassword(int userId, String inputPassword);
+
+    Optional<User> findById(Integer id);
 }

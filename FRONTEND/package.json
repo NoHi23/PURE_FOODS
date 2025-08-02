@@ -22,6 +22,7 @@
     "datatables.net-dt": "^2.3.2",
     "dayjs": "^1.11.13",
     "feather-icons": "^4.29.2",
+    "feather-icons-react": "^0.9.0",
     "file-saver": "^2.0.5",
     "framer-motion": "^12.23.6",
     "gulp": "^5.0.1",

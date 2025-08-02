@@ -1,17 +1,10 @@
 package com.spring.controller;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.spring.dto.ExporterDTO;
-import com.spring.dto.InventoryLogsDTO;
-import com.spring.dto.OrderDTO;
-import com.spring.dto.OrderDetailDTO;
-import com.spring.entity.OrderDetail;
+import com.spring.dto.*;
+import com.spring.entity.User;
 import com.spring.service.ExporterService;
-import com.spring.service.InventoryLogsService;
-import com.spring.service.OrderDetailService;
 import com.spring.service.OrderService;
+import com.spring.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/exporter")
@@ -31,268 +23,358 @@ public class ExporterController {
     private ExporterService exporterService;
 
     @Autowired
-    private InventoryLogsService inventoryLogsService;
-
-    @Autowired
     private OrderService orderService;
 
     @Autowired
-    private OrderDetailService orderDetailService;
+    private UserService userService;
 
-    @GetMapping("/orders")
-    public ResponseEntity<Map<String, Object>> getAllOrdersForExport() {
+    @GetMapping("/export-requests")
+    public ResponseEntity<?> getExportRequests() {
         try {
-            List<OrderDTO> orders = orderService.getAllOrders();
-            Map<String, Object> response = new HashMap<>();
-            response.put("message", "Lấy danh sách đơn hàng thành công!");
-            response.put("status", 200);
-            response.put("orders", orders);
-            return ResponseEntity.ok(response);
-        } catch (RuntimeException e) {
-            return buildErrorResponse("Lỗi khi lấy danh sách đơn hàng: " + e.getMessage(), 400);
-        }
-    }
-
-    @GetMapping("/requests")
-    public ResponseEntity<Map<String, Object>> getAllExportRequests() {
-        try {
-            List<ExporterDTO> requests = exporterService.getAllExportRequests();
+            List<ExporterDTO> exportRequests = exporterService.getAllExportRequests();
             Map<String, Object> response = new HashMap<>();
             response.put("message", "Lấy danh sách yêu cầu xuất hàng thành công!");
             response.put("status", 200);
-            response.put("requests", requests);
+            response.put("orders", exportRequests);
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
-            return buildErrorResponse("Lỗi khi lấy danh sách yêu cầu xuất hàng: " + e.getMessage(), 400);
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("message", e.getMessage());
+            errorResponse.put("status", 400);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
     }
 
-    @GetMapping("/requests/{orderId}")
-    public ResponseEntity<Map<String, Object>> getExportRequestById(@PathVariable("orderId") int orderId) {
+    @PostMapping("/export-requests")
+    public ResponseEntity<?> createExportRequest(@RequestBody ExportRequestPayload payload, @RequestParam("exporterId") int exporterId) {
         try {
-            ExporterDTO exporterDTO = exporterService.getExportRequestById(orderId);
-            if (exporterDTO == null) {
-                return buildErrorResponse("Không tìm thấy yêu cầu xuất hàng với ID: " + orderId, 404);
+            ExporterDTO exporterDTO = payload.getExporterDTO();
+            List<OrderDetailDTO> orderDetails = payload.getOrderDetails();
+            if (exporterDTO == null || orderDetails == null || orderDetails.isEmpty() || exporterDTO.getOrderID() <= 0 || exporterDTO.getCustomerID() <= 0) {
+                throw new IllegalArgumentException("Dữ liệu yêu cầu không hợp lệ: exporterDTO, orderDetails, orderID hoặc customerID không hợp lệ");
             }
+            // Kiểm tra trạng thái đơn hàng
+            OrderDTO orderDTO = orderService.getOrderById(exporterDTO.getOrderID());
+            if (orderDTO == null) {
+                throw new IllegalArgumentException("Đơn hàng không tồn tại với orderID: " + exporterDTO.getOrderID());
+            }
+            if (orderDTO.getStatusID() != 2) {
+                throw new IllegalArgumentException("Đơn hàng phải ở trạng thái Processing (statusID = 2) để tạo yêu cầu xuất hàng.");
+            }
+            exporterService.createExportRequest(exporterDTO, orderDetails, exporterId);
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Tạo yêu cầu xuất hàng thành công!");
+            response.put("status", 200);
+            response.put("order", exporterDTO);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("message", e.getMessage());
+            errorResponse.put("status", 400);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        }
+    }
+
+    @PostMapping("/request-cancel/{orderId}")
+    public ResponseEntity<?> requestCancelOrder(
+            @PathVariable("orderId") int orderId,
+            @RequestBody Map<String, String> request,
+            @RequestParam("customerId") int customerId
+    ) {
+        try {
+            if (orderId <= 0) {
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("message", "orderID không hợp lệ.");
+                errorResponse.put("status", 400);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+            }
+            String cancelReason = request.get("cancelReason");
+            if (cancelReason == null || cancelReason.trim().isEmpty()) {
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("message", "Lý do hủy không được để trống.");
+                errorResponse.put("status", 400);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+            }
+            exporterService.requestCancelOrder(orderId, cancelReason, customerId);
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Gửi yêu cầu hủy đơn hàng thành công!");
+            response.put("status", 200);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("message", e.getMessage());
+            errorResponse.put("status", 400);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        }
+    }
+
+    @DeleteMapping("/cancel-request/{orderId}")
+    public ResponseEntity<?> cancelExportRequest(
+            @PathVariable("orderId") int orderId,
+            @RequestBody Map<String, String> request,
+            @RequestParam("exporterId") int exporterId
+    ) {
+        try {
+            if (orderId <= 0) {
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("message", "orderID không hợp lệ.");
+                errorResponse.put("status", 400);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+            }
+            String cancelReason = request.get("cancelReason");
+            exporterService.cancelExportRequest(orderId, cancelReason, exporterId);
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Hủy yêu cầu xuất hàng thành công!");
+            response.put("status", 200);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("message", e.getMessage());
+            errorResponse.put("status", 400);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        }
+    }
+
+    @PostMapping("/update-status/{orderId}")
+    public ResponseEntity<?> updateOrderStatus(
+            @PathVariable("orderId") int orderId,
+            @RequestParam("exporterId") int exporterId,
+            @RequestBody Map<String, Integer> request
+    ) {
+        try {
+            if (orderId <= 0) {
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("message", "orderID không hợp lệ.");
+                errorResponse.put("status", 400);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+            }
+            Integer newStatusId = request.get("statusId");
+            if (newStatusId == null || !List.of(2, 3, 4, 5).contains(newStatusId)) {
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("message", "statusID không hợp lệ. Chỉ chấp nhận: 2 (Processing), 3 (Shipped), 4 (Delivered), 5 (Cancelled).");
+                errorResponse.put("status", 400);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+            }
+            // Kiểm tra quyền của shipper khi chuyển sang statusID = 4 (Delivered)
+            if (newStatusId == 4) {
+                User user = userService.findById(exporterId)
+                        .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy người dùng với ID: " + exporterId));
+                if (user.getRoleID() != 6) { // RoleID 6 là Shipper
+                    Map<String, Object> errorResponse = new HashMap<>();
+                    errorResponse.put("message", "Chỉ có Shipper mới có thể cập nhật trạng thái sang Delivered.");
+                    errorResponse.put("status", 403);
+                    return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
+                }
+            }
+            exporterService.updateOrderStatus(orderId, newStatusId, exporterId);
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Cập nhật trạng thái đơn hàng thành công!");
+            response.put("status", 200);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("message", e.getMessage());
+            errorResponse.put("status", 400);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        }
+    }
+
+    @GetMapping("/export-history")
+    public ResponseEntity<?> getExportHistory(
+            @RequestParam(value = "statusId", required = false) Integer statusId,
+            @RequestParam(value = "startDate", required = false) String startDate,
+            @RequestParam(value = "endDate", required = false) String endDate,
+            @RequestParam(value = "filterType", required = false) String filterType) {
+        try {
+            List<ExporterDTO> exportHistory = exporterService.getExportHistory(statusId, startDate, endDate, filterType);
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Lấy lịch sử đơn xuất hàng thành công!");
+            response.put("status", 200);
+            response.put("orders", exportHistory);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("message", e.getMessage());
+            errorResponse.put("status", 400);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        }
+    }
+
+    @GetMapping("/export-requests/list")
+    public ResponseEntity<?> getExportRequestsList() {
+        try {
+            List<ExporterDTO> exportRequests = exporterService.getAllExportRequests();
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Lấy danh sách yêu cầu xuất hàng thành công!");
+            response.put("status", 200);
+            response.put("orders", exportRequests);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("message", e.getMessage());
+            errorResponse.put("status", 400);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        }
+    }
+
+    @GetMapping("/export-requests/{orderId}")
+    public ResponseEntity<?> getExportRequestDetails(@PathVariable("orderId") int orderId) {
+        try {
+            if (orderId <= 0) {
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("message", "orderID không hợp lệ.");
+                errorResponse.put("status", 400);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+            }
+            ExporterDTO exporterDTO = exporterService.getExportRequestById(orderId);
             Map<String, Object> response = new HashMap<>();
             response.put("message", "Lấy chi tiết yêu cầu xuất hàng thành công!");
             response.put("status", 200);
             response.put("order", exporterDTO);
-            if (exporterDTO.getStatusID() == 5) {
-                response.put("cancelReason", exporterDTO.getCancelReason());
-            }
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
-            return buildErrorResponse("Lỗi khi lấy chi tiết yêu cầu xuất hàng: " + e.getMessage(), 400);
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("message", e.getMessage());
+            errorResponse.put("status", 400);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
     }
 
-    @PostMapping("/requests")
-    public ResponseEntity<Map<String, Object>> createExportRequest(@RequestBody Map<String, Object> payload) {
+    @GetMapping("/notifications")
+    public ResponseEntity<?> getNotifications(
+            @RequestParam("userId") int userId
+    ) {
         try {
-            ObjectMapper mapper = new ObjectMapper();
-            mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-
-            // Bước 1: Validate đầu vào
-            if (!payload.containsKey("orderID") || payload.get("orderID") == null) {
-                return buildErrorResponse("Thiếu orderID trong payload!", 400);
-            }
-
-            // Bước 2: Parse và validate orderID
-            Integer orderID;
-            try {
-                orderID = Integer.parseInt(payload.get("orderID").toString());
-            } catch (NumberFormatException e) {
-                return buildErrorResponse("orderID phải là số nguyên!", 400);
-            }
-
-            // Bước 3: Lấy thông tin đơn hàng từ OrderService
-            OrderDTO orderDTO = orderService.getOrderById(orderID);
-            if (orderDTO == null) {
-                return buildErrorResponse("Không tìm thấy đơn hàng với ID: " + orderID, 404);
-            }
-            if (orderDTO.getStatusID() == 5) {
-                return buildErrorResponse("Không thể tạo xuất hàng cho đơn đã hủy!", 400);
-            }
-
-            // Bước 4: Tạo ExporterDTO từ thông tin đơn hàng
-            ExporterDTO exportRequest = new ExporterDTO();
-            exportRequest.setOrderID(orderID);
-            exportRequest.setCustomerID(orderDTO.getCustomerID());
-            Integer statusID = orderDTO.getStatusID() != null ? orderDTO.getStatusID() : 1;
-            // Validate statusID
-            if (!List.of(1, 2, 3, 4, 5).contains(statusID)) {
-                return buildErrorResponse("statusID không hợp lệ! Chỉ chấp nhận các giá trị: 1, 2, 3, 4, 5", 400);
-            }
-            exportRequest.setStatusID(statusID);
-            exportRequest.setShippingAddress(orderDTO.getShippingAddress());
-            exportRequest.setTotalAmount(orderDTO.getTotalAmount());
-            exportRequest.setDiscountAmount(orderDTO.getDiscountAmount());
-            exportRequest.setOrderDate(orderDTO.getOrderDate());
-            exportRequest.setEstimatedDeliveryDate(orderDTO.getEstimatedDeliveryDate());
-
-            // Bước 5: Ghi đè các thông tin bổ sung từ payload (nếu có)
-            if (payload.containsKey("shippingMethodID") && payload.get("shippingMethodID") != null) {
-                try {
-                    exportRequest.setShippingMethodID(Integer.parseInt(payload.get("shippingMethodID").toString()));
-                } catch (NumberFormatException e) {
-                    return buildErrorResponse("shippingMethodID phải là số nguyên!", 400);
-                }
-            }
-            if (payload.containsKey("driverID") && payload.get("driverID") != null) {
-                try {
-                    exportRequest.setDriverID(Integer.parseInt(payload.get("driverID").toString()));
-                } catch (NumberFormatException e) {
-                    return buildErrorResponse("driverID phải là số nguyên!", 400);
-                }
-            }
-            if (payload.containsKey("shippingCost") && payload.get("shippingCost") != null) {
-                try {
-                    exportRequest.setShippingCost(Double.parseDouble(payload.get("shippingCost").toString()));
-                } catch (NumberFormatException e) {
-                    return buildErrorResponse("shippingCost phải là số thực!", 400);
-                }
-            }
-            if (payload.containsKey("distance") && payload.get("distance") != null) {
-                try {
-                    exportRequest.setDistance(Double.parseDouble(payload.get("distance").toString()));
-                } catch (NumberFormatException e) {
-                    return buildErrorResponse("distance phải là số thực!", 400);
-                }
-            }
-            if (payload.containsKey("statusID") && payload.get("statusID") != null) {
-                try {
-                    statusID = Integer.parseInt(payload.get("statusID").toString());
-                    if (!List.of(1, 2, 3, 4, 5).contains(statusID)) {
-                        return buildErrorResponse("statusID không hợp lệ! Chỉ chấp nhận các giá trị: 1, 2, 3, 4, 5", 400);
-                    }
-                    exportRequest.setStatusID(statusID);
-                } catch (NumberFormatException e) {
-                    return buildErrorResponse("statusID phải là số nguyên!", 400);
-                }
-            }
-
-            // Bước 6: Lấy danh sách orderDetails từ OrderDetailService
-            List<OrderDetail> orderDetailsEntity = orderDetailService.getByOrderID(orderID);
-            if (orderDetailsEntity == null || orderDetailsEntity.isEmpty()) {
-                return buildErrorResponse("Không tìm thấy chi tiết đơn hàng cho ID: " + orderID, 404);
-            }
-            List<OrderDetailDTO> orderDetails = orderDetailsEntity.stream()
-                    .map(detail -> new OrderDetailDTO(
-                            detail.getOrderDetailID(),
-                            detail.getProductID(),
-                            orderID,
-                            detail.getQuantity(),
-                            detail.getUnitPrice(),
-                            detail.getStatus()
-                    ))
-                    .collect(Collectors.toList());
-
-            // Bước 7: Gọi service để xử lý
-            exporterService.createExportRequest(exportRequest, orderDetails);
-
-            // Bước 8: Trả về thông báo thành công
+            List<NotificationDTO> notifications = exporterService.getNotificationsByUserId(userId);
             Map<String, Object> response = new HashMap<>();
-            response.put("message", "Đơn xuất hàng đã được tạo thành công dựa trên đơn hàng ID: " + orderID);
+            response.put("message", "Lấy danh sách thông báo thành công!");
             response.put("status", 200);
+            response.put("notifications", notifications);
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
-            return buildErrorResponse("Lỗi khi tạo đơn xuất hàng: " + e.getMessage(), 400);
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("message", e.getMessage());
+            errorResponse.put("status", 400);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
     }
 
-    @PutMapping("/requests/{orderId}/cancel")
-    public ResponseEntity<Map<String, Object>> cancelExportRequest(
-            @PathVariable("orderId") int orderId,
-            @RequestBody String cancelReason,
-            @RequestParam("exporterId") int exporterId) {
-        try {
-            exporterService.cancelExportRequest(orderId, cancelReason, exporterId);
-            return buildSuccessResponse("Hủy yêu cầu xuất hàng thành công!");
-        } catch (RuntimeException e) {
-            return buildErrorResponse("Lỗi khi hủy yêu cầu xuất hàng: " + e.getMessage(), 400);
-        }
-    }
-
-    @PutMapping("/requests/{orderId}/confirm")
-    public ResponseEntity<Map<String, Object>> confirmOrder(@PathVariable("orderId") int orderId,
-                                                            @RequestParam("exporterId") int exporterId) {
-        try {
-            exporterService.confirmOrder(orderId, exporterId);
-            return buildSuccessResponse("Xác nhận đơn hàng thành công!");
-        } catch (RuntimeException e) {
-            return buildErrorResponse("Lỗi khi xác nhận đơn hàng: " + e.getMessage(), 400);
-        }
-    }
-
-    @PutMapping("/requests/{orderId}/reject")
-    public ResponseEntity<Map<String, Object>> rejectOrder(@PathVariable("orderId") int orderId,
-                                                           @RequestBody String rejectReason,
-                                                           @RequestParam("exporterId") int exporterId) {
-        try {
-            exporterService.rejectOrder(orderId, rejectReason, exporterId);
-            return buildSuccessResponse("Từ chối đơn hàng thành công!");
-        } catch (RuntimeException e) {
-            return buildErrorResponse("Lỗi khi từ chối đơn hàng: " + e.getMessage(), 400);
-        }
-    }
-
-    @GetMapping("/inventory/check")
-    public ResponseEntity<Map<String, Object>> checkInventory(@RequestParam("productId") int productId,
-                                                              @RequestParam("quantity") int quantity) {
+    @GetMapping("/check-inventory")
+    public ResponseEntity<?> checkInventory(
+            @RequestParam("productId") int productId,
+            @RequestParam("quantity") int quantity
+    ) {
         try {
             boolean available = exporterService.checkInventoryAvailability(productId, quantity);
             Map<String, Object> response = new HashMap<>();
-            response.put("message", "Kiểm tra tồn kho thành công!");
+            response.put("message", available ? "Sản phẩm đủ tồn kho!" : "Sản phẩm không đủ tồn kho!");
             response.put("status", 200);
             response.put("available", available);
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
-            return buildErrorResponse("Lỗi khi kiểm tra tồn kho: " + e.getMessage(), 400);
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("message", e.getMessage());
+            errorResponse.put("status", 400);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
     }
 
-    @GetMapping("/history")
-    public ResponseEntity<Map<String, Object>> getExportHistory(@RequestParam(value = "productId", defaultValue = "0") int productId,
-                                                                @RequestParam(value = "orderId", defaultValue = "0") int orderId) {
+    @GetMapping("/order-tracking")
+    public ResponseEntity<?> trackExportOrders(
+            @RequestParam(value = "statusId", required = false) Integer statusId,
+            @RequestParam(value = "startDate", required = false) String startDate,
+            @RequestParam(value = "endDate", required = false) String endDate
+    ) {
         try {
-            List<InventoryLogsDTO> history = exporterService.getExportHistory(productId, orderId);
+            List<ExporterDTO> orders = exporterService.trackExportOrders(statusId, startDate, endDate);
             Map<String, Object> response = new HashMap<>();
-            response.put("message", "Lấy lịch sử xuất hàng thành công!");
+            response.put("message", "Lấy danh sách trạng thái đơn hàng xuất kho thành công!");
             response.put("status", 200);
-            response.put("history", history);
+            response.put("orders", orders);
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
-            return buildErrorResponse("Lỗi khi lấy lịch sử xuất hàng: " + e.getMessage(), 400);
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("message", e.getMessage());
+            errorResponse.put("status", 400);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
     }
 
-    @PostMapping("/inventory-logs/archive")
-    public ResponseEntity<Map<String, Object>> archiveOrder(@RequestBody Map<String, Integer> payload) {
+    @GetMapping("/order-tracking/{orderId}")
+    public ResponseEntity<?> getOrderTrackingDetails(@PathVariable("orderId") int orderId) {
         try {
-            int logId = payload.get("logId");
-            InventoryLogsDTO archivedLog = inventoryLogsService.archiveLog(logId);
+            if (orderId <= 0) {
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("message", "orderID không hợp lệ.");
+                errorResponse.put("status", 400);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+            }
+            ExporterDTO orderDetails = exporterService.getOrderTrackingDetails(orderId);
             Map<String, Object> response = new HashMap<>();
-            response.put("message", "Lưu trữ đơn hàng thành công!");
+            response.put("message", "Lấy chi tiết trạng thái đơn hàng xuất kho thành công!");
+            response.put("status", 200);
+            response.put("order", orderDetails);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("message", e.getMessage());
+            errorResponse.put("status", 400);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        }
+    }
+
+    @GetMapping("/export-stats")
+    public ResponseEntity<?> getExportStats() {
+        try {
+            Map<String, Integer> stats = exporterService.getExportStats();
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Lấy thống kê xuất hàng thành công!");
             response.put("status", 200);
             response.put("log", archivedLog);
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
-            return buildErrorResponse("Lỗi khi lưu trữ đơn hàng: " + e.getMessage(), 400);
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("message", e.getMessage());
+            errorResponse.put("status", 400);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
     }
 
-    private ResponseEntity<Map<String, Object>> buildSuccessResponse(String message) {
-        Map<String, Object> response = new HashMap<>();
-        response.put("message", message);
-        response.put("status", 200);
-        return ResponseEntity.ok(response);
+    @GetMapping("/inventory-products")
+    public ResponseEntity<?> getInventoryProducts() {
+        try {
+            List<ProductDTO> products = exporterService.getInventoryProducts();
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Lấy danh sách sản phẩm trong kho thành công!");
+            response.put("status", 200);
+            response.put("products", products);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("message", e.getMessage());
+            errorResponse.put("status", 400);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        }
     }
 
-    private ResponseEntity<Map<String, Object>> buildErrorResponse(String message, int status) {
-        Map<String, Object> error = new HashMap<>();
-        error.put("message", message);
-        error.put("status", status);
-        return ResponseEntity.status(status).body(error);
+    public static class ExportRequestPayload {
+        private ExporterDTO exporterDTO;
+        private List<OrderDetailDTO> orderDetails;
+
+        public ExporterDTO getExporterDTO() {
+            return exporterDTO;
+        }
+
+        public void setExporterDTO(ExporterDTO exporterDTO) {
+            this.exporterDTO = exporterDTO;
+        }
+
+        public List<OrderDetailDTO> getOrderDetails() {
+            return orderDetails;
+        }
+
+        public void setOrderDetails(List<OrderDetailDTO> orderDetails) {
+            this.orderDetails = orderDetails;
+        }
     }
 }

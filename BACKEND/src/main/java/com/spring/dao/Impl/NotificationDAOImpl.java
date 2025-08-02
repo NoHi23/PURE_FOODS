@@ -1,13 +1,16 @@
 package com.spring.dao.Impl;
 
 import com.spring.dao.NotificationDAO;
+import com.spring.dto.NotificationDTO;
 import com.spring.entity.Notifications;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Repository;
 
+import java.sql.Timestamp;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Repository
 public class NotificationDAOImpl implements NotificationDAO {
@@ -66,4 +69,31 @@ public class NotificationDAOImpl implements NotificationDAO {
         return getUnreadNotificationsByUserId(userId);
     }
 
+    @Override
+    @Transactional
+    public void saveNotificationDTO(NotificationDTO notification) {
+        Notifications entity = new Notifications();
+        entity.setUserId(notification.getUserId());
+        entity.setTitle(notification.getTitle());
+        entity.setContent(notification.getContent());
+        entity.setIsRead(notification.getIsRead() != null ? notification.getIsRead() : false);
+        entity.setCreatedAt((Timestamp) notification.getCreatedAt());
+        entityManager.persist(entity);
+        notification.setId(entity.getId());
+    }
+
+    @Override
+    public List<NotificationDTO> getNotificationsByUserId(int userId) {
+        List<Notifications> entities = getAllNotificationsByUserId(userId);
+        return entities.stream().map(entity -> {
+            NotificationDTO dto = new NotificationDTO();
+            dto.setId(entity.getId());
+            dto.setUserId(entity.getUserId());
+            dto.setTitle(entity.getTitle());
+            dto.setContent(entity.getContent());
+            dto.setIsRead(entity.getIsRead());
+            dto.setCreatedAt(entity.getCreatedAt());
+            return dto;
+        }).collect(Collectors.toList());
+    }
 }

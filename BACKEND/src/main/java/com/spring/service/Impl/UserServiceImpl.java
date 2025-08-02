@@ -16,10 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @Transactional(propagation = Propagation.REQUIRED)
@@ -368,5 +365,9 @@ public class UserServiceImpl implements UserService {
         return user.getPassword().equals(inputPassword); // So sánh mật khẩu thô
     }
 
+    @Override
+    public Optional<User> findById(Integer id) {
+        return Optional.ofNullable(userDAO.findById(id));
+    }
 
 }

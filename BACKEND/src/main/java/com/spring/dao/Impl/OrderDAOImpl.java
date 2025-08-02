@@ -22,10 +22,9 @@ public class OrderDAOImpl implements OrderDAO {
     private SessionFactory sessionFactory;
 
     @Override
-    public Order saveOrder(Order order) {
+    public void saveOrder(Order order) {
         Session session = sessionFactory.getCurrentSession();
         session.persist(order);
-        return order;
     }
 
     @Override
@@ -105,6 +104,33 @@ public class OrderDAOImpl implements OrderDAO {
         List<Object[]> results = sessionFactory.getCurrentSession()
                 .createQuery(hql)
                 .setMaxResults(5)
+                .list();
+
+        List<BestSellingProductDTO> dtoList = new ArrayList<>();
+        for (Object[] row : results) {
+            Integer productId = (Integer) row[0];
+            Long totalQuantity = (Long) row[1];
+            Double totalRevenue = (Double) row[2];
+
+            Products product = sessionFactory.getCurrentSession().get(Products.class, productId);
+            if (product != null) {
+                dtoList.add(new BestSellingProductDTO(product, totalQuantity, totalRevenue));
+            }
+        }
+
+        return dtoList;
+    }
+
+    @Override
+    public List<BestSellingProductDTO> getTop12BestSellingProductsWithStats() {
+        String hql = "SELECT od.productID, SUM(od.quantity), SUM(od.quantity * od.unitPrice) " +
+                "FROM OrderDetail od " +
+                "GROUP BY od.productID " +
+                "ORDER BY SUM(od.quantity) DESC";
+
+        List<Object[]> results = sessionFactory.getCurrentSession()
+                .createQuery(hql)
+                .setMaxResults(12)
                 .list();
 
         List<BestSellingProductDTO> dtoList = new ArrayList<>();

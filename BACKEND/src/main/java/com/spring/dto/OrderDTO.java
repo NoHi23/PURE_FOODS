@@ -22,6 +22,7 @@ public class OrderDTO {
     private String paymentMethod;
     private String paymentStatus;
     private String status;
+    private String cancelRequestReason;
 
     public OrderDTO() {}
 
@@ -191,6 +192,8 @@ public class OrderDTO {
     public void setPaymentStatus(String paymentStatus){
         this.paymentStatus = paymentStatus;
     }
+    public String getCancelRequestReason() { return cancelRequestReason; }
+    public void setCancelRequestReason(String cancelRequestReason) { this.cancelRequestReason = cancelRequestReason; }
     public OrderDTO(com.spring.entity.Order order) {
         this.orderID = order.getOrderID();
         this.customerID = order.getCustomerID();
