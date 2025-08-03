@@ -1,0 +1,22 @@
+.user-dashboard-section {
+  padding: 40px 0;
+  background-color: #f7f7f7;
+}
+
+.profile-form-wrapper {
+  background: #fff;
+  border-radius: 12px;
+  padding: 30px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.05);
+}
+
+.password-toggle {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #aaa;
+  font-size: 20px;
+  z-index: 10;
+}

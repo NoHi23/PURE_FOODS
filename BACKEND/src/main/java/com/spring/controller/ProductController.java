@@ -288,6 +288,21 @@ public class ProductController {
         }
     }
 
+    @PutMapping("/auto-update-expired-status")
+    public ResponseEntity<?> autoUpdateExpiredProductStatus() {
+        try {
+            int updatedCount = productService.updateExpiredProductStatuses();
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Cập nhật trạng thái hết hạn thành công");
+            response.put("updatedCount", updatedCount);
+            response.put("status", 200);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Lỗi: " + e.getMessage());
+        }
+    }
+
+
 
 
 

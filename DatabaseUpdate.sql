@@ -235,6 +235,7 @@ CREATE TABLE UserPromotion (
 INSERT INTO [CleanFoodShop].[dbo].[Users] 
 	(FullName, Email, Password, RoleID, Phone, Address, Status, reset_token, token_expiry, last_login) 
 VALUES ('Admin Test', 'admin1@gmail.com', 'admin', 1, 0123456789, 'FPT Campus Hoa Lac', 0, NULL, NULL, NULL);
+<<<<<<< HEAD
 SELECT *
 FROM [CleanFoodShop].[dbo].[Products]
 
@@ -261,3 +262,19 @@ INSERT INTO SupportTickets (UserID, Subject, Description, Status, Priority, Crea
 VALUES 
 (1, 'Query about return & exchange', 'Need information about return policy', 'Pending', 'Medium', GETDATE()),
 (1, 'Order delivery issue', 'Package not delivered on time', 'Processing', 'High', GETDATE());
+=======
+
+
+-- 29-07-2025
+-- huynd update table product, chuyển ngày nhập và ngày hết hạn vào product luôn, đỡ phải JOIN vào productDetail làm gì cho mệt, dự án nhỏ, không có cơ hội mang đi thực tế:
+ALTER TABLE Products
+ADD HarvestDate DATE,
+    ExpirationDate DATE;
+
+-- chạy tiếp cáii này
+UPDATE Products
+SET 
+HarvestDate = '2025-07-29', --ngày nhập là ngày 29-07-2025
+ExpirationDate = DATEADD(DAY, ABS(CHECKSUM(NEWID()) % 90) + 1, '2025-07-29') --ngày hết hạn random để khác nhau, cách 90 ngày lúc nhập
+WHERE HarvestDate IS NULL OR ExpirationDate IS NULL;
+>>>>>>> f32b41e959baef7855258cc17bb580e6d44f4810
