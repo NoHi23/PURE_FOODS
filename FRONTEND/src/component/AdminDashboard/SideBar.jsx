@@ -171,37 +171,38 @@ const SideBar = () => {
                     <Link to={'/admin-blog'}>Danh sách Blog</Link>
                   </li>
                   <li>
-                    <Link to={'/admin-add-new-blog'}>Thêm mới Blog</Link>
+                    <Link to={'/admin-add-new-blog'}>Thêm Blog mới</Link>
                   </li>
                 </ul>
               </li>
 
               <li className="sidebar-list">
-  <Link to="/admin-product-review" className="sidebar-link sidebar-title link-nav">
-    <i className="ri-star-line"></i>
-    <span>Product Review</span>
-  </Link>
-</li>
-
+                <Link to="/admin-product-review" className="sidebar-link sidebar-title link-nav">
+                  <i className="ri-star-line"></i>
+                  <span>Đánh giá sản phẩm</span>
+                </Link>
+              </li>
 
               <li className="sidebar-list">
-                <a className="sidebar-link sidebar-title link-nav" href="support-ticket.html">
+                <Link to="/admin-support-ticket" className="sidebar-link sidebar-title link-nav">
                   <i className="ri-phone-line"></i>
-                  <span>Support Ticket</span>
-                </a>
+                  <span>Hỗ trợ khách hàng</span>
+                </Link>
               </li>
+
 
               <li className="sidebar-list">
                 <a className="linear-icon-link sidebar-link sidebar-title" href="javascript:void(0)">
                   <i className="ri-settings-line"></i>
-                  <span>Settings</span>
+                  <span>Cài đặt</span>
                 </a>
                 <ul className="sidebar-submenu">
                   <li>
-                    <a href="profile-setting.html">Profile Setting</a>
+                    <Link to="/admin-profile-setting">Cài đặt hồ sơ</Link>
                   </li>
                 </ul>
               </li>
+
 
               <li className="sidebar-list">
                 <a className="sidebar-link sidebar-title link-nav" href="reports.html">

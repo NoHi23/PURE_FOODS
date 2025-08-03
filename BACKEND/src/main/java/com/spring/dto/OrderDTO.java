@@ -3,18 +3,17 @@ package com.spring.dto;
 import java.util.Date;
 
 public class OrderDTO {
-
+    
     private Integer orderID;
     private Integer customerID;
     private Date orderDate;
     private Double totalAmount;
-    private Integer statusID;
+    private Integer statusID; // Chỉ sử dụng statusID
     private String shippingAddress;
     private Integer shippingMethodID;
     private Double shippingCost;
     private Double distance;
     private Double discountAmount;
-    private String status;
     private String cancelReason;
     private Date estimatedDeliveryDate;
     private String delayReason;
@@ -22,6 +21,7 @@ public class OrderDTO {
     private String returnReason;
     private String paymentMethod;
     private String paymentStatus;
+    private String status;
 
     public OrderDTO() {}
 
@@ -32,7 +32,7 @@ public class OrderDTO {
 
     public OrderDTO(Integer orderID, Integer customerID, Date orderDate, Double totalAmount, Integer statusID,
                     String shippingAddress, Integer shippingMethodID, Double shippingCost, Double distance,
-                    Double discountAmount, String status, String cancelReason, Date estimatedDeliveryDate,
+                    Double discountAmount, String cancelReason, Date estimatedDeliveryDate,
                     String delayReason, Integer driverID, String returnReason) {
         this.orderID = orderID;
         this.customerID = customerID;
@@ -44,7 +44,6 @@ public class OrderDTO {
         this.shippingCost = shippingCost;
         this.distance = distance;
         this.discountAmount = discountAmount;
-        this.status = status;
         this.cancelReason = cancelReason;
         this.estimatedDeliveryDate = estimatedDeliveryDate;
         this.delayReason = delayReason;

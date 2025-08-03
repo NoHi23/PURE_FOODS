@@ -19,7 +19,6 @@ import java.util.*;
 @Service
 @Transactional(propagation = Propagation.REQUIRED)
 public class OrderServiceImpl implements OrderService {
-
     @Autowired
     private OrderDAO orderDAO;
 
@@ -112,7 +111,6 @@ public class OrderServiceImpl implements OrderService {
         dto.setShippingCost(order.getShippingCost());
         dto.setDistance(order.getDistance());
         dto.setDiscountAmount(order.getDiscountAmount());
-        dto.setStatus(order.getStatus());
         dto.setCancelReason(order.getCancelReason());
         dto.setEstimatedDeliveryDate(order.getEstimatedDeliveryDate());
         dto.setDelayReason(order.getDelayReason());

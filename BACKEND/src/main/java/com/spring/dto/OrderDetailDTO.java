@@ -49,7 +49,7 @@ public class OrderDetailDTO {
         this.status = status;
     }
 
-    private double getUnitPrice() {
+    public double getUnitPrice() {
         return unitPrice;
     }
     public void setUnitPrice(double unitPrice) {
