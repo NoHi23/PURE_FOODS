@@ -235,3 +235,29 @@ CREATE TABLE UserPromotion (
 INSERT INTO [CleanFoodShop].[dbo].[Users] 
 	(FullName, Email, Password, RoleID, Phone, Address, Status, reset_token, token_expiry, last_login) 
 VALUES ('Admin Test', 'admin1@gmail.com', 'admin', 1, 0123456789, 'FPT Campus Hoa Lac', 0, NULL, NULL, NULL);
+SELECT *
+FROM [CleanFoodShop].[dbo].[Products]
+
+UPDATE [CleanFoodShop].[dbo].[Products]
+SET Status = 0
+WHERE CategoryID = 6;
+
+-- Create SupportTickets table
+CREATE TABLE SupportTickets (
+    TicketID INT PRIMARY KEY IDENTITY(1,1),
+    UserID INT NOT NULL,
+    Subject NVARCHAR(100) NOT NULL,
+    Description NVARCHAR(MAX) NOT NULL,
+    Status NVARCHAR(20) NOT NULL CHECK (Status IN ('Pending', 'Processing', 'Closed')),
+    CreatedAt DATETIME DEFAULT GETDATE(),
+    UpdatedAt DATETIME,
+    Priority NVARCHAR(20) CHECK (Priority IN ('Low', 'Medium', 'High')),
+    FOREIGN KEY (UserID) REFERENCES Users(UserID),
+    INDEX idx_user_id NONCLUSTERED (UserID)
+);
+
+-- Insert sample data
+INSERT INTO SupportTickets (UserID, Subject, Description, Status, Priority, CreatedAt)
+VALUES 
+(1, 'Query about return & exchange', 'Need information about return policy', 'Pending', 'Medium', GETDATE()),
+(1, 'Order delivery issue', 'Package not delivered on time', 'Processing', 'High', GETDATE());

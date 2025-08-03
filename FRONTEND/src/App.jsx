@@ -52,6 +52,8 @@ import MyCouponsPage from './component/MyCouponsPage/MyCouponsPage';
 import Notitications from './component/Notifications/Notifications';
 import MyOrders from './component/MyOrders/MyOrders';
 import ProductSearch from './component/Search/ProductSearch';
+import SupportTicket from './component/Admin/SupportTicket';
+import ProfileSetting from './component/Admin/ProfileSetting';
 function AppContent() {
   const location = useLocation();
   const isProductDetail = location.pathname.startsWith('/product/');
@@ -64,7 +66,7 @@ function AppContent() {
     '/admin-add-new-supplier', '/all-user', '/all-role', '/add-new-user',
     '/add-new-role', '/admin-order',
     '/admin-coupons', '/admin-add-new-coupons', '/admin-taxes',
-    '/admin-add-new-tax', '/admin-blog', '/admin-add-new-blog', '/admin-product-review'
+    '/admin-add-new-tax', '/admin-blog', '/admin-add-new-blog', '/admin-product-review','/admin-support-ticket','/admin-profile-setting',
 
   ];
 
@@ -146,7 +148,7 @@ function AppContent() {
             <AllRole />
           </PrivateRoute>
         } />
-        
+
         <Route path="/add-new-user" element={
           <PrivateRoute allowedRoles={1}>
             <AddNewUser />
@@ -180,6 +182,16 @@ function AppContent() {
         <Route path="/admin-add-new-tax" element={
           <PrivateRoute allowedRoles={1}>
             <AddNewTax />
+          </PrivateRoute>
+        } />
+        <Route path="/admin-support-ticket" element={
+          <PrivateRoute allowedRoles={1}>
+            <SupportTicket />
+          </PrivateRoute>
+        } />
+        <Route path="/admin-profile-setting" element={
+          <PrivateRoute allowedRoles={1}> 
+            <ProfileSetting />
           </PrivateRoute>
         } />
         <Route path="/admin-blog" element={
@@ -275,7 +287,7 @@ function AppContent() {
             <TraderDashboard />
           </PrivateRoute>
         } />
-         <Route path="/exporter" element={
+        <Route path="/exporter" element={
           <PrivateRoute allowedRoles={5}>
             <ExporterDashboard />
           </PrivateRoute>
