@@ -1,3 +1,4 @@
+// ExporterProduct.jsx (Status 0: active, 1: banned - already correct, formatted)
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
@@ -17,6 +18,27 @@ const ExporterProduct = ({ orders, setOrders, currentPage, setCurrentPage }) => 
   const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const modalRef = useRef(null);
+
+  // Phần sửa mới: State cho modal chi tiết đơn hàng
+  const [selectedOrderDetail, setSelectedOrderDetail] = useState(null);
+  const [detailLoading, setDetailLoading] = useState(false);
+
+  // Phần sửa mới: Hàm fetch chi tiết đơn hàng
+  const fetchOrderDetail = async (orderId) => {
+    setDetailLoading(true);
+    try {
+      const response = await axios.get(`http://localhost:8082/PureFoods/api/exporter/export-requests/${orderId}`, { timeout: 5000 });
+      if (response.data.status === 200) {
+        setSelectedOrderDetail(response.data.order || {});
+      } else {
+        toast.error("Lấy chi tiết đơn hàng thất bại!");
+      }
+    } catch (err) {
+      toast.error("Lỗi khi lấy chi tiết đơn hàng! Kiểm tra mạng.");
+    } finally {
+      setDetailLoading(false);
+    }
+  };
 
   const filteredOrders = orders.filter((order) => {
     if (![1, 2].includes(order.statusID)) return false; // Chỉ lấy Pending và Processing
@@ -48,7 +70,7 @@ const ExporterProduct = ({ orders, setOrders, currentPage, setCurrentPage }) => 
     ])
       .then(([productRes, userRes]) => {
         const productsData = productRes.data.listProduct || [];
-        const customersData = (userRes.data.userList || []).filter((u) => u.roleID === 2);
+        const customersData = (userRes.data.userList || []).filter((u) => u.roleID === 2 && u.status === 0); // Thêm filter status === 0 (active, 0: active, 1: banned)
         setProducts(productsData);
         setCustomers(customersData);
         if (productsData.length === 0) {
@@ -607,7 +629,7 @@ const ExporterProduct = ({ orders, setOrders, currentPage, setCurrentPage }) => 
               <th scope="col">Tổng số lượng</th>
               <th scope="col">Tổng tiền</th>
               <th scope="col">Trạng thái</th>
-              <th scope="col">Hành động</th>
+              <th scope="col">Hành động</th> {/* Phần sửa mới: Thêm cột Hành động */}
             </tr>
           </thead>
           <tbody>
@@ -640,6 +662,16 @@ const ExporterProduct = ({ orders, setOrders, currentPage, setCurrentPage }) => 
                     </label>
                   </td>
                   <td>
+                    {/* Phần sửa mới: Button xem chi tiết */}
+                    <button
+                      className="btn btn-sm btn-info me-2"
+                      onClick={() => fetchOrderDetail(order.orderID)}
+                      data-bs-toggle="modal"
+                      data-bs-target="#orderDetailModal"
+                      disabled={isLoading}
+                    >
+                      Xem chi tiết
+                    </button>
                     <button
                       className="btn btn-sm"
                       style={{ backgroundColor: "#28a745", color: "white", marginRight: "5px" }}
@@ -679,6 +711,47 @@ const ExporterProduct = ({ orders, setOrders, currentPage, setCurrentPage }) => 
           </tbody>
         </table>
         <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+      </div>
+      {/* Phần sửa mới: Modal chi tiết đơn hàng */}
+      <div className="modal fade" id="orderDetailModal" tabIndex="-1" aria-labelledby="orderDetailModalLabel" aria-hidden="true">
+        <div className="modal-dialog modal-lg">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h5 className="modal-title" id="orderDetailModalLabel">Chi tiết đơn hàng #{selectedOrderDetail?.orderID}</h5>
+              <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div className="modal-body">
+              {detailLoading ? (
+                <div className="text-center">
+                  <div className="spinner-border text-primary" role="status">
+                    <span className="visually-hidden">Đang tải...</span>
+                  </div>
+                </div>
+              ) : selectedOrderDetail ? (
+                <div>
+                  <ul className="list-group">
+                    <li className="list-group-item"><strong>Khách hàng:</strong> {selectedOrderDetail.customerName || "Không rõ"}</li>
+                    <li className="list-group-item"><strong>Sản phẩm:</strong> {selectedOrderDetail.orderDetails?.map(detail => detail.productName).join(", ") || "Không rõ"}</li>
+                    <li className="list-group-item"><strong>Tổng số lượng:</strong> {selectedOrderDetail.orderDetails?.reduce((sum, detail) => sum + detail.quantity, 0) || 0}</li>
+                    <li className="list-group-item"><strong>Tổng tiền:</strong> ${selectedOrderDetail.totalAmount || 0}</li>
+                    <li className="list-group-item"><strong>Thời gian:</strong> {selectedOrderDetail.orderDate ? new Date(selectedOrderDetail.orderDate).toLocaleString("vi-VN") : "Không rõ"}</li>
+                    <li className="list-group-item"><strong>Trạng thái:</strong> {selectedOrderDetail.statusName || "Không xác định"}</li>
+                    <li className="list-group-item"><strong>Địa chỉ giao:</strong> {selectedOrderDetail.shippingAddress || "Không rõ"}</li>
+                    <li className="list-group-item"><strong>Phí ship:</strong> ${selectedOrderDetail.shippingCost || 0}</li>
+                    {selectedOrderDetail.statusID === 5 && selectedOrderDetail.cancelReason && selectedOrderDetail.cancelReason.trim() !== "" && (
+                      <li className="list-group-item text-danger"><strong>Lý do hủy:</strong> {selectedOrderDetail.cancelReason}</li>
+                    )}
+                  </ul>
+                </div>
+              ) : (
+                <p>Không có dữ liệu chi tiết.</p>
+              )}
+            </div>
+            <div className="modal-footer">
+              <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

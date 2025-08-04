@@ -68,9 +68,20 @@ public class ExporterDAOImpl implements ExporterDAO {
                 .getResultList();
         List<ExporterDTO> result = new ArrayList<>();
         for (Order order : orders) {
-            result.add(convertToExporterDTO(orderService.getOrderById(order.getOrderID())));
+            User customer = userDAO.findById(order.getCustomerID());
+            if (customer != null && customer.getRoleID() == 2 && customer.getStatus() == 0) { // Giữ nguyên ==0 cho active
+                result.add(convertToExporterDTO(orderService.getOrderById(order.getOrderID())));
+            } else {
+                if (customer == null) {
+                    logger.warn("Skipped order ID {} because customer not found", order.getOrderID());
+                } else if (customer.getRoleID() != 2) {
+                    logger.warn("Skipped order ID {} because customer roleID != 2", order.getOrderID());
+                } else {
+                    logger.warn("Skipped order ID {} because customer status != 0 (locked)", order.getOrderID());
+                }
+            }
         }
-        logger.info("Fetched {} export requests (Pending)", result.size());
+        logger.info("Fetched {} export requests (Pending) after filtering by customer roleID=2 and status=0", result.size());
         return result;
     }
 
@@ -120,6 +131,10 @@ public class ExporterDAOImpl implements ExporterDAO {
         if (customer == null) {
             logger.error("Customer not found for ID: {}", exporterDTO.getCustomerID());
             throw new IllegalArgumentException("Không tìm thấy thông tin khách hàng với ID: " + exporterDTO.getCustomerID());
+        }
+        if (customer.getRoleID() != 2) { // Kiểm tra roleID == 2
+            logger.error("Customer roleID {} is not 2 for order ID: {}", customer.getRoleID(), exporterDTO.getOrderID());
+            throw new IllegalArgumentException("Chỉ chấp nhận đơn hàng từ khách hàng (roleID = 2)");
         }
         Order orderEntity = orderDAO.getOrderById(exporterDTO.getOrderID());
         if (orderEntity == null) {
@@ -184,8 +199,8 @@ public class ExporterDAOImpl implements ExporterDAO {
             logger.error("Invalid exporter: not an Exporter role (RoleID = 5)");
             throw new IllegalArgumentException("Người dùng không có quyền Exporter (RoleID = 5)");
         }
-        if (exporter.getStatus() != 0) {
-            logger.error("Exporter account is locked (Status = {}) for user ID: {}", exporter.getStatus(), exporterId);
+        if (exporter.getStatus() == 1) { // Sửa từ != 0 thành == 1 (locked nếu ==1)
+            logger.error("Exporter account is locked (Status == 1) for user ID: {}", exporterId);
             throw new IllegalStateException("Tài khoản Exporter bị khóa, không thể hủy đơn hàng.");
         }
         order.setStatusID(5);
@@ -223,8 +238,12 @@ public class ExporterDAOImpl implements ExporterDAO {
             logger.error("Customer not found for ID: {}", customerId);
             throw new IllegalArgumentException("Không tìm thấy thông tin khách hàng với ID: " + customerId);
         }
-        if (customer.getStatus() != 0) {
-            logger.error("Customer account is locked (Status = {}) for user ID: {}", customer.getStatus(), customerId);
+        if (customer.getRoleID() != 2) { // Kiểm tra roleID == 2
+            logger.error("User roleID {} is not 2 for cancel request on order ID: {}", customer.getRoleID(), orderId);
+            throw new IllegalArgumentException("Chỉ khách hàng (roleID = 2) mới có quyền yêu cầu hủy đơn hàng");
+        }
+        if (customer.getStatus() == 1) { // Sửa từ != 0 thành == 1 (locked nếu ==1)
+            logger.error("Customer account is locked (Status == 1) for user ID: {}", customerId);
             throw new IllegalStateException("Tài khoản khách hàng bị khóa, không thể yêu cầu hủy đơn hàng.");
         }
         OrderCancelRequest cancelRequest = new OrderCancelRequest();
@@ -265,8 +284,8 @@ public class ExporterDAOImpl implements ExporterDAO {
             logger.error("Only Exporter (RoleID = 5) can update status to Processing, Shipped, or Cancelled.");
             throw new IllegalArgumentException("Chỉ Exporter mới có thể cập nhật trạng thái này.");
         }
-        if (user.getStatus() != 0) {
-            logger.error("User account is locked (Status = {}) for user ID: {}", user.getStatus(), exporterId);
+        if (user.getStatus() == 1) { // Sửa từ != 0 thành == 1 (locked nếu ==1)
+            logger.error("User account is locked (Status == 1) for user ID: {}", exporterId);
             throw new IllegalStateException("Tài khoản người dùng bị khóa, không thể cập nhật trạng thái đơn hàng.");
         }
         int currentStatusId = order.getStatusID();

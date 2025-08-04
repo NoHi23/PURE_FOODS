@@ -61,7 +61,7 @@ const ExporterOrderTracking = ({ currentPage, setCurrentPage }) => {
 
         const userMap = {};
         (userRes.data.userList || []).forEach((u) => {
-          userMap[u.userId] = u.fullName;
+          userMap[u.userId] = u;  // Sửa: Lưu toàn bộ user object để kiểm tra roleID và status
         });
         setUsers(userMap);
       })
@@ -81,6 +81,10 @@ const ExporterOrderTracking = ({ currentPage, setCurrentPage }) => {
 
   // Lọc orders dựa trên search và status (thêm lọc client-side để đảm bảo đúng statusID cho từng vị trí)
   const filteredOrders = localOrders.filter((order) => {
+    // Thêm lọc customer: chỉ roleID==2 && status==0
+    const customer = users[order.customerID];
+    if (!customer || customer.roleID !== 2 || customer.status !== 0) return false;
+
     // Lọc statusID nghiêm ngặt theo selectedStatus, chỉ hiển thị đúng vị trí
     let statusMatch = true;
     if (selectedStatus === "pending") {

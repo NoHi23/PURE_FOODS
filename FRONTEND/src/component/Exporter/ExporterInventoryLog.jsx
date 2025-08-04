@@ -1,3 +1,4 @@
+// ExporterInventoryLog.jsx (Status 0: active, 1: banned - already correct, formatted for readability)
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { FiSearch, FiRefreshCw } from "react-icons/fi";
@@ -8,11 +9,32 @@ import { toast } from "react-toastify";
 
 const ExporterInventoryLog = ({ currentPage, setCurrentPage }) => {  // Loại bỏ prop orders, setOrders để tránh update parent state
   const [products, setProducts] = useState({});
-  const [users, setUsers] = useState({});
+  const [users, setUsers] = useState({});  // Sửa để lưu toàn bộ user object thay vì chỉ fullName
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("all");
   const [isLoading, setIsLoading] = useState(false);
   const [localOrders, setLocalOrders] = useState([]);  // Thêm local state để lưu orders, không update parent
+
+  // Phần sửa mới: State cho modal chi tiết đơn hàng
+  const [selectedOrderDetail, setSelectedOrderDetail] = useState(null);
+  const [detailLoading, setDetailLoading] = useState(false);
+
+  // Phần sửa mới: Hàm fetch chi tiết đơn hàng
+  const fetchOrderDetail = async (orderId) => {
+    setDetailLoading(true);
+    try {
+      const response = await axios.get(`http://localhost:8082/PureFoods/api/exporter/export-requests/${orderId}`, { timeout: 5000 });
+      if (response.data.status === 200) {
+        setSelectedOrderDetail(response.data.order || {});
+      } else {
+        toast.error("Lấy chi tiết đơn hàng thất bại!");
+      }
+    } catch (err) {
+      toast.error("Lỗi khi lấy chi tiết đơn hàng! Kiểm tra mạng.");
+    } finally {
+      setDetailLoading(false);
+    }
+  };
 
   // Hàm fetch lịch sử xuất kho, sửa để setLocalOrders thay vì setOrders, thêm console.log để debug response
   const fetchExportHistory = async () => {
@@ -43,7 +65,7 @@ const ExporterInventoryLog = ({ currentPage, setCurrentPage }) => {  // Loại b
     }
   };
 
-  // useEffect để load dữ liệu ban đầu, giữ nguyên nhưng setLocalOrders
+  // useEffect để load dữ liệu ban đầu, giữ nguyên nhưng setLocalOrders, và sửa users để lưu toàn bộ object
   useEffect(() => {
     setIsLoading(true);
     Promise.all([
@@ -59,7 +81,7 @@ const ExporterInventoryLog = ({ currentPage, setCurrentPage }) => {  // Loại b
 
         const userMap = {};
         (userRes.data.userList || []).forEach((u) => {
-          userMap[u.userId] = u.fullName;
+          userMap[u.userId] = u;  // Sửa: Lưu toàn bộ user object để kiểm tra roleID và status
         });
         setUsers(userMap);
       })
@@ -83,16 +105,21 @@ const ExporterInventoryLog = ({ currentPage, setCurrentPage }) => {  // Loại b
     fetchExportHistory();
   };
 
-  // Lọc orders dựa trên search và status (giữ nguyên: lọc client-side cho statusID chính xác)
+  // Lọc orders dựa trên search và status (sửa: ở "all" chỉ hiển thị statusID 3 và 5, thêm lọc customer roleID==2 && status==0)
   const filteredOrders = localOrders.filter((order) => {  // Sử dụng localOrders thay vì orders
-    // Thêm lọc statusID theo selectedStatus (chỉ statusID=3 cho shipped, không hiển thị khác)
-    let statusMatch = true;
+    // Thêm lọc customer: chỉ roleID==2 && status==0 (0: active, 1: banned)
+    const customer = users[order.customerID];
+    if (!customer || customer.roleID !== 2 || customer.status !== 0) return false;
+
+    // Sửa lọc statusID theo selectedStatus (chỉ statusID=3 cho shipped, không hiển thị khác (như 4))
+    let statusMatch = false;
     if (selectedStatus === "shipped") {
       statusMatch = order.statusID === 3; // Chỉ hiển thị statusID=3, loại bỏ các đơn khác (như 4)
     } else if (selectedStatus === "cancelled") {
       statusMatch = order.statusID === 5; // Chỉ statusID=5 cho cancelled
+    } else if (selectedStatus === "all") {
+      statusMatch = order.statusID === 3 || order.statusID === 5; // Chỉ hiển thị statusID 3 và 5 ở "all"
     }
-    // Đối với "all", statusMatch luôn true
 
     if (!statusMatch) return false; // Nếu không khớp status, bỏ qua order
 
@@ -209,6 +236,7 @@ const ExporterInventoryLog = ({ currentPage, setCurrentPage }) => {  // Loại b
                 <th scope="col">Số lượng</th>
                 <th scope="col">Thời gian</th>
                 <th scope="col">Trạng thái</th>
+                <th scope="col">Hành động</th> {/* Phần sửa mới: Thêm cột Hành động */}
               </tr>
             </thead>
             <tbody>
@@ -258,11 +286,23 @@ const ExporterInventoryLog = ({ currentPage, setCurrentPage }) => {  // Loại b
                         {order?.statusName || "Chưa xác định"}
                       </label>
                     </td>
+                    <td>
+                      {/* Phần sửa mới: Button xem chi tiết */}
+                      <button
+                        className="btn btn-sm btn-info"
+                        onClick={() => fetchOrderDetail(order.orderID)}
+                        data-bs-toggle="modal"
+                        data-bs-target="#orderDetailModal"
+                        disabled={isLoading}
+                      >
+                        Xem chi tiết
+                      </button>
+                    </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan="6" className="text-center">
+                  <td colSpan="7" className="text-center"> {/* Cập nhật colSpan=7 vì thêm cột */}
                     Không có lịch sử xuất kho.
                   </td>
                 </tr>
@@ -271,6 +311,44 @@ const ExporterInventoryLog = ({ currentPage, setCurrentPage }) => {  // Loại b
           </table>
         </div>
         <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+      </div>
+      {/* Phần sửa mới: Modal chi tiết đơn hàng */}
+      <div className="modal fade" id="orderDetailModal" tabIndex="-1" aria-labelledby="orderDetailModalLabel" aria-hidden="true">
+        <div className="modal-dialog modal-lg">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h5 className="modal-title" id="orderDetailModalLabel">Chi tiết đơn hàng #{selectedOrderDetail?.orderID}</h5>
+              <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div className="modal-body">
+              {detailLoading ? (
+                <div className="text-center">
+                  <div className="spinner-border text-primary" role="status">
+                    <span className="visually-hidden">Đang tải...</span>
+                  </div>
+                </div>
+              ) : selectedOrderDetail ? (
+                <div>
+                  <ul className="list-group">
+                    <li className="list-group-item"><strong>Khách hàng:</strong> {selectedOrderDetail.customerName || "Không rõ"}</li>
+                    <li className="list-group-item"><strong>Sản phẩm:</strong> {selectedOrderDetail.orderDetails?.map(detail => detail.productName).join(", ") || "Không rõ"}</li>
+                    <li className="list-group-item"><strong>Tổng số lượng:</strong> {selectedOrderDetail.orderDetails?.reduce((sum, detail) => sum + detail.quantity, 0) || 0}</li>
+                    <li className="list-group-item"><strong>Thời gian:</strong> {selectedOrderDetail.orderDate ? new Date(selectedOrderDetail.orderDate).toLocaleString("vi-VN") : "Không rõ"}</li>
+                    <li className="list-group-item"><strong>Trạng thái:</strong> {selectedOrderDetail.statusName || "Không xác định"}</li>
+                    {selectedOrderDetail.statusID === 5 && selectedOrderDetail.cancelReason && selectedOrderDetail.cancelReason.trim() !== "" && (
+                      <li className="list-group-item text-danger"><strong>Lý do hủy:</strong> {selectedOrderDetail.cancelReason}</li>
+                    )}
+                  </ul>
+                </div>
+              ) : (
+                <p>Không có dữ liệu chi tiết.</p>
+              )}
+            </div>
+            <div className="modal-footer">
+              <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

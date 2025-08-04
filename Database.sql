@@ -351,7 +351,7 @@ INSERT INTO Drivers (DriverName, Phone, Email, VehicleInfo, Status) VALUES
 GO
 INSERT INTO Orders (CustomerID, OrderDate, TotalAmount, StatusID, ShippingAddress, ShippingMethodID, ShippingCost, Distance, DiscountAmount, Status, EstimatedDeliveryDate, DriverID, ReturnReason) VALUES
 (2, '2025-06-07 08:00:00', 80.00, 1, N'123 Le Loi, HN', 1, 10.00, 5.00, 5.00, 1, '2025-06-10', 1,''),
-(1, '2025-06-07 08:05:00', 60.00, 1, N'456 Hai Ba Trung, HCM', 2, 20.00, 3.00, 0.00, 1, '2025-06-09', 2,'');
+(2, '2025-06-07 08:05:00', 60.00, 2, N'456 Hai Ba Trung, HCM', 2, 20.00, 3.00, 0.00, 1, '2025-06-09', 2,'');
 GO
 INSERT INTO OrderPromotions (OrderID, PromotionID, DiscountApplied, Status) VALUES
 (1, 1, 8.00, 1),

@@ -107,6 +107,16 @@ public class ExporterServiceImpl implements ExporterService {
             logger.error("Tài khoản Exporter ID {} đã bị khóa.", exporterId);
             throw new IllegalStateException("Tài khoản của bạn đã bị khóa.");
         }
+        User customer = userService.findById(exporterDTO.getCustomerID())
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy khách hàng với ID: " + exporterDTO.getCustomerID()));
+        if (customer.getRoleID() != 2) { // Kiểm tra roleID == 2
+            logger.error("Customer roleID {} is not 2 for order ID: {}", customer.getRoleID(), exporterDTO.getOrderID());
+            throw new IllegalArgumentException("Chỉ chấp nhận đơn hàng từ khách hàng (roleID = 2)");
+        }
+        if (customer.getStatus() == 1) { // Sửa từ != 0 thành == 1 (locked nếu ==1)
+            logger.error("Customer ID {} is locked (status == 1) for order ID: {}", exporterDTO.getCustomerID(), exporterDTO.getOrderID());
+            throw new IllegalStateException("Tài khoản khách hàng đã bị khóa, không thể tạo yêu cầu xuất hàng.");
+        }
         if (orderDetails == null || orderDetails.isEmpty()) {
             logger.error("Order details list is null or empty for order ID: {}", exporterDTO.getOrderID());
             throw new IllegalArgumentException("Order details cannot be null or empty");
@@ -195,6 +205,10 @@ public class ExporterServiceImpl implements ExporterService {
         if (customer.getStatus() == 1) {
             logger.error("Tài khoản Customer ID {} không tồn tại hoặc đã bị khóa.", customerId);
             throw new IllegalStateException("Tài khoản của bạn đã bị khóa.");
+        }
+        if (customer.getRoleID() != 2) { // Kiểm tra roleID == 2
+            logger.error("User roleID {} is not 2 for cancel request on order ID: {}", customer.getRoleID(), orderId);
+            throw new IllegalArgumentException("Chỉ khách hàng (roleID = 2) mới có quyền yêu cầu hủy đơn hàng");
         }
         logger.info("Customer {} requesting cancellation for order ID: {}", customerId, orderId);
         if (cancelReason == null || cancelReason.trim().isEmpty()) {

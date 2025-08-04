@@ -1,3 +1,4 @@
+// Tab.jsx (Formatted for readability, no status changes needed)
 import React from "react";
 import { Home, ShoppingBag, Package, User, Settings, Truck } from 'react-feather';  // Import icons từ react-feather (install: npm i react-feather)
 // Loại bỏ import Bell vì tab "Thông báo" đã ẩn

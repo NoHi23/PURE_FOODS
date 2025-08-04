@@ -1,3 +1,4 @@
+// ExporterProfile.jsx (Status 0: active, 1: banned - already correct, formatted)
 import React from "react";
 import ExporterEditProfile from "./ExporterEditProfile";
 
@@ -72,7 +73,7 @@ const ExporterProfile = ({ user }) => {
               <h5 style={{ color: "green", fontSize: "18px", fontWeight: "bold" }}>Đang hoạt động</h5>
             )}
             {user?.status === 1 && (
-              <h5 style={{ color: "red", fontSize: "18px", fontWeight: "bold" }}>Bị cấm</h5>
+              <h5 style={{ color: "red", fontSize: "18px", fontWeight: "bold" }}>Bị cấm hoạt động</h5>
             )}
             {![0, 1].includes(user?.status) && (
               <h5 style={{ fontSize: "18px", fontWeight: "bold" }}>Không xác định</h5>
