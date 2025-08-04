@@ -277,4 +277,8 @@ SET
 HarvestDate = '2025-07-29', --ngày nhập là ngày 29-07-2025
 ExpirationDate = DATEADD(DAY, ABS(CHECKSUM(NEWID()) % 90) + 1, '2025-07-29') --ngày hết hạn random để khác nhau, cách 90 ngày lúc nhập
 WHERE HarvestDate IS NULL OR ExpirationDate IS NULL;
+<<<<<<< HEAD
 >>>>>>> f32b41e959baef7855258cc17bb580e6d44f4810
+=======
+>>>>>>> f32b41e959baef7855258cc17bb580e6d44f4810
+>>>>>>> 3bb521a28ebf2e27c8e3cbf44763fc38261ee6bf
